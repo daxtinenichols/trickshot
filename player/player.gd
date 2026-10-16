@@ -83,6 +83,16 @@ var _dip := 0.0
 var _roll := 0.0
 var _eye_height := 1.66
 var _mouse_captured := false
+# Weapon recoil: a visual view kick on top of the aim, so flips/spins
+# (which read `pitch`) are never affected by shooting.
+var _kick_pitch := 0.0
+var _kick_yaw := 0.0
+var _kick_recovery := 12.0
+
+## Set by the held weapon: 0 = hip, 1 = fully aimed down sights.
+var aim_zoom := 0.0
+var aim_fov := 62.0
+var weapon: Node
 
 @onready var head: Node3D = $Head
 @onready var camera: Camera3D = $Head/Camera3D
@@ -112,6 +122,9 @@ func _ready() -> void:
 	_kicks_left = tuning.kicks_per_air_time
 	if use_device_input and DisplayServer.get_name() != "headless":
 		_capture_mouse(true)
+	weapon = get_node_or_null("Head/Camera3D/Pistol")
+	if weapon and weapon.has_method("setup"):
+		weapon.setup(self)
 
 
 # ---------------------------------------------------------------- input / look
@@ -121,13 +134,25 @@ func _unhandled_input(event: InputEvent) -> void:
 		return
 	if event is InputEventMouseMotion and _mouse_captured:
 		var m := event as InputEventMouseMotion
-		_look(-m.relative.x * tuning.mouse_sensitivity, -m.relative.y * tuning.mouse_sensitivity)
+		var sens := tuning.mouse_sensitivity * aim_sensitivity_scale()
+		_look(-m.relative.x * sens, -m.relative.y * sens)
 	elif event is InputEventMouseButton and event.pressed and not _mouse_captured:
 		_capture_mouse(true)
 	elif event.is_action_pressed("toggle_mouse"):
 		_capture_mouse(not _mouse_captured)
 	elif event.is_action_pressed("reset"):
 		respawn()
+
+
+func is_mouse_captured() -> bool:
+	return _mouse_captured
+
+
+## Aiming zooms in; scale look speed by the same amount so aim feels the same.
+func aim_sensitivity_scale() -> float:
+	var hip := tan(deg_to_rad(tuning.base_fov) * 0.5)
+	var ads := tan(deg_to_rad(aim_fov) * 0.5)
+	return lerpf(1.0, ads / hip, aim_zoom)
 
 
 func _capture_mouse(on: bool) -> void:
@@ -1111,6 +1136,8 @@ func respawn(t: Variant = null) -> void:
 	_since_floor = 999.0
 	_change_state(State.AIR)
 	pitch = 0.0
+	_kick_pitch = 0.0
+	_kick_yaw = 0.0
 	respawned.emit()
 
 
@@ -1120,8 +1147,12 @@ func _process(delta: float) -> void:
 	if use_device_input:
 		var stick := Vector2(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X), Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y))
 		if stick.length() > 0.15:
-			_look(-stick.x * tuning.gamepad_look_speed * delta, -stick.y * tuning.gamepad_look_speed * 0.7 * delta)
-	head.rotation = Vector3(pitch, 0.0, 0.0)
+			var pad := tuning.gamepad_look_speed * aim_sensitivity_scale() * delta
+			_look(-stick.x * pad, -stick.y * pad * 0.7)
+	var settle := exp(-_kick_recovery * delta)
+	_kick_pitch *= settle
+	_kick_yaw *= settle
+	head.rotation = Vector3(pitch + _kick_pitch, 0.0, 0.0)
 
 	var speed := horizontal_speed()
 	var target_eye := _height - EYE_OFFSET
@@ -1143,10 +1174,56 @@ func _process(delta: float) -> void:
 	elif state == State.SLIDE:
 		target_roll = deg_to_rad(-2.5)
 	_roll = lerpf(_roll, target_roll, 1.0 - exp(-10.0 * delta))
-	camera.rotation = Vector3(0.0, 0.0, _roll)
+	camera.rotation = Vector3(0.0, _kick_yaw, _roll)
 
 	var over := clampf((speed - tuning.run_speed) / maxf(tuning.top_speed + 4.0 - tuning.run_speed, 0.1), 0.0, 1.0)
-	camera.fov = lerpf(camera.fov, tuning.base_fov + tuning.speed_fov_bonus * over, 1.0 - exp(-6.0 * delta))
+	var target_fov := lerpf(tuning.base_fov + tuning.speed_fov_bonus * over, aim_fov, aim_zoom)
+	camera.fov = lerpf(camera.fov, target_fov, 1.0 - exp(-(6.0 + 20.0 * aim_zoom) * delta))
+
+
+## Recoil: kicks the view up (and a little sideways), settling back at
+## `recovery` per second. Purely visual on top of the aim direction.
+func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float) -> void:
+	_kick_pitch = minf(_kick_pitch + pitch_amount, deg_to_rad(8.0))
+	_kick_yaw = clampf(_kick_yaw + yaw_amount, deg_to_rad(-3.0), deg_to_rad(3.0))
+	_kick_recovery = recovery
+
+
+func view_kick() -> Vector2:
+	return Vector2(_kick_pitch, _kick_yaw)
+
+
+## What the player is doing right now, for style bonuses on shots
+## (airborne headshot, mid-flip, while wallrunning...).
+func shot_tags() -> Array[StringName]:
+	var tags: Array[StringName] = []
+	match state:
+		State.AIR:
+			tags.append(&"airborne")
+		State.WALLRUN:
+			tags.append(&"wallrun")
+		State.SLIDE:
+			tags.append(&"sliding")
+		State.PRONE_SLIDE:
+			tags.append(&"diving")
+		State.PRONE:
+			tags.append(&"prone")
+		State.WALLCLIMB:
+			tags.append(&"climbing")
+		State.VAULT, State.MANTLE:
+			tags.append(&"vaulting")
+	if _diving and state == State.AIR:
+		tags.append(&"diving")
+	if state == State.AIR:
+		if absf(_air_pitch) > deg_to_rad(90.0):
+			tags.append(&"flipping")
+		if absf(_air_yaw) > deg_to_rad(180.0):
+			tags.append(&"spinning")
+	if cos(pitch) < 0.0:
+		tags.append(&"upside_down")
+	if horizontal_speed() >= tuning.top_speed * 0.9:
+		tags.append(&"fast")
+	return tags
 
 
 func debug_text() -> String:

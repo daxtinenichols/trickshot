@@ -29,9 +29,9 @@ func _step(frames: int, f: InputFrame = null) -> void:
 		await tree.physics_frame
 
 
-func test_has_nine_zones() -> void:
+func test_has_ten_zones() -> void:
 	var b: SandboxBuilder = level.get_node("Builder")
-	check(b.spawns.size() == 9, "9 zone spawns (got %d)" % b.spawns.size())
+	check(b.spawns.size() == 10, "10 zone spawns (got %d)" % b.spawns.size())
 
 
 func test_every_zone_spawn_is_standable() -> void:

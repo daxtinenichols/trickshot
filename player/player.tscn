@@ -1,7 +1,8 @@
-[gd_scene load_steps=3 format=3]
+[gd_scene load_steps=4 format=3]
 
 [ext_resource type="Script" path="res://player/player.gd" id="1_player"]
 [ext_resource type="Resource" path="res://player/default_tuning.tres" id="2_tuning"]
+[ext_resource type="Script" path="res://weapons/pistol.gd" id="3_pistol"]
 
 [node name="Player" type="CharacterBody3D" groups=["player"]]
 collision_layer = 2
@@ -18,3 +19,6 @@ transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 1.66, 0)
 fov = 85.0
 near = 0.05
 far = 600.0
+
+[node name="Pistol" type="Node3D" parent="Head/Camera3D"]
+script = ExtResource("3_pistol")

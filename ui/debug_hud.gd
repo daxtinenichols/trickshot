@@ -47,7 +47,7 @@ const TRICK_NAMES := {
 	&"wall_impact": "BONK",
 }
 
-const HELP := "WASD move · Shift sprint · Space jump / vault / climb · Ctrl or C crouch / slide / roll · Z prone / dive · F kick · LMB fire · RMB aim · R reload · B fire mode\nBackspace respawn · 1-9 zones · F1 HUD · F2 tuning · F3 slow-mo · F4 speed trail · Esc mouse"
+const HELP := "WASD move · Shift sprint · Space jump / vault / climb · Ctrl or C crouch / slide / roll · Z prone / dive · F kick · LMB fire · RMB aim · R reload · B fire mode\nBackspace respawn · 1-9 zones, 0 range · F1 HUD · F2 tuning · F3 slow-mo · F4 speed trail · Esc mouse"
 
 var player: Player
 
@@ -60,6 +60,23 @@ var _feed: VBoxContainer
 var _toast: Label
 var _toast_time := 0.0
 var _root: Control
+var _hit_marker: HitMarker
+var _ammo_label: Label
+var _pistol: Pistol
+
+const SHOT_TAG_NAMES := {
+	&"airborne": "AIRBORNE",
+	&"wallrun": "WALLRUN",
+	&"sliding": "SLIDING",
+	&"diving": "DIVING",
+	&"prone": "PRONE",
+	&"climbing": "CLIMBING",
+	&"vaulting": "VAULTING",
+	&"flipping": "MID-FLIP",
+	&"spinning": "MID-SPIN",
+	&"upside_down": "UPSIDE DOWN",
+	&"fast": "FAST",
+}
 
 
 ## How well a move was done, as players see it.
@@ -127,6 +144,19 @@ func _ready() -> void:
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_root.add_child(_toast)
 
+	_hit_marker = HitMarker.new()
+	_root.add_child(_hit_marker)
+
+	_ammo_label = Label.new()
+	_ammo_label.add_theme_font_size_override("font_size", 30)
+	_ammo_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	_ammo_label.add_theme_constant_override("outline_size", 6)
+	_ammo_label.set_anchors_preset(Control.PRESET_BOTTOM_RIGHT)
+	_ammo_label.position = Vector2(-260, -100)
+	_ammo_label.custom_minimum_size = Vector2(240, 0)
+	_ammo_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	_root.add_child(_ammo_label)
+
 	var help := Label.new()
 	help.text = HELP
 	help.add_theme_font_size_override("font_size", 13)
@@ -140,6 +170,9 @@ func setup(p: Player) -> void:
 	player = p
 	_graph.player = p
 	p.trick.connect(_on_trick)
+	_pistol = p.weapon as Pistol
+	if _pistol:
+		_pistol.hit.connect(_on_shot_hit)
 
 
 func show_toast(text: String) -> void:
@@ -164,6 +197,9 @@ func _process(delta: float) -> void:
 	_momentum_bar.value = player.momentum
 	_detail_label.text = "momentum %.0f%%   vertical %+.1f m/s   height %.1f m   %d fps" % [
 		player.momentum * 100.0, player.velocity.y, player.global_position.y, Engine.get_frames_per_second()]
+	if _pistol:
+		var mode := "AUTO" if _pistol.full_auto else "SEMI"
+		_ammo_label.text = ("RELOADING" if _pistol.is_reloading() else "%d / %d" % [_pistol.ammo, _pistol.stats.magazine]) + "\n" + mode
 	if Engine.time_scale < 1.0:
 		_detail_label.text += "   SLOW-MO"
 	for child in _feed.get_children():
@@ -186,6 +222,41 @@ func _on_trick(trick_name: StringName, info: Dictionary) -> void:
 	item.add_theme_constant_override("outline_size", 6)
 	var bad := trick_name in [&"hard_landing", &"wall_impact", &"crash"]
 	item.add_theme_color_override("font_color", Color(1, 0.45, 0.35) if bad else Color(1, 0.92, 0.6))
+	item.set_meta("age", 0.0)
+	_feed.add_child(item)
+	_feed.move_child(item, 0)
+	while _feed.get_child_count() > 7:
+		_feed.get_child(_feed.get_child_count() - 1).free()
+
+
+## Describes a shot for the feed: "HEADSHOT · AIRBORNE · MID-FLIP  70".
+static func shot_text(info: Dictionary) -> String:
+	var parts: Array[String] = []
+	if info.get("killed", false):
+		parts.append("KILL")
+	if info.get("zone", &"") == &"head":
+		parts.append("HEADSHOT")
+	for t: StringName in info.get("tags", []):
+		parts.append(SHOT_TAG_NAMES.get(t, String(t).to_upper()))
+	return "%s   %d" % [" · ".join(parts) if not parts.is_empty() else "HIT", roundi(float(info.get("damage", 0.0)))]
+
+
+func _on_shot_hit(info: Dictionary) -> void:
+	if info.get("target") == null:
+		return
+	var head: bool = info.get("zone", &"") == &"head"
+	var kill: bool = info.get("killed", false)
+	_hit_marker.show_hit(head, kill)
+	# Only stylish or decisive shots go in the feed, to keep it readable.
+	if not (kill or head or not (info.get("tags", []) as Array).is_empty()):
+		return
+	var item := Label.new()
+	item.text = shot_text(info)
+	item.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
+	item.add_theme_font_size_override("font_size", 22)
+	item.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	item.add_theme_constant_override("outline_size", 6)
+	item.add_theme_color_override("font_color", Color(1.0, 0.4, 0.3) if kill else Color(1.0, 0.85, 0.25) if head else Color(0.8, 0.9, 1.0))
 	item.set_meta("age", 0.0)
 	_feed.add_child(item)
 	_feed.move_child(item, 0)

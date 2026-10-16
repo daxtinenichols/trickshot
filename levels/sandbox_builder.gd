@@ -9,7 +9,7 @@ extends Node3D
 ##   blue   = wallrun walls
 ##   yellow = vault / mantle / climb features
 ##   green  = slide ramps
-##   red    = kickable targets
+##   red    = kickable / shootable targets (yellow head = headshot)
 
 enum Kind { FLOOR, NEUTRAL, WALLRUN, PARKOUR, SLIDE }
 
@@ -25,6 +25,7 @@ const SHADER := preload("res://levels/graybox.gdshader")
 const DUMMY_SCRIPT := preload("res://levels/target_dummy.gd")
 const DOOR_SCRIPT := preload("res://levels/door.gd")
 const WINDOW_SCRIPT := preload("res://levels/breakable_window.gd")
+const TARGET_SCRIPT := preload("res://targets/shooting_target.gd")
 
 ## Zone name -> spawn transform. Filled by build().
 var spawns: Array[Transform3D] = []
@@ -57,6 +58,7 @@ func build() -> void:
 	_zone_drop_tower(Vector3(-85, 0, 0))
 	_zone_kick_yard(Vector3(110, 0, 0))
 	_zone_breach(Vector3(140, 0, 0))
+	_zone_range(Vector3(-120, 0, 0))
 
 
 # ---------------------------------------------------------------- zones
@@ -150,7 +152,7 @@ func _zone_drop_tower(o: Vector3) -> void:
 
 func _zone_kick_yard(o: Vector3) -> void:
 	_spawn(o + Vector3(0, 0, 5), "8 · KICK-OFF YARD")
-	_label("In the air, kick (F / right mouse) off walls and red targets", o + Vector3(0, 3.2, 1), 0.9)
+	_label("In the air, kick (F) off walls and red targets", o + Vector3(0, 3.2, 1), 0.9)
 	for i in 3:
 		var z := -14.0 - i * 10.0
 		_box(o + Vector3(-2.5, 5, z), Vector3(1.2, 10, 1.2), Kind.NEUTRAL)
@@ -188,7 +190,46 @@ func _zone_breach(o: Vector3) -> void:
 	_label("Sprint into it to smash through", o + Vector3(1.0, 3.6, z2 + 0.3), 0.8)
 
 
+func _zone_range(o: Vector3) -> void:
+	_spawn(o + Vector3(0, 0, 5), "0 · SHOOTING RANGE")
+	_label("LMB fire · RMB aim · B semi/auto · R reload. Yellow heads take 2.5x", o + Vector3(0, 4.4, -1), 0.7)
+	# Static targets at range markers.
+	var static_spots := [Vector3(-4, 0, -10), Vector3(3, 0, -20), Vector3(-2, 0, -35), Vector3(4, 0, -60)]
+	for p: Vector3 in static_spots:
+		_target(o + p, ShootingTarget.Motion.STATIC)
+		_label("%d m" % roundi(-p.z + 5.0), o + p + Vector3(0.9, 0.3, 0), 0.8)
+	# Movers.
+	_target(o + Vector3(0, 0, -15), ShootingTarget.Motion.STRAFE, 3.0, 3.5)
+	_target(o + Vector3(1, 0, -28), ShootingTarget.Motion.STRAFE, 5.0, 6.0)
+	_target(o + Vector3(-5, 0, -24), ShootingTarget.Motion.BOB, 1.0, 1.2)
+	_target(o + Vector3(4, 0, -45), ShootingTarget.Motion.CIRCLE, 4.0, 4.0)
+	# Wall on the left to shoot from while wallrunning.
+	_box(o + Vector3(-9, 3, -16), Vector3(1, 6, 24), Kind.WALLRUN)
+	_label("Wallrun and shoot", o + Vector3(-8.3, 4.5, -4), 0.7)
+	# Jump-off platform on the right for air shots and flip shots.
+	_staircase(o + Vector3(10, 0, 0), 2, 2.0, -2.0)
+	_box(o + Vector3(10, 2, -4), Vector3(4, 4, 4), Kind.NEUTRAL)
+	_label("Jump off and shoot mid-air", o + Vector3(10, 5.5, -4), 0.7)
+
+
 # ---------------------------------------------------------------- helpers
+
+func _target(pos: Vector3, motion: ShootingTarget.Motion, amplitude := 3.0, speed := 4.0) -> void:
+	if Engine.is_editor_hint():
+		var mesh := MeshInstance3D.new()
+		var cm := CapsuleMesh.new()
+		cm.radius = 0.3
+		cm.height = 1.75
+		mesh.mesh = cm
+		mesh.position = pos + Vector3(0, 0.88, 0)
+		_root.add_child(mesh)
+		return
+	var t: ShootingTarget = TARGET_SCRIPT.new()
+	t.motion = motion
+	t.amplitude = amplitude
+	t.move_speed = speed
+	t.position = pos
+	_root.add_child(t)
 
 func _door(hinge: Vector3) -> void:
 	if Engine.is_editor_hint():

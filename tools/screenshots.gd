@@ -11,6 +11,8 @@ const SHOTS := [
 	[5, Vector3(14, 6, 2), 0.6, -0.15, "slide_hill"],
 	[6, Vector3(14, 6, 2), 0.6, -0.1, "drop_tower"],
 	[7, Vector3(0, 2, 2), 0.0, -0.1, "kick_yard"],
+	[8, Vector3(0, 0, 0), 0.0, -0.05, "doors_windows"],
+	[9, Vector3(0, 0, 0), 0.0, -0.03, "shooting_range"],
 ]
 
 func _initialize() -> void:
@@ -36,4 +38,21 @@ func _run() -> void:
 		img.save_png(out.path_join("%s.png" % s[4]))
 		print("saved ", s[4])
 		player.set_physics_process(true)
+	# A hit on the 10 m target, to check the hit marker and damage number.
+	level.go_to_zone(9)
+	for i in 30:
+		await physics_frame
+	var gun: Pistol = player.weapon
+	var head := Vector3(-124, 1.62, -10)
+	var eye := player.camera.global_position
+	var d := head - eye
+	player.set_view(atan2(-d.x, -d.z), atan2(d.y, Vector2(d.x, d.z).length()))
+	gun.aim_held = true
+	for i in 20:
+		await physics_frame
+	gun.trigger_pressed = true
+	for i in 4:
+		await process_frame
+	root.get_texture().get_image().save_png(out.path_join("range_headshot.png"))
+	print("saved range_headshot")
 	quit()

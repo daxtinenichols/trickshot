@@ -1,0 +1,46 @@
+class_name WeaponStats
+extends Resource
+## Numbers that define a gun. Tunable without touching code.
+
+@export var display_name := "Test Pistol"
+
+@export_group("Damage")
+@export_range(1.0, 200.0, 1.0) var damage := 28.0
+@export_range(1.0, 5.0, 0.05) var headshot_multiplier := 2.5
+## Full damage out to this range (m), then falls off linearly...
+@export_range(0.0, 200.0, 1.0) var falloff_start := 30.0
+## ...down to min_damage_fraction at this range.
+@export_range(0.0, 300.0, 1.0) var falloff_end := 70.0
+@export_range(0.0, 1.0, 0.01) var min_damage_fraction := 0.6
+@export_range(1.0, 500.0, 1.0) var max_range := 150.0
+
+@export_group("Fire")
+## Fastest you can click in semi-auto (shots per second).
+@export_range(1.0, 30.0, 0.5) var semi_max_rate := 7.0
+@export_range(1.0, 30.0, 0.5) var auto_rate := 11.0
+@export_range(1, 100, 1) var magazine := 15
+@export_range(0.1, 5.0, 0.05) var reload_time := 1.25
+
+@export_group("Accuracy (degrees)")
+## The first shot always goes exactly where the crosshair is.
+@export_range(0.0, 5.0, 0.01) var hip_spread := 0.35
+@export_range(0.0, 5.0, 0.01) var aim_spread := 0.0
+## Spread added per shot fired in quick succession, and its cap.
+@export_range(0.0, 3.0, 0.01) var bloom_per_shot := 0.45
+@export_range(0.0, 10.0, 0.1) var max_bloom := 3.0
+## Bloom recovered per second, once you haven't fired for recovery_delay.
+## Full auto fires faster than the delay, so held fire keeps blooming.
+@export_range(0.0, 30.0, 0.5) var bloom_recovery := 7.0
+@export_range(0.0, 1.0, 0.01) var bloom_recovery_delay := 0.12
+## Extra spread at top movement speed (kept small: moving shots should land).
+@export_range(0.0, 5.0, 0.01) var move_spread := 0.25
+
+@export_group("Recoil (degrees)")
+@export_range(0.0, 10.0, 0.05) var recoil_pitch := 1.2
+@export_range(0.0, 5.0, 0.05) var recoil_yaw := 0.35
+## How fast the view settles back (per second).
+@export_range(0.0, 40.0, 0.5) var recoil_recovery := 12.0
+
+@export_group("Aim")
+@export_range(20.0, 90.0, 1.0) var aim_fov := 62.0
+@export_range(0.01, 1.0, 0.01) var aim_time := 0.12

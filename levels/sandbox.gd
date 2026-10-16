@@ -23,8 +23,8 @@ func go_to_zone(index: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	for i in 9:
-		if event.is_action_pressed("zone_%d" % (i + 1)):
+	for i in builder.spawns.size():
+		if InputMap.has_action("zone_%d" % (i + 1)) and event.is_action_pressed("zone_%d" % (i + 1)):
 			go_to_zone(i)
 			return
 	if event.is_action_pressed("debug_slowmo"):
