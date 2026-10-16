@@ -62,7 +62,7 @@ extends Resource
 ## Thickest obstacle that counts as vaultable; thicker ones are mantled onto.
 @export_range(0.2, 3.0, 0.05) var vault_max_depth := 1.4
 @export_range(0.05, 1.0, 0.01) var vault_time := 0.28
-@export_range(0.0, 0.5, 0.01) var vault_speed_bonus := 0.05
+@export_range(0.0, 0.5, 0.01) var vault_speed_bonus := 0.12
 ## How far above your feet you can catch a ledge while airborne.
 @export_range(0.2, 3.0, 0.05) var mantle_air_reach := 1.55
 @export_range(0.05, 1.0, 0.01) var mantle_time := 0.32
@@ -72,9 +72,9 @@ extends Resource
 
 @export_group("Wallrun")
 @export_range(0.0, 15.0, 0.1) var wallrun_min_speed := 5.0
-@export_range(0.0, 5.0, 0.05) var wallrun_max_time := 1.1
+@export_range(0.0, 5.0, 0.05) var wallrun_max_time := 1.6
 ## Gravity multiplier while wallrunning.
-@export_range(0.0, 1.0, 0.01) var wallrun_gravity_scale := 0.28
+@export_range(0.0, 1.0, 0.01) var wallrun_gravity_scale := 0.15
 ## Upward speed given when a wallrun starts.
 @export_range(0.0, 10.0, 0.1) var wallrun_entry_lift := 2.6
 ## Speed the wallrun accelerates toward along the wall.
@@ -117,6 +117,32 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var kick_keep_tangent := 0.9
 @export_range(0, 6, 1) var kicks_per_air_time := 2
 @export_range(0.0, 50.0, 0.5) var kick_target_impulse := 14.0
+
+@export_group("Skill")
+## Every move works when done roughly, but precise timing, angles and speed
+## make it better. Each quality value below is 0..1 (1 = perfect).
+##
+## Jump pressed within this many seconds of touching down = perfect hop.
+@export_range(0.0, 0.2, 0.005) var hop_perfect_window := 0.035
+## Horizontal speed kept by a hop pressed at the very start of the buffer.
+@export_range(0.5, 1.0, 0.01) var hop_early_keep := 0.9
+## Off = steering in the air can turn you but never adds speed (no bhop/surf
+## strafe gains). On = Quake-style strafe acceleration.
+@export var air_strafe_gain := false
+## Crouch pressed within this many seconds of landing turns into a slide.
+@export_range(0.0, 0.5, 0.01) var slide_land_window := 0.2
+## Fraction of fall speed turned into forward speed by a perfect slide landing.
+@export_range(0.0, 1.0, 0.01) var slide_land_conversion := 0.35
+## Shortest wallrun (sloppy entry); the best entry gets wallrun_max_time.
+@export_range(0.0, 3.0, 0.05) var wallrun_min_time := 0.55
+## Gravity scale for a sloppy wallrun; the best gets wallrun_gravity_scale.
+@export_range(0.0, 1.0, 0.01) var wallrun_sloppy_gravity := 0.5
+## Speed lost per second when not looking along the wall.
+@export_range(0.0, 20.0, 0.1) var wallrun_misalign_drag := 5.0
+## Ideal distance from a wall when you jump to vault it (from body edge).
+@export_range(0.0, 2.0, 0.05) var vault_ideal_distance := 0.35
+## Fraction of speed into a wall that a kick-off turns into push.
+@export_range(0.0, 1.0, 0.01) var kick_reflect := 0.5
 
 @export_group("Context")
 ## Mirror's Edge style: vaults and high mantles need a jump press (buffered),

@@ -7,6 +7,7 @@ extends SceneTree
 const SUITES := [
 	"res://tests/test_movement_math.gd",
 	"res://tests/test_player_moves.gd",
+	"res://tests/test_skill.gd",
 	"res://tests/test_sandbox_level.gd",
 ]
 
@@ -24,7 +25,12 @@ func _run() -> void:
 	var failed := 0
 	var t0 := Time.get_ticks_msec()
 	for path: String in SUITES:
-		var suite: TestCase = load(path).new()
+		var script: GDScript = load(path)
+		if script == null or not script.can_instantiate():
+			print("\n## %s\n  FAIL  could not load (script error)" % path.get_file())
+			failed += 1
+			continue
+		var suite: TestCase = script.new()
 		suite.tree = self
 		print("\n## %s" % path.get_file())
 		for m in suite.get_method_list():

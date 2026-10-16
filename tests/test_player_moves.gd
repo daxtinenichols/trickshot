@@ -225,7 +225,7 @@ func test_air_mantle_catches_ledge() -> void:
 	await w.press(_fwd_jump())
 	var caught := await w.step_until(func() -> bool: return p.state == Player.State.MANTLE, 60, _fwd())
 	check(caught, "ledge caught mid-air")
-	await w.step(40, _fwd())
+	await w.step_until(func() -> bool: return p.state == Player.State.GROUND, 90, _fwd())
 	check_near(p.global_position.y, 1.6, 0.08, "pulled up on top")
 	check(p.state == Player.State.GROUND, "running on top")
 

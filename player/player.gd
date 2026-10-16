@@ -45,6 +45,11 @@ var _wallrun_used_normal := Vector3.ZERO
 var _wall_jump_lock := 0.0
 var _climb_used := false
 var _climb_start_speed := 0.0
+var _ground_time := 0.0
+## Seconds between the jump press and touching down (-1 = no early press).
+var _land_press_age := -1.0
+var _wallrun_time_limit := 1.0
+var _wallrun_gravity := 0.3
 var _kicks_left := 0
 var _kicked_ids: Array[int] = []
 var _pre_move_velocity := Vector3.ZERO
@@ -175,6 +180,7 @@ func _update_timers(f: InputFrame, delta: float) -> void:
 	_since_wall += delta
 	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN]:
 		_since_floor = 0.0
+		_ground_time += delta
 	else:
 		_since_floor += delta
 
@@ -208,6 +214,13 @@ func _trick(trick_name: StringName, info := {}) -> void:
 	momentum = minf(momentum + tuning.momentum_trick_bump, 1.0)
 	info["speed"] = horizontal_speed()
 	trick.emit(trick_name, info)
+
+
+## 1 when `error` is inside `perfect`, falling to 0 at `worst`.
+static func timing_quality(error: float, perfect: float, worst: float) -> float:
+	if worst <= perfect:
+		return 1.0 if error <= perfect else 0.0
+	return 1.0 - clampf((error - perfect) / (worst - perfect), 0.0, 1.0)
 
 
 func _move() -> void:
@@ -249,7 +262,7 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 			return
 		if _try_wall_climb(f, true):
 			return
-		_jump()
+		_hop()
 		_tick_air(f, wish, delta)
 		return
 	if not tuning.vault_requires_jump and _try_obstacle(f, false):
@@ -292,6 +305,22 @@ func _tick_crouch(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.AIR)
 
 
+## A jump from the ground. Chained straight out of a landing it's a hop:
+## pressing right as you touch down keeps all your speed, pressing early
+## (buffered) keeps a little less, pressing late lets friction eat speed.
+func _hop() -> void:
+	var chained := _ground_time <= 0.25 and horizontal_speed() > tuning.run_speed * 0.8
+	if chained:
+		var early := _land_press_age >= 0.0
+		var err := _land_press_age if early else _ground_time
+		var q := timing_quality(err, tuning.hop_perfect_window, tuning.jump_buffer)
+		if early:
+			var h := MovementMath.horizontal(velocity) * lerpf(tuning.hop_early_keep, 1.0, q)
+			velocity = Vector3(h.x, velocity.y, h.z)
+		trick.emit(&"hop", {"speed": horizontal_speed(), "quality": q})
+	_jump()
+
+
 func _jump() -> void:
 	velocity.y = tuning.jump_velocity
 	_jump_buffer = 999.0
@@ -320,7 +349,15 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_wall_jump(wish)
 
 	velocity.y = maxf(velocity.y - tuning.gravity * delta, -tuning.max_fall_speed)
+	var speed_before := horizontal_speed()
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), tuning.air_wish_speed * wish.length(), tuning.air_accel, delta)
+	if not tuning.air_strafe_gain:
+		# Air control steers but never adds speed beyond what you took off with.
+		var speed_after := horizontal_speed()
+		var cap := maxf(speed_before, tuning.air_wish_speed)
+		if speed_after > cap:
+			var h := MovementMath.horizontal(velocity) * (cap / speed_after)
+			velocity = Vector3(h.x, velocity.y, h.z)
 	_move()
 
 	if is_on_floor():
@@ -339,14 +376,27 @@ func _land(f: InputFrame) -> void:
 	_wallrun_used_normal = Vector3.ZERO
 	_climb_used = false
 	_jumped_since_floor = false
+	_ground_time = 0.0
+	_land_press_age = _jump_buffer if _jump_buffer <= tuning.jump_buffer else -1.0
 	_dip = minf(fall * tuning.landing_dip, 0.4)
 	landed.emit(fall)
+	var crouch_age := _since_crouch_press
 	if fall >= tuning.hard_landing_speed:
-		if _since_crouch_press <= tuning.roll_window:
-			_start_roll()
+		if crouch_age <= tuning.roll_window:
+			_start_roll(timing_quality(crouch_age, 0.05, tuning.roll_window))
 		else:
 			_start_stun()
 		return
+	if f.crouch_held and crouch_age <= tuning.slide_land_window and fall > 3.0:
+		# Slide landing: a well-timed crouch turns some fall speed into speed.
+		var q := timing_quality(crouch_age, 0.05, tuning.slide_land_window)
+		var h := MovementMath.horizontal(velocity)
+		var dir := h.normalized() if h.length() > 0.5 else forward()
+		h += dir * fall * tuning.slide_land_conversion * q
+		velocity = Vector3(h.x, velocity.y, h.z)
+		if horizontal_speed() >= tuning.slide_min_speed:
+			_start_slide(q)
+			return
 	if f.crouch_held and horizontal_speed() >= tuning.slide_min_speed:
 		_start_slide()
 		return
@@ -355,7 +405,7 @@ func _land(f: InputFrame) -> void:
 
 # ---------------------------------------------------------------- slide
 
-func _start_slide() -> void:
+func _start_slide(quality := -1.0) -> void:
 	_set_height(tuning.crouch_height)
 	var h := MovementMath.horizontal(velocity)
 	if _slide_cooldown <= 0.0 and h.length() > 0.1:
@@ -364,7 +414,7 @@ func _start_slide() -> void:
 	velocity = Vector3(h.x, velocity.y, h.z)
 	_slide_flat_time = 0.0
 	_change_state(State.SLIDE)
-	_trick(&"slide")
+	_trick(&"slide", {} if quality < 0.0 else {"quality": quality})
 
 
 func _tick_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
@@ -400,14 +450,14 @@ func _tick_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 
 # ---------------------------------------------------------------- landing
 
-func _start_roll() -> void:
+func _start_roll(quality: float) -> void:
 	_set_height(tuning.crouch_height)
 	var h := MovementMath.horizontal(_pre_move_velocity)
 	var dir := h.normalized() if h.length() > 0.5 else forward()
-	var speed := maxf(h.length(), tuning.run_speed * 0.8) + tuning.roll_boost
+	var speed := maxf(h.length() * lerpf(0.8, 1.0, quality), tuning.run_speed * 0.8) + tuning.roll_boost * quality
 	velocity = dir * speed
 	_change_state(State.ROLL)
-	_trick(&"landing_roll", {"fall_speed": -_pre_move_velocity.y})
+	_trick(&"landing_roll", {"fall_speed": -_pre_move_velocity.y, "quality": quality})
 
 
 func _tick_roll(f: InputFrame, wish: Vector3, delta: float) -> void:
@@ -472,19 +522,24 @@ func _try_start_wallrun(f: InputFrame, wish: Vector3) -> bool:
 		return false
 	if wish.dot(n) > 0.5:
 		return false
-	_start_wallrun(n, speed)
+	# Shallow, fast entries make longer, flatter wallruns.
+	var q_angle := 1.0 - clampf(angle_to_wall / tuning.wallrun_max_entry_angle, 0.0, 1.0)
+	var q_speed := clampf((speed - tuning.wallrun_min_speed) / maxf(tuning.top_speed + 2.0 - tuning.wallrun_min_speed, 0.1), 0.0, 1.0)
+	_start_wallrun(n, speed, clampf(0.65 * q_angle + 0.35 * q_speed, 0.0, 1.0))
 	return true
 
 
-func _start_wallrun(n: Vector3, speed: float) -> void:
+func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 	_wall_normal = n
 	_wallrun_used_normal = n
+	_wallrun_time_limit = lerpf(tuning.wallrun_min_time, tuning.wallrun_max_time, quality)
+	_wallrun_gravity = lerpf(tuning.wallrun_sloppy_gravity, tuning.wallrun_gravity_scale, quality)
 	var t := MovementMath.wall_tangent(n, _pre_move_velocity)
 	var v := t * maxf(speed, tuning.wallrun_min_speed)
 	v.y = maxf(velocity.y, tuning.wallrun_entry_lift)
 	velocity = v
 	_change_state(State.WALLRUN)
-	_trick(&"wallrun")
+	_trick(&"wallrun", {"quality": quality})
 
 
 func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
@@ -498,7 +553,7 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 		return
 	var hit := _wall_ray(_wall_normal)
 	var leaving := f.crouch_pressed or wish.dot(MovementMath.horizontal(_wall_normal)) > 0.6
-	if hit.is_empty() or leaving or state_time >= tuning.wallrun_max_time:
+	if hit.is_empty() or leaving or state_time >= _wallrun_time_limit:
 		_since_wall = 0.0
 		if leaving:
 			velocity += MovementMath.horizontal(_wall_normal).normalized() * 2.0
@@ -509,9 +564,14 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_since_wall = 0.0
 	var t := MovementMath.wall_tangent(_wall_normal, velocity)
 	var speed := MovementMath.horizontal_speed(velocity)
-	if speed < tuning.wallrun_speed:
-		speed = minf(speed + tuning.wallrun_accel * delta, tuning.wallrun_speed)
-	var vy := velocity.y - tuning.gravity * tuning.wallrun_gravity_scale * delta
+	# Look and push along the wall to keep accelerating; anything else drags.
+	var along := forward().dot(t)
+	if along > 0.85 and f.move.y > 0.3:
+		if speed < tuning.wallrun_speed:
+			speed = minf(speed + tuning.wallrun_accel * delta, tuning.wallrun_speed)
+	else:
+		speed = maxf(speed - tuning.wallrun_misalign_drag * (1.0 - maxf(along, 0.0) + 0.2) * delta, 0.0)
+	var vy := velocity.y - tuning.gravity * _wallrun_gravity * delta
 	velocity = t * speed - MovementMath.horizontal(_wall_normal).normalized() * 1.5
 	velocity.y = vy
 	_move()
@@ -551,11 +611,14 @@ func _try_wall_climb(f: InputFrame, from_ground: bool) -> bool:
 	_climb_used = true
 	_jumped_since_floor = true
 	_jump_buffer = 999.0
-	var keep := MovementMath.horizontal(velocity).length()
-	_climb_start_speed = tuning.wall_climb_speed + minf(keep * 0.1, 1.0)
+	# Hitting the wall square-on and fast runs you higher.
+	var q_face := clampf((fwd.dot(-n) - tuning.wall_climb_facing) / maxf(1.0 - tuning.wall_climb_facing, 0.01), 0.0, 1.0)
+	var q_speed := clampf(MovementMath.horizontal(velocity).length() / tuning.top_speed, 0.0, 1.0)
+	var climb_q := 0.5 * q_face + 0.5 * q_speed
+	_climb_start_speed = tuning.wall_climb_speed * lerpf(0.85, 1.15, climb_q)
 	velocity = Vector3(0.0, _climb_start_speed, 0.0)
 	_change_state(State.WALLCLIMB)
-	_trick(&"wall_climb")
+	_trick(&"wall_climb", {"quality": climb_q})
 	return true
 
 
@@ -679,45 +742,61 @@ func probe_obstacle(grounded: bool) -> Dictionary:
 		var land: Vector3 = face.position - n * (depth + RADIUS + 0.35)
 		land.y = maxf(far_floor_y, feet.y - 3.0) + 0.02
 		if _shape_fits(_stand_shape, land):
-			return {"kind": &"vault", "height": height, "top": top_y, "face_normal": n, "land": land}
+			return {"kind": &"vault", "height": height, "top": top_y, "face_normal": n, "land": land,
+				"face_dist": _face_distance(face.position), "reach": height / max_h, "grounded": grounded}
 
 	# Mantle: stand on top, a little way in from the edge.
 	var stand_on: Vector3 = face.position - n * (RADIUS + 0.2)
 	stand_on.y = top_y + 0.03
 	if _shape_fits(_stand_shape, stand_on):
-		return {"kind": &"mantle", "height": height, "top": top_y, "face_normal": n, "land": stand_on}
+		return {"kind": &"mantle", "height": height, "top": top_y, "face_normal": n, "land": stand_on,
+			"face_dist": _face_distance(face.position), "reach": height / max_h, "grounded": grounded}
 	if _shape_fits(_crouch_shape, stand_on):
-		return {"kind": &"mantle", "height": height, "top": top_y, "face_normal": n, "land": stand_on, "crouch": true}
+		return {"kind": &"mantle", "height": height, "top": top_y, "face_normal": n, "land": stand_on, "crouch": true,
+			"face_dist": _face_distance(face.position), "reach": height / max_h, "grounded": grounded}
 	return {}
 
 
+func _face_distance(p: Vector3) -> float:
+	return maxf(MovementMath.horizontal(p - global_position).length() - RADIUS, 0.0)
+
+
+## Jumping at the ideal distance from an obstacle gives a fast, clean move.
+func _distance_quality(info: Dictionary) -> float:
+	return 1.0 - clampf(absf(info.face_dist - tuning.vault_ideal_distance) / 0.7, 0.0, 1.0)
+
+
 func _start_vault(info: Dictionary) -> void:
+	var q := _distance_quality(info)
 	var speed := maxf(horizontal_speed(), tuning.run_speed * 0.75)
 	var dir: Vector3 = -info.face_normal
 	_path_from = global_position
 	_path_to = info.land
 	var mid := (_path_from + _path_to) * 0.5
 	_path_ctrl = Vector3(mid.x, info.top + 0.55 + (info.top - mid.y) * 0.3, mid.z)
-	_path_time = tuning.vault_time
-	_path_exit_velocity = dir * speed * (1.0 + tuning.vault_speed_bonus)
+	_path_time = tuning.vault_time * lerpf(1.35, 0.85, q)
+	_path_exit_velocity = dir * speed * (1.0 + lerpf(-0.1, tuning.vault_speed_bonus, q))
 	_jump_buffer = 999.0
 	_change_state(State.VAULT)
-	_trick(&"vault", {"height": info.height})
+	_trick(&"vault", {"height": info.height, "quality": q})
 
 
 func _start_mantle(info: Dictionary) -> void:
+	# From the ground: judged on jump distance. In the air: catching the ledge
+	# low on your body (not at the fingertips) is fast and keeps speed.
+	var q := _distance_quality(info) if info.grounded else 1.0 - clampf((info.reach - 0.45) / 0.55, 0.0, 1.0)
 	var dir: Vector3 = -info.face_normal
-	var keep := maxf(horizontal_speed() * tuning.mantle_speed_keep, tuning.mantle_min_exit_speed)
+	var keep := maxf(horizontal_speed() * minf(tuning.mantle_speed_keep * lerpf(0.6, 1.3, q), 1.0), tuning.mantle_min_exit_speed)
 	_path_from = global_position
 	_path_to = info.land
 	_path_ctrl = Vector3(_path_from.x, info.top + 0.35, _path_from.z)
-	_path_time = tuning.mantle_time * clampf(0.6 + info.height * 0.3, 0.6, 1.3)
+	_path_time = tuning.mantle_time * clampf(0.6 + info.height * 0.3, 0.6, 1.3) * lerpf(1.4, 0.8, q)
 	_path_exit_velocity = dir * keep
 	if info.get("crouch", false):
 		_set_height(tuning.crouch_height)
 	_jump_buffer = 999.0
 	_change_state(State.MANTLE)
-	_trick(&"mantle", {"height": info.height})
+	_trick(&"mantle", {"height": info.height, "quality": q})
 
 
 func _tick_scripted(_delta: float) -> void:
@@ -767,7 +846,10 @@ func _try_kick_off() -> bool:
 	if cid in _kicked_ids:
 		return false
 	var n: Vector3 = hit.normal
-	velocity = MovementMath.kick_velocity(velocity, n, tuning.kick_push, tuning.kick_up, tuning.kick_keep_tangent)
+	# Kicking while moving into the surface turns that speed into push.
+	var into := maxf(-MovementMath.horizontal(velocity).dot(MovementMath.horizontal(n).normalized()), 0.0)
+	var kick_q := clampf(into / tuning.top_speed, 0.0, 1.0)
+	velocity = MovementMath.kick_velocity(velocity, n, tuning.kick_push + into * tuning.kick_reflect, tuning.kick_up, tuning.kick_keep_tangent)
 	_kicks_left -= 1
 	_kicked_ids.append(cid)
 	_since_wall = 999.0
@@ -776,7 +858,7 @@ func _try_kick_off() -> bool:
 		(collider as RigidBody3D).apply_central_impulse(-n * tuning.kick_target_impulse + Vector3.UP * 3.0)
 		if collider.has_method("on_kicked"):
 			collider.on_kicked(self)
-	_trick(&"kick_off", {"target": is_target})
+	_trick(&"kick_off", {"target": is_target, "quality": kick_q})
 	return true
 
 

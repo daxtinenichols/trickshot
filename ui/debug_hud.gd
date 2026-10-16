@@ -17,6 +17,7 @@ const STATE_COLORS := {
 }
 
 const TRICK_NAMES := {
+	&"hop": "HOP",
 	&"slide": "SLIDE",
 	&"slide_jump": "SLIDE JUMP",
 	&"vault": "VAULT",
@@ -44,6 +45,15 @@ var _feed: VBoxContainer
 var _toast: Label
 var _toast_time := 0.0
 var _root: Control
+
+
+## How well a move was done, as players see it.
+static func quality_grade(q: float) -> String:
+	if q >= 0.9:
+		return "PERFECT"
+	if q >= 0.6:
+		return "GOOD"
+	return "OK"
 
 
 static func state_color(s: int) -> Color:
@@ -153,6 +163,8 @@ func _process(delta: float) -> void:
 func _on_trick(trick_name: StringName, info: Dictionary) -> void:
 	var item := Label.new()
 	item.text = "%s   %.1f m/s" % [TRICK_NAMES.get(trick_name, String(trick_name).to_upper()), info.get("speed", 0.0)]
+	if info.has("quality"):
+		item.text = "%s  %s" % [quality_grade(info.quality), item.text]
 	item.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	item.add_theme_font_size_override("font_size", 22)
 	item.add_theme_color_override("font_outline_color", Color(0, 0, 0))
