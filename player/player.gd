@@ -82,7 +82,6 @@ var _bob_phase := 0.0
 var _dip := 0.0
 var _roll := 0.0
 var _eye_height := 1.66
-var _mouse_captured := false
 # Weapon recoil: a visual view kick on top of the aim, so flips/spins
 # (which read `pitch`) are never affected by shooting.
 var _kick_pitch := 0.0
@@ -90,6 +89,9 @@ var _kick_yaw := 0.0
 var _kick_recovery := 12.0
 
 ## Set by the held weapon: 0 = hip, 1 = fully aimed down sights.
+var invert_y := false
+## Multiplies look speed while aiming down sights (player setting).
+var ads_sensitivity := 1.0
 var aim_zoom := 0.0
 var aim_fov := 62.0
 var weapon: Node
@@ -121,7 +123,7 @@ func _ready() -> void:
 	_eye_height = _height - EYE_OFFSET
 	_kicks_left = tuning.kicks_per_air_time
 	if use_device_input and DisplayServer.get_name() != "headless":
-		_capture_mouse(true)
+		capture_mouse(true)
 	weapon = get_node_or_null("Head/Camera3D/Pistol")
 	if weapon and weapon.has_method("setup"):
 		weapon.setup(self)
@@ -132,31 +134,28 @@ func _ready() -> void:
 func _unhandled_input(event: InputEvent) -> void:
 	if not use_device_input:
 		return
-	if event is InputEventMouseMotion and _mouse_captured:
+	if event is InputEventMouseMotion and is_mouse_captured():
 		var m := event as InputEventMouseMotion
 		var sens := tuning.mouse_sensitivity * aim_sensitivity_scale()
-		_look(-m.relative.x * sens, -m.relative.y * sens)
-	elif event is InputEventMouseButton and event.pressed and not _mouse_captured:
-		_capture_mouse(true)
-	elif event.is_action_pressed("toggle_mouse"):
-		_capture_mouse(not _mouse_captured)
+		_look(-m.relative.x * sens, -m.relative.y * sens * (-1.0 if invert_y else 1.0))
+	elif event is InputEventMouseButton and event.pressed and not is_mouse_captured():
+		capture_mouse(true)
 	elif event.is_action_pressed("reset"):
 		respawn()
 
 
 func is_mouse_captured() -> bool:
-	return _mouse_captured
+	return Input.mouse_mode == Input.MOUSE_MODE_CAPTURED
 
 
 ## Aiming zooms in; scale look speed by the same amount so aim feels the same.
 func aim_sensitivity_scale() -> float:
 	var hip := tan(deg_to_rad(tuning.base_fov) * 0.5)
 	var ads := tan(deg_to_rad(aim_fov) * 0.5)
-	return lerpf(1.0, ads / hip, aim_zoom)
+	return lerpf(1.0, ads / hip * ads_sensitivity, aim_zoom)
 
 
-func _capture_mouse(on: bool) -> void:
-	_mouse_captured = on
+func capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE
 
 
@@ -166,6 +165,8 @@ func _capture_mouse(on: bool) -> void:
 func _look(d_yaw: float, d_pitch: float) -> void:
 	yaw = wrapf(yaw + d_yaw, -PI, PI)
 	if state == State.AIR:
+		if absf(wrapf(pitch, -PI, PI)) > deg_to_rad(75.0):
+			d_pitch *= tuning.flip_look_gain
 		pitch += d_pitch
 		_air_yaw += d_yaw
 		_air_pitch += d_pitch
@@ -196,6 +197,8 @@ func _physics_process(delta: float) -> void:
 func simulate(f: InputFrame, delta: float) -> void:
 	state_time += delta
 	_update_timers(f, delta)
+	if f.turn_pressed:
+		_quick_turn()
 	_apply_auto_turn(delta)
 	rotation = Vector3(0.0, yaw, 0.0)
 	var wish := wish_direction(f)
@@ -375,8 +378,13 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 		return
 
 	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.stop_speed, delta)
-	var sprinting := (f.sprint_held or tuning.auto_sprint) and f.move.y > 0.3
-	var top := MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) if sprinting else tuning.walk_speed
+	# Sprint works in any direction so you can strafe-run while aiming at
+	# something. Backpedalling caps at run speed; momentum only carries
+	# forward and sideways.
+	var sprinting := (f.sprint_held or tuning.auto_sprint) and f.move.length() > 0.3
+	var top := tuning.walk_speed
+	if sprinting:
+		top = MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) if f.move.y > -0.3 else tuning.run_speed
 	var wish_speed := top * wish.length()
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), wish_speed, tuning.ground_accel, delta)
 	velocity.y -= tuning.gravity * delta
@@ -615,11 +623,16 @@ func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
 
 func _tick_prone(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_set_height(tuning.prone_height)
-	var get_up := f.prone_pressed or f.jump_pressed or (f.crouch_pressed and state_time > 0.1)
-	if get_up and _shape_fits(_crouch_shape, global_position):
+	# Prone is held, not toggled: let go of prone (or of crouch, if you went
+	# down by holding it) to get up. Jump also gets you up.
+	var holding := f.prone_held or f.crouch_held
+	if (not holding or f.jump_pressed) and _shape_fits(_crouch_shape, global_position):
 		_set_height(tuning.crouch_height)
 		_crouch_hold = -999.0
 		_change_state(State.CROUCH)
+		if not f.crouch_held and _can_stand():
+			_set_height(tuning.stand_height)
+			_change_state(State.GROUND)
 		return
 	# Low stop speed so friction doesn't swamp the slow crawl.
 	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.prone_speed * 0.5, delta)
@@ -646,7 +659,9 @@ func _start_dive() -> void:
 
 func _tick_prone_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_set_height(tuning.prone_height)
-	if (f.jump_pressed or f.crouch_pressed) and _shape_fits(_crouch_shape, global_position):
+	# Tap prone to dive and pop up into a slide; hold it to stay down.
+	var holding := f.prone_held or f.crouch_held
+	if (f.jump_pressed or not holding) and _shape_fits(_crouch_shape, global_position):
 		_set_height(tuning.crouch_height)
 		_change_state(State.SLIDE if horizontal_speed() >= tuning.slide_min_speed else State.CROUCH)
 		return
@@ -749,7 +764,9 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.AIR)
 		return
 	var hit := _wall_ray(_wall_normal)
-	var leaving := f.crouch_pressed or wish.dot(MovementMath.horizontal(_wall_normal)) > 0.6
+	# The view is free while wallrunning (look at targets, aim, line up the
+	# jump), so steering doesn't detach you: crouch drops off, jump kicks off.
+	var leaving := f.crouch_pressed
 	if hit.is_empty() or leaving or state_time >= _wallrun_time_limit:
 		_since_wall = 0.0
 		if leaving:
@@ -761,13 +778,13 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_since_wall = 0.0
 	var t := MovementMath.wall_tangent(_wall_normal, velocity)
 	var speed := MovementMath.horizontal_speed(velocity)
-	# Look and push along the wall to keep accelerating; anything else drags.
-	var along := forward().dot(t)
-	if along > 0.85 and f.move.y > 0.3:
+	# Hold any direction to keep running (and build up to wallrun speed);
+	# let go and the run bleeds speed. Where you look doesn't matter.
+	if f.move.length() > 0.3:
 		if speed < tuning.wallrun_speed:
 			speed = minf(speed + tuning.wallrun_accel * delta, tuning.wallrun_speed)
 	else:
-		speed = maxf(speed - tuning.wallrun_misalign_drag * (1.0 - maxf(along, 0.0) + 0.2) * delta, 0.0)
+		speed = maxf(speed - tuning.wallrun_misalign_drag * delta, 0.0)
 	var vy := velocity.y - tuning.gravity * _wallrun_gravity * delta
 	velocity = t * speed - MovementMath.horizontal(_wall_normal).normalized() * 1.5
 	velocity.y = vy
@@ -1106,6 +1123,19 @@ func _start_auto_turn(target_yaw: float, duration: float) -> void:
 	_turn_rate = angle_difference(yaw, target_yaw) / duration
 
 
+## Quick 180. On a wall it turns you to face away from it, ready to jump off.
+## Doesn't count toward 360s (only turning with the mouse or stick does).
+func _quick_turn() -> void:
+	if _turn_left > 0.0:
+		return
+	var target := yaw + PI
+	if state in [State.WALLRUN, State.WALLCLIMB]:
+		var n := MovementMath.horizontal(_wall_normal).normalized()
+		target = atan2(-n.x, -n.z)
+	_start_auto_turn(target, tuning.quick_turn_time)
+	_trick_feedback(&"quick_turn")
+
+
 func _apply_auto_turn(delta: float) -> void:
 	if _turn_left <= 0.0:
 		return
@@ -1148,7 +1178,11 @@ func _process(delta: float) -> void:
 		var stick := Vector2(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X), Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y))
 		if stick.length() > 0.15:
 			var pad := tuning.gamepad_look_speed * aim_sensitivity_scale() * delta
-			_look(-stick.x * pad, -stick.y * pad * 0.7)
+			var pitch_scale := 0.7
+			if state == State.AIR:
+				pad *= tuning.gamepad_air_spin
+				pitch_scale = 1.0
+			_look(-stick.x * pad, -stick.y * pad * pitch_scale * (-1.0 if invert_y else 1.0))
 	var settle := exp(-_kick_recovery * delta)
 	_kick_pitch *= settle
 	_kick_yaw *= settle
@@ -1187,6 +1221,11 @@ func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float) -> v
 	_kick_pitch = minf(_kick_pitch + pitch_amount, deg_to_rad(8.0))
 	_kick_yaw = clampf(_kick_yaw + yaw_amount, deg_to_rad(-3.0), deg_to_rad(3.0))
 	_kick_recovery = recovery
+
+
+## Rotation done in the air since takeoff (x = yaw, y = pitch; radians).
+func air_rotation() -> Vector2:
+	return Vector2(_air_yaw, _air_pitch)
 
 
 func view_kick() -> Vector2:

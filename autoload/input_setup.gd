@@ -11,11 +11,12 @@ const KEYS := {
 	"sprint": [KEY_SHIFT],
 	"crouch": [KEY_CTRL, KEY_C],
 	"prone": [KEY_Z],
-	"kick": [KEY_F, KEY_Q],
+	"kick": [KEY_F],
+	"quick_turn": [KEY_Q],
 	"reload": [KEY_R],
 	"fire_mode": [KEY_B, KEY_V],
 	"reset": [KEY_BACKSPACE],
-	"toggle_mouse": [KEY_ESCAPE],
+	"pause": [KEY_ESCAPE],
 	"debug_hud": [KEY_F1],
 	"debug_tuning": [KEY_F2],
 	"debug_slowmo": [KEY_F3],
@@ -46,6 +47,8 @@ const PAD_BUTTONS := {
 	"reload": [JOY_BUTTON_X],
 	"fire_mode": [JOY_BUTTON_Y],
 	"reset": [JOY_BUTTON_BACK],
+	"quick_turn": [JOY_BUTTON_LEFT_SHOULDER],
+	"pause": [JOY_BUTTON_START],
 }
 
 const PAD_AXES := {
@@ -62,7 +65,12 @@ func _enter_tree() -> void:
 	register_actions()
 
 
+## (Re)creates every action with its default bindings.
 static func register_actions() -> void:
+	for table: Dictionary in [KEYS, MOUSE_BUTTONS, PAD_BUTTONS, PAD_AXES]:
+		for action: String in table:
+			if InputMap.has_action(action):
+				InputMap.action_erase_events(action)
 	for action: String in KEYS:
 		_ensure(action)
 		for key: Key in KEYS[action]:

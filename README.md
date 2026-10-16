@@ -10,7 +10,7 @@ This repo is currently the **movement sandbox**: a graybox level for building an
 2. Open Godot, choose **Import**, and select `project.godot` in this folder.
 3. Press **F5** (or the play button). You spawn on the run track.
 
-Mouse/keyboard and controller both work. Click the window to capture the mouse, and press Esc to release it.
+Mouse/keyboard and controller both work. Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, invert, volume), and custom controls.
 
 ## Controls
 
@@ -18,16 +18,18 @@ Mouse/keyboard and controller both work. Click the window to capture the mouse, 
 |---|---|---|
 | Move | WASD | Left stick |
 | Look | Mouse | Right stick |
-| Sprint (hold) | Shift | L3 |
+| Sprint (hold, any direction) | Shift | L3 |
 | Jump / vault / climb | Space | A |
 | Crouch / slide / roll | Ctrl or C | B |
-| Prone / dolphin dive | Z | D-pad down |
-| Kick | F or Q | RB or R3 |
+| Prone (hold) / dolphin dive | Z | D-pad down |
+| Kick | F | RB or R3 |
+| Quick turn (180) | Q | LB |
 | Fire | Left mouse | Right trigger |
 | Aim down sights | Right mouse | Left trigger |
 | Reload | R | X |
 | Semi / full auto | B or V | Y |
 | Respawn | Backspace | Back |
+| Menu (moves, settings, controls) | Esc | Start |
 | Jump to zone | 1–9, 0 = shooting range | |
 | HUD / tuning / slow-mo / speed trail | F1 / F2 / F3 / F4 | |
 
@@ -37,22 +39,23 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 
 | Move | How | What precision gets you |
 |---|---|---|
-| Sprint | Hold Shift while moving forward | Holding speed builds momentum, which raises your top speed (6 to 9.5 m/s) |
+| Sprint | Hold Shift while moving, in any direction | Holding speed builds momentum, which raises your top speed (6 to 9.5 m/s) |
 | Hop / bunny hop | Jump as you land | Jumping within ~2 frames of landing keeps all your speed; early jumps bleed it |
 | Hurdle / vault | Jump at a waist-high (yellow) wall | Taking off at the right distance gives a faster, cleaner vault |
 | Mantle | Jump into a ledge up to ~1.5 m above your reach | Grabbing it cleanly keeps more speed |
 | Slide | Crouch while sprinting | Faster entry slides further; slopes add speed |
 | Slide landing | Hold crouch as you land from a fall | Turns some of your fall into forward speed |
-| Prone | Z, or hold crouch while standing still | |
-| Dolphin dive | Z while running fast | Dive through low windows; you land in a prone slide |
-| Wallrun | Jump into a blue wall at an angle | Shallow angle + speed = longer, floatier run; look along the wall and hold forward to accelerate |
+| Prone | Hold Z (or hold crouch while standing still). Let go to get up | |
+| Dolphin dive | Z while running fast | Tap to dive and pop up into a slide, hold to stay down. Dive through low windows |
+| Wallrun | Jump into a blue wall at an angle, holding a direction | Shallow angle + speed = longer, floatier run. Look and aim anywhere while running; crouch drops off |
 | Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; chain wall to wall |
 | Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it |
 | Landing roll | Crouch just before a hard landing | Good timing keeps speed instead of a stun |
 | Kick | F. In the air: kick off walls and targets | Kicking with speed pushes you further. Kicks doors open and breaks windows |
+| Quick turn | Q | Spins you 180. On a wall it faces you away from it, ready to jump |
 | Window smash | Run, slide or dive into glass fast enough | |
-| Backflip / front flip | In the air, pull the view all the way over (back) or push it over (forward) | Land it level or you crash |
-| 360 / 720 | In the air, turn a full circle | |
+| Backflip / front flip | In the air, keep moving the view up and over (backflip) or down and over (front flip) until it comes back around | Past straight up/down the view turns faster, so commit to the flick. The HUD shows your flip progress. Land level or you crash |
+| 360 / 720 | In the air, turn a full circle | Quick turn doesn't count |
 
 You never have to stand still, but you can: let go of the stick and you stop quickly.
 
@@ -60,7 +63,7 @@ You never have to stand still, but you can: let go of the stick and you stop qui
 
 The test pistol is hitscan. The first shot after the gun settles always goes exactly where the crosshair is, even mid-flip at full sprint. Spamming blooms the spread, and controlled fire stays accurate.
 
-- Body 28 damage, headshot ×2.5 (70). Targets have 100 health: two headshots or four body shots.
+- Body 28 damage, headshot ×2.5 (70). Targets have 100 health: two headshots or four body shots. Target heads are 36 cm across.
 - Damage falls off from 30 m to 70 m, down to 60%.
 - Semi-auto is capped at 7 shots/s. Full-auto fires 11 shots/s. Magazine 15, reload 1.25 s.
 - Recoil kicks the view and settles back. It is visual only, so it never breaks a flip.
@@ -89,6 +92,8 @@ Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, gr
 
 ## Tuning
 
+Player settings (sensitivity, FOV, controls) live in the Esc menu and save to `user://settings.cfg`.
+
 Press **F2** in game for live sliders on every movement number. **Save** writes your tuning to your user folder and loads it next time. In the editor, **Save as project defaults** writes it to `player/default_tuning.tres` so everyone gets it.
 
 F3 toggles slow motion and F4 shows a speed-colored trail, which help when judging a move.
@@ -112,7 +117,8 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `weapons/` | Test pistol, weapon stats, procedural sounds |
 | `targets/` | Shooting targets |
 | `levels/` | Sandbox scene, level builder (the layout is built in code), doors, windows, kick dummies |
-| `ui/` | Debug HUD, tuning panel, hit marker, speed graph |
+| `ui/` | Debug HUD, pause menu (moves list, settings, controls), tuning panel, hit marker, speed graph |
+| `autoload/` | Default input bindings, player settings and custom bindings |
 | `fx/` | Speed trail |
 | `tests/` | Test runner and suites |
 | `tools/` | Screenshot tool |

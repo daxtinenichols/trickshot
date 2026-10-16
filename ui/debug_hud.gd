@@ -45,9 +45,10 @@ const TRICK_NAMES := {
 	&"kick_off": "KICK-OFF",
 	&"hard_landing": "HARD LANDING",
 	&"wall_impact": "BONK",
+	&"quick_turn": "QUICK TURN",
 }
 
-const HELP := "WASD move · Shift sprint · Space jump / vault / climb · Ctrl or C crouch / slide / roll · Z prone / dive · F kick · LMB fire · RMB aim · R reload · B fire mode\nBackspace respawn · 1-9 zones, 0 range · F1 HUD · F2 tuning · F3 slow-mo · F4 speed trail · Esc mouse"
+const HELP := "Esc: moves list, settings and controls · Backspace respawn · 1-9 zones, 0 shooting range · F1 HUD · F2 tuning · F3 slow-mo · F4 speed trail"
 
 var player: Player
 
@@ -61,6 +62,7 @@ var _toast: Label
 var _toast_time := 0.0
 var _root: Control
 var _hit_marker: HitMarker
+var _rotation_label: Label
 var _ammo_label: Label
 var _pistol: Pistol
 
@@ -144,6 +146,18 @@ func _ready() -> void:
 	_toast.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	_root.add_child(_toast)
 
+	# Flip / spin progress while airborne, so players can feel how close
+	# they are to completing a rotation.
+	_rotation_label = Label.new()
+	_rotation_label.add_theme_font_size_override("font_size", 22)
+	_rotation_label.add_theme_color_override("font_outline_color", Color(0, 0, 0))
+	_rotation_label.add_theme_constant_override("outline_size", 6)
+	_rotation_label.set_anchors_preset(Control.PRESET_CENTER)
+	_rotation_label.position = Vector2(-150, 40)
+	_rotation_label.custom_minimum_size = Vector2(300, 0)
+	_rotation_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_root.add_child(_rotation_label)
+
 	_hit_marker = HitMarker.new()
 	_root.add_child(_hit_marker)
 
@@ -175,9 +189,9 @@ func setup(p: Player) -> void:
 		_pistol.hit.connect(_on_shot_hit)
 
 
-func show_toast(text: String) -> void:
+func show_toast(text: String, duration := 2.0) -> void:
 	_toast.text = text
-	_toast_time = 2.0
+	_toast_time = duration
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -197,6 +211,7 @@ func _process(delta: float) -> void:
 	_momentum_bar.value = player.momentum
 	_detail_label.text = "momentum %.0f%%   vertical %+.1f m/s   height %.1f m   %d fps" % [
 		player.momentum * 100.0, player.velocity.y, player.global_position.y, Engine.get_frames_per_second()]
+	_rotation_label.text = rotation_text(player)
 	if _pistol:
 		var mode := "AUTO" if _pistol.full_auto else "SEMI"
 		_ammo_label.text = ("RELOADING" if _pistol.is_reloading() else "%d / %d" % [_pistol.ammo, _pistol.stats.magazine]) + "\n" + mode
@@ -227,6 +242,22 @@ func _on_trick(trick_name: StringName, info: Dictionary) -> void:
 	_feed.move_child(item, 0)
 	while _feed.get_child_count() > 7:
 		_feed.get_child(_feed.get_child_count() - 1).free()
+
+
+## "BACKFLIP 64%" while a flip or spin is under way in the air.
+static func rotation_text(p: Player) -> String:
+	if p.state != Player.State.AIR:
+		return ""
+	var r := p.air_rotation()
+	var parts: Array[String] = []
+	var flip := absf(r.y)
+	if flip > deg_to_rad(100.0):
+		var pct := fmod(flip, TAU) / TAU * 100.0
+		parts.append("%s %d%%" % ["BACKFLIP" if r.y > 0.0 else "FRONT FLIP", roundi(pct)])
+	var spin := absf(r.x)
+	if spin > deg_to_rad(120.0):
+		parts.append("SPIN %d%%" % roundi(fmod(spin, TAU) / TAU * 100.0))
+	return "   ".join(parts)
 
 
 ## Describes a shot for the feed: "HEADSHOT · AIRBORNE · MID-FLIP  70".

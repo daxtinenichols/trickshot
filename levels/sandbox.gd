@@ -8,11 +8,18 @@ extends Node3D
 @onready var trail: SpeedTrail = $SpeedTrail
 
 
+var menu: PauseMenu
+
+
 func _ready() -> void:
 	hud.setup(player)
 	tuning_panel.setup(player)
 	trail.player = player
+	menu = PauseMenu.new()
+	add_child(menu)
+	menu.setup(player)  # applies saved settings (after tuning so they win)
 	go_to_zone(0)
+	hud.show_toast("Esc: moves list, settings and controls", 4.0)
 
 
 func go_to_zone(index: int) -> void:

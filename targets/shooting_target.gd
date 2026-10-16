@@ -11,7 +11,7 @@ signal revived
 
 enum Motion { STATIC, STRAFE, BOB, CIRCLE }
 
-const HEAD_RADIUS := 0.14
+const HEAD_RADIUS := 0.18
 const BODY_SIZE := Vector3(0.5, 1.35, 0.28)
 const HEAD_HEIGHT := 1.62
 

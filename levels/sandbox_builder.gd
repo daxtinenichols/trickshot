@@ -147,7 +147,7 @@ func _zone_drop_tower(o: Vector3) -> void:
 	_box(o + Vector3(5.5, 5.5, -10), Vector3(3, 1, 8), Kind.NEUTRAL)
 	_label("6 m drop", o + Vector3(5.5, 7.0, -10), 1.0)
 	_label("12 m drop: roll!", o + Vector3(0, 13.5, -14.5), 1.0)
-	_label("In the air: turn a full circle for a 360, pull the view all the way over to flip", o + Vector3(0, 15.0, -10), 0.9)
+	_label("In the air: keep moving the view up and over to backflip, or turn a full circle for a 360", o + Vector3(0, 15.0, -10), 0.9)
 
 
 func _zone_kick_yard(o: Vector3) -> void:

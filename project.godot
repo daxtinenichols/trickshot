@@ -19,6 +19,7 @@ config/icon="res://icon.svg"
 [autoload]
 
 InputSetup="*res://autoload/input_setup.gd"
+Settings="*res://autoload/settings.gd"
 
 [display]
 

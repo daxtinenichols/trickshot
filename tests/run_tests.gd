@@ -10,10 +10,31 @@ const SUITES := [
 	"res://tests/test_skill.gd",
 	"res://tests/test_sandbox_level.gd",
 	"res://tests/test_weapons.gd",
+	"res://tests/test_settings.gd",
 ]
 
 
+## Collects script errors raised while a test runs.
+class ErrorCatcher extends Logger:
+	var script_errors: Array[String] = []
+	var _mutex := Mutex.new()
+
+	func _log_error(function: String, file: String, line: int, code: String, rationale: String, _editor_notify: bool, error_type: int, _backtraces: Array[ScriptBacktrace]) -> void:
+		if error_type != ERROR_TYPE_SCRIPT:
+			return
+		_mutex.lock()
+		script_errors.append("%s (%s:%d %s)" % [rationale if rationale != "" else code, file.get_file(), line, function])
+		_mutex.unlock()
+
+	func _log_message(_message: String, _error: bool) -> void:
+		pass
+
+
+var _errors := ErrorCatcher.new()
+
+
 func _initialize() -> void:
+	OS.add_logger(_errors)
 	_run.call_deferred()
 
 
@@ -42,11 +63,16 @@ func _run() -> void:
 				continue
 			suite.current_test = test_name
 			var before := suite.failures.size()
+			_errors.script_errors.clear()
 			if suite.has_method("before_each"):
 				await suite.before_each()
 			await suite.call(test_name)
 			if suite.has_method("after_each"):
 				await suite.after_each()
+			# A script error aborts the test function silently, skipping its
+			# remaining checks, so any script error fails the test.
+			for e: String in _errors.script_errors:
+				suite.failures.append("%s: script error: %s" % [test_name, e])
 			if suite.failures.size() == before:
 				passed += 1
 				print("  PASS  %s" % test_name)

@@ -13,6 +13,9 @@ var crouch_held := false
 var kick_pressed := false
 var sprint_held := false
 var prone_pressed := false
+var prone_held := false
+## Quick 180 turn.
+var turn_pressed := false
 
 
 static func from_devices() -> InputFrame:
@@ -28,6 +31,8 @@ static func from_devices() -> InputFrame:
 	f.kick_pressed = Input.is_action_just_pressed("kick")
 	f.sprint_held = Input.is_action_pressed("sprint")
 	f.prone_pressed = Input.is_action_just_pressed("prone")
+	f.prone_held = Input.is_action_pressed("prone")
+	f.turn_pressed = Input.is_action_just_pressed("quick_turn")
 	return f
 
 

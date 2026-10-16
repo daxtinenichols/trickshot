@@ -288,14 +288,32 @@ func test_wall_jump_from_wallrun() -> void:
 	check(&"wall_jump" in w.tricks_seen, "wall jump trick reported")
 
 
-func test_steer_away_leaves_wallrun() -> void:
+func test_crouch_drops_off_wallrun() -> void:
 	var ok := await _enter_wallrun()
 	check(ok, "wallrun starts")
 	if not ok:
 		return
 	var p := w.player
-	await w.step(3, InputFrame.make(Vector2(-1, 0)))
-	check(p.state != Player.State.WALLRUN, "pulling away from the wall detaches")
+	await w.press(InputFrame.make(Vector2(0, 1), false, true))
+	await w.step(2, _fwd())
+	check(p.state != Player.State.WALLRUN, "crouch drops off the wall")
+
+
+func test_free_look_while_wallrunning() -> void:
+	# Look across the corridor (away from the wall) while holding forward:
+	# you keep running along the wall at full speed, free to aim.
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	var speed0 := p.horizontal_speed()
+	p.set_view(PI * 0.5)  # facing -X, straight away from the wall
+	var z0 := p.global_position.z
+	await w.step(30, _fwd())
+	check(p.state == Player.State.WALLRUN, "still wallrunning while looking away")
+	check(z0 - p.global_position.z > 2.5, "still moving along the wall (%.2f m)" % (z0 - p.global_position.z))
+	check(p.horizontal_speed() >= speed0 - 0.3, "no speed lost for looking around (%.2f -> %.2f)" % [speed0, p.horizontal_speed()])
 
 
 func _add_front_wall(height: float) -> void:
@@ -480,23 +498,33 @@ func test_hold_crouch_goes_prone() -> void:
 	var p := await _settle()
 	await w.press(InputFrame.make(Vector2.ZERO, false, true), int(p.tuning.prone_hold_time * 60.0) + 5)
 	check(p.state == Player.State.PRONE, "holding crouch while still goes prone")
-	await w.step(60, InputFrame.make(Vector2(0, 1), false, false, false, false))
+	var crawl := InputFrame.make(Vector2(0, 1), false, false, false, false)
+	crawl.crouch_held = true
+	await w.step(60, crawl)
 	check(p.state == Player.State.PRONE, "still prone while crawling (%s)" % Player.State.keys()[p.state])
 	check_near(p.horizontal_speed(), p.tuning.prone_speed, 0.2, "crawl speed")
 	await w.press(_fwd_jump())
-	check(p.state == Player.State.CROUCH, "jump gets you up to a crouch")
+	check(p.state in [Player.State.CROUCH, Player.State.GROUND], "jump gets you up (%s)" % Player.State.keys()[p.state])
 
 
-func test_prone_key_and_back() -> void:
+func _prone_frame(pressed: bool, move := Vector2.ZERO) -> InputFrame:
+	var f := InputFrame.make(move, false, false, false, false)
+	f.prone_pressed = pressed
+	f.prone_held = true
+	return f
+
+
+func test_prone_is_held_not_toggled() -> void:
 	w.add_floor()
 	var p := await _settle()
-	var prone := InputFrame.new()
-	prone.prone_pressed = true
-	await w.press(prone)
-	check(p.state == Player.State.PRONE, "prone key drops you prone")
-	await w.step(5)
-	await w.press(prone)
-	check(p.state == Player.State.CROUCH, "prone key again gets you up")
+	await w.step(1, _prone_frame(true))
+	check(p.state == Player.State.PRONE, "pressing prone drops you prone")
+	await w.step(40, _prone_frame(false, Vector2(0, 1)))
+	check(p.state == Player.State.PRONE, "stays prone while held (crawling)")
+	await w.step(3)
+	check(p.state == Player.State.GROUND, "letting go stands you up (state %s)" % Player.State.keys()[p.state])
+	await w.step(10)
+	check_near(p._height, p.tuning.stand_height, 0.01, "full height again")
 
 
 func test_dolphin_dive_from_sprint() -> void:
@@ -505,13 +533,32 @@ func test_dolphin_dive_from_sprint() -> void:
 	await _run_to(7.0)
 	var dive := _fwd()
 	dive.prone_pressed = true
-	await w.press(dive)
+	dive.prone_held = true
+	var hold := _fwd()
+	hold.prone_held = true
+	await w.step(1, dive)
 	check(p.state == Player.State.AIR, "dive leaves the ground")
 	check(&"dolphin_dive" in w.tricks_seen, "dive reported")
-	var landed := await w.step_until(func() -> bool: return p.state == Player.State.PRONE_SLIDE, 60, _fwd())
+	var landed := await w.step_until(func() -> bool: return p.state == Player.State.PRONE_SLIDE, 60, hold)
 	check(landed, "lands into a prone slide")
-	var ended := await w.step_until(func() -> bool: return p.state == Player.State.PRONE, 240, _fwd())
-	check(ended, "slide ends prone")
+	var ended := await w.step_until(func() -> bool: return p.state == Player.State.PRONE, 240, hold)
+	check(ended, "held: slide ends prone")
+
+
+func test_dive_tap_pops_up_into_slide() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await _run_to(8.0)
+	var dive := _fwd()
+	dive.prone_pressed = true
+	dive.prone_held = true
+	await w.step(1, dive)
+	var seen := []
+	await w.step_until(func() -> bool:
+		seen.append(p.state)
+		return p.state == Player.State.SLIDE, 90, _fwd())
+	check(Player.State.PRONE_SLIDE in seen, "landed into the prone slide first")
+	check(p.state == Player.State.SLIDE, "released prone: pops up into a slide (%s)" % Player.State.keys()[p.state])
 
 
 # ------------------------------------------------------------------ flips / spins / wall hop
@@ -618,9 +665,61 @@ func test_dive_through_window() -> void:
 	await _run_to(7.0)
 	var dive := _fwd()
 	dive.prone_pressed = true
+	dive.prone_held = true
+	var hold := _fwd()
+	hold.prone_held = true
 	await w.step_until(func() -> bool: return p.global_position.z < -11.5, 300, _fwd())
-	await w.press(dive)
-	await w.step(50, _fwd())
+	await w.step(1, dive)
+	await w.step(50, hold)
 	check(win.is_broken, "dove through the window")
 	check(p.global_position.z < -14.5, "came out the other side")
 	check(&"window_smash" in w.tricks_seen, "smash reported")
+
+
+# ------------------------------------------------------------------ quick turn / strafe sprint / flip feel
+
+func test_quick_turn_is_180_and_not_a_spin() -> void:
+	var p := await _airborne(6.0)
+	var yaw0 := p.yaw
+	var f := InputFrame.new()
+	f.turn_pressed = true
+	await w.step(1, f)
+	await w.step(int(p.tuning.quick_turn_time * 60.0) + 2)
+	check_near(absf(angle_difference(yaw0, p.yaw)), PI, 0.02, "turned around")
+	await w.step(1, f)
+	await w.step(int(p.tuning.quick_turn_time * 60.0) + 2)
+	check(not (&"spin_360" in w.tricks_seen), "two quick turns don't count as a 360")
+
+
+func test_quick_turn_on_wallrun_faces_away_from_wall() -> void:
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	var f := _fwd()
+	f.turn_pressed = true
+	await w.step(1, f)
+	await w.step(int(p.tuning.quick_turn_time * 60.0) + 1, _fwd())
+	# Wall is on +X, so facing away means looking toward -X.
+	check(p.forward().x < -0.9, "facing away from the wall (forward %s)" % p.forward())
+	await w.press(_fwd_jump())
+	check(p.velocity.x < -5.0, "jump launches straight off the wall (vx %.2f)" % p.velocity.x)
+
+
+func test_sprint_strafing_is_faster_than_walking() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await w.step(120, InputFrame.make(Vector2(1, 0)))
+	check(p.horizontal_speed() > p.tuning.walk_speed + 1.0, "sprint works sideways (%.2f m/s)" % p.horizontal_speed())
+
+
+func test_flip_needs_less_input_once_past_vertical() -> void:
+	# Gain past 75 deg: ~235 deg of input completes a flip (vs 325 without).
+	var p := await _airborne(4.2)
+	var steps := 24
+	var total := deg_to_rad(245.0)
+	for i in steps:
+		p._look(0.0, total / steps)
+		await w.step(1)
+	check(&"backflip" in w.tricks_seen, "a committed 245 deg flick flips (air pitch %.0f deg)" % rad_to_deg(p.air_rotation().y))

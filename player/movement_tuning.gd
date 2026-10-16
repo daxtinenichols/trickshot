@@ -151,7 +151,7 @@ extends Resource
 @export_range(0.0, 3.0, 0.05) var wallrun_min_time := 0.55
 ## Gravity scale for a sloppy wallrun; the best gets wallrun_gravity_scale.
 @export_range(0.0, 1.0, 0.01) var wallrun_sloppy_gravity := 0.5
-## Speed lost per second when not looking along the wall.
+## Speed lost per second while wallrunning with no direction held.
 @export_range(0.0, 20.0, 0.1) var wallrun_misalign_drag := 5.0
 ## Ideal distance from a wall when you jump to vault it (from body edge).
 @export_range(0.0, 2.0, 0.05) var vault_ideal_distance := 0.35
@@ -163,6 +163,11 @@ extends Resource
 @export_range(0.0, 90.0, 1.0) var rotation_tolerance := 35.0
 ## Landing with the view tipped further than this (degrees) is a crash.
 @export_range(60.0, 180.0, 1.0) var crash_pitch := 100.0
+## In the air, once the view tips past 75 degrees it turns this much faster,
+## so a committed flick carries you over into a flip.
+@export_range(1.0, 4.0, 0.05) var flip_look_gain := 1.75
+## Seconds for the quick 180 turn.
+@export_range(0.05, 0.6, 0.01) var quick_turn_time := 0.18
 
 @export_group("Breakables")
 ## Speed at which running, sliding or diving into a window smashes it.
@@ -176,6 +181,8 @@ extends Resource
 @export_group("Camera")
 @export_range(0.0005, 0.02, 0.0005) var mouse_sensitivity := 0.0025
 @export_range(0.5, 10.0, 0.1) var gamepad_look_speed := 3.2
+## Stick look speed multiplier in the air, so flips and 360s fit in a jump.
+@export_range(1.0, 4.0, 0.1) var gamepad_air_spin := 2.0
 @export_range(50.0, 120.0, 1.0) var base_fov := 85.0
 ## Extra FOV at top speed.
 @export_range(0.0, 40.0, 1.0) var speed_fov_bonus := 10.0

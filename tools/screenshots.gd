@@ -55,4 +55,13 @@ func _run() -> void:
 		await process_frame
 	root.get_texture().get_image().save_png(out.path_join("range_headshot.png"))
 	print("saved range_headshot")
+	# Pause menu tabs.
+	gun.aim_held = false
+	for tab in 3:
+		level.menu.open(tab)
+		for i in 6:
+			await process_frame
+		root.get_texture().get_image().save_png(out.path_join("menu_%d.png" % tab))
+		print("saved menu_%d" % tab)
+	level.menu.close()
 	quit()
