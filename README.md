@@ -73,6 +73,19 @@ The test pistol is hitscan. The first shot after the gun settles always goes exa
 
 All weapon numbers are in `weapons/weapon_stats.gd`.
 
+## Combos and score
+
+Scoring works like Skate. Every move and every stylish hit adds points to a running combo shown at the bottom of the screen.
+
+- **Multiplier:** +1 for each different trick in the combo. Repeating a trick is worth 60% of the last time.
+- **Speed and precision:** points scale from 1x at run pace to 2x at top speed, and from 0.75x (OK) to 1.25x (PERFECT).
+- **Banking:** the combo's points times its multiplier go to your score when you come to rest or go 2 s without a new trick. Sliding, wallrunning, climbing and vaulting hold the clock.
+- **Bailing:** a crash, a hard landing, slamming into a wall or falling out loses the combo.
+- **Shots count too:** headshot, air shot (0.4 s+ off the ground), long shot (40 m+), slide shot, wallrun shot, flip shot, spin shot and kills each add a trick.
+- **Damage:** shots hit harder in a combo: 1 + 0.2 per different trick, times the speed bonus, capped at 3x.
+
+Point values are in `scoring/combo_tracker.gd`.
+
 ## Sandbox zones
 
 | Key | Zone | What to practice |
@@ -117,6 +130,7 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `weapons/` | Test pistol, weapon stats, procedural sounds |
 | `targets/` | Shooting targets |
 | `levels/` | Sandbox scene, level builder (the layout is built in code), doors, windows, kick dummies |
+| `scoring/` | Combo tracker (Skate-style combos, score, combo damage) |
 | `ui/` | Debug HUD, pause menu (moves list, settings, controls), tuning panel, hit marker, speed graph |
 | `autoload/` | Default input bindings, player settings and custom bindings |
 | `fx/` | Speed trail |

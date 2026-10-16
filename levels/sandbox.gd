@@ -9,6 +9,8 @@ extends Node3D
 
 
 var menu: PauseMenu
+var combo: ComboTracker
+var combo_hud: ComboHud
 
 
 func _ready() -> void:
@@ -18,6 +20,12 @@ func _ready() -> void:
 	menu = PauseMenu.new()
 	add_child(menu)
 	menu.setup(player)  # applies saved settings (after tuning so they win)
+	combo = ComboTracker.new()
+	add_child(combo)
+	combo.setup(player, player.weapon as Pistol)
+	combo_hud = ComboHud.new()
+	add_child(combo_hud)
+	combo_hud.setup(combo)
 	go_to_zone(0)
 	hud.show_toast("Esc: moves list, settings and controls", 4.0)
 

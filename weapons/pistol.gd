@@ -27,6 +27,8 @@ var aim_held := false
 var reload_pressed := false
 var mode_pressed := false
 
+## Optional: returns a damage multiplier (e.g. from the combo). Called per hit.
+var damage_scale := Callable()
 var full_auto := false
 var ammo := 0
 var shots_fired := 0
@@ -179,12 +181,14 @@ func _resolve_hit(result: Dictionary, from: Vector3, dir: Vector3) -> void:
 	if distance > stats.falloff_start:
 		var t := clampf((distance - stats.falloff_start) / maxf(stats.falloff_end - stats.falloff_start, 0.01), 0.0, 1.0)
 		falloff = lerpf(1.0, stats.min_damage_fraction, t)
-	var dmg := stats.damage * falloff * (stats.headshot_multiplier if zone == &"head" else 1.0)
+	var scale := float(damage_scale.call()) if damage_scale.is_valid() else 1.0
+	var dmg := stats.damage * falloff * (stats.headshot_multiplier if zone == &"head" else 1.0) * scale
 	var info := {
 		"collider": collider,
 		"zone": zone,
 		"damage": dmg,
 		"distance": distance,
+		"damage_scale": scale,
 		"position": result.position,
 		"normal": result.normal,
 		"direction": dir,

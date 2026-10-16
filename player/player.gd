@@ -1223,6 +1223,11 @@ func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float) -> v
 	_kick_recovery = recovery
 
 
+## Seconds since last on the ground (wallruns and climbs count as off it).
+func time_off_ground() -> float:
+	return _since_floor
+
+
 ## Rotation done in the air since takeoff (x = yaw, y = pitch; radians).
 func air_rotation() -> Vector2:
 	return Vector2(_air_yaw, _air_pitch)
