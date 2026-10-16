@@ -49,7 +49,7 @@ extends Resource
 ## One-off speed boost when a slide starts (needs the cooldown to be ready).
 @export_range(0.0, 10.0, 0.1) var slide_boost := 1.2
 @export_range(0.0, 5.0, 0.05) var slide_boost_cooldown := 1.2
-@export_range(0.0, 10.0, 0.05) var slide_friction := 0.55
+@export_range(0.0, 10.0, 0.05) var slide_friction := 0.3
 ## How strongly slopes speed a slide up (multiplies gravity along the slope).
 @export_range(0.0, 3.0, 0.05) var slide_slope_gain := 1.2
 ## Friction grows by this much per second of sliding, so flat slides end.
