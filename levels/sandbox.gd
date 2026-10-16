@@ -23,7 +23,7 @@ func go_to_zone(index: int) -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	for i in 8:
+	for i in 9:
 		if event.is_action_pressed("zone_%d" % (i + 1)):
 			go_to_zone(i)
 			return

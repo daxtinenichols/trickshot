@@ -13,7 +13,7 @@ signal state_changed(from: State, to: State)
 signal landed(fall_speed: float)
 signal respawned
 
-enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL, STUN }
+enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL, STUN, PRONE, PRONE_SLIDE }
 
 const RADIUS := 0.38
 const EYE_OFFSET := 0.14
@@ -33,7 +33,7 @@ var momentum := 0.0
 var yaw := 0.0
 var pitch := 0.0
 
-var _since_floor := 0.0
+var _since_floor := 999.0
 var _jumped_since_floor := false
 var _jump_buffer := 999.0
 var _since_crouch_press := 999.0
@@ -56,6 +56,14 @@ var _pre_move_velocity := Vector3.ZERO
 var _height := 1.8
 var _stand_shape: CapsuleShape3D
 var _crouch_shape: CapsuleShape3D
+var _prone_shape: CapsuleShape3D
+var _crouch_hold := 0.0
+var _diving := false
+# Rotation done in the air since takeoff (radians, unwrapped).
+var _air_yaw := 0.0
+var _air_pitch := 0.0
+var _spins_done := 0
+var _flips_done := 0
 var _spawn := Transform3D.IDENTITY
 
 # Scripted vault / mantle path (quadratic bezier).
@@ -90,6 +98,9 @@ func _ready() -> void:
 	_crouch_shape = CapsuleShape3D.new()
 	_crouch_shape.radius = RADIUS
 	_crouch_shape.height = tuning.crouch_height
+	_prone_shape = CapsuleShape3D.new()
+	_prone_shape.radius = RADIUS
+	_prone_shape.height = tuning.prone_height
 	_set_height(tuning.stand_height)
 	_spawn = global_transform
 	yaw = rotation.y
@@ -124,9 +135,17 @@ func _capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE
 
 
+## Turns the view. In the air the pitch is free, so pulling the view all the
+## way over is a flip and turning a full circle is a 360. On the ground the
+## pitch is clamped as usual.
 func _look(d_yaw: float, d_pitch: float) -> void:
 	yaw = wrapf(yaw + d_yaw, -PI, PI)
-	pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
+	if state == State.AIR:
+		pitch += d_pitch
+		_air_yaw += d_yaw
+		_air_pitch += d_pitch
+	else:
+		pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
 
 
 ## Point the view somewhere (used by spawns and tests).
@@ -166,6 +185,8 @@ func simulate(f: InputFrame, delta: float) -> void:
 		State.WALLCLIMB: _tick_wallclimb(f, wish, delta)
 		State.ROLL: _tick_roll(f, wish, delta)
 		State.STUN: _tick_stun(f, wish, delta)
+		State.PRONE: _tick_prone(f, wish, delta)
+		State.PRONE_SLIDE: _tick_prone_slide(f, wish, delta)
 
 	_update_momentum(delta)
 	if global_position.y < -40.0:
@@ -178,7 +199,8 @@ func _update_timers(f: InputFrame, delta: float) -> void:
 	_slide_cooldown = maxf(_slide_cooldown - delta, 0.0)
 	_wall_jump_lock = maxf(_wall_jump_lock - delta, 0.0)
 	_since_wall += delta
-	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN]:
+	_crouch_hold = _crouch_hold + delta if f.crouch_held else 0.0
+	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.PRONE, State.PRONE_SLIDE]:
 		_since_floor = 0.0
 		_ground_time += delta
 	else:
@@ -207,7 +229,34 @@ func _change_state(to: State) -> void:
 	var from := state
 	state = to
 	state_time = 0.0
+	if to == State.AIR:
+		_air_yaw = 0.0
+		_air_pitch = 0.0
+		_spins_done = 0
+		_flips_done = 0
+	elif from == State.AIR:
+		_settle_pitch()
 	state_changed.emit(from, to)
+
+
+## Brings a free (flipped) pitch back into the normal range.
+func _settle_pitch() -> void:
+	pitch = clampf(wrapf(pitch, -PI, PI), deg_to_rad(-89.0), deg_to_rad(89.0))
+
+
+## Upside down or tipped too far to land on your feet?
+func _landing_crashed() -> bool:
+	return absf(wrapf(pitch, -PI, PI)) > deg_to_rad(tuning.crash_pitch)
+
+
+func _check_air_rotation() -> void:
+	var full := TAU - deg_to_rad(tuning.rotation_tolerance)
+	while absf(_air_yaw) >= full + TAU * _spins_done:
+		_spins_done += 1
+		_trick(StringName("spin_%d" % (360 * _spins_done)), {"turns": _spins_done})
+	while absf(_air_pitch) >= full + TAU * _flips_done:
+		_flips_done += 1
+		_trick(&"backflip" if _air_pitch > 0.0 else &"frontflip", {"flips": _flips_done})
 
 
 func _trick(trick_name: StringName, info := {}) -> void:
@@ -226,10 +275,24 @@ static func timing_quality(error: float, perfect: float, worst: float) -> float:
 func _move() -> void:
 	_pre_move_velocity = velocity
 	move_and_slide()
+	_smash_breakables()
 	if is_on_wall():
 		_wall_normal = get_wall_normal()
 		_since_wall = 0.0
 		_check_wall_impact()
+
+
+## Running, sliding or diving into a window fast enough goes straight through.
+func _smash_breakables() -> void:
+	if _pre_move_velocity.length() < tuning.smash_speed:
+		return
+	for i in get_slide_collision_count():
+		var c := get_slide_collision(i).get_collider()
+		if c and c.is_in_group("windows") and c.has_method("on_impact"):
+			if c.on_impact(self, _pre_move_velocity):
+				velocity = _pre_move_velocity
+				_trick(&"window_smash")
+				return
 
 
 func _check_wall_impact() -> void:
@@ -267,7 +330,16 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 		return
 	if not tuning.vault_requires_jump and _try_obstacle(f, false):
 		return
+	if f.kick_pressed:
+		_ground_kick()
 	var speed := horizontal_speed()
+	if f.prone_pressed:
+		if speed >= tuning.slide_min_speed:
+			_start_dive()
+			_tick_air(f, wish, delta)
+		else:
+			_change_state(State.PRONE)
+		return
 	if f.crouch_held and speed >= tuning.slide_min_speed and (f.crouch_pressed or _since_crouch_press < 0.2):
 		_start_slide()
 		_tick_slide(f, wish, delta)
@@ -278,7 +350,9 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 		return
 
 	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.stop_speed, delta)
-	var wish_speed := MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) * wish.length()
+	var sprinting := (f.sprint_held or tuning.auto_sprint) and f.move.y > 0.3
+	var top := MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) if sprinting else tuning.walk_speed
+	var wish_speed := top * wish.length()
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), wish_speed, tuning.ground_accel, delta)
 	velocity.y -= tuning.gravity * delta
 	_move()
@@ -297,6 +371,15 @@ func _tick_crouch(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.GROUND)
 		_tick_ground(f, wish, delta)
 		return
+	# Holding crouch while standing still (no move input) goes prone, so
+	# crouch-walking never drops you by accident.
+	var held_still := _crouch_hold >= tuning.prone_hold_time and f.move.length() < 0.1 and horizontal_speed() < 0.5
+	if f.prone_pressed or held_still:
+		_crouch_hold = -999.0
+		_change_state(State.PRONE)
+		return
+	if f.kick_pressed:
+		_ground_kick()
 	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.stop_speed, delta)
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), tuning.crouch_speed * wish.length(), tuning.ground_accel, delta)
 	velocity.y -= tuning.gravity * delta
@@ -331,10 +414,13 @@ func _jump() -> void:
 # ---------------------------------------------------------------- air
 
 func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
-	if f.crouch_held:
+	if _diving:
+		_set_height(tuning.prone_height)
+	elif f.crouch_held:
 		_set_height(tuning.crouch_height)
 	elif _can_stand():
 		_set_height(tuning.stand_height)
+	_check_air_rotation()
 
 	# Coyote jump: just ran off a ledge.
 	if _jump_buffer <= tuning.jump_buffer and not _jumped_since_floor and _since_floor <= tuning.coyote_time:
@@ -346,7 +432,7 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 	elif _jump_buffer <= tuning.jump_buffer and _try_wall_climb(f, false):
 		return
 	elif _jump_buffer <= tuning.jump_buffer and _since_wall <= tuning.wall_jump_grace and _wall_jump_lock <= 0.0:
-		_wall_jump(wish)
+		_wall_jump(wish, &"wall_hop")
 
 	velocity.y = maxf(velocity.y - tuning.gravity * delta, -tuning.max_fall_speed)
 	var speed_before := horizontal_speed()
@@ -381,6 +467,15 @@ func _land(f: InputFrame) -> void:
 	_dip = minf(fall * tuning.landing_dip, 0.4)
 	landed.emit(fall)
 	var crouch_age := _since_crouch_press
+	if _landing_crashed():
+		_diving = false
+		trick.emit(&"crash", {"speed": horizontal_speed()})
+		_start_stun()
+		return
+	if _diving:
+		_diving = false
+		_change_state(State.PRONE_SLIDE)
+		return
 	if fall >= tuning.hard_landing_speed:
 		if crouch_age <= tuning.roll_window:
 			_start_roll(timing_quality(crouch_age, 0.05, tuning.roll_window))
@@ -491,6 +586,83 @@ func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
 		_change_state(State.GROUND if is_on_floor() else State.AIR)
 
 
+# ---------------------------------------------------------------- prone / dive
+
+func _tick_prone(f: InputFrame, wish: Vector3, delta: float) -> void:
+	_set_height(tuning.prone_height)
+	var get_up := f.prone_pressed or f.jump_pressed or (f.crouch_pressed and state_time > 0.1)
+	if get_up and _shape_fits(_crouch_shape, global_position):
+		_set_height(tuning.crouch_height)
+		_crouch_hold = -999.0
+		_change_state(State.CROUCH)
+		return
+	# Low stop speed so friction doesn't swamp the slow crawl.
+	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.prone_speed * 0.5, delta)
+	velocity = MovementMath.accelerate(velocity, wish.normalized(), tuning.prone_speed * wish.length(), tuning.ground_accel, delta)
+	velocity.y -= tuning.gravity * delta
+	_move()
+	if not is_on_floor():
+		_change_state(State.AIR)
+
+
+## Dolphin dive: a low forward leap that lands into a prone slide.
+func _start_dive() -> void:
+	var h := MovementMath.horizontal(velocity)
+	var dir := h.normalized() if h.length() > 0.5 else forward()
+	h += dir * tuning.dive_boost
+	velocity = Vector3(h.x, tuning.dive_up, h.z)
+	_diving = true
+	_jumped_since_floor = true
+	_jump_buffer = 999.0
+	_set_height(tuning.prone_height)
+	_change_state(State.AIR)
+	_trick(&"dolphin_dive")
+
+
+func _tick_prone_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
+	_set_height(tuning.prone_height)
+	if (f.jump_pressed or f.crouch_pressed) and _shape_fits(_crouch_shape, global_position):
+		_set_height(tuning.crouch_height)
+		_change_state(State.SLIDE if horizontal_speed() >= tuning.slide_min_speed else State.CROUCH)
+		return
+	velocity = MovementMath.apply_friction(velocity, tuning.prone_slide_friction, 0.0, delta)
+	if is_on_floor():
+		var n := get_floor_normal()
+		velocity += (Vector3.DOWN - n * Vector3.DOWN.dot(n)) * tuning.gravity * tuning.slide_slope_gain * delta
+	velocity.y -= tuning.gravity * delta
+	_move()
+	if not is_on_floor():
+		_change_state(State.AIR)
+	elif horizontal_speed() < tuning.prone_speed:
+		_change_state(State.PRONE)
+
+
+# ---------------------------------------------------------------- kicks (doors, windows)
+
+## Front kick on the ground: opens doors, breaks windows, shoves targets.
+func _ground_kick() -> void:
+	var eye := global_position + Vector3.UP * (_height - EYE_OFFSET)
+	var look := -camera.global_transform.basis.z
+	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * (tuning.kick_range + 0.3), 1 | 4)
+	q.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	if hit.is_empty():
+		_trick_feedback(&"kick_miss")
+		return
+	var collider: Object = hit.collider
+	if collider is RigidBody3D:
+		(collider as RigidBody3D).apply_central_impulse(look * tuning.kick_target_impulse)
+	if collider.has_method("on_kicked"):
+		collider.on_kicked(self, look)
+		_trick(&"door_kick" if collider.is_in_group("doors") else &"kick")
+
+
+## A trick-feed event with no momentum bump (feedback only).
+func _trick_feedback(trick_name: StringName, info := {}) -> void:
+	info["speed"] = horizontal_speed()
+	trick.emit(trick_name, info)
+
+
 # ---------------------------------------------------------------- walls
 
 func _wall_ray(n: Vector3, dist := RADIUS + WALL_PROBE) -> Dictionary:
@@ -581,14 +753,14 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.AIR)
 
 
-func _wall_jump(wish: Vector3) -> void:
+func _wall_jump(wish: Vector3, trick_name := &"wall_jump") -> void:
 	var boost_dir := wish.normalized() if wish.length() > 0.1 else forward()
 	velocity = MovementMath.wall_jump_velocity(velocity, _wall_normal, tuning.wall_jump_push, tuning.wall_jump_up, boost_dir, tuning.wall_jump_boost)
 	_jump_buffer = 999.0
 	_wall_jump_lock = 0.2
 	_since_wall = 999.0
 	_change_state(State.AIR)
-	_trick(&"wall_jump")
+	_trick(trick_name)
 
 
 func _try_wall_climb(f: InputFrame, from_ground: bool) -> bool:
@@ -845,6 +1017,12 @@ func _try_kick_off() -> bool:
 	var cid := collider.get_instance_id() if collider else 0
 	if cid in _kicked_ids:
 		return false
+	if collider and collider.is_in_group("breakable"):
+		# Doors and windows give way: no surface to push off.
+		collider.on_kicked(self, -camera.global_transform.basis.z)
+		_kicks_left -= 1
+		_trick(&"door_kick" if collider.is_in_group("doors") else &"window_kick")
+		return true
 	var n: Vector3 = hit.normal
 	# Kicking while moving into the surface turns that speed into push.
 	var into := maxf(-MovementMath.horizontal(velocity).dot(MovementMath.horizontal(n).normalized()), 0.0)
@@ -857,7 +1035,7 @@ func _try_kick_off() -> bool:
 	if is_target:
 		(collider as RigidBody3D).apply_central_impulse(-n * tuning.kick_target_impulse + Vector3.UP * 3.0)
 		if collider.has_method("on_kicked"):
-			collider.on_kicked(self)
+			collider.on_kicked(self, -n)
 	_trick(&"kick_off", {"target": is_target, "quality": kick_q})
 	return true
 
@@ -868,7 +1046,12 @@ func _set_height(h: float) -> void:
 	if is_equal_approx(_height, h) and collision.shape != null:
 		return
 	_height = h
-	collision.shape = _stand_shape if h >= tuning.stand_height - 0.01 else _crouch_shape
+	if h >= tuning.stand_height - 0.01:
+		collision.shape = _stand_shape
+	elif h >= tuning.crouch_height - 0.01:
+		collision.shape = _crouch_shape
+	else:
+		collision.shape = _prone_shape
 	(collision.shape as CapsuleShape3D).height = h
 	collision.position = Vector3(0.0, h * 0.5, 0.0)
 
@@ -924,7 +1107,10 @@ func respawn(t: Variant = null) -> void:
 	_kicked_ids.clear()
 	_wallrun_used_normal = Vector3.ZERO
 	_climb_used = false
+	_diving = false
+	_since_floor = 999.0
 	_change_state(State.AIR)
+	pitch = 0.0
 	respawned.emit()
 
 

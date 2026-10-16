@@ -462,3 +462,165 @@ func test_simulation_is_deterministic() -> void:
 		world.queue_free()
 		await tree.process_frame
 	check(results[0].is_equal_approx(results[1]), "identical runs end in the same place (%s vs %s)" % [results[0], results[1]])
+
+
+# ------------------------------------------------------------------ walk / sprint / prone / dive
+
+func test_walk_is_slower_than_sprint() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await w.step(60, InputFrame.make(Vector2(0, 1), false, false, false, false))
+	check_near(p.horizontal_speed(), p.tuning.walk_speed, 0.2, "walking speed")
+	await w.step(60, _fwd())
+	check(p.horizontal_speed() > p.tuning.walk_speed + 1.0, "sprint is faster")
+
+
+func test_hold_crouch_goes_prone() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await w.press(InputFrame.make(Vector2.ZERO, false, true), int(p.tuning.prone_hold_time * 60.0) + 5)
+	check(p.state == Player.State.PRONE, "holding crouch while still goes prone")
+	await w.step(60, InputFrame.make(Vector2(0, 1), false, false, false, false))
+	check(p.state == Player.State.PRONE, "still prone while crawling (%s)" % Player.State.keys()[p.state])
+	check_near(p.horizontal_speed(), p.tuning.prone_speed, 0.2, "crawl speed")
+	await w.press(_fwd_jump())
+	check(p.state == Player.State.CROUCH, "jump gets you up to a crouch")
+
+
+func test_prone_key_and_back() -> void:
+	w.add_floor()
+	var p := await _settle()
+	var prone := InputFrame.new()
+	prone.prone_pressed = true
+	await w.press(prone)
+	check(p.state == Player.State.PRONE, "prone key drops you prone")
+	await w.step(5)
+	await w.press(prone)
+	check(p.state == Player.State.CROUCH, "prone key again gets you up")
+
+
+func test_dolphin_dive_from_sprint() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await _run_to(7.0)
+	var dive := _fwd()
+	dive.prone_pressed = true
+	await w.press(dive)
+	check(p.state == Player.State.AIR, "dive leaves the ground")
+	check(&"dolphin_dive" in w.tricks_seen, "dive reported")
+	var landed := await w.step_until(func() -> bool: return p.state == Player.State.PRONE_SLIDE, 60, _fwd())
+	check(landed, "lands into a prone slide")
+	var ended := await w.step_until(func() -> bool: return p.state == Player.State.PRONE, 240, _fwd())
+	check(ended, "slide ends prone")
+
+
+# ------------------------------------------------------------------ flips / spins / wall hop
+
+func _airborne(height := 6.0) -> Player:
+	w.add_floor()
+	var p := w.spawn_player(Vector3(0, height, 0))
+	await w.step(1)
+	return p
+
+
+func test_360_in_the_air() -> void:
+	var p := await _airborne()
+	for i in 24:
+		p._look(TAU / 24.0, 0.0)
+		await w.step(1)
+	check(&"spin_360" in w.tricks_seen, "full turn in the air is a 360")
+
+
+func test_backflip_and_clean_landing() -> void:
+	var p := await _airborne(4.2)
+	for i in 24:
+		p._look(0.0, TAU / 24.0)
+		await w.step(1)
+	check(&"backflip" in w.tricks_seen, "pulling the view all the way over is a backflip")
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
+	check(p.state != Player.State.STUN, "landing after a full flip is clean")
+	check(absf(p.pitch) <= deg_to_rad(89.1), "view settles after landing")
+
+
+func test_frontflip() -> void:
+	var p := await _airborne(4.2)
+	for i in 24:
+		p._look(0.0, -TAU / 24.0)
+		await w.step(1)
+	check(&"frontflip" in w.tricks_seen, "pushing the view over forward is a front flip")
+
+
+func test_landing_upside_down_crashes() -> void:
+	var p := await _airborne(3.0)
+	for i in 12:
+		p._look(0.0, PI / 12.0)
+		await w.step(1)
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
+	check(&"crash" in w.tricks_seen, "half-finished flip crashes")
+	check(p.state == Player.State.STUN, "crash stuns")
+
+
+func test_no_flip_on_ground() -> void:
+	w.add_floor()
+	var p := await _settle()
+	for i in 24:
+		p._look(0.0, TAU / 24.0)
+		await w.step(1)
+	check(p.pitch <= deg_to_rad(89.1), "pitch stays clamped on the ground")
+	check(not (&"backflip" in w.tricks_seen), "no flip on the ground")
+
+
+func test_wall_hop_off_plain_wall() -> void:
+	w.add_floor()
+	w.add_box(Vector3(0, 3, -2.5), Vector3(6, 6, 1))  # face at z = -2
+	var p := w.spawn_player(Vector3(0, 2, -1.5))
+	p.set_view(PI / 2.0)  # side-on, too slow to wallrun
+	p.velocity = Vector3(0, 0, -2)
+	await w.step(8)
+	await w.press(InputFrame.make(Vector2.ZERO, true))
+	check(&"wall_hop" in w.tricks_seen, "jump off a touched wall is a wall hop")
+	check(p.velocity.z > 4.0, "pushed off the wall")
+
+
+# ------------------------------------------------------------------ doors and windows
+
+func test_kick_door_open() -> void:
+	w.add_floor()
+	var door := KickDoor.new()
+	w.add_child(door)
+	door.global_position = Vector3(-0.55, 0, -1.5)
+	var p := await _settle()
+	await w.press(InputFrame.make(Vector2.ZERO, false, false, true))
+	check(door.is_open, "front kick opens the door")
+	check(&"door_kick" in w.tricks_seen, "door kick reported")
+	await w.step(20)
+	var through := await w.step_until(func() -> bool: return p.global_position.z < -3.0, 120, _fwd())
+	check(through, "walk through the open doorway")
+
+
+func test_kick_window() -> void:
+	w.add_floor()
+	var win := BreakableWindow.new()
+	w.add_child(win)
+	win.global_position = Vector3(0, 0.6, -1.4)
+	var p := await _settle()
+	await w.press(InputFrame.make(Vector2.ZERO, false, false, true))
+	check(win.is_broken, "kick breaks the window")
+
+
+func test_dive_through_window() -> void:
+	w.add_floor()
+	var win := BreakableWindow.new()
+	win.size = Vector2(2.0, 1.4)
+	w.add_child(win)
+	win.global_position = Vector3(0, 0.5, -14)
+	var p := await _settle()
+	await _run_to(7.0)
+	var dive := _fwd()
+	dive.prone_pressed = true
+	await w.step_until(func() -> bool: return p.global_position.z < -11.5, 300, _fwd())
+	await w.press(dive)
+	await w.step(50, _fwd())
+	check(win.is_broken, "dove through the window")
+	check(p.global_position.z < -14.5, "came out the other side")
+	check(&"window_smash" in w.tricks_seen, "smash reported")

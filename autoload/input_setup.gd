@@ -8,9 +8,13 @@ const KEYS := {
 	"move_left": [KEY_A],
 	"move_right": [KEY_D],
 	"jump": [KEY_SPACE],
-	"crouch": [KEY_CTRL, KEY_C, KEY_SHIFT],
+	"sprint": [KEY_SHIFT],
+	"crouch": [KEY_CTRL, KEY_C],
+	"prone": [KEY_Z],
 	"kick": [KEY_F, KEY_Q],
-	"reset": [KEY_R],
+	"reload": [KEY_R],
+	"fire_mode": [KEY_B, KEY_V],
+	"reset": [KEY_BACKSPACE],
 	"toggle_mouse": [KEY_ESCAPE],
 	"debug_hud": [KEY_F1],
 	"debug_tuning": [KEY_F2],
@@ -24,16 +28,22 @@ const KEYS := {
 	"zone_6": [KEY_6],
 	"zone_7": [KEY_7],
 	"zone_8": [KEY_8],
+	"zone_9": [KEY_9],
 }
 
 const MOUSE_BUTTONS := {
-	"kick": [MOUSE_BUTTON_RIGHT],
+	"fire": [MOUSE_BUTTON_LEFT],
+	"aim": [MOUSE_BUTTON_RIGHT],
 }
 
 const PAD_BUTTONS := {
 	"jump": [JOY_BUTTON_A],
-	"crouch": [JOY_BUTTON_B, JOY_BUTTON_RIGHT_STICK],
-	"kick": [JOY_BUTTON_X, JOY_BUTTON_RIGHT_SHOULDER],
+	"crouch": [JOY_BUTTON_B],
+	"sprint": [JOY_BUTTON_LEFT_STICK],
+	"prone": [JOY_BUTTON_DPAD_DOWN],
+	"kick": [JOY_BUTTON_RIGHT_SHOULDER, JOY_BUTTON_RIGHT_STICK],
+	"reload": [JOY_BUTTON_X],
+	"fire_mode": [JOY_BUTTON_Y],
 	"reset": [JOY_BUTTON_BACK],
 }
 
@@ -42,6 +52,8 @@ const PAD_AXES := {
 	"move_back": [JOY_AXIS_LEFT_Y, 1.0],
 	"move_left": [JOY_AXIS_LEFT_X, -1.0],
 	"move_right": [JOY_AXIS_LEFT_X, 1.0],
+	"fire": [JOY_AXIS_TRIGGER_RIGHT, 1.0],
+	"aim": [JOY_AXIS_TRIGGER_LEFT, 1.0],
 }
 
 

@@ -35,7 +35,7 @@ func _ready() -> void:
 	add_child(_mesh)
 
 
-func on_kicked(_by: Node) -> void:
+func on_kicked(_by: Node, _dir := Vector3.ZERO) -> void:
 	_knocked_for = 0.0
 	_mat.albedo_color = Color(1.0, 0.85, 0.3)
 

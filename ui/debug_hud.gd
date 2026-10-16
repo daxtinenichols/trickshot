@@ -14,10 +14,25 @@ const STATE_COLORS := {
 	Player.State.WALLCLIMB: Color(0.75, 0.5, 1.0),
 	Player.State.ROLL: Color(0.4, 1.0, 0.9),
 	Player.State.STUN: Color(1.0, 0.35, 0.3),
+	Player.State.PRONE: Color(0.7, 0.55, 0.4),
+	Player.State.PRONE_SLIDE: Color(0.9, 0.6, 0.3),
 }
 
 const TRICK_NAMES := {
 	&"hop": "HOP",
+	&"spin_360": "360",
+	&"spin_720": "720",
+	&"spin_1080": "1080",
+	&"backflip": "BACKFLIP",
+	&"frontflip": "FRONT FLIP",
+	&"wall_hop": "WALL HOP",
+	&"dolphin_dive": "DOLPHIN DIVE",
+	&"door_kick": "DOOR KICK",
+	&"window_kick": "WINDOW KICK",
+	&"window_smash": "WINDOW SMASH",
+	&"crash": "CRASH",
+	&"kick": "KICK",
+	&"kick_miss": "KICK",
 	&"slide": "SLIDE",
 	&"slide_jump": "SLIDE JUMP",
 	&"vault": "VAULT",
@@ -32,7 +47,7 @@ const TRICK_NAMES := {
 	&"wall_impact": "BONK",
 }
 
-const HELP := "WASD move · Space jump / vault / climb · Ctrl, C or Shift crouch / slide / roll · F or RMB kick-off · R respawn · 1-8 zones\nF1 HUD · F2 tuning · F3 slow-mo · F4 speed trail · Esc mouse"
+const HELP := "WASD move · Shift sprint · Space jump / vault / climb · Ctrl or C crouch / slide / roll · Z prone / dive · F kick · LMB fire · RMB aim · R reload · B fire mode\nBackspace respawn · 1-9 zones · F1 HUD · F2 tuning · F3 slow-mo · F4 speed trail · Esc mouse"
 
 var player: Player
 
@@ -169,7 +184,7 @@ func _on_trick(trick_name: StringName, info: Dictionary) -> void:
 	item.add_theme_font_size_override("font_size", 22)
 	item.add_theme_color_override("font_outline_color", Color(0, 0, 0))
 	item.add_theme_constant_override("outline_size", 6)
-	var bad := trick_name in [&"hard_landing", &"wall_impact"]
+	var bad := trick_name in [&"hard_landing", &"wall_impact", &"crash"]
 	item.add_theme_color_override("font_color", Color(1, 0.45, 0.35) if bad else Color(1, 0.92, 0.6))
 	item.set_meta("age", 0.0)
 	_feed.add_child(item)

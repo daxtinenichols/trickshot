@@ -5,7 +5,11 @@ extends Resource
 ## Units: meters, seconds, meters per second.
 
 @export_group("Run")
-## Ground speed with zero momentum.
+## Speed when moving without sprint held.
+@export_range(1.0, 10.0, 0.1) var walk_speed := 4.2
+## Sprint whenever moving forward, no key needed.
+@export var auto_sprint := false
+## Sprint ground speed with zero momentum.
 @export_range(1.0, 20.0, 0.1) var run_speed := 6.0
 ## Ground speed cap at full momentum.
 @export_range(1.0, 30.0, 0.1) var top_speed := 9.5
@@ -54,6 +58,16 @@ extends Resource
 @export_range(0.0, 3.0, 0.05) var slide_slope_gain := 1.2
 ## Friction grows by this much per second of sliding, so flat slides end.
 @export_range(0.0, 10.0, 0.05) var slide_friction_ramp := 1.0
+
+@export_group("Prone and dive")
+@export_range(0.76, 1.5, 0.01) var prone_height := 0.8
+@export_range(0.0, 5.0, 0.1) var prone_speed := 1.4
+## Hold crouch this long while slow to go prone (controller-friendly).
+@export_range(0.1, 2.0, 0.05) var prone_hold_time := 0.45
+## Dolphin dive: upward speed and forward boost.
+@export_range(0.0, 10.0, 0.1) var dive_up := 3.6
+@export_range(0.0, 10.0, 0.1) var dive_boost := 1.5
+@export_range(0.0, 20.0, 0.1) var prone_slide_friction := 1.6
 
 @export_group("Vault and mantle")
 ## Highest obstacle (above feet) you vault over or step onto without jumping.
@@ -143,6 +157,16 @@ extends Resource
 @export_range(0.0, 2.0, 0.05) var vault_ideal_distance := 0.35
 ## Fraction of speed into a wall that a kick-off turns into push.
 @export_range(0.0, 1.0, 0.01) var kick_reflect := 0.5
+
+@export_group("Flips and spins")
+## How far short of a full turn (degrees) still counts as a 360 or a flip.
+@export_range(0.0, 90.0, 1.0) var rotation_tolerance := 35.0
+## Landing with the view tipped further than this (degrees) is a crash.
+@export_range(60.0, 180.0, 1.0) var crash_pitch := 100.0
+
+@export_group("Breakables")
+## Speed at which running, sliding or diving into a window smashes it.
+@export_range(0.0, 20.0, 0.1) var smash_speed := 5.0
 
 @export_group("Context")
 ## Mirror's Edge style: vaults and high mantles need a jump press (buffered),

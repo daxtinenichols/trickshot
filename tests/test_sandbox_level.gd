@@ -29,9 +29,9 @@ func _step(frames: int, f: InputFrame = null) -> void:
 		await tree.physics_frame
 
 
-func test_has_eight_zones() -> void:
+func test_has_nine_zones() -> void:
 	var b: SandboxBuilder = level.get_node("Builder")
-	check(b.spawns.size() == 8, "8 zone spawns (got %d)" % b.spawns.size())
+	check(b.spawns.size() == 9, "9 zone spawns (got %d)" % b.spawns.size())
 
 
 func test_every_zone_spawn_is_standable() -> void:
@@ -136,3 +136,25 @@ func test_drop_tower_roll() -> void:
 		if player.state != Player.State.AIR:
 			break
 	check(player.state == Player.State.ROLL, "rolled out of the 12 m drop")
+
+
+func test_breach_zone_door_and_wall_are_solid() -> void:
+	level.go_to_zone(8)
+	# Walk at the wall right of the door: must be blocked (no gaps).
+	player.global_position = Vector3(140.5, 0.05, -11)
+	await _step(10)
+	await _step(90, TestWorld.forward_input())
+	check(player.global_position.z > -13.8, "wall beside the door is solid")
+	# Kick the door open and walk through it.
+	player.global_position = Vector3(138.5, 0.05, -12.6)
+	player.set_view(0.0)
+	await _step(10)
+	await _step(1, InputFrame.make(Vector2.ZERO, false, false, true))
+	await _step(15)
+	var through := false
+	for i in 120:
+		await _step(1, TestWorld.forward_input())
+		if player.global_position.z < -15.0:
+			through = true
+			break
+	check(through, "kicked the door open and went through")

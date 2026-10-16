@@ -23,6 +23,8 @@ const COLORS := {
 
 const SHADER := preload("res://levels/graybox.gdshader")
 const DUMMY_SCRIPT := preload("res://levels/target_dummy.gd")
+const DOOR_SCRIPT := preload("res://levels/door.gd")
+const WINDOW_SCRIPT := preload("res://levels/breakable_window.gd")
 
 ## Zone name -> spawn transform. Filled by build().
 var spawns: Array[Transform3D] = []
@@ -54,6 +56,7 @@ func build() -> void:
 	_zone_slide_hill(Vector3(-55, 0, 0))
 	_zone_drop_tower(Vector3(-85, 0, 0))
 	_zone_kick_yard(Vector3(110, 0, 0))
+	_zone_breach(Vector3(140, 0, 0))
 
 
 # ---------------------------------------------------------------- zones
@@ -142,6 +145,7 @@ func _zone_drop_tower(o: Vector3) -> void:
 	_box(o + Vector3(5.5, 5.5, -10), Vector3(3, 1, 8), Kind.NEUTRAL)
 	_label("6 m drop", o + Vector3(5.5, 7.0, -10), 1.0)
 	_label("12 m drop: roll!", o + Vector3(0, 13.5, -14.5), 1.0)
+	_label("In the air: turn a full circle for a 360, pull the view all the way over to flip", o + Vector3(0, 15.0, -10), 0.9)
 
 
 func _zone_kick_yard(o: Vector3) -> void:
@@ -159,7 +163,49 @@ func _zone_kick_yard(o: Vector3) -> void:
 		_dummy(p + Vector3(0, 1.5 if raised else 0.0, 0))
 
 
+func _zone_breach(o: Vector3) -> void:
+	_spawn(o + Vector3(0, 0, 5), "9 · DOORS AND WINDOWS")
+	_label("Kick (F) doors open. Sprint + prone (Z) to dive through windows", o + Vector3(0, 3.2, 1), 0.9)
+	# A wall with a door, a low window to dive through, and a high window.
+	var z := -14.0
+	_box(o + Vector3(-6.05, 1.5, z), Vector3(8.0, 3.0, 0.3), Kind.NEUTRAL)   # left of door: x -10.05..-2.05
+	_box(o + Vector3(-1.5, 2.6, z), Vector3(1.1, 0.8, 0.3), Kind.NEUTRAL)    # above door
+	_door(o + Vector3(-2.05, 0, z))
+	_box(o + Vector3(0.975, 1.5, z), Vector3(3.85, 3.0, 0.3), Kind.NEUTRAL)  # between door and window
+	_box(o + Vector3(4.0, 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)     # above low window
+	_window(o + Vector3(4.0, 0.2, z), Vector2(2.2, 1.2))
+	_box(o + Vector3(4.0, 0.1, z), Vector3(2.2, 0.2, 0.3), Kind.NEUTRAL)     # sill
+	_box(o + Vector3(7.05, 1.5, z), Vector3(3.9, 3.0, 0.3), Kind.NEUTRAL)
+	_label("Door", o + Vector3(-1.5, 3.4, z + 0.3), 0.8)
+	_label("Dive through", o + Vector3(4.0, 3.4, z + 0.3), 0.8)
+	# Second wall: a window to vault and smash through at speed.
+	var z2 := -30.0
+	_box(o + Vector3(-5.1, 1.5, z2), Vector3(10.0, 3.0, 0.3), Kind.NEUTRAL)
+	_box(o + Vector3(1.0, 0.5, z2), Vector3(2.2, 1.0, 0.3), Kind.PARKOUR)
+	_window(o + Vector3(1.0, 1.0, z2), Vector2(2.2, 1.4))
+	_box(o + Vector3(1.0, 2.7, z2), Vector3(2.2, 0.6, 0.3), Kind.NEUTRAL)
+	_box(o + Vector3(6.1, 1.5, z2), Vector3(8.0, 3.0, 0.3), Kind.NEUTRAL)
+	_label("Sprint into it to smash through", o + Vector3(1.0, 3.6, z2 + 0.3), 0.8)
+
+
 # ---------------------------------------------------------------- helpers
+
+func _door(hinge: Vector3) -> void:
+	if Engine.is_editor_hint():
+		return
+	var d: StaticBody3D = DOOR_SCRIPT.new()
+	d.position = hinge
+	_root.add_child(d)
+
+
+func _window(bottom_center: Vector3, size: Vector2) -> void:
+	if Engine.is_editor_hint():
+		return
+	var w: StaticBody3D = WINDOW_SCRIPT.new()
+	w.size = size
+	w.position = bottom_center
+	_root.add_child(w)
+
 
 ## Steps of `step` meters climbing toward -Z, ending at z_end (relative to o).
 func _staircase(o: Vector3, count: int, step: float, z_end: float) -> void:
