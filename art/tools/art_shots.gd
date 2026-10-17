@@ -79,13 +79,14 @@ func _pose_sheet() -> void:
 	# A posed runner on the run track, seen from a 3/4 front view.
 	level.go_to_zone(0)
 	player.set_physics_process(false)
-	var spot := player.global_position + Vector3(-6, 0, -6)
-	var body: Node3D = RunnerBody.new()
+	var spot: Vector3 = player.global_position + Vector3(-6, 0, -6)
+	var body: Node3D = load("res://art/characters/runner/runner_body.gd").new()
 	level.add_child(body)
 	body.top_level = true
 	body.global_position = spot
 	body.rotation.y = deg_to_rad(-60.0)
 	var cam := Camera3D.new()
+	cam.cull_mask &= ~4  # skip the first-person gun (Pistol.VIEW_LAYER)
 	level.add_child(cam)
 	cam.fov = 40.0
 	cam.global_position = spot + Vector3(-1.6, 1.3, 3.6)
@@ -151,6 +152,7 @@ const SCENARIOS := [
 
 func _action() -> void:
 	var cam := Camera3D.new()
+	cam.cull_mask &= ~4  # skip the first-person gun (Pistol.VIEW_LAYER)
 	cam.fov = 50.0
 	cam.cull_mask = 0xFFFFF & ~(1 << 10)
 	level.add_child(cam)
@@ -183,7 +185,7 @@ func _action() -> void:
 					# Presses last one tick; the frames below also tick physics.
 					f.jump_pressed = false
 					f.crouch_pressed = false
-					var at := player.global_position
+					var at: Vector3 = player.global_position
 					cam.global_position = at + Vector3(4.2, 1.0, 0.6)
 					cam.look_at(at + Vector3(0, 0.9, 0))
 					await process_frame

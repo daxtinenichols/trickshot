@@ -44,6 +44,7 @@ func _run() -> void:
 			for c in level.find_children("*", "CanvasLayer", true, false):
 				(c as CanvasLayer).visible = false
 		var cam := Camera3D.new()
+		cam.cull_mask &= ~4  # skip the first-person gun (Pistol.VIEW_LAYER)
 		cam.fov = 75.0
 		cam.far = 400.0
 		level.add_child(cam)
