@@ -73,14 +73,17 @@ static func expand(mission: Dictionary) -> Dictionary:
 		pieces.append(_place(st, e[0], e[1], e[2]))
 	mission.pieces = pieces
 	# Route checkpoints come first in order along the route; extra
-	# hand-written ones (if any) follow.
-	var cps: Array = []
+	# hand-written ones (if any) follow, unless the route carries on from
+	# the base map's exit: then the base's come first.
+	var after_base: bool = mission.get("route_from", "") == "base_exit"
+	var cps: Array = mission.get("checkpoints", []).duplicate() if after_base else []
 	for e: Array in st.checkpoints:
 		var c: Dictionary = _place(st, e[0], e[1], e[2])
 		_turn_region(c, st.legs[e[1]].yaw)
 		c.yaw = rad_to_deg(st.legs[e[1]].yaw)
 		cps.append(c)
-	cps.append_array(mission.get("checkpoints", []))
+	if not after_base:
+		cps.append_array(mission.get("checkpoints", []))
 	mission.checkpoints = cps
 	var radio: Array = mission.get("radio", [])
 	for e: Array in st.radio:
@@ -252,6 +255,12 @@ static func _segment(st: Dictionary, seg: Dictionary) -> void:
 		_wallrun_gap(st, seg)
 	elif seg.has("ramp_down") or seg.has("ramp_up"):
 		_ramp(st, seg)
+	elif seg.has("skip"):
+		# Ground the base map already covers (its roof runs on past EXIT).
+		st.z -= float(seg.skip)
+		st.roof_end = st.z
+		# No city drawn over the base's own.
+		st.legs[st.leg].start = st.z
 	elif seg.has("street"):
 		var length: float = seg.street
 		st.y = 0.0
@@ -697,6 +706,12 @@ static func _bounds(pieces: Array, st: Dictionary) -> Rect2:
 	var r := Rect2(o.x, o.z, 0, 0)
 	for f: Rect2 in _footprints(pieces):
 		r = r.merge(f)
+	# Street-level stretches have no roofs: the run itself counts too.
+	for i in st.legs.size():
+		var l: Dictionary = st.legs[i]
+		for z: float in [l.start, l.get("end", st.z)]:
+			var w := _world(st, i, 0.0, z, 0.0)
+			r = r.expand(Vector2(w.x, w.z))
 	st.footprints = _footprints(pieces)
 	return r
 

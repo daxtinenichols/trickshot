@@ -28,7 +28,12 @@
    "do": [
     {"checkpoint": "Hollows", "at": 4, "objective": 1},
     {"radio": {"who": "mags", "line": "Crawlers. They're fast over short distances. Keep your speed and they can't keep up."}, "at": 6},
-    {"encounter": "crawlers", "at": 14, "length": 56, "mutants": [[-4.5, 18], [4.5, 30], [-4.5, 44]]},
+    {
+     "encounter": "crawlers",
+     "at": 14,
+     "length": 56,
+     "enemies": [{"type": "crawler", "x": -4.5, "d": 18}, {"type": "crawler", "x": 4.5, "d": 30}, {"type": "crawler", "x": -4.5, "d": 44}]
+    },
     {"hurdles": "barricade_scrap", "at": 72}
    ]
   },
@@ -55,15 +60,41 @@
    "roof": 140,
    "do": [
     {"hurdles": true, "at": 20},
-    {"encounter": "street pack", "at": 30, "length": 70, "mutants": [[-4, 16], [4, 26], [0, 40], [-4, 54]]},
+    {
+     "encounter": "street pack",
+     "at": 30,
+     "length": 70,
+     "enemies": [{"type": "crawler", "x": -4, "d": 16}, {"type": "crawler", "x": 4, "d": 26}, {"type": "crawler", "x": 0, "d": 40}, {"type": "crawler", "x": -4, "d": 54}]
+    },
     {"slide": true, "at": 96},
     {"hurdles": "tire_stack", "at": 120}
    ]
   },
   {"join": true},
-  {"roof": 50, "do": [{"prop": "dumpster", "x": -4.6, "at": 20}, {"encounter": "underpass", "at": 20, "length": 36, "mutants": [[4, 10], [-4, 22], [4, 30]]}]},
+  {
+   "roof": 50,
+   "do": [
+    {"prop": "dumpster", "x": -4.6, "at": 20},
+    {
+     "encounter": "underpass",
+     "at": 20,
+     "length": 36,
+     "enemies": [{"type": "crawler", "x": 4, "d": 10}, {"type": "crawler", "x": -4, "d": 22}, {"type": "crawler", "x": 4, "d": 30}]
+    }
+   ]
+  },
   {"turn": "left", "angle": 45, "size": 22},
-  {"roof": 50, "do": [{"encounter": "overpass ramp", "at": 6, "length": 34, "mutants": [[-4, 10], [4, 18], [-4, 28]]}]},
+  {
+   "roof": 50,
+   "do": [
+    {
+     "encounter": "overpass ramp",
+     "at": 6,
+     "length": 34,
+     "enemies": [{"type": "crawler", "x": -4, "d": 10}, {"type": "crawler", "x": 4, "d": 18}, {"type": "crawler", "x": -4, "d": 28}]
+    }
+   ]
+  },
   {"ramp_up": 4, "length": 14},
   {"roof": 50, "y": 4, "do": [{"window": 3.3, "at": 18}]},
   {

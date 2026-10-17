@@ -18,8 +18,8 @@ const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
 const RAIDER_SCRIPT := preload("res://enemies/raider.gd")
 const MUTANT_SCRIPT := preload("res://enemies/mutant.gd")
-## Kinds enemies/ hasn't made yet, and what stands in for them meanwhile
-## (drones of every kind are left out until they exist).
+## What stands in for a kind whose script is missing (every type in
+## docs/enemies.md has one now; this only guards a missed import).
 const STAND_INS := {"trooper": "raider", "shield": "raider", "marksman": "raider", "heavy": "raider",
 	"brute": "mutant", "leaper": "mutant", "crawler": "mutant"}
 

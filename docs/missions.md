@@ -74,6 +74,7 @@ See `m03_glass_district.json`.
 | `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
 | `{"ramp_up": y}` / `{"ramp_down": y, "length": 22}` | a ramp to a new height (down is a slide ramp) |
 | `{"street": m}` | a stretch at street level (y 0) |
+| `{"skip": m}` | nothing for `m` m: the base map's own ground past its EXIT (a route from `base_exit` starts 6 m behind EXIT) |
 | `{"turn": "left", "size": 20, "angle": 90}` | a corner where the run turns left or right: 90° (a square roof `size` m across) or 45° (`"angle": 45`, a slab joining the roofs before and after) |
 | `{"fork": [segments], "side": 1, "spread": 18}` | the route splits on a wide roof: `fork` is a second line run beside the main one (right, or `-1` left), while the segments after it carry on the main line |
 | `{"join": true}` | the two lines meet again on a wide roof (the shorter one is lengthened); both must end at the same height |
@@ -227,10 +228,10 @@ enemy by that many seconds. `cover` rows are spots raiders hide behind, one
 every `spacing` m (2.2) on both sides of a low wall `length` m long; put a
 `sandbag_wall` or barricade there too. Other kinds go in `"enemies": [{"type": "drone", "at": [...], "yaw": 180}]`:
 each type spawns `res://enemies/<type>.gd` (same contract as raiders), and
-any other field sets that enemy's property of the same name. Until a kind
-exists, troopers, shields, marksmen and heavies stand in as raiders,
-crawlers, leapers and brutes as mutants, and drones of every kind are left
-out, so keep a `shoot` count within the enemies that are sure to spawn.
+any other field sets that enemy's property of the same name. If a kind
+is missing, troopers, shields, marksmen and heavies stand in as raiders and
+crawlers, leapers and brutes as mutants. Every type in `docs/enemies.md`
+has a script now.
 Optional: `max_aiming` (2: raiders
 aiming at once), `restart` (seconds before a cleared encounter comes back;
 never by default). Every kill counts toward `shoot` objectives, like targets.
