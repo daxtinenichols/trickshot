@@ -4,16 +4,22 @@
  "runner": "parker",
  "base": "res://maps/rooftop_course_builder.gd",
  "fail_y": 2.5,
- "par_seconds": 45,
+ "par_seconds": 110,
  "start": {"at": [0, 10, -2]},
  "checkpoints": [
   {"name": "Door and window", "at": [0, 10, -46], "size": [14, 8, 4], "objective": 0},
   {"name": "Climb", "at": [0, 10, -86], "size": [14, 8, 4], "objective": 0},
-  {"name": "Drop", "at": [0, 4, -131], "size": [22, 8, 6], "objective": 1}
+  {"name": "Drop", "at": [0, 4, -131], "size": [22, 8, 6], "objective": 1},
+  {"name": "Rooftop sprint", "at": [0, 4, -180], "size": [14, 8, 4], "objective": 1},
+  {"name": "First corner", "at": [0, 7, -302], "size": [22, 8, 4], "objective": 1},
+  {"name": "High line or low line", "at": [-13, 7, -369], "size": [4, 8, 36], "yaw": 90, "objective": 1},
+  {"name": "Step up", "at": [-198, 7, -400], "size": [20, 8, 4], "objective": 1},
+  {"name": "The fork", "at": [-198, 10, -496], "size": [30, 8, 4], "objective": 1},
+  {"name": "Slide down", "at": [-198, 10, -576], "size": [30, 8, 4], "objective": 1}
  ],
  "objectives": [
   {"type": "reach", "name": "the drop", "text": "Deliver the parcel to the drop on the high roof", "at": [0, 13, -109], "size": [12, 6, 6]},
-  {"type": "reach", "name": "camp", "text": "Get back to camp", "at": [0, 4, -190], "size": [12, 6, 8]}
+  {"type": "reach", "name": "camp", "text": "Get back to camp", "at": "end"}
  ],
  "radio": [
   {"on": "start", "who": "mags", "line": "Morning, Parker. One parcel, the high roof past the fish market. Don't let breakfast get cold."},
@@ -21,29 +27,19 @@
   {"at": [0, 10, -11], "radius": 6, "who": "mags", "line": "Jump into those rails, don't just hop them. A vault keeps your speed."},
   {"at": [0, 10, -27], "radius": 6, "who": "mags", "line": "Low bar. Crouch and slide under it."},
   {"on": "checkpoint:0", "who": "mags", "line": "That door's been stuck since the storm. Kick it, or slide under the window like a civilised person."},
-  {"at": [4, 10, -66], "radius": 7, "who": "mags", "line": "Gap's too wide to jump. Take the blue wall."},
-  {"on": "checkpoint:1", "who": "mags", "line": "High roof's up that face. Straight at it, and jump."},
+  {"at": [4, 10, -66], "radius": 7, "who": "mags", "line": "Gap's too wide to jump. Run the wall."},
+  {"on": "checkpoint:1", "who": "mags", "line": "High roof's up that wall. Straight at it, and jump."},
   {"on": "done:0", "who": "mags", "line": "Parcel's in. That's breakfast earned. Come home, kid."},
   {"at": [0, 13, -119], "radius": 6, "who": "mags", "line": "Big drop. Crouch just before you land and roll out of it."},
-  {"at": [1.5, 4, -150], "radius": 9, "who": "mags", "line": "Parker... the camp's gone quiet. Echo isn't answering."},
-  {"at": [0, 4, -168], "radius": 8, "who": "mags", "line": "Something's wrong. Move."},
   {"on": "complete", "who": "host", "line": "Goooood morning, Port Calder! This is the Host, on the only frequency you've got left."},
   {"on": "complete", "who": "host", "line": "Today's show: a courier comes home to an empty camp. His lovely wife? Gone. Tragic. Riveting."},
   {"on": "complete", "who": "host", "line": "Echo's with me, fixing my tower. Parker, darling, come and get her. The whole city's listening."},
   {"on": "complete", "who": "mags", "line": "Parker. Don't you dare go alone. Come to the yard first."}
  ],
  "chatter": {
-  "bail": [
-   {"who": "mags", "line": "Up you get."},
-   {"who": "mags", "line": "Ouch. Walk it off. Well, run it off."}
-  ],
-  "fall": [
-   {"who": "mags", "line": "That's the Silt down there. Climb back up and try that again."},
-   {"who": "mags", "line": "Feet on the roofs, Parker. Roofs."}
-  ],
-  "combo": [
-   {"who": "mags", "line": "Look at you, showing off for the pigeons."}
-  ]
+  "bail": [{"who": "mags", "line": "Up you get."}, {"who": "mags", "line": "Ouch. Walk it off. Well, run it off."}],
+  "fall": [{"who": "mags", "line": "That's the Silt down there. Climb back up and try that again."}, {"who": "mags", "line": "Feet on the roofs, Parker. Roofs."}],
+  "combo": [{"who": "mags", "line": "Look at you, showing off for the pigeons."}]
  },
  "pieces": [
   {"prop": "water_tank", "at": [-4.4, 10, -6]},
@@ -58,21 +54,43 @@
   {"prop": "crate_wood", "at": [-4.5, 13, -108], "yaw": 5},
   {"prop": "chalk_arrow", "at": [-4.5, 13, -106.6]},
   {"prop": "vent_stack", "at": [5.2, 13, -121]},
-  {"prop": "water_tank", "at": [-7.2, 4, -133]},
-  {"prop": "crate_stack", "at": [-8.4, 4, -164], "yaw": -12},
-  {"prop": "pallet", "at": [-5.5, 4, -168], "yaw": 20},
-  {"prop": "tarp_shelter", "at": [0, 4, -198.8]},
-  {"prop": "planter_tub", "at": [4.0, 4, -198.6]},
-  {"prop": "planter_tub", "at": [5.1, 4, -197.8]},
-  {"prop": "radio_set", "at": [-2.8, 4, -199.1], "yaw": 180},
-  {"prop": "crate_wood", "at": [-5.0, 4, -190], "yaw": 35},
-  {"prop": "crate_wood", "at": [5.2, 4, -189], "yaw": -20},
-  {"prop": "barrel_rust", "at": [4.6, 4, -181], "yaw": 0},
   {"prop": "car_wreck", "at": [2, 0, -78], "yaw": 70},
   {"prop": "debris_pile", "at": [-3, 0, -42]},
   {"prop": "barricade_jersey", "at": [3, 0, -126], "yaw": 15},
   {"prop": "car_wreck", "at": [-1, 0, -175], "yaw": -100},
-  {"tape": [-4.6, 11.75, -97], "id": "m00_tape_crates"},
-  {"label": "THE LINE", "at": [0, 7.2, -199.5], "size": 1.4}
+  {"tape": [-142, 10, -377], "id": "m00_tape_crates"},
+  {"prop": "antenna_mast", "at": [-150, 10, -382.5]}
+ ],
+ "route_from": "base_exit",
+ "chalk": true,
+ "route": [
+  {"skip": 24},
+  {
+   "roof": 30,
+   "do": [
+    {"radio": {"who": "mags", "line": "Parker... the camp's gone quiet. Echo isn't answering."}, "at": 4, "radius": 9},
+    {"prop": "shipping_container", "x": -4.4, "at": 18, "yaw": 90}
+   ]
+  },
+  {"turn": "right", "angle": 45, "size": 22},
+  {"roof": 30, "do": [{"checkpoint": "Container yard", "at": 4, "objective": 1}, {"prop": "crate_stack", "x": 4.6, "at": 16}]},
+  {"roof": 24, "y": 7, "look": "RUST"},
+  {"gap": 5},
+  {"roof": 34, "y": 4, "do": [{"radio": {"who": "mags", "line": "Something's wrong. Move."}, "at": 4, "radius": 8}, {"prop": "pallet", "x": -4.8, "at": 20, "yaw": 20}]},
+  {"turn": "left", "angle": 45, "size": 22},
+  {
+   "roof": 50,
+   "bare": true,
+   "do": [
+    {"prop": "barrel_rust", "x": 4.6, "at": 6},
+    {"prop": "crate_wood", "x": -5.0, "at": 14, "yaw": 35},
+    {"prop": "crate_wood", "x": 5.2, "at": 16, "yaw": -20},
+    {"prop": "tarp_shelter", "x": 0, "at": 44},
+    {"prop": "planter_tub", "x": 4.0, "at": 44},
+    {"prop": "planter_tub", "x": 5.1, "at": 43},
+    {"prop": "radio_set", "x": -2.8, "at": 44, "yaw": 180},
+    {"label": "THE LINE", "at": 45, "size": 1.4}
+   ]
+  }
  ]
 }

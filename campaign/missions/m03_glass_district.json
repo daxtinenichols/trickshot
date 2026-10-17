@@ -2,7 +2,7 @@
  "id": "m03_glass_district",
  "title": "Glass District",
  "runner": "",
- "par_seconds": 75,
+ "par_seconds": 115,
  "start": {"at": [0, 14, 2]},
  "objectives": [
   {"type": "reach", "name": "the toll roof", "text": "Run the office roofs to the toll tower", "at": "@Toll roof"},
@@ -10,90 +10,112 @@
   {"type": "reach", "name": "the bridge", "text": "Cross the district to the Silt bridge", "at": "end"}
  ],
  "route": [
-  {"roof": 52, "do": [
-   {"label": "GLASS DISTRICT: run west", "at": 4, "size": 1.2},
-   {"mark": "#4de673", "at": 6},
-   {"hurdles": true, "at": 14},
-   {"slide": true, "at": 30}
-  ]},
+  {"roof": 54, "do": [{"label": "GLASS DISTRICT", "at": 4, "size": 1.2}, {"hurdles": true, "at": 16}, {"slide": true, "at": 34}]},
   {"gap": 5},
-  {"roof": 64, "do": [
-   {"checkpoint": "Office roofs", "at": 3},
-   {"radio": {"who": "mags", "line": "Windows. Don't stop to open them: slide straight through."}, "at": 4},
-   {"window": 3.3, "at": 22}
-  ]},
+  {
+   "roof": 64,
+   "do": [
+    {"checkpoint": "Office roofs", "at": 3},
+    {"radio": {"who": "mags", "line": "Windows. Don't stop to open them: slide straight through."}, "at": 4},
+    {"window": 3.3, "at": 22}
+   ]
+  },
   {"wallrun": 12, "side": 1},
-  {"roof": 52, "do": [
-   {"hurdles": true, "at": 22},
-   {"radio": {"who": "host", "line": "Folks, the Glass District charges a toll. Parker doesn't look like a man who pays tolls."}, "at": 6}
-  ]},
-  {"roof": 44, "y": 17, "do": [
-   {"checkpoint": "Upper offices", "at": 4},
-   {"window": 0.3, "at": 18},
-   {"tape": "m03_tape_upper", "x": -4.8, "at": 34}
-  ]},
+  {
+   "roof": 50,
+   "do": [{"radio": {"who": "host", "line": "Folks, the Glass District charges a toll. Parker doesn't look like a man who pays tolls."}, "at": 6}, {"hurdles": true, "at": 24}]
+  },
+  {"turn": "left", "angle": 45, "size": 22},
+  {"roof": 36, "do": [{"checkpoint": "Upper offices", "at": 4}]},
+  {
+   "fork": [
+    {"roof": 30},
+    {"wallrun": 12, "side": 1},
+    {"roof": 30, "do": [{"prop": "scaffold_bay", "x": 4.6, "at": 24, "yaw": 90}]},
+    {"gap": 5},
+    {"roof": 30, "y": 17},
+    {"wallrun": 12, "side": 1},
+    {"roof": 30, "y": 17, "do": [{"tape": "m03_tape_upper", "x": 0, "at": 16}]}
+   ],
+   "side": 1
+  },
+  {"roof": 80, "interior": 4, "do": [{"hurdles": "crate_wood", "at": 20}, {"window": -3.3, "at": 44}, {"hurdles": "crate_wood", "at": 64}]},
+  {"roof": 40, "y": 17, "interior": 4, "do": [{"window": 3.3, "at": 20}]},
+  {"roof": 30, "y": 17},
+  {"join": true},
+  {"roof": 30},
+  {"turn": "left", "angle": 45, "size": 22},
+  {"roof": 30},
   {"gap": 7},
-  {"roof": 74, "y": 11, "do": [
-   {"checkpoint": "Toll roof", "at": 6, "objective": 1},
-   {"radio": {"who": "mags", "line": "Spotters on the toll roof. They call your position to the Host. Shut them up."}, "at": 7},
-   {"encounter": "spotters", "at": 10, "length": 58, "raiders": [[-3, 24], [3, 30], [0, 44, 1.5]]}
-  ]},
+  {
+   "roof": 80,
+   "y": 11,
+   "do": [
+    {"checkpoint": "Toll roof", "at": 6, "objective": 1},
+    {"radio": {"who": "mags", "line": "Spotters on the toll roof. They call your position to the Host. Shut them up."}, "at": 7},
+    {
+     "encounter": "spotters",
+     "at": 10,
+     "length": 60,
+     "raiders": [[-3, 24], [3, 30], [0, 44, 1.5], [-3.5, 52, 2]],
+     "enemies": [{"type": "camera_drone", "x": 4, "d": 20, "height": 5}]
+    }
+   ]
+  },
+  {"turn": "right", "size": 24},
+  {"roof": 62, "do": [{"checkpoint": "Exchange roof", "at": 4, "objective": 2}, {"hop": true, "side": -1, "at": 12}, {"slide": true, "at": 46}]},
   {"gap": 5},
-  {"roof": 62, "do": [
-   {"checkpoint": "Exchange roof", "at": 4, "objective": 2},
-   {"hop": true, "side": -1, "at": 12},
-   {"slide": true, "at": 46}
-  ]},
+  {
+   "roof": 84,
+   "interior": 5,
+   "do": [{"hurdles": "crate_wood", "at": 14}, {"encounter": "office floor", "at": 20, "length": 50, "raiders": [[3, 14], [-3, 22, 1], [3, 34, 2]]}, {"window": 0, "at": 50}]
+  },
   {"wallrun": 12, "side": -1},
-  {"roof": 58, "do": [
-   {"hurdles": true, "at": 24},
-   {"radio": {"who": "echo", "line": "...weather on the west side: glass, glass, and more glass. Bring a broom. Back to you, sweetheart."}, "at": 4}
-  ]},
-  {"roof": 44, "y": 14, "do": [
-   {"checkpoint": "Toll tower", "at": 4, "objective": 2},
-   {"window": -3.3, "at": 18}
-  ]},
+  {
+   "roof": 58,
+   "do": [
+    {"radio": {"who": "echo", "line": "...weather on the west side: glass, glass, and more glass. Bring a broom. Back to you, sweetheart."}, "at": 4},
+    {"hurdles": true, "at": 24}
+   ]
+  },
+  {
+   "roof": 64,
+   "y": 14,
+   "do": [
+    {"checkpoint": "Toll tower", "at": 4, "objective": 2},
+    {"window": -3.3, "at": 18},
+    {"encounter": "tower spotters", "at": 28, "length": 34, "raiders": [[-4, 22], [4, 28, 1]], "enemies": [{"type": "camera_drone", "x": -3, "d": 12, "height": 5}]}
+   ]
+  },
   {"gap": 8},
-  {"roof": 70, "y": 8, "do": [
-   {"hurdles": true, "at": 30},
-   {"radio": {"who": "mags", "line": "That bridge is the only way over the Silt. Get across before he thinks of something."}, "at": 10},
-   {"label": "THE SILT BRIDGE", "at": 64, "size": 1.4},
-   {"mark": "#f57320", "at": 66}
-  ]}
+  {
+   "roof": 64,
+   "y": 8,
+   "do": [
+    {"radio": {"who": "mags", "line": "That bridge is the only way over the Silt. Get across before he thinks of something."}, "at": 10},
+    {"hurdles": true, "at": 30},
+    {"label": "THE SILT BRIDGE", "at": 58, "size": 1.4},
+    {"mark": "#f57320", "at": 60}
+   ]
+  }
  ],
  "radio": [
   {"on": "start", "who": "mags", "line": "Glass District. Office roofs all the way to the toll tower, then the bridge over the Silt."},
   {"on": "go", "who": "host", "line": "Good morning, Glass District! Our courier is coming through, and he is not slowing down."},
-  {"on": "checkpoint:1", "who": "mags", "line": "Higher roof. Run at the yellow face and jump: you'll climb it."},
+  {"on": "checkpoint:1", "who": "mags", "line": "Higher roof. Run at the ledge and jump. You'll climb it."},
   {"on": "done:1", "who": "host", "line": "My spotters! Do you know how hard it is to find people who can count to three?"},
-  {"on": "checkpoint:3", "who": "mags", "line": "Wall hop ahead. Wallrun the first, jump to the second."},
+  {"on": "checkpoint:3", "who": "mags", "line": "Wall hop ahead. Run the first wall, jump to the second."},
   {"on": "complete", "who": "host", "line": "He's at the bridge, folks. Shame about the bridge."},
   {"on": "complete", "who": "mags", "line": "Parker, wait. Something's wrong with that bridge."}
  ],
  "chatter": {
-  "bail": [
-   {"who": "host", "line": "Through the window, off the roof, into my heart."},
-   {"who": "host", "line": "Glass everywhere. Somebody sweep that up."}
-  ],
-  "combo": [
-   {"who": "host", "line": "The man is a highlight reel. A dusty, bleeding highlight reel."},
-   {"who": "mags", "line": "That's it. Keep it flowing."}
-  ],
-  "fall": [
-   {"who": "host", "line": "Street level! Mind the Silt, darling."},
-   {"who": "mags", "line": "Back up. Same line, faster."}
-  ],
-  "kill": [
-   {"who": "host", "line": "That spotter had a family. Well, a dog. Well, a rat he called a dog."}
-  ],
-  "headshot": [
-   {"who": "mags", "line": "Clean."}
-  ],
-  "down": [
-   {"who": "mags", "line": "Don't trade shots standing still. Run, then shoot."}
-  ],
-  "tape": [
-   {"who": "echo", "line": "...if anyone finds this: west, always west. He keeps the keys on his belt."}
-  ]
- }
+  "bail": [{"who": "host", "line": "Through the window, off the roof, into my heart."}, {"who": "host", "line": "Glass everywhere. Somebody sweep that up."}],
+  "combo": [{"who": "host", "line": "The man is a highlight reel. A dusty, bleeding highlight reel."}, {"who": "mags", "line": "That's it. Keep it flowing."}],
+  "fall": [{"who": "host", "line": "Street level! Mind the Silt, darling."}, {"who": "mags", "line": "Back up. Same line, faster."}],
+  "kill": [{"who": "host", "line": "That spotter had a family. Well, a dog. Well, a rat he called a dog."}],
+  "headshot": [{"who": "mags", "line": "Clean."}],
+  "down": [{"who": "mags", "line": "Don't trade shots standing still. Run, then shoot."}],
+  "tape": [{"who": "echo", "line": "...if anyone finds this: west, always west. He keeps the keys on his belt."}]
+ },
+ "chalk": true
 }

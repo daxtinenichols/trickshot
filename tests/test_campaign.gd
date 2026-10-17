@@ -171,12 +171,18 @@ func test_checkpoints_falls_and_objectives() -> void:
 	player.global_position = Vector3(0, 13.05, -109)
 	await _step(3)
 	check(run.objective == 1, "delivered: on to the next objective")
-	player.global_position = Vector3(0, 4.05, -190)
+	player.global_position = _camp()
 	await _step(3)
 	check(run.phase == MissionRun.Phase.COMPLETE, "reaching camp completes the mission")
 	check(Campaign.is_complete(_index("m00_dawn_run")), "progress saved")
 	check(level.mission_hud.results_visible(), "results shown")
 	check(int(Campaign.best(_index("m00_dawn_run")).ticks) == run.ticks, "best time saved")
+
+
+## Dawn Run's camp: the end of its route along the docks.
+func _camp() -> Vector3:
+	var at := MissionBuilder.vec(run.mission.objectives[1].at)
+	return Vector3(at.x, 4.05, at.z)
 
 
 func test_zone_key_starts_a_practice_run() -> void:
@@ -185,7 +191,7 @@ func test_zone_key_starts_a_practice_run() -> void:
 	await _step(3)
 	check(run.practice and run.checkpoint == 3, "practice from the third checkpoint")
 	check(run.objective == 1, "on that checkpoint's objective (%d)" % run.objective)
-	player.global_position = Vector3(0, 4.05, -190)
+	player.global_position = _camp()
 	await _step(3)
 	check(run.phase == MissionRun.Phase.COMPLETE, "can finish")
 	check(not Campaign.is_complete(_index("m00_dawn_run")), "but a practice run saves nothing")
@@ -431,36 +437,74 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 	return false
 
 
-const DAWN_RUN_ROUTE := [
-	[-12.6, "jump", 0.0], [-19.6, "jump", 0.0], [-26.5, "crouch", 0.0], [-38.8, "jump", 0.0],
-	[-42.0, "", 3.3], [-55.0, "crouch", 3.3], [-62.0, "", 5.4], [-71.3, "jump", 7.0],
-	[-86.0, "", 0.3], [-90.6, "jump", 0.3], [-102.2, "jump", 0.3], [-110.5, "crouch", 0.3],
-	[-122.0, "roll", 0.3], [-130.0, "", 1.5], [-140.6, "jump", 1.5], [-150.6, "jump", 1.5],
-	[-160.6, "jump", 1.5], [-171.3, "jump", 1.5],
-]
+## Rooftops as legs for the bot: the lines between its corners, so local z
+## runs on continuously from leg to leg ([origin x, origin z, yaw, z0]).
+const ROOFTOPS_LEGS := [[0.0, 0.0, 0.0, 0.0], [0.0, -369.0, PI * 0.5, -369.0], [-198.0, -369.0, 0.0, -567.0]]
 
 
+## test_maps' run of the whole Rooftops course (distances along its racing
+## line, which rounds the corners) turned into steps on ROOFTOPS_LEGS.
+func _rooftops_steps() -> Array:
+	var course: Array = load("res://tests/test_maps.gd").get_script_constant_map().COURSE_ROUTE
+	var out: Array = []
+	for step: Array in course:
+		var s: float = step[0]
+		var shift := 0.0 if s < 378.7 else (7.3 if s < 570.0 else 15.0)
+		out.append([-s - shift, step[1], step[2]])
+	return out
+
+
+## Dawn Run is the whole Rooftops course (the delivery on its high roof),
+## then the mission's own route along the docks to camp.
 func test_dawn_run_can_be_finished() -> void:
 	await _load(_index("m00_dawn_run"))
+	PlayerHealth.ensure(player).can_die = false
 	await _step(10)
-	var done := await _run_route(DAWN_RUN_ROUTE)
-	check(done, "a scripted run finishes Dawn Run (stopped at %s, objective %d)" % [player.global_position, run.objective])
+	var m: Dictionary = run.mission
+	var exit_z: float = float(m.route_legs[0][1]) - 198.0
+	var base_done := await _run_route(_rooftops_steps(), 9000, exit_z + 6.0, ROOFTOPS_LEGS)
+	check(not base_done and run.objective == 1, "the bot crosses Rooftops with the parcel delivered (objective %d, at %s)" % [run.objective, player.global_position])
+	var done := await _run_route(m.bot, 3000, -INF, m.route_legs)
+	check(done, "and finishes Dawn Run at camp (stopped at %s, objective %d)" % [player.global_position, run.objective])
+	check(run.falls == 0, "without falling (%d)" % run.falls)
+	check(m.checkpoints.size() == 10 and m.checkpoints[0].name == "Door and window", "the base's checkpoints come before the route's")
+
+
+## The Yard: the yard's lessons, then out of the park's far end and down
+## the mission's own streets to the south gate.
+func test_the_yard_ends_at_the_south_gate() -> void:
+	await _load(_index("m01_the_yard"))
+	var m: Dictionary = run.mission
+	check(m.route_length > 150.0, "a run out past the park (%d m)" % int(m.route_length))
+	var exit: Transform3D = load(m.base).EXIT
+	player.respawn(exit)
+	player.set_spawn(exit)
+	await _step(10)
+	# The lessons, done for the bot.
+	run._begin_objective(4)
+	var done := await _run_route(m.bot, 2400, -INF, m.route_legs)
+	check(done, "a bot runs from the park's exit to the gate (stopped at %s, objective %d)" % [player.global_position, run.objective])
 	check(run.falls == 0, "without falling (%d)" % run.falls)
 
 
 func test_on_air_lookouts_are_raiders() -> void:
 	await _load(_index("m02_on_air"))
 	var b: MissionBuilder = level.builder
-	check(b.encounters.size() == 1, "On Air has one encounter")
+	check(b.encounters.size() == 2, "On Air has two lookout posts")
 	var enc: Node3D = b.encounters[0]
-	check(enc.enemies.size() == 3, "three raiders (%d)" % enc.enemies.size())
+	var n: int = enc.enemies.size()
+	check(n == 4 or n == 5, "four raiders, and the camera drone once it exists (%d)" % n)
 	for e: Node in enc.enemies:
+		if e.get_meta("enemy_type", "") != "":
+			continue
 		check(e.get_script() == MissionBuilder.RAIDER_SCRIPT, "lookouts are raiders")
 		check(absf(e.global_position.y - 8.0) < 0.5, "standing on the roof (%s)" % e.global_position)
 	check(enc.covers.size() > 0, "with cover spots")
 	check(level.find_children("*", "CanvasLayer", false, false).any(func(n: Node) -> bool: return n.get_script() == level.HURT_OVERLAY_SCRIPT), "and the hurt overlay")
 	# Step onto the lookout roof: they wake.
 	player.respawn(b.spawns[2])
+	var c: Vector3 = enc.bounds.get_center()
+	player.global_position = Vector3(c.x, 8.05, c.z)
 	await _step(5)
 	check(enc.phase == EnemyEncounter.Phase.ACTIVE, "the encounter starts on the roof")
 	check(run.objective == 1, "practice from the lookout roof starts at the shooting")
@@ -472,13 +516,13 @@ func test_on_air_lookouts_are_raiders() -> void:
 	await _step(2)
 	check(run.downs == 1, "went down once")
 	check(player.global_position.distance_to(b.spawns[2].origin) < 1.0, "back at the checkpoint (%s)" % player.global_position)
-	check(enc.alive_count() == 3, "raiders reset")
+	check(enc.alive_count() == n, "raiders reset")
 	check(run.objective_text().contains("(0 / 3)"), "count starts over (%s)" % run.objective_text())
 	for e: Node in enc.enemies:
 		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
 	await _step(2)
-	check(run.objective == 2, "three raiders down")
-	check(run.headshots == 3, "headshots counted (%d)" % run.headshots)
+	check(run.objective == 2, "the lookouts are down")
+	check(run.headshots == n, "headshots counted (%d)" % run.headshots)
 	await _step(400)
 	check(enc.alive_count() == 0, "a cleared encounter stays cleared")
 
@@ -509,6 +553,8 @@ func test_route_missions_can_be_finished() -> void:
 		# ROUTE_ONLY=m08 runs just the matching missions (while tuning one).
 		if OS.has_environment("ROUTE_ONLY") and not String(all[i].id).contains(OS.get_environment("ROUTE_ONLY")):
 			continue
+		if Campaign.load_mission_file(path).get("route_from", "") == "base_exit":
+			continue  # the base map comes first: its own test runs it
 		for alt: bool in [false, true]:
 			if alt and not Campaign.load_mission_file(path).has("bot_alt"):
 				continue
@@ -627,6 +673,12 @@ func test_route_45_degree_corners() -> void:
 	var b: MissionBuilder = level.builder
 	var enc: Node3D = b.encounters[0]
 	check(enc.enemies.size() >= 3, "shield, marksman and brute spawn, as stand-ins if need be (%d)" % enc.enemies.size())
+	var heard: Array = []
+	run.event.connect(func(e: String) -> void: heard.append(e))
+	var shield: Node = enc.enemies[0]
+	check(shield.get_meta("enemy_type", "") == "shield", "enemies remember the type they were asked for")
+	shield.take_hit({"damage": 500.0, "zone": &"body", "position": shield.global_position})
+	check(heard.has("kill:shield"), "a kill names its type for the radio (%s)" % [heard])
 	# Standing on a corner slab.
 	var corner_mid := Vector3(float(m.route_legs[1][0]), 20.0, float(m.route_legs[1][1]))
 	var q := PhysicsRayQueryParameters3D.create(corner_mid, corner_mid + Vector3.DOWN * 30.0, 1)

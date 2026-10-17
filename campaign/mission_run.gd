@@ -13,9 +13,9 @@ enum Phase { READY, RUNNING, COMPLETE }
 
 ## A named moment the radio can react to: "start", "go", "objective:N"
 ## (objective N became active), "done:N", "checkpoint:N", "fall", "caught",
-## "tape", "kill", "headshot", "combo", "bail", "down" (enemies took you
-## down), "fate:spared" / "fate:not_spared" (a boss like Juno was beaten and
-## you chose), "complete".
+## "tape", "kill", "kill:<enemy type>", "headshot", "combo", "bail", "down"
+## (enemies took you down), "fate:spared" / "fate:not_spared" (a boss like
+## Juno was beaten and you chose), "complete".
 signal event(name: String)
 signal objective_changed(index: int)
 signal completed(result: Dictionary)
@@ -81,7 +81,7 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 		enc.started.connect(_on_encounter_started)
 		enc.reset_done.connect(_on_encounter_reset)
 		for e: Node in enc.enemies:
-			e.killed.connect(_on_target_killed)
+			e.killed.connect(_on_target_killed.bind(String(e.get_meta("enemy_type", ""))))
 			if e.has_signal("fate_decided"):
 				e.fate_decided.connect(func(fate: String) -> void: event.emit("fate:" + fate))
 	var health := p.get_node_or_null("PlayerHealth")
@@ -351,8 +351,11 @@ func _on_banked(_points: int, multiplier: int, total: int) -> void:
 		event.emit("combo")
 
 
-func _on_target_killed(info: Dictionary) -> void:
+func _on_target_killed(info: Dictionary, type := "") -> void:
 	kills += 1
+	if type != "":
+		# "kill:camera_drone": the radio can react to one kind of enemy.
+		event.emit("kill:" + type)
 	if info.get("zone", &"body") == &"head":
 		headshots += 1
 		event.emit("headshot")
