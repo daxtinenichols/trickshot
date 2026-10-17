@@ -2,122 +2,372 @@
  "id": "m02_on_air",
  "title": "On Air",
  "runner": "",
- "fail_y": 2.5,
- "par_seconds": 60,
- "start": {"at": [0, 8, -3]},
- "checkpoints": [
-  {"name": "Warehouse two", "at": [0, 8, -37], "size": [14, 8, 4], "objective": 0},
-  {"name": "Lookout roof", "at": [0, 8, -85], "size": [14, 8, 4], "objective": 1},
-  {"name": "The relay", "at": [0, 8, -145], "size": [14, 8, 4], "objective": 2}
- ],
+ "par_seconds": 70,
+ "start": {
+  "at": [
+   0,
+   8,
+   2
+  ]
+ },
  "objectives": [
-  {"type": "reach", "name": "the lookout roof", "text": "Cross the warehouse roofs", "at": [0, 8, -85], "size": [14, 8, 4]},
-  {"type": "shoot", "count": 3, "text": "Take out the Static's lookouts"},
-  {"type": "reach", "name": "the relay mast", "text": "Get past the Static's relay mast", "at": [0, 8, -160], "size": [12, 8, 6]}
+  {
+   "type": "reach",
+   "name": "the lookout roof",
+   "text": "Cross the warehouse roofs",
+   "at": "@Lookout roof"
+  },
+  {
+   "type": "shoot",
+   "count": 3,
+   "text": "Take out the Static's lookouts"
+  },
+  {
+   "type": "reach",
+   "name": "the relay mast",
+   "text": "Get past the Static's relay mast",
+   "at": "end"
+  }
  ],
  "radio": [
-  {"on": "start", "who": "mags", "line": "Warehouse roofs. The Static use them as a lookout post, so keep your feet fast and your head down."},
-  {"on": "go", "who": "host", "line": "Ladies, gentlemen and whatever's left of you: our courier has left the building!"},
-  {"on": "go", "who": "host", "line": "His name is Parker, he runs for a living, and today he's running for love. Parker, darling, you're on the air."},
-  {"at": [0, 8, -10], "radius": 5, "who": "mags", "line": "Road barriers. Jump into them and you'll vault without slowing."},
-  {"on": "checkpoint:0", "who": "host", "line": "Let's keep it interesting. Folks, you can bet on this. Odds are he's in the Silt by lunch."},
-  {"at": [4, 8, -62], "radius": 7, "who": "mags", "line": "Gap's too wide. Wall on the right, same as home."},
-  {"on": "checkpoint:1", "who": "mags", "line": "Blue panels: wallrun one, then jump to kick off to the next. That's a wall hop."},
-  {"on": "objective:1", "who": "host", "line": "Lookouts! Say hello to the man of the hour."},
-  {"on": "objective:1", "who": "mags", "line": "Three gunners. Watch for the red laser: that's a shot coming, so move. Click the mouse wheel when it gets busy: time slows for a few seconds. Use it."},
-  {"on": "done:1", "who": "host", "line": "Oh, he shoots too. Echo, darling, you never mentioned that."},
-  {"on": "objective:2", "who": "mags", "line": "That mast is their relay. Get past it and you're out of their sight. Wall on your left this time."},
-  {"on": "complete", "who": "host", "line": "He's quick, folks! Quicker than my last three couriers, may they rest in pieces."},
-  {"on": "complete", "who": "host", "line": "Stay tuned. Next on the show: the Glass District, where the windows are sharp and my toll collectors are sharper."},
-  {"on": "complete", "who": "mags", "line": "Ignore him. Catch your breath, then we go."}
+  {
+   "on": "start",
+   "who": "mags",
+   "line": "Warehouse roofs. The Static use them as a lookout post, so keep your feet fast and your head down."
+  },
+  {
+   "on": "go",
+   "who": "host",
+   "line": "Ladies, gentlemen and whatever's left of you: our courier has left the building!"
+  },
+  {
+   "on": "go",
+   "who": "host",
+   "line": "His name is Parker, he runs for a living, and today he's running for love. Parker, darling, you're on the air."
+  },
+  {
+   "on": "checkpoint:0",
+   "who": "host",
+   "line": "Let's keep it interesting. Folks, you can bet on this. Odds are he's in the Silt by lunch."
+  },
+  {
+   "on": "checkpoint:1",
+   "who": "mags",
+   "line": "Blue panels: wallrun one, then jump to kick off to the next. That's a wall hop."
+  },
+  {
+   "on": "objective:1",
+   "who": "host",
+   "line": "Lookouts! Say hello to the man of the hour."
+  },
+  {
+   "on": "objective:1",
+   "who": "mags",
+   "line": "Three gunners. Watch for the red laser: that's a shot coming, so move. Click the mouse wheel when it gets busy: time slows for a few seconds. Use it."
+  },
+  {
+   "on": "done:1",
+   "who": "host",
+   "line": "Oh, he shoots too. Echo, darling, you never mentioned that."
+  },
+  {
+   "on": "objective:2",
+   "who": "mags",
+   "line": "That mast is their relay. Get past it and you're out of their sight. Wall on your left this time."
+  },
+  {
+   "on": "complete",
+   "who": "host",
+   "line": "He's quick, folks! Quicker than my last three couriers, may they rest in pieces."
+  },
+  {
+   "on": "complete",
+   "who": "host",
+   "line": "Stay tuned. Next on the show: the Glass District, where the windows are sharp and my toll collectors are sharper."
+  },
+  {
+   "on": "complete",
+   "who": "mags",
+   "line": "Ignore him. Catch your breath, then we go."
+  }
  ],
  "chatter": {
   "bail": [
-   {"who": "host", "line": "Ooh! That one's going in the highlights."},
-   {"who": "host", "line": "Did everyone hear that? I think that was his pride."},
-   {"who": "host", "line": "Down he goes! Echo, you married this?"}
+   {
+    "who": "host",
+    "line": "Ooh! That one's going in the highlights."
+   },
+   {
+    "who": "host",
+    "line": "Did everyone hear that? I think that was his pride."
+   },
+   {
+    "who": "host",
+    "line": "Down he goes! Echo, you married this?"
+   }
   ],
   "combo": [
-   {"who": "host", "line": "Look at him go! Echo, are you watching? Oh, you're tied up. Ha!"},
-   {"who": "host", "line": "Moves like that, I might have to start paying him."},
-   {"who": "host", "line": "The phones are ringing, folks. Well, they would be, if we had phones."}
+   {
+    "who": "host",
+    "line": "Look at him go! Echo, are you watching? Oh, you're tied up. Ha!"
+   },
+   {
+    "who": "host",
+    "line": "Moves like that, I might have to start paying him."
+   },
+   {
+    "who": "host",
+    "line": "The phones are ringing, folks. Well, they would be, if we had phones."
+   }
   ],
   "fall": [
-   {"who": "host", "line": "And he's down! A quick dust bath in the Silt."},
-   {"who": "mags", "line": "Back up you go. Don't give him the satisfaction."}
+   {
+    "who": "host",
+    "line": "And he's down! A quick dust bath in the Silt."
+   },
+   {
+    "who": "mags",
+    "line": "Back up you go. Don't give him the satisfaction."
+   }
   ],
   "kill": [
-   {"who": "host", "line": "Somebody tell payroll."},
-   {"who": "host", "line": "That was a good lookout. He looked out. Briefly."}
+   {
+    "who": "host",
+    "line": "Somebody tell payroll."
+   },
+   {
+    "who": "host",
+    "line": "That was a good lookout. He looked out. Briefly."
+   }
   ],
   "down": [
-   {"who": "host", "line": "And our courier takes a nap! Somebody fetch him a pillow."},
-   {"who": "mags", "line": "Up. Don't stand still in their sights: run, then shoot."}
+   {
+    "who": "host",
+    "line": "And our courier takes a nap! Somebody fetch him a pillow."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Don't stand still in their sights: run, then shoot."
+   }
   ],
   "headshot": [
-   {"who": "host", "line": "Right through the headset. Rude."},
-   {"who": "mags", "line": "Clean."}
+   {
+    "who": "host",
+    "line": "Right through the headset. Rude."
+   },
+   {
+    "who": "mags",
+    "line": "Clean."
+   }
   ]
  },
- "pieces": [
-  {"box": [0, -0.5, -85], "size": [140, 1, 230], "kind": "FLOOR"},
-  {"building": [0, 8, -15], "size": [12, 30]},
-  {"building": [0, 8, -52], "size": [12, 36]},
-  {"building": [0, 8, -106], "size": [12, 48]},
-  {"building": [0, 8, -156], "size": [12, 28]},
-
-  {"label": "ON AIR: reach the relay mast", "at": [0, 12, -6], "size": 1.2},
-  {"mark": [0, 8, -6], "size": [12, 0.8], "color": "#4de673"},
-  {"prop": "ac_unit", "at": [-4.6, 8, -5], "yaw": 90},
-  {"prop": "vent_stack", "at": [4.8, 8, -3]},
-  {"row": "barricade_jersey", "from": [-5, 8, -12], "to": [5, 8, -12], "count": 6},
-  {"box": [0, 9.35, -24], "size": [12, 0.5, 0.6], "kind": "PARKOUR"},
-  {"box": [-5.8, 8.55, -24], "size": [0.4, 1.1, 0.6], "kind": "NEUTRAL"},
-  {"box": [5.8, 8.55, -24], "size": [0.4, 1.1, 0.6], "kind": "NEUTRAL"},
-  {"label": "Slide under", "at": [0, 11, -22], "size": 0.8},
-  {"prop": "satellite_dish", "at": [-5.0, 8, -27], "yaw": 200},
-  {"label": "Jump the gap", "at": [0, 11, -28], "size": 0.8},
-
-  {"prop": "loudspeaker_pole", "at": [5.4, 8, -38], "yaw": -20},
-  {"prop": "shipping_container", "at": [-2.8, 8, -47]},
-  {"tape": [-2.8, 10.6, -47], "id": "m02_tape_container"},
-  {"prop": "barrel_rust", "at": [-5.3, 8, -40]},
-  {"prop": "billboard", "at": [-3.2, 8, -62], "yaw": 180},
-  {"prop": "water_tank", "at": [-4.4, 8, -55]},
-  {"box": [-5.8, 8.4, -66], "size": [0.4, 0.8, 8], "kind": "NEUTRAL"},
-  {"box": [6.5, 10.5, -76], "size": [1, 9, 18], "kind": "WALLRUN"},
-  {"label": "Wallrun the blue wall across the gap", "at": [0, 11, -66], "size": 0.8},
-  {"prop": "car_wreck", "at": [1, 0, -76], "yaw": 80},
-
-  {"box": [-3, 11, -94], "size": [1, 6, 8], "kind": "WALLRUN"},
-  {"box": [3, 11, -103], "size": [1, 6, 8], "kind": "WALLRUN"},
-  {"mark": [0, 8, -98.5], "size": [5, 18], "color": "#d94c40"},
-  {"label": "Wallrun, then jump: hop to the other wall", "at": [0, 12.5, -88], "size": 0.8},
-  {"prop": "sandbag_wall", "at": [-3, 8, -116]},
-  {"prop": "sandbag_wall", "at": [3, 8, -117]},
-  {"encounter": "lookouts", "area": {"at": [0, 12, -106], "size": [12, 10, 46]},
-   "raiders": [{"at": [-3, 8, -119], "yaw": 180}, {"at": [3, 8, -120], "yaw": 180}, {"at": [0, 8, -126], "yaw": 180, "wake": 1.5}],
-   "cover": [{"at": [-3, 8, -116], "length": 2.0}, {"at": [3, 8, -117], "length": 2.0}]},
-  {"prop": "crate_wood", "at": [5.0, 8, -110], "yaw": 12},
-  {"prop": "crate_wood", "at": [4.6, 8, -111.4], "yaw": -6},
-  {"prop": "generator", "at": [-0.5, 8, -128.6]},
-  {"box": [5.8, 8.4, -126], "size": [0.4, 0.8, 8], "kind": "NEUTRAL"},
-  {"box": [-6.5, 10.5, -136], "size": [1, 9, 18], "kind": "WALLRUN"},
-  {"prop": "debris_pile", "at": [-2, 0, -136]},
-
-  {"prop": "antenna_mast", "at": [3.5, 8, -163]},
-  {"prop": "loudspeaker_pole", "at": [-5.6, 8, -166], "yaw": 0},
-  {"prop": "generator", "at": [3.6, 8, -158.4], "yaw": 90},
-  {"prop": "radio_set", "at": [-4.5, 8, -166], "yaw": 30},
-  {"prop": "tarp_shelter", "at": [-3, 8, -168], "yaw": 180},
-
-  {"building": [-24, 18, -20], "size": [12, 14]},
-  {"building": [26, 12, -40], "size": [14, 18]},
-  {"building": [-26, 22, -80], "size": [12, 16]},
-  {"building": [24, 16, -110], "size": [12, 12]},
-  {"building": [-22, 14, -150], "size": [14, 20]},
-  {"building": [28, 26, -170], "size": [14, 14]},
-  {"prop": "billboard", "at": [24, 16, -110], "yaw": -90},
-  {"prop": "antenna_mast", "at": [-26, 22, -80]}
+ "route": [
+  {
+   "roof": 56,
+   "do": [
+    {
+     "label": "ON AIR: reach the relay mast",
+     "at": 6,
+     "size": 1.2
+    },
+    {
+     "mark": "#4de673",
+     "at": 8
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Road barriers. Jump into them and you'll vault without slowing."
+     },
+     "at": 10,
+     "radius": 5
+    },
+    {
+     "hurdles": true,
+     "at": 18
+    },
+    {
+     "slide": true,
+     "at": 36
+    },
+    {
+     "label": "Slide under",
+     "at": 34
+    }
+   ]
+  },
+  {
+   "gap": 4
+  },
+  {
+   "roof": 84,
+   "do": [
+    {
+     "checkpoint": "Warehouse two",
+     "at": 3
+    },
+    {
+     "prop": "shipping_container",
+     "x": -3.4,
+     "at": 14
+    },
+    {
+     "tape": "m02_tape_container",
+     "x": -3.4,
+     "height": 2.6,
+     "at": 14
+    },
+    {
+     "hurdles": true,
+     "at": 34
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Gap's too wide. Wall on the right, same as home."
+     },
+     "at": 56
+    },
+    {
+     "label": "Wallrun the blue wall across the gap",
+     "at": 60
+    }
+   ]
+  },
+  {
+   "wallrun": 12,
+   "side": 1
+  },
+  {
+   "roof": 78,
+   "do": [
+    {
+     "checkpoint": "Lookout roof",
+     "at": 3,
+     "objective": 1
+    },
+    {
+     "label": "Wallrun, then jump: hop to the other wall",
+     "at": 4
+    },
+    {
+     "encounter": "lookouts",
+     "at": 2,
+     "length": 70,
+     "raiders": [
+      [
+       -3,
+       36
+      ],
+      [
+       3,
+       37
+      ],
+      [
+       0,
+       44,
+       1.5
+      ]
+     ]
+    },
+    {
+     "hop": true,
+     "side": -1,
+     "at": 8
+    }
+   ]
+  },
+  {
+   "gap": 5
+  },
+  {
+   "roof": 80,
+   "do": [
+    {
+     "checkpoint": "Pump house",
+     "at": 3,
+     "objective": 2
+    },
+    {
+     "slide": true,
+     "at": 22
+    },
+    {
+     "hurdles": true,
+     "at": 44
+    }
+   ]
+  },
+  {
+   "wallrun": 12,
+   "side": -1
+  },
+  {
+   "roof": 80,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 24
+    },
+    {
+     "window": 3.3,
+     "at": 50
+    }
+   ]
+  },
+  {
+   "gap": 6
+  },
+  {
+   "roof": 60,
+   "y": 5,
+   "do": [
+    {
+     "checkpoint": "The relay",
+     "at": 3,
+     "objective": 2
+    },
+    {
+     "hop": true,
+     "side": 1,
+     "at": 10
+    },
+    {
+     "hurdles": true,
+     "at": 44
+    }
+   ]
+  },
+  {
+   "roof": 56,
+   "y": 8,
+   "do": [
+    {
+     "prop": "antenna_mast",
+     "x": 4.0,
+     "at": 44
+    },
+    {
+     "prop": "loudspeaker_pole",
+     "x": -5.2,
+     "at": 40
+    },
+    {
+     "prop": "radio_set",
+     "x": -4.6,
+     "at": 50,
+     "yaw": 30
+    },
+    {
+     "label": "THE RELAY",
+     "at": 50,
+     "size": 1.4
+    },
+    {
+     "mark": "#f57320",
+     "at": 52
+    }
+   ]
+  }
  ]
 }

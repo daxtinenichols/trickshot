@@ -3,7 +3,7 @@ extends TestCase
 ## loads and is safe to stand in, MissionRun's checkpoints, falls,
 ## objectives, tapes and results work, the radio plays the right lines, the
 ## Host's chase catches you when you stop, and scripted runs can finish
-## missions 0, 2 and 12.
+## missions 0 and 12 and every mission built from a route.
 
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
@@ -124,7 +124,7 @@ func test_menu_lists_every_mission() -> void:
 	tree.root.add_child(menu)
 	await tree.process_frame
 	check(menu._buttons.size() == Campaign.mission_count(), "a button per mission")
-	menu._select(3)
+	menu._select(_index("m05_atrium"))
 	check(menu._play.disabled, "an unbuilt mission can't be played")
 	menu._select(0)
 	check(not menu._play.disabled, "mission 0 can")
@@ -302,7 +302,7 @@ func _steer(x: float) -> InputFrame:
 ## Returns true once the mission is complete; false if it runs out of time
 ## or passes stop_z first.
 func _run_route(route: Array, max_frames := 2400, stop_z := -INF) -> bool:
-	var lane: float = route[0][2] if route[0][1] == "" else player.global_position.x
+	var lane: float = route[0][2] if route[0][1] == "" and not is_nan(route[0][2]) else player.global_position.x
 	var next := 0
 	var roll_armed := false
 	for i in max_frames:
@@ -316,7 +316,8 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF) -> bool:
 		var f := _steer(lane)
 		while next < route.size() and pos.z < route[next][0]:
 			var step: Array = route[next]
-			lane = step[2]
+			if not is_nan(step[2]):
+				lane = step[2]
 			match step[1]:
 				"jump":
 					f.jump_pressed = true
@@ -357,27 +358,6 @@ func test_dawn_run_can_be_finished() -> void:
 	await _step(10)
 	var done := await _run_route(DAWN_RUN_ROUTE)
 	check(done, "a scripted run finishes Dawn Run (stopped at %s, objective %d)" % [player.global_position, run.objective])
-	check(run.falls == 0, "without falling (%d)" % run.falls)
-
-
-const ON_AIR_ROUTE := [
-	[-10.4, "jump", 0.0], [-19.5, "crouch", 0.0], [-28.8, "jump", 0.0],
-	[-36.0, "", 3.3], [-60.0, "", 5.4], [-69.3, "jump", 7.0],
-	[-86.0, "", -1.0], [-112.0, "", -5.4], [-122.0, "", -5.4], [-129.6, "jump", -7.0],
-	[-146.0, "", 0.0],
-]
-
-
-func test_on_air_can_be_finished() -> void:
-	await _load(_index("m02_on_air"))
-	await _step(10)
-	# Run to the lookouts, take them out, run on.
-	await _run_route(ON_AIR_ROUTE.slice(0, 7), 1200, -88.0)
-	check(run.objective == 1, "at the lookouts (objective %d, at %s)" % [run.objective, player.global_position])
-	for e: Node in level.builder.encounters[0].enemies:
-		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
-	var done := await _run_route(ON_AIR_ROUTE.slice(7), 1200)
-	check(done, "a scripted run finishes On Air (stopped at %s, objective %d)" % [player.global_position, run.objective])
 	check(run.falls == 0, "without falling (%d)" % run.falls)
 
 
@@ -432,3 +412,36 @@ func test_signal_out_can_be_escaped() -> void:
 	check(run.catches == 0, "without being caught (%d)" % run.catches)
 	check(run.falls == 0, "without falling (%d)" % run.falls)
 	check(Campaign.echo_unlocked(), "Echo unlocked")
+
+
+## Every mission built from a route: a bot runs the route it generates
+## from start to finish (enemies can't take it down, and any shooting
+## objective is done for it), without falling.
+func test_route_missions_can_be_finished() -> void:
+	var all := Campaign.missions()
+	var ran := 0
+	for i in all.size():
+		var path: String = all[i].get("file", "")
+		if path == "" or not Campaign.load_mission_file(path).has("bot"):
+			continue
+		await _load(i)
+		var health := PlayerHealth.ensure(player)
+		health.can_die = false
+		run.event.connect(func(e: String) -> void:
+			if e.begins_with("objective:") and run.current_objective().get("type", "") == "shoot":
+				for enc: Node3D in level.builder.encounters:
+					for en: Node in enc.enemies:
+						if not en.is_dead:
+							en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position}))
+		await _step(10)
+		var bot: Array = run.mission.bot
+		var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
+		var done := await _run_route(bot, frames)
+		check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [all[i].id, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
+		check(run.falls == 0, "%s: without falling (%d)" % [all[i].id, run.falls])
+		check(run.mission.route_length >= 500.0, "%s: a long run (%d m)" % [all[i].id, int(run.mission.route_length)])
+		ran += 1
+		level.queue_free()
+		level = null
+		await tree.process_frame
+	check(ran >= 1, "route missions were run (%d)" % ran)

@@ -18,10 +18,12 @@
      "file": "res://campaign/missions/m02_on_air.json"},
     {"id": "m03_glass_district", "number": 3, "title": "Glass District", "place": "Office towers",
      "beat": "Through a Static toll tower, floor by floor.",
-     "moves": "Climb, kick doors and windows", "enemies": "Spotters; full-auto mode"},
+     "moves": "Climb, kick doors and windows", "enemies": "Spotters; full-auto mode",
+     "file": "res://campaign/missions/m03_glass_district.json"},
     {"id": "m04_silt_line", "number": 4, "title": "Silt Line", "place": "Ground level",
      "beat": "The Host blows a bridge and drops Parker into the Silt. Climb back up through the Hollows before the dust gets to you.",
-     "moves": "Quick turn, ground roll", "enemies": "Crawlers. Lesson: never stop."}
+     "moves": "Quick turn, ground roll", "enemies": "Crawlers. Lesson: never stop.",
+     "file": "res://campaign/missions/m04_silt_line.json"}
    ]
   },
   {
