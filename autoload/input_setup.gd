@@ -2,17 +2,22 @@ extends Node
 ## Registers every input action in code so bindings live in one readable place.
 ## Keyboard + mouse and gamepad are both bound.
 
+## Events made in code default to device 0. -1 matches any controller, which
+## matters when the pad isn't device 0 (wireless receivers, Steam Input).
+const ALL_DEVICES := -1
+
 const KEYS := {
 	"move_forward": [KEY_W],
 	"move_back": [KEY_S],
 	"move_left": [KEY_A],
 	"move_right": [KEY_D],
 	"jump": [KEY_SPACE],
-	"sprint": [KEY_SHIFT],
 	"crouch": [KEY_CTRL, KEY_C],
 	"prone": [KEY_Z],
 	"kick": [KEY_F],
-	"quick_turn": [KEY_Q],
+	"quick_turn": [KEY_SHIFT],
+	"lean_left": [KEY_Q],
+	"lean_right": [KEY_E],
 	"reload": [KEY_R],
 	"fire_mode": [KEY_B, KEY_V],
 	"reset": [KEY_BACKSPACE],
@@ -41,13 +46,14 @@ const MOUSE_BUTTONS := {
 const PAD_BUTTONS := {
 	"jump": [JOY_BUTTON_A],
 	"crouch": [JOY_BUTTON_B],
-	"sprint": [JOY_BUTTON_LEFT_STICK],
 	"prone": [JOY_BUTTON_DPAD_DOWN],
 	"kick": [JOY_BUTTON_RIGHT_SHOULDER, JOY_BUTTON_RIGHT_STICK],
 	"reload": [JOY_BUTTON_X],
 	"fire_mode": [JOY_BUTTON_Y],
 	"reset": [JOY_BUTTON_BACK],
 	"quick_turn": [JOY_BUTTON_LEFT_SHOULDER],
+	"lean_left": [JOY_BUTTON_DPAD_LEFT],
+	"lean_right": [JOY_BUTTON_DPAD_RIGHT],
 	"pause": [JOY_BUTTON_START],
 }
 
@@ -63,6 +69,26 @@ const PAD_AXES := {
 
 func _enter_tree() -> void:
 	register_actions()
+	Input.joy_connection_changed.connect(func(device: int, connected: bool) -> void:
+		print("Controller %d %s: %s" % [device, "connected" if connected else "disconnected", Input.get_joy_name(device)]))
+
+
+## Right-stick look, from whichever connected controller is pushing it most.
+static func look_stick() -> Vector2:
+	var best := Vector2.ZERO
+	for d in Input.get_connected_joypads():
+		var v := Vector2(Input.get_joy_axis(d, JOY_AXIS_RIGHT_X), Input.get_joy_axis(d, JOY_AXIS_RIGHT_Y))
+		if v.length() > best.length():
+			best = v
+	return best
+
+
+## "Xbox 360 Controller (device 0)" lines for the settings screen.
+static func controller_names() -> Array[String]:
+	var out: Array[String] = []
+	for d in Input.get_connected_joypads():
+		out.append("%s (device %d)" % [Input.get_joy_name(d), d])
+	return out
 
 
 ## (Re)creates every action with its default bindings.
@@ -87,11 +113,13 @@ static func register_actions() -> void:
 		_ensure(action)
 		for button: JoyButton in PAD_BUTTONS[action]:
 			var ev := InputEventJoypadButton.new()
+			ev.device = ALL_DEVICES
 			ev.button_index = button
 			InputMap.action_add_event(action, ev)
 	for action: String in PAD_AXES:
 		_ensure(action)
 		var ev := InputEventJoypadMotion.new()
+		ev.device = ALL_DEVICES
 		ev.axis = PAD_AXES[action][0]
 		ev.axis_value = PAD_AXES[action][1]
 		InputMap.action_add_event(action, ev)

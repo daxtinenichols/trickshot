@@ -81,7 +81,7 @@ func test_jump_height() -> void:
 	for i in 60:
 		await w.step(1)
 		max_y = maxf(max_y, p.global_position.y)
-	check_between(max_y, 1.1, 1.35, "jump apex")
+	check_between(max_y, 1.45, 1.7, "jump apex")
 	check(p.state == Player.State.GROUND, "lands again")
 
 
@@ -204,6 +204,29 @@ func test_running_into_low_wall_without_jump_stops() -> void:
 	await w.step(150, _fwd())
 	check(p.global_position.z > -7.8, "blocked by the wall")
 	check(not (Player.State.VAULT in w.states_seen), "no vault without a jump")
+
+
+func test_early_jump_clears_a_hurdle_without_vaulting() -> void:
+	w.add_floor()
+	w.add_box(Vector3(0, 0.5, -8), Vector3(6, 1.0, 0.4))
+	var p := await _settle()
+	await w.step_until(func() -> bool: return p.global_position.z < -4.6, 300, _fwd())
+	await w.press(_fwd_jump())
+	await w.step(50, _fwd())
+	check(not (Player.State.VAULT in w.states_seen), "no automatic hurdle in the air")
+	check(p.global_position.z < -8.5, "jumped clean over (z %.2f)" % p.global_position.z)
+
+
+func test_jump_press_in_the_air_vaults() -> void:
+	w.add_floor()
+	w.add_box(Vector3(0, 0.5, -8), Vector3(6, 1.0, 0.4))
+	var p := w.spawn_player(Vector3(0, 0.3, -7.0))
+	p.velocity = Vector3(0, 1.0, -7.0)
+	p._jumped_since_floor = true
+	await w.step(1, _fwd())
+	check(p.state == Player.State.AIR, "airborne")
+	await w.press(_fwd_jump())
+	check(p.state == Player.State.VAULT, "pressing jump at the wall mid-air vaults (%s)" % Player.State.keys()[p.state])
 
 
 func test_step_up_onto_waist_high_block() -> void:
@@ -347,7 +370,7 @@ func test_wall_climb_into_mantle() -> void:
 	check_near(p.global_position.y, 3.0, 0.08, "on top of the 3 m wall")
 
 
-func test_wall_climb_kick_turns_you_around() -> void:
+func test_wall_climb_kick_never_turns_the_camera() -> void:
 	w.add_floor()
 	_add_front_wall(8.0)
 	var p := await _settle()
@@ -358,7 +381,7 @@ func test_wall_climb_kick_turns_you_around() -> void:
 	await w.press(_fwd_jump())
 	check(p.velocity.z > 4.0, "kicked away from the wall")
 	await w.step(15)
-	check(absf(absf(p.yaw) - PI) < 0.05, "turned to face away (yaw %.2f)" % p.yaw)
+	check(absf(p.yaw) < 0.01, "camera stays where you pointed it (yaw %.2f)" % p.yaw)
 
 
 # ------------------------------------------------------------------ landings
@@ -482,49 +505,44 @@ func test_simulation_is_deterministic() -> void:
 	check(results[0].is_equal_approx(results[1]), "identical runs end in the same place (%s vs %s)" % [results[0], results[1]])
 
 
-# ------------------------------------------------------------------ walk / sprint / prone / dive
+# ------------------------------------------------------------------ sprint / dive
 
-func test_walk_is_slower_than_sprint() -> void:
+func test_always_sprinting_and_can_stop() -> void:
 	w.add_floor()
 	var p := await _settle()
-	await w.step(60, InputFrame.make(Vector2(0, 1), false, false, false, false))
-	check_near(p.horizontal_speed(), p.tuning.walk_speed, 0.2, "walking speed")
 	await w.step(60, _fwd())
-	check(p.horizontal_speed() > p.tuning.walk_speed + 1.0, "sprint is faster")
+	check(p.horizontal_speed() > p.tuning.run_speed - 0.2, "moving is sprinting (%.2f m/s)" % p.horizontal_speed())
+	await w.step(60)
+	check(p.horizontal_speed() < 0.3, "letting go stops you (%.2f m/s)" % p.horizontal_speed())
+	check(p.state == Player.State.GROUND, "standing still is possible")
 
 
-func test_hold_crouch_goes_prone() -> void:
+func test_crouch_never_goes_prone() -> void:
 	w.add_floor()
 	var p := await _settle()
-	await w.press(InputFrame.make(Vector2.ZERO, false, true), int(p.tuning.prone_hold_time * 60.0) + 5)
-	check(p.state == Player.State.PRONE, "holding crouch while still goes prone")
-	var crawl := InputFrame.make(Vector2(0, 1), false, false, false, false)
-	crawl.crouch_held = true
-	await w.step(60, crawl)
-	check(p.state == Player.State.PRONE, "still prone while crawling (%s)" % Player.State.keys()[p.state])
-	check_near(p.horizontal_speed(), p.tuning.prone_speed, 0.2, "crawl speed")
-	await w.press(_fwd_jump())
-	check(p.state in [Player.State.CROUCH, Player.State.GROUND], "jump gets you up (%s)" % Player.State.keys()[p.state])
+	await w.press(InputFrame.make(Vector2.ZERO, false, true), 120)
+	check(p.state == Player.State.CROUCH, "holding crouch still stays crouched (%s)" % Player.State.keys()[p.state])
 
 
 func _prone_frame(pressed: bool, move := Vector2.ZERO) -> InputFrame:
-	var f := InputFrame.make(move, false, false, false, false)
+	var f := InputFrame.make(move)
 	f.prone_pressed = pressed
 	f.prone_held = true
 	return f
 
 
-func test_prone_is_held_not_toggled() -> void:
+func test_prone_press_is_always_a_dive() -> void:
 	w.add_floor()
 	var p := await _settle()
 	await w.step(1, _prone_frame(true))
-	check(p.state == Player.State.PRONE, "pressing prone drops you prone")
-	await w.step(40, _prone_frame(false, Vector2(0, 1)))
-	check(p.state == Player.State.PRONE, "stays prone while held (crawling)")
-	await w.step(3)
-	check(p.state == Player.State.GROUND, "letting go stands you up (state %s)" % Player.State.keys()[p.state])
-	await w.step(10)
-	check_near(p._height, p.tuning.stand_height, 0.01, "full height again")
+	check(p.state == Player.State.AIR, "prone from standing is a dive (%s)" % Player.State.keys()[p.state])
+	check(&"dolphin_dive" in w.tricks_seen, "dive reported")
+	var seen := []
+	await w.step_until(func() -> bool:
+		seen.append(p.state)
+		return p.state == Player.State.GROUND, 120, _prone_frame(false))
+	check(p.state == Player.State.GROUND, "gets back up by itself (%s)" % Player.State.keys()[p.state])
+	check(not (Player.State.PRONE in seen), "never lies there prone")
 
 
 func test_dolphin_dive_from_sprint() -> void:
@@ -541,8 +559,25 @@ func test_dolphin_dive_from_sprint() -> void:
 	check(&"dolphin_dive" in w.tricks_seen, "dive reported")
 	var landed := await w.step_until(func() -> bool: return p.state == Player.State.PRONE_SLIDE, 60, hold)
 	check(landed, "lands into a prone slide")
-	var ended := await w.step_until(func() -> bool: return p.state == Player.State.PRONE, 240, hold)
-	check(ended, "held: slide ends prone")
+	var seen := []
+	var up := await w.step_until(func() -> bool:
+		seen.append(p.state)
+		return p.state == Player.State.GROUND, 300, hold)
+	check(up, "held: slide runs out and you get up (%s)" % Player.State.keys()[p.state])
+	check(not (Player.State.PRONE in seen), "no crawling")
+
+
+func test_dive_slide_stopping_under_low_ceiling_gets_out() -> void:
+	w.add_floor()
+	# A 0.9 m gap from z -12 to -20: prone fits, crouching doesn't.
+	w.add_box(Vector3(0, 1.4, -16), Vector3(6, 1.0, 8))
+	var p := await _settle()
+	await w.step_until(func() -> bool: return p.global_position.z < -6.0, 300, _fwd())
+	await w.step(1, _prone_frame(true, Vector2(0, 1)))
+	await w.step_until(func() -> bool: return p.state == Player.State.PRONE, 400, _prone_frame(false))
+	check(p.state == Player.State.PRONE, "stopped prone under the gap (%s, z %.1f)" % [Player.State.keys()[p.state], p.global_position.z])
+	var out := await w.step_until(func() -> bool: return p.state == Player.State.GROUND, 600, _fwd())
+	check(out, "shuffles out and stands up (%s, z %.1f)" % [Player.State.keys()[p.state], p.global_position.z])
 
 
 func test_dive_tap_pops_up_into_slide() -> void:
@@ -707,11 +742,11 @@ func test_quick_turn_on_wallrun_faces_away_from_wall() -> void:
 	check(p.velocity.x < -5.0, "jump launches straight off the wall (vx %.2f)" % p.velocity.x)
 
 
-func test_sprint_strafing_is_faster_than_walking() -> void:
+func test_strafing_is_sprinting() -> void:
 	w.add_floor()
 	var p := await _settle()
 	await w.step(120, InputFrame.make(Vector2(1, 0)))
-	check(p.horizontal_speed() > p.tuning.walk_speed + 1.0, "sprint works sideways (%.2f m/s)" % p.horizontal_speed())
+	check(p.horizontal_speed() > p.tuning.run_speed - 0.2, "sprint works sideways (%.2f m/s)" % p.horizontal_speed())
 
 
 func test_flip_needs_less_input_once_past_vertical() -> void:
@@ -756,22 +791,6 @@ func test_respawn_clears_air_rotation() -> void:
 	p._look(deg_to_rad(70.0), 0.0)
 	await w.step(1)
 	check(not (&"spin_360" in w.tricks_seen), "spin before respawning doesn't carry over")
-
-
-func test_crouch_held_through_slide_doesnt_drop_prone_instantly() -> void:
-	w.add_floor()
-	var p := await _settle()
-	await _run_to(7.0)
-	var crouch := InputFrame.make(Vector2.ZERO, false, true)
-	await w.step(1, crouch)
-	crouch.crouch_pressed = false
-	var stopped := await w.step_until(func() -> bool: return p.state == Player.State.CROUCH, 240, crouch)
-	check(stopped, "slide ends in a crouch")
-	await w.step_until(func() -> bool: return p.horizontal_speed() < 0.5 or p.state != Player.State.CROUCH, 120, crouch)
-	await w.step(3, crouch)
-	check(p.state == Player.State.CROUCH, "doesn't drop prone the moment you stop (%s)" % Player.State.keys()[p.state])
-	await w.step(int(p.tuning.prone_hold_time * 60.0) + 5, crouch)
-	check(p.state == Player.State.PRONE, "keeps holding still: goes prone")
 
 
 func test_looking_down_while_falling_is_not_a_crash() -> void:

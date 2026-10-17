@@ -5,14 +5,10 @@ extends Resource
 ## Units: meters, seconds, meters per second.
 
 @export_group("Run")
-## Speed when moving without sprint held.
-@export_range(1.0, 10.0, 0.1) var walk_speed := 4.2
-## Sprint whenever moving forward, no key needed.
-@export var auto_sprint := false
-## Sprint ground speed with zero momentum.
-@export_range(1.0, 20.0, 0.1) var run_speed := 6.0
+## You always sprint. Ground speed with zero momentum.
+@export_range(1.0, 20.0, 0.1) var run_speed := 7.5
 ## Ground speed cap at full momentum.
-@export_range(1.0, 30.0, 0.1) var top_speed := 9.5
+@export_range(1.0, 30.0, 0.1) var top_speed := 11.5
 ## Source-style ground acceleration factor.
 @export_range(0.0, 30.0, 0.1) var ground_accel := 9.0
 @export_range(0.0, 20.0, 0.1) var ground_friction := 6.0
@@ -33,7 +29,7 @@ extends Resource
 
 @export_group("Air")
 @export_range(0.0, 60.0, 0.1) var gravity := 19.0
-@export_range(0.0, 20.0, 0.1) var jump_velocity := 6.9
+@export_range(0.0, 20.0, 0.1) var jump_velocity := 7.8
 ## Quake-style air acceleration. Higher = stronger air strafing.
 @export_range(0.0, 100.0, 0.5) var air_accel := 12.0
 ## Cap on wish speed in the air. Small values = light control + strafe gains.
@@ -61,9 +57,8 @@ extends Resource
 
 @export_group("Prone and dive")
 @export_range(0.76, 1.5, 0.01) var prone_height := 0.8
+## Below this a dive slide ends and you get up.
 @export_range(0.0, 5.0, 0.1) var prone_speed := 1.4
-## Hold crouch this long while slow to go prone (controller-friendly).
-@export_range(0.1, 2.0, 0.05) var prone_hold_time := 0.45
 ## Dolphin dive: upward speed and forward boost.
 @export_range(0.0, 10.0, 0.1) var dive_up := 3.6
 @export_range(0.0, 10.0, 0.1) var dive_boost := 1.5

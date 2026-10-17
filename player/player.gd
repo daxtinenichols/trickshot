@@ -58,8 +58,6 @@ var _stand_shape: CapsuleShape3D
 var _crouch_shape: CapsuleShape3D
 var _prone_shape: CapsuleShape3D
 var _crouch_hold := 0.0
-## Time spent crouched, holding crouch and standing still (-> prone).
-var _crouch_still := 0.0
 var _diving := false
 # Rotation done in the air since takeoff (radians, unwrapped).
 var _air_yaw := 0.0
@@ -75,7 +73,7 @@ var _path_to := Vector3.ZERO
 var _path_time := 0.3
 var _path_exit_velocity := Vector3.ZERO
 
-# Smooth automatic turn (after a wall-climb kick).
+# Smooth automatic turn (quick turn).
 var _turn_left := 0.0
 var _turn_rate := 0.0
 
@@ -259,7 +257,6 @@ func _change_state(to: State) -> void:
 	var from := state
 	state = to
 	state_time = 0.0
-	_crouch_still = 0.0
 	if to == State.AIR:
 		_air_yaw = 0.0
 		_air_pitch = 0.0
@@ -375,11 +372,8 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_ground_kick()
 	var speed := horizontal_speed()
 	if f.prone_pressed:
-		if speed >= tuning.slide_min_speed:
-			_start_dive()
-			_tick_air(f, wish, delta)
-		else:
-			_change_state(State.PRONE)
+		_start_dive()
+		_tick_air(f, wish, delta)
 		return
 	if f.crouch_held and speed >= tuning.slide_min_speed and (f.crouch_pressed or _since_crouch_press < 0.2):
 		_start_slide()
@@ -391,13 +385,10 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 		return
 
 	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.stop_speed, delta)
-	# Sprint works in any direction so you can strafe-run while aiming at
-	# something. Backpedalling caps at run speed; momentum only carries
+	# Always sprinting, in any direction, so you can strafe-run while aiming
+	# at something. Backpedalling caps at run speed; momentum only carries
 	# forward and sideways.
-	var sprinting := (f.sprint_held or tuning.auto_sprint) and f.move.length() > 0.3
-	var top := tuning.walk_speed
-	if sprinting:
-		top = MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) if f.move.y > -0.3 else tuning.run_speed
+	var top := MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) if f.move.y > -0.3 else tuning.run_speed
 	var wish_speed := top * wish.length()
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), wish_speed, tuning.ground_accel, delta)
 	velocity.y -= tuning.gravity * delta
@@ -417,15 +408,9 @@ func _tick_crouch(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.GROUND)
 		_tick_ground(f, wish, delta)
 		return
-	# Holding crouch while standing still (no move input) goes prone, so
-	# crouch-walking never drops you by accident.
-	var still := f.crouch_held and _crouch_hold >= 0.0 and f.move.length() < 0.1 and horizontal_speed() < 0.5
-	_crouch_still = _crouch_still + delta if still else 0.0
-	var held_still := _crouch_still >= tuning.prone_hold_time
-	if f.prone_pressed or held_still:
-		_crouch_hold = -999.0
-		_crouch_still = 0.0
-		_change_state(State.PRONE)
+	if f.prone_pressed:
+		_start_dive()
+		_tick_air(f, wish, delta)
 		return
 	if f.kick_pressed:
 		_ground_kick()
@@ -476,7 +461,7 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_jump()
 	elif f.kick_pressed and _try_kick_off():
 		pass
-	elif _try_obstacle(f, false):
+	elif _try_obstacle(f, _jump_buffer <= tuning.jump_buffer):
 		return
 	elif _jump_buffer <= tuning.jump_buffer and _try_wall_climb(f, false):
 		return
@@ -568,6 +553,10 @@ func _tick_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_trick(&"slide_jump")
 		_tick_air(f, wish, delta)
 		return
+	if f.prone_pressed:
+		_start_dive()
+		_tick_air(f, wish, delta)
+		return
 	# Friction only ramps up while the slide isn't going downhill, so flat
 	# slides fade out but a slope can carry you as far as it goes.
 	var downhill := false
@@ -639,21 +628,14 @@ func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
 
 # ---------------------------------------------------------------- prone / dive
 
+## Only happens when a dive slide stops under something too low to get up
+## in. You get up by yourself as soon as there's room; until then you can
+## shuffle out slowly so you're never stuck. There's no crawling otherwise.
 func _tick_prone(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_set_height(tuning.prone_height)
-	# Prone is held, not toggled: let go of prone (or of crouch, if you went
-	# down by holding it) to get up. Jump also gets you up.
-	var holding := f.prone_held or f.crouch_held
-	if (not holding or f.jump_pressed) and _shape_fits(_crouch_shape, global_position):
-		_set_height(tuning.crouch_height)
-		_crouch_hold = -999.0
-		_jump_buffer = 999.0  # the jump that got you up isn't also a jump
-		_change_state(State.CROUCH)
-		if not f.crouch_held and _can_stand():
-			_set_height(tuning.stand_height)
-			_change_state(State.GROUND)
+	if _get_up_from_prone(f):
 		return
-	# Low stop speed so friction doesn't swamp the slow crawl.
+	# Low stop speed so friction doesn't swamp the slow shuffle.
 	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.prone_speed * 0.5, delta)
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), tuning.prone_speed * wish.length(), tuning.ground_accel, delta)
 	velocity.y -= tuning.gravity * delta
@@ -662,7 +644,21 @@ func _tick_prone(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.AIR)
 
 
-## Dolphin dive: a low forward leap that lands into a prone slide.
+## Up to crouch (and standing, unless crouch is held) if there's room.
+func _get_up_from_prone(f: InputFrame) -> bool:
+	if not _shape_fits(_crouch_shape, global_position):
+		return false
+	_set_height(tuning.crouch_height)
+	_crouch_hold = -999.0
+	_jump_buffer = 999.0  # the jump that got you up isn't also a jump
+	_change_state(State.CROUCH)
+	if not f.crouch_held and _can_stand():
+		_set_height(tuning.stand_height)
+		_change_state(State.GROUND)
+	return true
+
+
+## Dolphin dive (prone jump): a low forward leap that lands on your belly.
 func _start_dive() -> void:
 	var h := MovementMath.horizontal(velocity)
 	var dir := h.normalized() if h.length() > 0.5 else forward()
@@ -678,12 +674,15 @@ func _start_dive() -> void:
 
 func _tick_prone_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_set_height(tuning.prone_height)
-	# Tap prone to dive and pop up into a slide; hold it to stay down.
-	var holding := f.prone_held or f.crouch_held
-	if (f.jump_pressed or not holding) and _shape_fits(_crouch_shape, global_position):
+	# Tap prone to dive and pop up into a slide; hold it to stay on your belly
+	# (under low gaps). You get up by yourself once the slide runs out.
+	if (f.jump_pressed or not f.prone_held) and _shape_fits(_crouch_shape, global_position):
 		_set_height(tuning.crouch_height)
 		_slide_flat_time = 0.0
-		_change_state(State.SLIDE if horizontal_speed() >= tuning.slide_min_speed else State.CROUCH)
+		if horizontal_speed() >= tuning.slide_min_speed:
+			_change_state(State.SLIDE)
+		else:
+			_change_state(State.CROUCH)
 		return
 	velocity = MovementMath.apply_friction(velocity, tuning.prone_slide_friction, 0.0, delta)
 	if is_on_floor():
@@ -695,6 +694,7 @@ func _tick_prone_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.AIR)
 	elif horizontal_speed() < tuning.prone_speed:
 		_change_state(State.PRONE)
+		_get_up_from_prone(f)
 
 
 # ---------------------------------------------------------------- kicks (doors, windows)
@@ -859,18 +859,18 @@ func _try_wall_climb(f: InputFrame, from_ground: bool) -> bool:
 func _tick_wallclimb(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_set_height(tuning.stand_height if _can_stand() else tuning.crouch_height)
 	if _jump_buffer <= tuning.jump_buffer:
-		# Kick off the wall and turn to face away from it.
+		# Kick off the wall. The camera never turns by itself: quick turn
+		# if you want to face away.
 		var n := MovementMath.horizontal(_wall_normal).normalized()
 		velocity = n * tuning.wall_climb_kick_push
 		velocity.y = tuning.wall_climb_kick_up
 		_jump_buffer = 999.0
 		_since_wall = 999.0
 		_wall_jump_lock = 0.2
-		_start_auto_turn(atan2(-n.x, -n.z), 0.2)
 		_change_state(State.AIR)
 		_trick(&"wall_climb_kick")
 		return
-	if _try_obstacle(f, false):
+	if _try_obstacle(f, true):
 		return
 	# Run up the wall at near-constant speed, easing off toward the end.
 	var t := clampf(state_time / tuning.wall_climb_time, 0.0, 1.0)
@@ -897,7 +897,9 @@ func _tick_wallclimb(f: InputFrame, wish: Vector3, delta: float) -> void:
 # ---------------------------------------------------------------- vault / mantle
 
 ## Looks for something in front to vault over or mantle onto. With
-## vault_requires_jump the ground version only fires on a (buffered) jump.
+## vault_requires_jump, vaults (hurdles) only happen on a (buffered) jump
+## press, on the ground or in the air, so you can always just jump over
+## things. Catching a ledge in the air stays automatic.
 func _try_obstacle(f: InputFrame, from_jump: bool) -> bool:
 	var grounded := state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL]
 	if f.move.y <= 0.2:
@@ -906,6 +908,8 @@ func _try_obstacle(f: InputFrame, from_jump: bool) -> bool:
 		return false
 	var info := probe_obstacle(grounded)
 	if info.is_empty():
+		return false
+	if info.kind == &"vault" and tuning.vault_requires_jump and not from_jump:
 		return false
 	if grounded and from_jump == false and info.kind == &"mantle" and info.height > tuning.vault_max_height:
 		return false
@@ -1202,7 +1206,7 @@ func respawn(t: Variant = null) -> void:
 
 func _process(delta: float) -> void:
 	if use_device_input:
-		var stick := Vector2(Input.get_joy_axis(0, JOY_AXIS_RIGHT_X), Input.get_joy_axis(0, JOY_AXIS_RIGHT_Y))
+		var stick := InputSetup.look_stick()
 		if stick.length() > 0.15:
 			var pad := tuning.gamepad_look_speed * aim_sensitivity_scale() * delta
 			var pitch_scale := 0.7

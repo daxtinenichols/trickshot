@@ -44,7 +44,9 @@ func test_default_slots() -> void:
 	check(GameSettings.event_label(GameSettings.slot_event("jump", true)) == "A", "jump is A")
 	check(GameSettings.event_label(GameSettings.slot_event("fire", false)) == "Left mouse", "fire is left mouse")
 	check(GameSettings.event_label(GameSettings.slot_event("fire", true)) == "RT", "fire is RT")
-	check(GameSettings.event_label(GameSettings.slot_event("quick_turn", false)) == "Q", "quick turn is Q")
+	check(GameSettings.event_label(GameSettings.slot_event("quick_turn", false)) == "Shift", "quick turn is Shift")
+	check(GameSettings.event_label(GameSettings.slot_event("lean_left", false)) == "Q", "lean left is Q")
+	check(GameSettings.event_label(GameSettings.slot_event("lean_right", true)) == "D-pad right", "lean right is D-pad right (%s)" % GameSettings.event_label(GameSettings.slot_event("lean_right", true)))
 	check(GameSettings.event_label(GameSettings.slot_event("quick_turn", true)) == "LB", "quick turn is LB")
 
 
