@@ -1,4 +1,4 @@
-[gd_scene load_steps=11 format=3]
+[gd_scene load_steps=12 format=3]
 
 [ext_resource type="Script" path="res://levels/sandbox.gd" id="1_sandbox"]
 [ext_resource type="Script" path="res://levels/sandbox_builder.gd" id="2_builder"]
@@ -6,6 +6,7 @@
 [ext_resource type="Script" path="res://ui/debug_hud.gd" id="4_hud"]
 [ext_resource type="Script" path="res://ui/tuning_panel.gd" id="5_tuning"]
 [ext_resource type="Script" path="res://fx/speed_trail.gd" id="6_trail"]
+[ext_resource type="Script" path="res://enemies/sandbox_arena.gd" id="7_arena"]
 
 [sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
 sky_top_color = Color(0.36, 0.52, 0.78, 1)
@@ -53,3 +54,6 @@ script = ExtResource("4_hud")
 
 [node name="TuningPanel" type="CanvasLayer" parent="."]
 script = ExtResource("5_tuning")
+
+[node name="EnemyArena" type="Node3D" parent="."]
+script = ExtResource("7_arena")
