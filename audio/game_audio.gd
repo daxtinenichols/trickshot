@@ -727,7 +727,7 @@ func _process(delta: float) -> void:
 	_set_loop(_wind_low, clampf(v, 0.0, 1.6) * 0.55, -26.0 + air, lerpf(0.8, 1.3, clampf(v, 0.0, 1.5) / 1.5))
 	_set_loop(_wind_high, clampf(v - 0.6, 0.0, 1.0), -30.0 + air, lerpf(0.9, 1.25, clampf(v - 0.6, 0.0, 1.0)))
 	# Slide scrape follows speed; fades out quickly when you stand up.
-	var sliding := not paused and player.state == Player.State.SLIDE
+	var sliding := not paused and player.is_sliding()
 	var want := clampf(player.horizontal_speed() / top, 0.2, 1.2) if sliding else 0.0
 	_slide_gain = move_toward(_slide_gain, want, real * (8.0 if want > _slide_gain else 4.0))
 	_set_loop(_slide, _slide_gain, -10.0, lerpf(0.8, 1.2, clampf(_slide_gain, 0.0, 1.0)))
