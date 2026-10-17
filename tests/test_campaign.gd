@@ -470,6 +470,18 @@ func test_dawn_run_can_be_finished() -> void:
 	check(m.checkpoints.size() == 10 and m.checkpoints[0].name == "Door and window", "the base's checkpoints come before the route's")
 
 
+## Dawn Run sets its base's hide_course_marks (via "base_set"), so none of
+## the Rooftops course's own signs or its FINISH line show mid-mission.
+func test_dawn_run_hides_the_course_signs() -> void:
+	await _load(_index("m00_dawn_run"))
+	var b: MissionBuilder = level.builder
+	check(b.base != null and b.base.get("hide_course_marks") == true, "the base was told to hide its marks")
+	var finish := 0
+	for l: Label3D in b.base.find_children("*", "Label3D", true, false):
+		finish += 1
+	check(finish == 0, "no Rooftops labels (%d)" % finish)
+
+
 ## The Yard: the yard's lessons, then out of the park's far end and down
 ## the mission's own streets to the south gate.
 func test_the_yard_ends_at_the_south_gate() -> void:

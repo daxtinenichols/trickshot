@@ -671,6 +671,37 @@ func test_mall_campaign_points() -> void:
 	open.free()
 
 
+## A mission can leave out the Rooftops course's own signs (tutorial labels,
+## start and FINISH lines, the targets past the finish) and keep the course.
+func test_rooftops_hide_course_marks() -> void:
+	var counts := []
+	for hide in [false, true]:
+		var b := (load("res://maps/rooftop_course_builder.gd") as GDScript).new() as Node3D
+		b.set("hide_course_marks", hide)
+		b.call("build")
+		var labels := 0
+		var bodies := 0
+		var marks := 0
+		var targets := 0
+		for c in (b.get_child(0) as Node).get_children():
+			if c is Label3D:
+				labels += 1
+			elif c is StaticBody3D:
+				bodies += 1
+			elif c is MeshInstance3D:
+				marks += 1
+			elif c.has_method("take_hit"):
+				targets += 1
+		counts.append([labels, bodies, marks, targets, (b.get("spawns") as Array).size()])
+		for c in (b.get_child(0) as Node).get_children():
+			if c.has_method("take_hit"):
+				c.free()  # never entered the tree
+		b.free()
+	check(counts[0][0] > 10 and counts[0][2] >= 2 and counts[0][3] >= 2, "the course has signs, lines and targets (%s)" % [counts[0]])
+	check(counts[1][0] == 0 and counts[1][2] == 0 and counts[1][3] == 0, "hidden: no labels, lines or targets (%s)" % [counts[1]])
+	check(counts[1][1] == counts[0][1] and counts[1][4] == counts[0][4], "same roofs and spawns either way")
+
+
 ## The department store's roof access really climbs: mantle up the steps
 ## from the sales floor onto the roof.
 func test_mall_roof_access() -> void:

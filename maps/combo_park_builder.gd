@@ -112,7 +112,7 @@ func _half_pipe(c: Vector3) -> void:
 ## A long straight to build top speed, then a loop. You come out to its right.
 func _loop_runway(c: Vector3) -> void:
 	_spawn(c + Vector3(-4, 0, 40), "3 · LOOP RUNWAY")
-	_floor_mark(c + Vector3(-4, 0, 8), Vector2(3.5, 64), Color(0.55, 0.45, 0.8))
+	_floor_mark(c + Vector3(-4, 0, 8), Vector2(3.5, 64), Color(0.62, 0.42, 0.28))
 	_surface(SurfaceShapes.loop(c + Vector3(-4, 0, -28), 4.5, 3.5, 5.5))
 	_label("LOOP: full speed from the far end", c + Vector3(-4, 10.5, -28), 1.0)
 	# A launch ramp past the loop for air tricks.

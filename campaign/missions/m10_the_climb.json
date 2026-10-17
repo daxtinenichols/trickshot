@@ -4,6 +4,7 @@
  "runner": "",
  "par_seconds": 150,
  "start": {"at": [0, 10, 2]},
+ "roof_look": "TOWER_BASE",
  "clutter": ["satellite_dish", "ac_unit", "vent_stack", "generator", "antenna_mast", "crate_wood", "loudspeaker_pole", "water_tank"],
  "objectives": [
   {"type": "reach", "name": "the first platform", "text": "Climb the broadcast tower", "at": "@First platform"},
@@ -100,7 +101,7 @@
   ]}
  ],
  "pieces": [
-  {"building": [-100, 72, -100], "size": [50, 50], "look": "FACADE"},
+  {"building": [-100, 72, -100], "size": [50, 50], "look": "TOWER"},
   {"prop": "antenna_mast", "at": [-100, 72, -100]},
   {"prop": "antenna_mast", "at": [-112, 72, -88], "yaw": 40},
   {"prop": "satellite_dish", "at": [-86, 72, -112], "yaw": 220},

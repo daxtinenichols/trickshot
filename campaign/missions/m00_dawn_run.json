@@ -3,6 +3,7 @@
  "title": "Dawn Run",
  "runner": "parker",
  "base": "res://maps/rooftop_course_builder.gd",
+ "base_set": {"hide_course_marks": true},
  "fail_y": 2.5,
  "par_seconds": 110,
  "start": {"at": [0, 10, -2]},

@@ -95,6 +95,11 @@ const STREET_SIZE := Vector2(290, 830)
 ## Leave the far (-Z) edge open so a mission can carry on past it. Set
 ## before the builder enters the tree.
 @export var open_exit := false
+## Missions set this (before the builder enters the tree) to leave out the
+## course's own signage: the tutorial labels, the start and FINISH lines and
+## the practice targets past the finish. The roofs, checkpoints and spawns
+## stay as they are.
+@export var hide_course_marks := false
 ## Below this height you're in the street: back to the last checkpoint.
 const FAIL_Y := 2.5
 
@@ -375,6 +380,8 @@ func _section_slide_down() -> void:
 
 func _section_finish() -> void:
 	_roof(4.0, -706.0, -790.0, -8.0, 8.0)
+	if hide_course_marks:
+		return
 	_floor_mark(_xf * Vector3(0, 4, FINISH_Z), Vector2(16, 0.8), Color(1.0, 0.85, 0.2))
 	_flabel("FINISH", Vector3(0, 8.2, FINISH_Z), 1.8)
 	# Shooting gallery past the finish line for a victory lap.
@@ -466,8 +473,16 @@ func _fspawn(pos: Vector3, title: String) -> void:
 	zone_names.append(title)
 
 
+## Course signs; none when a mission hides the course marks.
+func _label(text: String, pos: Vector3, size := 1.0) -> void:
+	if not hide_course_marks:
+		super(text, pos, size)
+
+
 ## Start and finish lines: a colored stripe across the roof.
 func _line(z: float, y: float, color: Color) -> void:
+	if hide_course_marks:
+		return
 	_floor_mark(Vector3(0, y, z), Vector2(12, 0.8), color)
 
 

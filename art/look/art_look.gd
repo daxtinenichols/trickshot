@@ -24,8 +24,12 @@ const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
 const WASTELAND_SHADER_PATH := "res://art/shaders/wasteland.gdshader"
 const GUN_LOOK_PATH := "res://art/weapons/gun_look.gd"
 const DRESSER_PATH := "res://art/look/obstacle_dresser.gd"
+const TARGET_DRESSER_PATH := "res://art/look/target_dresser.gd"
 ## Gameplay kinds dressed as part of the city (see obstacle_dresser.gd).
-const DRESSED_KINDS := ["PARKOUR", "WALLRUN", "SLIDE"]
+const DRESSED_KINDS := ["PARKOUR", "WALLRUN", "SLIDE", "SURFACE"]
+## Looks that are a whole dressed building, not just a surface: body meta
+## "look" -> obstacle_dresser.gd style.
+const LOOK_DRESSES := {"TOWER": "broadcast_tower", "TOWER_BASE": "tower_base"}
 const OUTLINE_SHADER := preload("res://art/shaders/outline_post.gdshader")
 const SpeedLines := preload("res://art/fx/speed_lines.gd")
 const ChaseCamera := preload("res://art/look/chase_camera.gd")
@@ -48,6 +52,8 @@ const PALETTE := {
 	"BRICK": Color(0.42, 0.24, 0.19),
 	"CORRUGATED": Color(0.40, 0.47, 0.48),
 	"WOOD": Color(0.56, 0.42, 0.29),
+	"TOWER": Color(0.50, 0.48, 0.45),
+	"TOWER_BASE": Color(0.50, 0.48, 0.45),
 }
 
 ## Which wasteland.gdshader surface each kind uses, and its texture scale in
@@ -67,6 +73,8 @@ const SURFACES := {
 	"BRICK": [Surface.BRICK, 1.0],
 	"CORRUGATED": [Surface.CORRUGATED, 1.0],
 	"WOOD": [Surface.WOOD, 1.0],
+	"TOWER": [Surface.FACADE, 1.0],
+	"TOWER_BASE": [Surface.CONCRETE, 1.0],
 }
 
 ## Ambient (shadow) color and strength: warm gray, like light bounced off dust.
@@ -188,6 +196,8 @@ func _apply(node: Node) -> void:
 		_restyle_sun(node)
 	elif node is Player:
 		attach_to_player(node)
+	elif node is Node3D and node.is_in_group("targets") and dress_obstacles:
+		_dress_target(node)
 
 
 func _restyle_geometry(g: GeometryInstance3D) -> void:
@@ -211,18 +221,32 @@ func _restyle_geometry(g: GeometryInstance3D) -> void:
 	if dress_obstacles and body is StaticBody3D and g is MeshInstance3D and DRESSED_KINDS.has(kind) \
 			and not body.has_meta("look") and not body.has_node("Dress"):
 		_dress(body, g)
+	elif dress_obstacles and body is StaticBody3D and g is MeshInstance3D and LOOK_DRESSES.has(kind) \
+			and not body.has_node("Dress"):
+		_dress(body, g, LOOK_DRESSES[kind])
 
 
-## Dresses a gameplay obstacle as part of the city. Visual only.
-func _dress(body: Node3D, core: MeshInstance3D) -> void:
+## Dresses a gameplay obstacle (or a whole building) as part of the city.
+## Visual only.
+func _dress(body: Node3D, core: MeshInstance3D, style := "") -> void:
 	var dresser := _optional(DRESSER_PATH) as Script
 	if dresser == null:
 		return
-	var node: Node = dresser.dress(body, core, self)
+	var node: Node = dresser.dress(body, core, self, style)
 	if node != null:
 		_attached.append(node)
 		if not core.visible:
 			_hidden.append(core)
+
+
+## Dresses a practice target as junk to shoot at. Visual only.
+func _dress_target(target: Node3D) -> void:
+	var dresser := _optional(TARGET_DRESSER_PATH) as Script
+	if dresser == null:
+		return
+	var node: Node = dresser.dress(target, self, _hidden)
+	if node != null:
+		_attached.append(node)
 
 
 func _kind_for(g: Node, base: Color) -> String:

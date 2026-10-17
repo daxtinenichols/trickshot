@@ -168,7 +168,117 @@ func test_obstacles_dress_as_the_city() -> void:
 	for body: Node in level.find_children("*", "StaticBody3D", true, false):
 		if body.has_node("Dress"):
 			again += 1
-	check(again == kinds.PARKOUR + kinds.WALLRUN + _count_kind("SLIDE"), "dressed again when back on")
+	check(again == kinds.PARKOUR + kinds.WALLRUN + _count_kind("SLIDE") + _count_kind("SURFACE"), "dressed again when back on")
+
+
+## Ramps, banks and loops are dressed too (concrete channel walls, scrap
+## steel track), each kind of piece in one style, collision untouched.
+func test_surfaces_dress_as_the_city() -> void:
+	var look := _look()
+	var shapes := {}
+	for body: Node in level.find_children("*", "StaticBody3D", true, false):
+		if body.get_meta("kind", "") == "SURFACE":
+			for c in body.get_children():
+				if c is CollisionShape3D:
+					shapes[c] = [(c.shape as BoxShape3D).size, (c as Node3D).global_transform]
+	check(shapes.size() > 20, "the sandbox has ramps, banks and loops")
+	look._apply_all(level)
+	var styles := {}
+	var plain := 0
+	for body: Node in level.find_children("*", "StaticBody3D", true, false):
+		if body.get_meta("kind", "") == "SURFACE":
+			var d := body.get_node_or_null("Dress")
+			if d == null:
+				plain += 1
+			else:
+				styles[d.get_meta("style")] = true
+	check(plain == 0, "every runnable surface dressed (%d plain)" % plain)
+	check(styles.has("track") and styles.has("channel"), "loops and quarter pipes as track, banks as channel walls (%s)" % [styles.keys()])
+	var same := true
+	for c: CollisionShape3D in shapes:
+		if (c.shape as BoxShape3D).size != shapes[c][0] or not c.global_transform.is_equal_approx(shapes[c][1]):
+			same = false
+	check(same, "collision untouched")
+
+
+## A building with the "TOWER" look becomes the broadcast tower: everything
+## but the roof mast stays inside its box, and F9 brings the block back.
+func test_broadcast_tower_dress() -> void:
+	var look := _look()
+	var size := Vector3(50, 72, 50)
+	var at := Vector3(200, 36, 200)
+	var body := StaticBody3D.new()
+	body.position = at
+	body.set_meta("kind", "NEUTRAL")
+	body.set_meta("look", "TOWER")
+	var cs := CollisionShape3D.new()
+	var box := BoxShape3D.new()
+	box.size = size
+	cs.shape = box
+	body.add_child(cs)
+	var mesh := MeshInstance3D.new()
+	var bm := BoxMesh.new()
+	bm.size = size
+	mesh.mesh = bm
+	var m := ShaderMaterial.new()
+	m.shader = preload("res://levels/graybox.gdshader")
+	m.set_shader_parameter("base_color", Color(0.6, 0.6, 0.6))
+	mesh.material_override = m
+	body.add_child(mesh)
+	level.add_child(body)
+	look._apply_all(body)
+	var dress := body.get_node_or_null("Dress")
+	check(dress != null and dress.get_meta("style", "") == "broadcast_tower", "dressed as the broadcast tower")
+	check(not mesh.visible, "the plain block is hidden")
+	var outside := 0
+	var mast := 0
+	var bounds := AABB(at - size * 0.5 - Vector3(0.05, 0.05, 0.05), size + Vector3(0.1, 0.1, 0.1))
+	for mi: MeshInstance3D in dress.find_children("*", "MeshInstance3D", true, false):
+		var a := mi.global_transform * mi.get_aabb()
+		if a.position.y >= at.y + size.y * 0.5 - 0.1:
+			mast += 1  # on the roof, out of reach
+		elif not bounds.encloses(a):
+			outside += 1
+	check(outside == 0, "nothing below the roof sticks out of the box (%d)" % outside)
+	check(mast > 20, "a lattice mast on the roof (%d pieces)" % mast)
+	look.set_enabled(false)
+	check(mesh.visible and body.get_node_or_null("Dress") == null, "look off: the block is back")
+	look.set_enabled(true)
+	body.queue_free()
+
+
+## Practice targets look like junk set up to shoot at, without changing
+## their hitboxes, and their own meshes come back when the look is off.
+func test_targets_dress_as_junk() -> void:
+	var look := _look()
+	var targets := level.find_children("*", "ShootingTarget", true, false)
+	check(targets.size() > 0, "the sandbox has targets")
+	var before := {}
+	for t: Node in targets:
+		for hb in t.find_children("*", "StaticBody3D", true, false):
+			before[hb] = (hb as Node3D).global_transform
+	look._apply_all(level)
+	var styles := {}
+	var dressed := 0
+	for t: Node in targets:
+		var d := t.find_child("TargetLook", true, false)
+		if d != null:
+			dressed += 1
+			styles[d.get_meta("style")] = true
+	check(dressed == targets.size(), "every target dressed (%d of %d)" % [dressed, targets.size()])
+	check(styles.size() >= 2, "in more than one style (%s)" % [styles.keys()])
+	var same := true
+	for hb: Node3D in before:
+		if not hb.global_transform.is_equal_approx(before[hb]):
+			same = false
+	check(same, "hitboxes untouched")
+	look.set_enabled(false)
+	var left := 0
+	for t: Node in targets:
+		if t.find_child("TargetLook", true, false) != null:
+			left += 1
+	check(left == 0, "look off: plain targets back")
+	look.set_enabled(true)
 
 
 func _count_kind(kind: String) -> int:
