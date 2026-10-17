@@ -29,6 +29,7 @@ later".
  "title": "On Air",
  "runner": "",                  // "" = the player's pick; "echo" or "parker" forces one
  "base": "",                    // optional: build on an existing map, e.g. "res://maps/rooftop_course_builder.gd"
+ "base_set": {},                // optional: the base builder's exported settings, e.g. {"hide_course_marks": true}
  "fail_y": 2.5,                 // below this you've fallen: back to the last checkpoint
  "par_seconds": 60,
  "start": {"at": [0, 8, -3], "yaw": 0},
@@ -119,6 +120,10 @@ are, so its triggers are distances along the run, not world z.
 
 `"chalk": true` paints the run: an orange courier chalk arrow where each
 main-line roof starts, and a faded mark on the other line of a fork.
+
+`"roof_look"` sets the art look of every generated roof building (default
+`FACADE`; a segment's own `look` wins). `TOWER_BASE` dresses them as the
+broadcast tower's scaffolded concrete decks (m10).
 
 Roofs also get edge clutter from `clutter` (a mission-level list of props),
 kept out of run-ups, landings and features. Keep lines long and open:

@@ -40,6 +40,8 @@ const SHOTS := [
 	["m09_rail_bridge", Vector3(120, 300, 100), Vector3(-260, 0, -420), "m09_overview"],
 	["m10_the_climb", Vector3(20, 30, -150), Vector3(-40, 20, -172), "m10_platforms"],
 	["m10_the_climb", Vector3(80, 200, 80), Vector3(-90, 30, -90), "m10_overview"],
+	["m10_the_climb", Vector3(-62, 52, -70), Vector3(-90, 40, -110), "m10_tower_scaffold"],
+	["m10_the_climb", Vector3(30, 40, 20), Vector3(-60, 25, -60), "m10_tower_decks"],
 	["m11_dead_air", Vector3(0, 48.6, -36), Vector3(0, 47.5, -80), "m11_lobby"],
 	["m11_dead_air", Vector3(100, 260, 60), Vector3(-220, 40, -300), "m11_overview"],
 	["m12_signal_out", Vector3(-14, 66, 10), Vector3(0, 56, -30), "m12_tower"],

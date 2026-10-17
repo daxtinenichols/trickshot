@@ -18,15 +18,17 @@ extends RefCounted
 ##
 ## ArtLook calls dress() for every PARKOUR, WALLRUN, SLIDE and SURFACE body
 ## that has no "look" meta of its own, and for bodies whose "look" asks for a
-## whole building (see ArtLook.LOOK_DRESSES: "TOWER" is the broadcast tower). A map can pick the style with the body meta
-## "dress" (one of STYLES, or "none" to keep the plain box). Otherwise the
+## whole building (see ArtLook.LOOK_DRESSES: "TOWER" is the broadcast tower,
+## "TOWER_BASE" the scaffolded decks round it). A map can pick the style
+## with the body meta "dress" (one of STYLES, or "none" to keep the plain
+## box). Otherwise the
 ## style comes from the box's shape, and the variant from a hash of where it
 ## stands, so it's the same every run. Loaded by path (no class_name).
 
 ## Every style dress() knows.
 const STYLES := ["barrier", "brick", "rail", "sandbags", "pipe", "crates", "planter",
 	"brick_wall", "concrete_wall", "hoarding", "billboard", "container", "sheet", "escalator",
-	"channel", "track", "ramp", "broadcast_tower"]
+	"channel", "track", "ramp", "broadcast_tower", "tower_base"]
 
 ## Paints, muted so nothing shouts. Hoardings keep a faded blue-green and
 ## crates and rails a little color, so the language still reads.
@@ -94,6 +96,7 @@ static func dress(body: Node3D, core: MeshInstance3D, look: Object, forced := ""
 		"track": d.track()
 		"ramp": d.ramp()
 		"broadcast_tower": d.broadcast_tower()
+		"tower_base": d.tower_base()
 	root.set_meta("style", style)
 	body.add_child(root)
 	return root
@@ -523,9 +526,35 @@ class _Dress:
 		var shell := 1.2
 		var w := s.x - shell * 2.0
 		var d := s.z - shell * 2.0
+		_tower_core(w, d, 5.0, true)
+		var bands := 4
+		for i in bands:
+			var c := AVIATION_RED if i % 2 == 0 else AVIATION_WHITE
+			raw(Vector3(0, top() - 1.0 - 1.6 * i, 0), Vector3(w + 0.1, 1.6, d + 0.1), mat("SIGN", c))
+		raw(Vector3(0, top() + 0.6, 0), Vector3(w + 0.4, 1.2, d + 0.4), mat("NEUTRAL", CONCRETE_DARK))
+		_scaffold(w, d, shell)
+		_cables(w, d)
+		_mast()
+
+	## The tower's lower decks you climb round (look "TOWER_BASE"): the
+	## same finned concrete in a lighter scaffold, under a concrete roof
+	## deck that covers the whole box, so the roof you run on is exactly
+	## where it looks.
+	func tower_base() -> void:
+		hide_core()
+		var shell := 1.2
+		var w := s.x - shell * 2.0
+		var d := s.z - shell * 2.0
+		_tower_core(w, d, 8.0, false)
+		_scaffold(w, d, shell, 6.0, 4.0, false, true)
+		raw(Vector3(0, top() - 0.2, 0), Vector3(s.x, 0.4, s.z), mat("NEUTRAL", CONCRETE))
+		raw(Vector3(0, top() - 0.55, 0), Vector3(s.x - 0.2, 0.3, s.z - 0.2), mat("NEUTRAL", CONCRETE_DARK))
+
+	## Raw concrete with deep vertical fins every `fin_step` m and a ledge at
+	## every floor, so it reads apart from the window-grid blocks around it.
+	## Tall walls also get a dark window slot down each bay.
+	func _tower_core(w: float, d: float, fin_step: float, slots: bool) -> void:
 		var y0 := bottom()
-		# Raw concrete with deep vertical fins and a ledge at every floor,
-		# so it reads apart from the window-grid blocks around it.
 		raw(Vector3.ZERO, Vector3(w, s.y, d), mat("NEUTRAL", TOWER_CONCRETE))
 		var fin := mat("NEUTRAL", TOWER_CONCRETE.lightened(0.08))
 		var slot := mat("NEUTRAL", Color(0.20, 0.19, 0.18))
@@ -534,13 +563,12 @@ class _Dress:
 			var run: Vector3 = face[1]
 			var depth: float = face[2]
 			var span: float = face[3]
-			var n := maxi(2, roundi(span / 5.0))
+			var n := maxi(2, roundi(span / fin_step))
 			for i in n + 1:
 				var t := -span * 0.5 + span * i / n
 				for sgn in [-1.0, 1.0]:
 					raw(nrm * sgn * (depth * 0.5 + 0.2) + run * t, nrm.abs() * 0.4 + run.abs() * 0.7 + Vector3.UP * s.y, fin)
-					if i < n:
-						# A dark window slot down the middle of each bay.
+					if slots and i < n and s.y > 20.0:
 						raw(nrm * sgn * (depth * 0.5 + 0.01) + run * (t + span / n * 0.5) + Vector3.UP * 2.0,
 							nrm.abs() * 0.04 + run.abs() * (span / n * 0.35) + Vector3.UP * (s.y - 14.0), slot)
 		var ledge := mat("NEUTRAL", CONCRETE_DARK)
@@ -548,20 +576,13 @@ class _Dress:
 		while y < s.y - 8.0:
 			raw(Vector3(0, y0 + y, 0), Vector3(w + 0.9, 0.5, d + 0.9), ledge)
 			y += 6.0
-		var bands := 4
-		for i in bands:
-			var c := AVIATION_RED if i % 2 == 0 else AVIATION_WHITE
-			raw(Vector3(0, top() - 1.0 - 1.6 * i, 0), Vector3(w + 0.1, 1.6, d + 0.1), mat("SIGN", c))
-		raw(Vector3(0, top() + 0.6, 0), Vector3(w + 0.4, 1.2, d + 0.4), ledge)
-		_scaffold(w, d, shell)
-		_cables(w, d)
-		_mast()
 
 	## A tubular scaffold on every face, in the outer shell of the box: poles
-	## every 3 m, ledgers every 2 m, plank decks every 6 m, and braces.
+	## every `bay` m, ledgers every `step` m, plank decks every 6 m, and
+	## braces if asked. `full` takes every face up to the roof.
 	## Faces alternate how high it reaches, like work stopped at different
 	## floors.
-	func _scaffold(w: float, d: float, shell: float) -> void:
+	func _scaffold(w: float, d: float, shell: float, bay_step := 3.0, step := 2.0, braces := true, full := false) -> void:
 		var steel := mat("RUST")
 		var plank := mat("WOOD", TIMBER.darkened(0.1))
 		var faces := [
@@ -575,30 +596,32 @@ class _Dress:
 			var run: Vector3 = faces[fi][1]
 			var out: float = faces[fi][2]
 			var span: float = faces[fi][3]
-			var reach := s.y * (0.92 if (fi + int(h * 4.0)) % 2 == 0 else 0.62)
+			var reach := s.y - 0.4 if full else s.y * (0.92 if (fi + int(h * 4.0)) % 2 == 0 else 0.62)
 			var y0 := bottom()
 			var mid := y0 + reach * 0.5
-			var n := maxi(2, roundi(span / 3.0))
+			var n := maxi(2, roundi(span / bay_step))
 			for i in n + 1:
 				var t := -span * 0.5 + span * i / n
 				for o in [-0.4, 0.4]:
 					_pole(normal * (out + o) + run * t + Vector3.UP * mid, Vector3.UP, reach, 0.07, steel)
-			var y := 2.0
+			var y := step
 			while y <= reach:
 				for o in [-0.4, 0.4]:
 					_pole(normal * (out + o) + Vector3.UP * (y0 + y), run, span, 0.05, steel)
 				if int(y) % 6 == 0:
 					raw(normal * out + Vector3.UP * (y0 + y - 0.1), (run.abs() * span + normal.abs() * 0.9 + Vector3.UP * 0.06), plank)
-				y += 2.0
+				y += step
 			# Weathered sheeting hung over some bays, two floors high.
 			var sheet_paints := [HOARDING_PAINTS[0], HOARDING_PAINTS[2], CONCRETE]
 			for i in n:
 				var k := fposmod(h * 13.0 + fi * 0.37 + i * 0.61, 1.0)
-				if k < 0.3:
+				if k < 0.3 and reach > 16.0:
 					var top_y := clampf(fposmod(k * 97.0, 1.0) * reach, 14.0, reach - 2.0)
 					raw(normal * (out + 0.5) + run * (-span * 0.5 + span * (i + 0.5) / n) + Vector3.UP * (y0 + top_y - 6.0),
 						run.abs() * (span / n - 0.2) + normal.abs() * 0.04 + Vector3.UP * 12.0,
 						mat("CORRUGATED", sheet_paints[i % 3]))
+			if not braces:
+				continue
 			# A brace across every other bay, zigzagging up the face.
 			var bay := span / n
 			var level := 0

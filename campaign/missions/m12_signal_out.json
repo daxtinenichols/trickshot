@@ -123,7 +123,7 @@
   ]
  },
  "pieces": [
-  {"building": [-26, 66, -20], "size": [14, 14], "look": "FACADE"},
+  {"building": [-26, 66, -20], "size": [14, 14], "look": "TOWER"},
   {"prop": "antenna_mast", "at": [-26, 66, -20]},
   {"fire": [-26, 66, -16], "size": [4, 3, 3]}
  ]

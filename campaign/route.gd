@@ -57,6 +57,7 @@ static func expand(mission: Dictionary) -> Dictionary:
 		"legs": [{"o": origin.origin, "yaw": origin.yaw, "z0": 0.0, "start": 6.0}],
 		"leg": 0, "dx": 0.0, "fork": null, "forks": [],
 		"chalk": mission.get("chalk", false),
+		"roof_look": mission.get("roof_look", "FACADE"),
 	}
 	if mission.has("route_origin") or mission.get("route_from", "") == "base_exit":
 		st.y = origin.origin.y
@@ -294,7 +295,7 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	var z0: float = st.z
 	var w: float = seg.get("width", WIDTH)
 	if st.y > 0.5:
-		_add(st, {"building": [0, st.y, z0 - length * 0.5], "size": [w, length], "look": seg.get("look", "FACADE")})
+		_add(st, {"building": [0, st.y, z0 - length * 0.5], "size": [w, length], "look": seg.get("look", st.roof_look)})
 	# (At street level, y 0, the street itself is the floor.)
 	_height(st, z0, z0 - length)
 	_set_low(st, st.y)
@@ -360,7 +361,7 @@ static func _turn(st: Dictionary, seg: Dictionary) -> void:
 	var turn := angle if left else -angle
 	if st.y > 0.5:
 		if is_equal_approx(angle, PI * 0.5):
-			_add(st, {"building": [0, st.y, pivot], "size": [size, size], "look": seg.get("look", "FACADE")})
+			_add(st, {"building": [0, st.y, pivot], "size": [size, size], "look": seg.get("look", st.roof_look)})
 		else:
 			# The near edge of the corner (where the last roof ends) and its
 			# far edge (where the next one starts), turned by the corner.
@@ -369,7 +370,7 @@ static func _turn(st: Dictionary, seg: Dictionary) -> void:
 			var far_c := Vector3(0, 0, pivot) + b * Vector3(0, 0, -size * 0.5)
 			var far_r := b * Vector3(h, 0, 0)
 			_add(st, {"slab": [[-h, z0], [h, z0], [far_c.x + far_r.x, far_c.z + far_r.z], [far_c.x - far_r.x, far_c.z - far_r.z]],
-				"top": st.y, "look": seg.get("look", "FACADE")})
+				"top": st.y, "look": seg.get("look", st.roof_look)})
 	_height(st, z0, z0 - size)
 	_set_low(st, st.y)
 	# The bot heads for the middle of the corner; it turns there.
@@ -450,7 +451,7 @@ static func _join(st: Dictionary, seg: Dictionary) -> void:
 ## reach the join together.
 static func _filler(st: Dictionary, from: float, to: float, dx: float) -> void:
 	if st.y > 0.5:
-		st.out.append([{"building": [0, st.y, (from + to) * 0.5], "size": [WIDTH, from - to], "look": "FACADE"}, st.leg, dx])
+		st.out.append([{"building": [0, st.y, (from + to) * 0.5], "size": [WIDTH, from - to], "look": st.roof_look}, st.leg, dx])
 	_height(st, from, to)
 
 
@@ -458,7 +459,7 @@ static func _filler(st: Dictionary, from: float, to: float, dx: float) -> void:
 static func _plaza(st: Dictionary, off: float, length: float) -> void:
 	var z0: float = st.z
 	if st.y > 0.5:
-		_add(st, {"building": [off * 0.5, st.y, z0 - length * 0.5], "size": [absf(off) + WIDTH, length], "look": "FACADE"})
+		_add(st, {"building": [off * 0.5, st.y, z0 - length * 0.5], "size": [absf(off) + WIDTH, length], "look": st.roof_look})
 	_height(st, z0, z0 - length)
 	_set_low(st, st.y)
 	st.z = z0 - length

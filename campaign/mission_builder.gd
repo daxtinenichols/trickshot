@@ -75,6 +75,14 @@ func build() -> void:
 			# The route (or the mission's own pieces) carries on past the
 			# base's exit.
 			base.open_exit = true
+		# Settings the base builder exports (e.g. Rooftops'
+		# hide_course_marks), set before it builds.
+		var settings: Dictionary = mission.get("base_set", {})
+		for key: String in settings:
+			if key in base:
+				base.set(key, settings[key])
+			else:
+				push_warning("MissionBuilder: %s has no setting %s" % [base_path, key])
 		add_child(base)  # builds itself in _ready
 	for piece: Dictionary in mission.get("pieces", []):
 		_piece(piece)

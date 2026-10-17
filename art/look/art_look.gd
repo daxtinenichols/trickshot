@@ -29,7 +29,7 @@ const TARGET_DRESSER_PATH := "res://art/look/target_dresser.gd"
 const DRESSED_KINDS := ["PARKOUR", "WALLRUN", "SLIDE", "SURFACE"]
 ## Looks that are a whole dressed building, not just a surface: body meta
 ## "look" -> obstacle_dresser.gd style.
-const LOOK_DRESSES := {"TOWER": "broadcast_tower"}
+const LOOK_DRESSES := {"TOWER": "broadcast_tower", "TOWER_BASE": "tower_base"}
 const OUTLINE_SHADER := preload("res://art/shaders/outline_post.gdshader")
 const SpeedLines := preload("res://art/fx/speed_lines.gd")
 const ChaseCamera := preload("res://art/look/chase_camera.gd")
@@ -53,6 +53,7 @@ const PALETTE := {
 	"CORRUGATED": Color(0.40, 0.47, 0.48),
 	"WOOD": Color(0.56, 0.42, 0.29),
 	"TOWER": Color(0.50, 0.48, 0.45),
+	"TOWER_BASE": Color(0.50, 0.48, 0.45),
 }
 
 ## Which wasteland.gdshader surface each kind uses, and its texture scale in
@@ -73,6 +74,7 @@ const SURFACES := {
 	"CORRUGATED": [Surface.CORRUGATED, 1.0],
 	"WOOD": [Surface.WOOD, 1.0],
 	"TOWER": [Surface.FACADE, 1.0],
+	"TOWER_BASE": [Surface.CONCRETE, 1.0],
 }
 
 ## Ambient (shadow) color and strength: warm gray, like light bounced off dust.
