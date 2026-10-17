@@ -154,6 +154,13 @@ var _eye_height := 1.66
 var _kick_pitch := 0.0
 var _kick_yaw := 0.0
 var _kick_recovery := 12.0
+## Recoil springs: the kick punches up over a couple of frames and settles
+## (critically damped), plus a little roll and a field-of-view punch.
+var _kick_vel := Vector2.ZERO
+var _kick_roll := 0.0
+var _kick_roll_vel := 0.0
+var _fov_base := 0.0
+var _fov_punch := 0.0
 
 ## Set by the held weapon: 0 = hip, 1 = fully aimed down sights.
 var invert_y := false
@@ -1814,6 +1821,10 @@ func respawn(t: Variant = null) -> void:
 	_since_floor = 999.0
 	_change_state(State.AIR)
 	pitch = 0.0
+	_kick_vel = Vector2.ZERO
+	_kick_roll = 0.0
+	_kick_roll_vel = 0.0
+	_fov_punch = 0.0
 	_kick_pitch = 0.0
 	_kick_yaw = 0.0
 	_air_yaw = 0.0
@@ -1851,9 +1862,16 @@ func _process(delta: float) -> void:
 				pad *= tuning.gamepad_air_spin
 				pitch_scale = 1.0
 			_look(-stick.x * pad, -stick.y * pad * pitch_scale * (-1.0 if invert_y else 1.0))
-	var settle := exp(-_kick_recovery * delta)
-	_kick_pitch *= settle
-	_kick_yaw *= settle
+	var w := _kick_omega()
+	var ks := _spring(Vector2(_kick_pitch, _kick_yaw), _kick_vel, w, delta)
+	var kick: Vector2 = ks[0]
+	_kick_vel = ks[1]
+	_kick_pitch = minf(kick.x, deg_to_rad(8.0))
+	_kick_yaw = clampf(kick.y, deg_to_rad(-3.0), deg_to_rad(3.0))
+	var r := _spring(_kick_roll, _kick_roll_vel, w, delta)
+	_kick_roll = r[0]
+	_kick_roll_vel = r[1]
+	_fov_punch *= exp(-14.0 * delta)
 	head.rotation = Vector3(pitch + _kick_pitch + roll_spin(), _surface_look_yaw if state == State.SURFACE else 0.0, 0.0)
 
 	var speed := horizontal_speed()
@@ -1883,7 +1901,7 @@ func _process(delta: float) -> void:
 		_air_roll_view = wrapf(_air_roll, -PI, PI)
 	else:
 		_air_roll_view = lerp_angle(_air_roll_view, 0.0, 1.0 - exp(-12.0 * delta))
-	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view)
+	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view + _kick_roll)
 	if Engine.time_scale < 0.999:
 		# In slow motion the ticks are far apart: smooth the view between them.
 		head.global_transform = visual_transform() * head.transform
@@ -1899,15 +1917,36 @@ func _process(delta: float) -> void:
 
 	var over := clampf((speed - tuning.run_speed) / maxf(tuning.top_speed + 4.0 - tuning.run_speed, 0.1), 0.0, 1.0)
 	var target_fov := lerpf(tuning.base_fov + tuning.speed_fov_bonus * over, aim_fov, aim_zoom)
-	camera.fov = lerpf(camera.fov, target_fov, 1.0 - exp(-(6.0 + 20.0 * aim_zoom) * delta))
+	if _fov_base <= 0.0:
+		_fov_base = camera.fov
+	_fov_base = lerpf(_fov_base, target_fov, 1.0 - exp(-(6.0 + 20.0 * aim_zoom) * delta))
+	camera.fov = _fov_base + _fov_punch * (1.0 - aim_zoom * 0.7)
 
 
 ## Recoil: kicks the view up (and a little sideways), settling back at
 ## `recovery` per second. Purely visual on top of the aim direction.
-func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float) -> void:
-	_kick_pitch = minf(_kick_pitch + pitch_amount, deg_to_rad(8.0))
-	_kick_yaw = clampf(_kick_yaw + yaw_amount, deg_to_rad(-3.0), deg_to_rad(3.0))
+## Recoil: the view punches up by about pitch_amount (and yaw_amount, roll)
+## over a couple of frames, then settles. Presentation only: the real pitch
+## and yaw never change, so aim and flips stay clean. fov_punch widens the
+## view for a moment (degrees).
+func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float, roll_amount := 0.0, fov_punch := 0.0) -> void:
 	_kick_recovery = recovery
+	# A critically damped spring started with this speed peaks at `amount`.
+	var w := _kick_omega()
+	_kick_vel += Vector2(pitch_amount, yaw_amount) * w * exp(1.0)
+	_kick_roll_vel += roll_amount * w * exp(1.0)
+	_fov_punch += fov_punch
+
+
+func _kick_omega() -> float:
+	return maxf(_kick_recovery * 2.0, 1.0)
+
+
+## Advances a critically damped spring (toward 0) exactly, at any frame time.
+static func _spring(x: Variant, v: Variant, w: float, dt: float) -> Array:
+	var e := exp(-w * dt)
+	var c: Variant = v + x * w
+	return [(x + c * dt) * e, (v - c * w * dt) * e]
 
 
 ## The roll's forward camera turn (radians, added to the view pitch).

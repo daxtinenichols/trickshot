@@ -14,6 +14,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	SlowMo.set_speed(1.0)  # ends any hit-stop
 	w.queue_free()
 	await tree.process_frame
 
@@ -302,3 +303,78 @@ func test_hip_fire_shot_through_crosshair_at_range() -> void:
 	await w.step(2)
 	await _shoot(_head(t))
 	check(hits.size() == 1 and hits[0].zone == &"head", "60 m hip-fire headshot lands")
+
+
+func test_recoil_punches_up_then_settles() -> void:
+	var p := await _setup()
+	_aim(Vector3(0, 1.66, -20))
+	await _shoot(Vector3(0, 1.66, -20))
+	var kicks: Array[float] = []
+	for i in 6:
+		await tree.process_frame
+		kicks.append(p.view_kick().x)
+	check(kicks[0] > 0.0 and kicks[2] > kicks[0], "the kick builds over a few frames, not one jump (%s)" % str(kicks))
+	check(kicks.max() < deg_to_rad(_gun().stats.recoil_pitch) * 1.2, "peaks near the recoil amount")
+	check(p.camera.fov > p._fov_base + 0.2, "the view widens for a moment")
+
+
+func test_headshot_and_kill_catch_time() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	await _shoot(_head(t))
+	check(SlowMo.is_hit_stopped() and Engine.time_scale < 1.0, "a headshot catches time for a moment")
+	check(SlowMo.speed == 1.0, "without touching the slow-mo setting")
+	var t0 := Time.get_ticks_msec()
+	while SlowMo.is_hit_stopped() and Time.get_ticks_msec() - t0 < 2000:
+		await tree.process_frame
+	check(not SlowMo.is_hit_stopped() and Engine.time_scale == 1.0 and Engine.physics_ticks_per_second == 60, "then back to full speed")
+	await _settle_gun()
+	await _shoot(_chest(t))
+	check(not SlowMo.is_hit_stopped(), "a body shot doesn't")
+
+
+func test_hit_stop_keeps_your_slow_motion() -> void:
+	SlowMo.set_speed(0.5)
+	SlowMo.hit_stop(0.02, 0.2)
+	check_near(Engine.time_scale, 0.2, 0.001, "dips below your slow motion")
+	var t0 := Time.get_ticks_msec()
+	while SlowMo.is_hit_stopped() and Time.get_ticks_msec() - t0 < 2000:
+		await tree.process_frame
+	check_near(Engine.time_scale, 0.5, 0.001, "and comes back to it")
+	check_near(Engine.time_scale / Engine.physics_ticks_per_second, 1.0 / 60.0, 1e-9, "ticks stay 1/60 s throughout")
+
+
+func test_hit_marker_pops_on_hits() -> void:
+	var m := HitMarker.new()
+	w.add_child(m)
+	m.show_hit(true, false)
+	check(m.pop_scale() > 1.5 and m.is_showing(), "pops in big on a headshot")
+	for i in 10:
+		await tree.process_frame
+	check(m.pop_scale() < 1.1, "and snaps down")
+
+
+func test_gun_hooks_for_art() -> void:
+	await _setup()
+	var gun := _gun()
+	var shots := []
+	gun.shot.connect(func(muzzle: Vector3, end: Vector3, result: Dictionary) -> void: shots.append([muzzle, end, result]))
+	var t := _target(Vector3(0, 0, -15))
+	await _shoot(_chest(t))
+	check(shots.size() == 1, "shot signal on every shot")
+	if shots.size() == 1:
+		check(shots[0][0].distance_to(gun.muzzle_transform().origin) < 0.2, "from the muzzle")
+		check(not (shots[0][2] as Dictionary).is_empty() and shots[0][1].distance_to(_chest(t)) < 0.5, "to the hit, with its result")
+	check(gun.reload_progress() == -1.0, "not reloading")
+	gun.reload_pressed = true
+	await w.step(1)
+	gun.reload_pressed = false
+	await w.step(30)
+	check_between(gun.reload_progress(), 0.2, 0.8, "partway through a reload")
+	gun.builtin_visuals = false
+	var shown := 0
+	for m in gun.view_model.find_children("*", "MeshInstance3D", true, false):
+		if (m as MeshInstance3D).is_visible_in_tree():
+			shown += 1
+	check(shown == 0, "the test pistol's boxes hide for a real model")
+	check(gun.view_model.visible, "the view model node stays for the real gun")
