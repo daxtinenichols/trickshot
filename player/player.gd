@@ -64,8 +64,8 @@ var _wallrun_angle := 0.0
 var _wallrun_speed := 0.0
 ## Once you angle a wallrun with lean, it holds the angle you set.
 var _wallrun_steered := false
-## The player's transform at the previous tick, for smoothing the view in
-## slow motion.
+## The player's transform at the previous tick, for smoothing the view
+## between ticks.
 var _prev_origin := Vector3.ZERO
 var _prev_rotation := Quaternion.IDENTITY
 var _kicks_left := 0
@@ -1803,10 +1803,11 @@ func _peek_room(want: float) -> float:
 
 
 ## Where the player is drawn this frame: between the last two ticks, facing
-## where you look right now. Matches global_transform at normal speed; in
-## slow motion (ticks far apart) it keeps the view and body moving smoothly.
+## where you look right now. Ticks come at a fixed rate, frames whenever the
+## screen is ready (and far less often than frames in slow motion), so this
+## keeps the view and body gliding instead of stepping from tick to tick.
 func visual_transform() -> Transform3D:
-	if Engine.time_scale >= 0.999:
+	if not is_physics_processing():
 		return global_transform
 	var t := Engine.get_physics_interpolation_fraction()
 	var pos := _prev_origin.lerp(global_position, t)
@@ -1939,9 +1940,8 @@ func _process(delta: float) -> void:
 	else:
 		_air_roll_view = lerp_angle(_air_roll_view, 0.0, 1.0 - exp(-12.0 * delta))
 	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view + _kick_roll)
-	if Engine.time_scale < 0.999:
-		# In slow motion the ticks are far apart: smooth the view between them.
-		head.global_transform = visual_transform() * head.transform
+	# Smooth the view between ticks.
+	head.global_transform = visual_transform() * head.transform
 	if not _view_offset.is_equal_approx(Quaternion.IDENTITY):
 		# Eases out from a standstill (critically damped), so the view starts
 		# moving gently instead of jumping.

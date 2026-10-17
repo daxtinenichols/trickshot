@@ -26,6 +26,7 @@ const REBINDABLE := [
 	["aim", "Aim down sights"],
 	["reload", "Reload"],
 	["fire_mode", "Semi / full auto"],
+	["slow_mo", "Slow motion"],
 	["reset", "Respawn"],
 ]
 

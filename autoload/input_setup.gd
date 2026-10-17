@@ -43,6 +43,7 @@ const KEYS := {
 const MOUSE_BUTTONS := {
 	"fire": [MOUSE_BUTTON_LEFT],
 	"aim": [MOUSE_BUTTON_RIGHT],
+	"slow_mo": [MOUSE_BUTTON_MIDDLE],
 }
 
 const PAD_BUTTONS := {
@@ -58,8 +59,7 @@ const PAD_BUTTONS := {
 	"boost": [JOY_BUTTON_LEFT_STICK],
 	"lean_left": [JOY_BUTTON_LEFT_SHOULDER],
 	"lean_right": [JOY_BUTTON_RIGHT_SHOULDER],
-	"slow_down": [JOY_BUTTON_DPAD_DOWN],
-	"speed_up": [JOY_BUTTON_DPAD_UP],
+	"slow_mo": [JOY_BUTTON_DPAD_DOWN],
 	"pause": [JOY_BUTTON_START],
 }
 

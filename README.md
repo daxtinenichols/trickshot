@@ -31,13 +31,13 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Respawn | Backspace | Back |
 | Menu (maps, moves, settings, controls) | Esc | Start |
 | Jump to zone | 1–9, 0 = shooting range, - = ramps and loop | |
-| Slow motion (down to 10%, back up to normal) | Mouse wheel down / up, or F3 for 30% | D-pad down / up |
+| Slow motion (40% for 3 s, then a 6 s cooldown) | Click the mouse wheel | D-pad down |
 | HUD / tuning / speed trail | F1 / F2 / F4 | |
 | Art look / chase camera / next level / corner view | F9 / F10 / F11 / F12 | |
 
 You always sprint: there's no walk or sprint key. Let go of the stick to stop.
 
-Scroll the mouse wheel down to slow time in 10% steps, and up to bring it back; it never goes faster than normal. The screen edges darken while time is slowed. The game still runs the same 1/60 s steps, just less often, so a move in slow motion plays out exactly as it would at full speed.
+Click the mouse wheel and time eases down to 40% for 3 seconds, then eases back; click again to end it early. It then needs 6 seconds to recharge (the readout under the score counts down). The screen edges darken while time is slowed. The game still runs the same 1/60 s steps, just less often, so a move in slow motion plays out exactly as it would at full speed.
 
 A small third-person view in the lower-left corner shows your character so you can see what your moves look like (F12 hides it).
 
@@ -134,7 +134,7 @@ Press **F2** in game for live sliders on every movement number. **Save** writes 
 
 Tuning saved before playtest 2 is ignored (the movement defaults changed a lot), so you start from the new feel.
 
-F3 toggles slow motion and F4 shows a speed-colored trail, which help when judging a move.
+F3 toggles slow motion with no time limit or cooldown, and F4 shows a speed-colored trail, which help when judging a move.
 
 ## Tests
 
