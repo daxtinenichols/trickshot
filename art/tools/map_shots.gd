@@ -4,13 +4,25 @@ extends SceneTree
 
 const SHOTS := [
 	# [scene, camera position, look at, name]
+	["res://levels/sandbox.tscn", Vector3(16, 2.2, -4), Vector3(20, 0.6, -24), "sandbox_vaults"],
+	["res://levels/sandbox.tscn", Vector3(34, 4.5, 2), Vector3(42, 1.5, -30), "sandbox_mantles"],
+	["res://levels/sandbox.tscn", Vector3(66, 2.5, -2), Vector3(70, 3, -30), "sandbox_wallrun"],
+	["res://levels/sandbox.tscn", Vector3(-32, 3, 4), Vector3(-20, 3, -25), "sandbox_climb"],
+	["res://levels/sandbox.tscn", Vector3(-62, 4, 6), Vector3(-55, 1, -20), "sandbox_slide"],
 	["res://maps/rooftops.tscn", Vector3(-9, 19, 8), Vector3(0, 10, -40), "rooftops_start"],
 	["res://maps/rooftops.tscn", Vector3(-10, 20, -42), Vector3(2, 10, -90), "rooftops_middle"],
 	["res://maps/rooftops.tscn", Vector3(-12, 17, -112), Vector3(0, 4, -160), "rooftops_end"],
 	["res://maps/rooftops.tscn", Vector3(1.5, 11.7, -61), Vector3(6, 11, -80), "rooftops_fp_wallrun"],
 	["res://maps/rooftops.tscn", Vector3(-10, 14, -180), Vector3(0, 4, -270), "rooftops_sprint"],
-	["res://maps/rooftops.tscn", Vector3(-9, 15, -330), Vector3(0, 7, -440), "rooftops_plank"],
-	["res://maps/rooftops.tscn", Vector3(-12, 14, -480), Vector3(2, 4, -600), "rooftops_finish"],
+	["res://maps/rooftops.tscn", Vector3(-4, 10, -318), Vector3(-14, 7.5, -366), "rooftops_corner"],
+	["res://maps/rooftops.tscn", Vector3(-12, 12, -366), Vector3(-60, 8, -369), "rooftops_split"],
+	["res://maps/rooftops.tscn", Vector3(-62, 12.5, -378), Vector3(-104, 12, -380), "rooftops_high_line"],
+	["res://maps/rooftops.tscn", Vector3(-90, 9, -360), Vector3(-150, 4.5, -360), "rooftops_low_line"],
+	["res://maps/rooftops.tscn", Vector3(-150, 12, -372), Vector3(-200, 7.5, -400), "rooftops_second_corner"],
+	["res://maps/rooftops.tscn", Vector3(-202, 10, -440), Vector3(-198, 9.5, -500), "rooftops_step_up"],
+	["res://maps/rooftops.tscn", Vector3(-201, 13, -520), Vector3(-198, 10, -580), "rooftops_fork"],
+	["res://maps/rooftops.tscn", Vector3(-206, 14, -600), Vector3(-196, 4, -700), "rooftops_finish"],
+	["res://maps/rooftops.tscn", Vector3(60, 170, 40), Vector3(-90, 0, -400), "rooftops_overview"],
 	["res://maps/combo_park.tscn", Vector3(0, 55, 62), Vector3(0, 0, -8), "park_overview"],
 	["res://maps/combo_park.tscn", Vector3(-18, 9, 26), Vector3(0, 3, 0), "park_tower"],
 	["res://maps/combo_park.tscn", Vector3(-22, 6, 14), Vector3(-38, 3, -2), "park_half_pipe"],
@@ -20,6 +32,12 @@ const SHOTS := [
 	["res://maps/combo_park.tscn", Vector3(-3, 2.5, -72), Vector3(0, 1, -130), "park_canal"],
 	["res://maps/combo_park.tscn", Vector3(-6, 5, -200), Vector3(2, 2, -260), "park_alley"],
 	["res://maps/combo_park.tscn", Vector3(-8, 4, -298), Vector3(0, 1, -360), "park_rollers"],
+	["res://maps/combo_park.tscn", Vector3(44, 9, -60), Vector3(56, 4, -110), "park_high_road"],
+	["res://maps/combo_park.tscn", Vector3(48, 11, -186), Vector3(58, 8, -240), "park_high_road_wall"],
+	["res://maps/combo_park.tscn", Vector3(12, 10, -425), Vector3(-10, 5, -490), "park_overpass"],
+	["res://maps/combo_park.tscn", Vector3(-30, 14, -470), Vector3(-25, 5, -510), "park_overpass_gap"],
+	["res://maps/mall.tscn", Vector3(0, 2.0, -342), Vector3(-2, 4, -370), "mall_store_well"],
+	["res://maps/mall.tscn", Vector3(8, 8.5, -344), Vector3(0, 2, -372), "mall_store_well_above"],
 	["res://maps/mall.tscn", Vector3(-12, 7, 46), Vector3(0, 4, 8), "mall_outside"],
 	["res://maps/mall.tscn", Vector3(-3, 8.2, -6), Vector3(2, 3, -40), "mall_atrium"],
 	["res://maps/mall.tscn", Vector3(0, 1.7, -8), Vector3(-4, 3, -28), "mall_escalators"],
@@ -70,7 +88,7 @@ func _run() -> void:
 		var cam := Camera3D.new()
 		cam.cull_mask &= ~4  # skip the first-person gun (Pistol.VIEW_LAYER)
 		cam.fov = 75.0
-		cam.far = 400.0
+		cam.far = 1200.0 if (s[3] as String).ends_with("overview") else 400.0
 		level.add_child(cam)
 		cam.look_at_from_position(s[1], s[2])
 		cam.make_current()

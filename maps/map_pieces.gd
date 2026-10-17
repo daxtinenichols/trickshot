@@ -40,6 +40,35 @@ static func bank(start: Vector3, length: float, side: float, radius := 3.0, max_
 	return out
 
 
+## A banked curve round the outside of a turn, built from short bank
+## strips, so you can carve a corner at speed instead of slowing for it.
+## `center` is the turn's center; the bank's flat edge runs round it at
+## `inner` m, from heading `yaw0` to heading `yaw1` (yaw 0 runs toward -Z,
+## +PI/2 toward -X: a left turn has yaw1 > yaw0). It rises away from the
+## center. Each strip's flow follows the curve.
+static func banked_turn(center: Vector3, inner: float, yaw0: float, yaw1: float, segments := 8, radius := 3.0, max_angle_deg := 60.0, straight := 1.0) -> Array[Dictionary]:
+	var out: Array[Dictionary] = []
+	var left := yaw1 > yaw0
+	var side := 1.0 if left else -1.0
+	var d := (yaw1 - yaw0) / segments
+	# Strips overlap a little at the outer edge so the curve has no gaps.
+	var length := 2.0 * (inner + bank_reach(radius, max_angle_deg, straight)) * tan(absf(d) * 0.5) + 0.05
+	for i in segments:
+		var yaw := yaw0 + d * (i + 0.5)
+		var right := Vector3(cos(yaw), 0, -sin(yaw))
+		var at := center + right * side * inner
+		var strip := bank(Vector3(0, 0, length * 0.5), length, side, radius, max_angle_deg, straight)
+		var xf := Transform3D(Basis(Vector3.UP, yaw), at)
+		for p in strip:
+			out.append({
+				"transform": xf * (p.transform as Transform3D),
+				"size": p.size,
+				"flow": xf.basis * (p.flow as Vector3),
+				"face": xf.basis * (p.face as Vector3),
+			})
+	return out
+
+
 ## How far a bank reaches sideways from its start (for placing it).
 static func bank_reach(radius := 3.0, max_angle_deg := 65.0, straight := 1.0) -> float:
 	var a := deg_to_rad(max_angle_deg)
@@ -77,6 +106,8 @@ static func perimeter(center: Vector3, size: Vector2, min_height := 18.0, max_he
 			var h := lerpf(min_height, max_height, fposmod(sin(float(n) * 12.9898) * 43758.5453, 1.0))
 			n += 1
 			var c := mid + along * (-length * 0.5 + step * (i + 0.5)) + Vector3(0, h * 0.5, 0)
-			var s := Vector3(step, h, depth) if along == Vector3.RIGHT else Vector3(depth, h, step)
+			# A hair longer than the step so neighbours overlap: no seam to
+			# slip a ray (or a player) through.
+			var s := Vector3(step + 0.05, h, depth) if along == Vector3.RIGHT else Vector3(depth, h, step + 0.05)
 			out.append({"transform": Transform3D(Basis.IDENTITY, c), "size": s})
 	return out

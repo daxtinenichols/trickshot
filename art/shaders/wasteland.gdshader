@@ -11,6 +11,9 @@ shader_type spatial;
 //   5 painted concrete (chips show concrete)
 //   6 building facade (concrete with a grid of dark, some broken, windows)
 //   7 floor tiles (60 cm, grout, cracked and missing tiles)
+//   8 brick (running bond, mortar, spalled bricks; base_color = brick)
+//   9 corrugated sheet metal (vertical ribs, painted base_color over rust)
+//   10 wood planks (boards with gaps and grain, base_color = timber)
 
 render_mode specular_disabled;
 
@@ -204,6 +207,65 @@ vec3 tiles(vec2 p, vec3 col) {
 	return mix(t, concrete(p, under_color.rgb * 0.75), gone);
 }
 
+// Running-bond brick: 24 x 7 cm bricks (times tex_scale), mortar, a few
+// spalled or darker bricks, and soot.
+vec3 brick(vec2 p, vec3 col) {
+	vec2 size = vec2(0.24, 0.075);
+	vec2 cell = p / size;
+	float row = floor(cell.y);
+	cell.x += mod(row, 2.0) * 0.5;
+	vec2 id = floor(cell);
+	vec2 f = fract(cell);
+	float h = hash12(id + 13.0);
+	vec3 b = col * mix(0.82, 1.08, steps(h, 4.0));
+	b *= mix(0.92, 1.0, steps(fbm(p * 0.7), 3.0));
+	// Spalled bricks show the paler core.
+	b = mix(b, col * 1.25 + 0.05, step(0.94, h) * 0.6);
+	vec2 mw = vec2(0.012) / size;
+	float mortar = 1.0 - cut(f.x, mw.x) * (1.0 - cut(f.x, 1.0 - mw.x)) * cut(f.y, mw.y * 1.6) * (1.0 - cut(f.y, 1.0 - mw.y * 1.6));
+	b = mix(b, under_color.rgb * 0.9, mortar);
+	// Patches where the brick has been rendered over with concrete.
+	float render_ = cut(fbm(p * 0.25 + 41.0), 0.68);
+	return mix(b, concrete(p, under_color.rgb * 0.95), render_);
+}
+
+// Ribs every 15 cm (times tex_scale) across the horizontal axis of a wall.
+float corrugation(float x) {
+	return sin(x / (0.15 * max(tex_scale, 0.01)) * 6.2832);
+}
+
+vec3 corrugated(vec2 p, vec3 paint, vec3 n, float rib) {
+	vec3 col = paint * mix(0.9, 1.0, steps(fbm(p * 0.5), 3.0));
+	// Rib light and shade, posterized so it stays in the cel style.
+	col *= mix(0.86, 1.06, steps(rib * 0.5 + 0.5, 3.0));
+	// Paint gone to rust in big patches, worse near the bottom.
+	float r = fbm(vec2(p.x * 0.6, p.y * 0.9) + 23.0) - p.y * 0.02;
+	col = mix(col, rust_color.rgb * mix(0.85, 1.1, steps(fbm(p * 2.5), 3.0)), cut(r, 0.6) * 0.9);
+	// Sheet joins every 0.9 m along the wall, with bolt heads.
+	float join = grid(vec2(p.x, 0.0), 0.9, 0.01);
+	col *= 1.0 - join * 0.3;
+	return col;
+}
+
+vec3 planks(vec2 p, vec3 col, bool along_x) {
+	vec2 q = along_x ? p : p.yx;
+	float w = 0.16;
+	float id = floor(q.y / w);
+	float f = fract(q.y / w);
+	float h = hash12(vec2(id, 7.0));
+	vec3 c = col * mix(0.78, 1.08, steps(h, 4.0));
+	// Grain: noise stretched along the board.
+	float g = fbm(vec2(q.x * 0.8, q.y * 14.0) + id * 3.1);
+	c *= mix(0.86, 1.04, steps(g, 3.0));
+	// Board ends staggered every 1.2-2.4 m.
+	float len = mix(1.2, 2.4, h);
+	float e = fract((q.x + h * 7.0) / len);
+	float gap = 1.0 - cut(f, 0.06) * (1.0 - cut(f, 0.94)) * cut(e, 0.008) * (1.0 - cut(e, 0.992));
+	c = mix(c, col * 0.3, gap);
+	// Weathered grey where the sun has bleached it.
+	return mix(c, vec3(dot(c, vec3(0.33))) * 1.1, cut(fbm(p * 0.4 + 5.0), 0.6) * 0.5);
+}
+
 void fragment() {
 	vec3 n = normalize(world_normal);
 	vec3 an = abs(n);
@@ -227,6 +289,24 @@ void fragment() {
 		tex = facade(uv, col, n);
 	} else if (surface == 7) {
 		tex = tiles(p, col);
+	} else if (surface == 8) {
+		tex = brick(p, col);
+	} else if (surface == 9) {
+		// Ribs fade out where they get finer than a few pixels, so distant
+		// sheets don't shimmer into moire.
+		float ribs_px = fwidth(uv.x) / (0.15 * max(tex_scale, 0.01));
+		float rib_fade = 1.0 - smoothstep(0.15, 0.45, ribs_px);
+		float rib = top ? 0.0 : corrugation(uv.x) * rib_fade;
+		tex = corrugated(p, col, n, rib);
+		if (!top && rib_fade > 0.0) {
+			// Bend the normal across the ribs so the light catches them.
+			vec3 t = an.x > an.z ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
+			float slope = cos(uv.x / (0.15 * max(tex_scale, 0.01)) * 6.2832) * rib_fade;
+			vec3 wn = normalize(n + t * slope * 0.45);
+			NORMAL = normalize((VIEW_MATRIX * vec4(wn, 0.0)).xyz);
+		}
+	} else if (surface == 10) {
+		tex = planks(p, col, true);
 	}
 	col = mix(col, tex, tex_strength);
 	if (!top && surface != 0) {

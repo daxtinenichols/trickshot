@@ -61,6 +61,13 @@ const VOID_X := 7.0  # the concourse void, x -7..7
 const WING_SHOP_X := 14.0  # wing shop fronts
 const STORE_Z := -340.0  # concourse ends, store begins
 const STORE_DECK := Vector2(-340.0, -385.0)  # store upper floor (z range)
+## The well through the store's sales floor: x -WELL_X..WELL_X over z range.
+const WELL_X := 6.0
+const WELL_Z := Vector2(-350.0, -376.0)
+## Where the wallrun wall in the well starts (it runs to the back edge), and
+## the escalators' center lines.
+const WELL_WALL_Z := -356.0
+const WELL_ESCALATORS := [1.8, 4.6]
 const DOCK_Z := -400.0
 const DOCK_BACK := -430.0
 const ROAD_END := -460.0
@@ -159,8 +166,11 @@ func _parking_lot() -> void:
 		_part_basis(t.origin, piece.size, t.basis, Kind.NEUTRAL, "FACADE")
 	for x: float in [-40.0, 40.0]:
 		_part(Vector3(x, 0.5, -25), Vector3(0.6, 1, 150), Kind.PARKOUR, "NEUTRAL")
-	for z: float in [-100.0, 50.0]:
-		_part(Vector3(0, 0.5, z), Vector3(80, 1, 0.6), Kind.PARKOUR, "NEUTRAL")
+	_part(Vector3(0, 0.5, 50), Vector3(80, 1, 0.6), Kind.PARKOUR, "NEUTRAL")
+	# The back kerb stops at the north wing's walls (it used to cross the
+	# concourse floor).
+	for side: float in [-1.0, 1.0]:
+		_part(Vector3(side * (40.0 + WING_HALF + 1.0) * 0.5, 0.5, -100), Vector3(40.0 - WING_HALF - 1.0, 1, 0.6), Kind.PARKOUR, "NEUTRAL")
 	# Dead lamp posts.
 	for p: Vector3 in [Vector3(-14, 0, 40), Vector3(14, 0, 40), Vector3(-30, 0, 18), Vector3(30, 0, 18)]:
 		_part(p + Vector3(0, 3.5, 0), Vector3(0.3, 7, 0.3), Kind.NEUTRAL, "RUST")
@@ -262,7 +272,8 @@ func _escalators() -> void:
 
 func _escalator(top: Vector3, bottom: Vector3) -> void:
 	_ramp(top, bottom, ESCALATOR_W, Kind.SLIDE)
-	_last().set_meta("look", "RUST")
+	# The art look gives it steps (the ramp stays what you run on).
+	_last().set_meta("dress", "escalator")
 	var hw := ESCALATOR_W * 0.5 + 0.12
 	for s: float in [-1.0, 1.0]:
 		var off := Vector3(s * hw, 0.5, 0)
@@ -587,18 +598,25 @@ func _store() -> void:
 			_part(Vector3(side * (seg.x + seg.y) * 0.5, UPPER_Y + (h - UPPER_Y) * 0.5, STORE_Z + 0.3), Vector3(seg.y - seg.x, h - UPPER_Y, 0.6), Kind.NEUTRAL)
 		_part(Vector3(side * 15.0, UPPER_Y + 3.2 + (h - UPPER_Y - 3.2) * 0.5, STORE_Z + 0.3), Vector3(10, h - UPPER_Y - 3.2, 0.6), Kind.NEUTRAL)
 	_sign_band(Vector3(0, UPPER_Y + 3.5, STORE_Z + 0.7), Vector3(13, 1.6, 0.3), 0.0, "HARGROVE & SONS", SIGN_COLORS[1], 2.0)
-	# Upper sales floor, open at the front edge onto the void and at the back.
-	_slab(Vector3(0, UPPER_Y - 0.25, (STORE_DECK.x + STORE_DECK.y) * 0.5), Vector3(WING_HALF * 2, 0.5, STORE_DECK.x - STORE_DECK.y))
+	# Upper sales floor, open at the front edge onto the void and at the back,
+	# with a well through its middle (WELL_X, WELL_Z) down to the ground floor.
+	var sy := UPPER_Y - 0.25
+	_slab(Vector3(0, sy, (STORE_DECK.x + WELL_Z.x) * 0.5), Vector3(WING_HALF * 2, 0.5, STORE_DECK.x - WELL_Z.x))
+	_slab(Vector3(0, sy, (WELL_Z.y + STORE_DECK.y) * 0.5), Vector3(WING_HALF * 2, 0.5, WELL_Z.y - STORE_DECK.y))
+	for side: float in [-1.0, 1.0]:
+		_slab(Vector3(side * (WELL_X + WING_HALF) * 0.5, sy, (WELL_Z.x + WELL_Z.y) * 0.5), Vector3(WING_HALF - WELL_X, 0.5, WELL_Z.x - WELL_Z.y))
+	_store_well()
 	_rail_x(STORE_DECK.y + 0.1, Vector2(-17.0, -5.0), UPPER_Y + 0.5)
 	_rail_x(STORE_DECK.y + 0.1, Vector2(5.0, 16.0), UPPER_Y + 0.5)
 	for x: float in [-18.0, -8.0, 8.0, 18.0]:
 		for z: float in [-352.0, -372.0]:
 			_part(Vector3(x, (UPPER_Y - 0.5) * 0.5, z), Vector3(0.8, UPPER_Y - 0.5, 0.8), Kind.NEUTRAL)
-	# Ground floor: rack rows (1.1 m under the bar: slide) and display tables.
+	# Ground floor: rack rows (1.1 m under the bar: slide) and display tables,
+	# either side of the well.
 	for row in 4:
 		var z := -350.0 - row * 9.0
 		for side: float in [-1.0, 1.0]:
-			var cx := side * (5.0 + 6.0 * float(row % 2))
+			var cx := side * (16.0 if row % 2 == 0 else 11.0)
 			if row % 2 == 0:
 				_part(Vector3(cx, 1.35, z), Vector3(5, 0.3, 0.3), Kind.PARKOUR, "RUST")
 				for dx: float in [-2.3, 2.3]:
@@ -606,7 +624,7 @@ func _store() -> void:
 			else:
 				_part(Vector3(cx, 0.45, z), Vector3(3, 0.9, 1.6), Kind.PARKOUR, "SIGN", SIGN_COLORS[row])
 	# Upper floor: mannequin plinths and long display cases.
-	for p: Vector3 in [Vector3(-10, 0, -350), Vector3(10, 0, -358), Vector3(-6, 0, -366), Vector3(12, 0, -376)]:
+	for p: Vector3 in [Vector3(-10, 0, -350), Vector3(10, 0, -358), Vector3(-11, 0, -368), Vector3(12, 0, -376)]:
 		_part(Vector3(p.x, UPPER_Y + 0.4, p.z), Vector3(2, 0.8, 2), Kind.PARKOUR)
 	_part(Vector3(-18, UPPER_Y + 0.5, -362), Vector3(1.5, 1, 14), Kind.PARKOUR, "RUST")
 	# Slide from the sales floor's back edge down through the dock doors.
@@ -641,6 +659,29 @@ func _store() -> void:
 	if not Engine.is_editor_hint():
 		_target(Vector3(10, UPPER_Y + 0.8, -358), ShootingTarget.Motion.STATIC)
 		_target(Vector3(-16, 0, -377), ShootingTarget.Motion.STRAFE, 2.0, 3.0)
+
+
+## The well through the sales floor: the high line goes up it (mantle two
+## display stacks, wallrun the partition wall on the left, mantle out onto
+## the back of the sales floor) and two stopped escalators climb its right
+## side to the same edge.
+func _store_well() -> void:
+	var back := WELL_Z.y
+	# The back face under the sales floor's edge: solid, so a wallrun ends in
+	# a mantle, and so the escalators have something to land against.
+	_part(Vector3(0, (UPPER_Y - 0.5) * 0.5, back - 0.2), Vector3(WELL_X * 2, UPPER_Y - 0.5, 0.4), Kind.NEUTRAL)
+	# The high line, on the left.
+	_part(Vector3(-2.65, 0.75, -352.5), Vector3(4.3, 1.5, 5), Kind.PARKOUR).set_meta("dress", "crates")
+	_part(Vector3(-2.65, 1.5, -358.5), Vector3(4.3, 3.0, 7), Kind.PARKOUR).set_meta("dress", "crates")
+	_part(Vector3(-WELL_X + 0.5, 4.5, (WELL_WALL_Z + back) * 0.5), Vector3(1, 9, WELL_WALL_Z - back), Kind.WALLRUN)
+	_label("High line: up the stacks, wallrun the wall", Vector3(-2.6, 4.5, -349), 0.8)
+	# The escalators, on the right, rising toward the back.
+	for x: float in WELL_ESCALATORS:
+		_escalator(Vector3(x, UPPER_Y, back), Vector3(x, 0, back + 14.0))
+	_label("Escalators up", Vector3(3.2, 3.0, back + 15.0), 0.8)
+	# Rails round the front and right edges; the back stays open.
+	_rail_x(WELL_Z.x + 0.1, Vector2(-WELL_X, WELL_X), UPPER_Y + 0.5)
+	_rail_z(WELL_X + 0.1, Vector2(WELL_Z.x, back), UPPER_Y + 0.5)
 
 
 ## The loading dock and the service road out. Past EXIT the road is kept

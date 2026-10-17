@@ -18,14 +18,21 @@ extends SandboxBuilder
 ## 1.5 m steps mantle, 3 m faces climb, 1 m blocks vault, 1.1 m bars slide.
 
 const HALF := 66.0  # the first yard is 132 x 132 m
-## The long park north of the yard: canal, wall alley, rollers, out at EXIT.
-const FAR_Z := -430.0
+## The long park north of the yard: canal, wall alley, rollers, a curved
+## overpass, out at EXIT. The high road runs above the east side.
+const FAR_Z := -570.0
 const FLOOR_CENTER := Vector3(0, 0, (HALF + FAR_Z) * 0.5)
 const FLOOR_SIZE := Vector2(HALF * 2, HALF - FAR_Z)
 ## Where a run starts and ends (spawns[0] is ENTRY). The campaign reads these
 ## by path and carries on past EXIT.
 const ENTRY := Transform3D(Basis.IDENTITY, Vector3(0, 0, 30))
-const EXIT := Transform3D(Basis.IDENTITY, Vector3(0, 0, -410))
+const EXIT := Transform3D(Basis.IDENTITY, Vector3(-46, 0, -548))
+## The overpass: its deck height, the curve's center and the radius of the
+## line along its middle. It turns 45 degrees left.
+const DECK_Y := 6.0
+const CURVE_CENTER := Vector3(-36, 0, -470)
+const CURVE_RADIUS := 36.0
+const CURVE_ANGLE := PI * 0.25
 
 ## Leave the far (-Z) edge open so a mission can carry on past it. Set
 ## before the builder enters the tree.
@@ -60,6 +67,8 @@ func build() -> void:
 	_canal(-78.0, -200.0)
 	_wall_alley(-206.0, -296.0)
 	_rollers(-304.0, 6)
+	_high_road()
+	_overpass()
 	_boundary()
 	_targets()
 
@@ -235,7 +244,95 @@ func _rollers(z0: float, count: int) -> void:
 		for i in 4:
 			_box(Vector3(x, 3, z0 - 10.0 - i * 20.0), Vector3(1.2, 6, 1.2), Kind.NEUTRAL)
 	_box(Vector3(0, 0.5, z - 6.0), Vector3(14, 1, 0.8), Kind.PARKOUR)
-	_label("EXIT", Vector3(0, 4.0, EXIT.origin.z), 1.6)
+
+
+
+## The high road: a line of low roofs above the east side, from the yard to
+## the rollers, so the long park has a second way through, up off the ground.
+## A slab up, hurdles and a pipe, a gap, crates, a climb, a wallrun gap,
+## hurdles, and a slide ramp back down.
+func _high_road() -> void:
+	var x := HIGH_ROAD_X
+	_label("THE HIGH ROAD", Vector3(x, 3.5, -66), 1.2)
+	_slope(Vector3(x, 4, -84), Vector3(x, 0, -70), 8.0, Kind.NEUTRAL).set_meta("look", "RUST")
+	_deck(x - 4.0, x + 4.0, -84.0, -130.0, 4.0)
+	_box(Vector3(x, 4.5, -96), Vector3(8, 1.0, 0.4), Kind.PARKOUR)
+	_box(Vector3(x, 5.35, -110), Vector3(8, 0.5, 0.6), Kind.PARKOUR)
+	for px: float in [x - 3.8, x + 3.8]:
+		_box(Vector3(px, 4.55, -110), Vector3(0.4, 1.1, 0.6), Kind.NEUTRAL)
+	_deck(x - 4.0, x + 4.0, -136.0, -180.0, 4.0)
+	_box(Vector3(x, 4.5, -150), Vector3(8, 1.0, 1.4), Kind.PARKOUR).set_meta("dress", "crates")
+	_box(Vector3(x, 5.5, -179.85), Vector3(8, 3.0, 0.3), Kind.PARKOUR)
+	_label("Climb", Vector3(x, 8.6, -174), 0.8)
+	_deck(x - 6.0, x + 6.0, -180.0, -230.0, 7.0)
+	_box(Vector3(x, 7.5, -195), Vector3(12, 1.0, 0.4), Kind.PARKOUR)
+	_box(Vector3(x - 5.8, 7.4, -224), Vector3(0.4, 0.8, 8.0), Kind.NEUTRAL)
+	_label("Wallrun the right wall", Vector3(x, 10, -222), 0.8)
+	_box(Vector3(x + 6.5, 9.5, -236), Vector3(1.0, 9.0, 18.0), Kind.WALLRUN)
+	_deck(x - 6.0, x + 6.0, -242.0, -290.0, 7.0)
+	for z: float in [-256.0, -270.0]:
+		_box(Vector3(x, 7.5, z), Vector3(12, 1.0, 0.4), Kind.PARKOUR)
+	_slope(Vector3(x, 7, -290), Vector3(x, 0, -314), 8.0, Kind.SLIDE)
+	_label("Slide down", Vector3(x, 10, -286), 0.8)
+
+
+## A broken highway overpass past the rollers: a ramp up, a deck that curves
+## 45 degrees left over pillars, barriers to vault, a collapsed gap, and a
+## fallen slab to slide down to the exit. Underneath, the pillars make a
+## slalom on the ground for anyone who'd rather stay low.
+func _overpass() -> void:
+	_spawn(Vector3(0, 0, -414), "10 · OVERPASS")
+	_label("The overpass: up the ramp, round the bend, mind the gap", Vector3(0, 3.5, -417), 0.9)
+	_slope(Vector3(0, DECK_Y, -450), Vector3(0, 0, -420), 10.0, Kind.NEUTRAL)
+	_viaduct(Transform3D(Basis.IDENTITY, Vector3(0, 0, -460)), 20.0)
+	_barrier(Transform3D(Basis.IDENTITY, Vector3(0, 0, -460)))
+	# The bend: short straight pieces round the curve, a barrier halfway.
+	var n := 9
+	var d := CURVE_ANGLE / n
+	var outer := CURVE_RADIUS + 5.0
+	var length := 2.0 * outer * tan(d * 0.5) + 0.1
+	for i in n:
+		_viaduct(curve_at((i + 0.5) * d), length)
+	_barrier(curve_at(CURVE_ANGLE * 0.5))
+	# Past the bend, straight on its new heading: a piece, the gap, a piece.
+	var end := curve_at(CURVE_ANGLE)
+	var fwd := -end.basis.z
+	_viaduct(end.translated(fwd * 5.0), 10.0)
+	var far := end.translated(fwd * (10.0 + GAP + 7.0))
+	_viaduct(far, 14.0)
+	_label("Gap: jump it", end.origin + fwd * 6.0 + Vector3(0, DECK_Y + 2.5, 0), 0.8)
+	var top := far.origin + fwd * 7.0 + Vector3(0, DECK_Y, 0)
+	_slope(top, top + fwd * 20.0 - Vector3(0, DECK_Y, 0), 10.0, Kind.SLIDE)
+	_label("EXIT", EXIT.origin + Vector3(0, 4.0, 0), 1.6)
+
+
+## Where the overpass's middle line is, `angle` round its bend, facing along it.
+static func curve_at(angle: float) -> Transform3D:
+	var right := Vector3(cos(angle), 0, -sin(angle))
+	return Transform3D(Basis(Vector3.UP, angle), CURVE_CENTER + right * CURVE_RADIUS)
+
+
+## Length of the gap in the overpass, past the bend.
+const GAP := 7.0
+## The high road's middle line (x).
+const HIGH_ROAD_X := 56.0
+
+
+## One piece of overpass deck, `length` long, centered on `at` (ground
+## level, facing along the road), on a pillar.
+func _viaduct(at: Transform3D, length: float) -> void:
+	_box_basis(at * Vector3(0, DECK_Y - 0.5, 0), Vector3(10, 1, length), at.basis, Kind.NEUTRAL)
+	_box_basis(at * Vector3(0, (DECK_Y - 1.0) * 0.5, 0), Vector3(1.6, DECK_Y - 1.0, 1.6), at.basis, Kind.NEUTRAL)
+
+
+## A concrete barrier across the overpass's middle lanes.
+func _barrier(at: Transform3D) -> void:
+	_box_basis(at * Vector3(0, DECK_Y + 0.5, 0), Vector3(6, 1.0, 0.5), at.basis, Kind.PARKOUR).set_meta("dress", "barrier")
+
+
+## A low building whose roof is part of the high road.
+func _deck(x0: float, x1: float, z0: float, z1: float, top: float) -> void:
+	_box(Vector3((x0 + x1) * 0.5, top * 0.5, (z0 + z1) * 0.5), Vector3(x1 - x0, top, absf(z1 - z0)), Kind.NEUTRAL).set_meta("look", "FACADE")
 
 
 func _boundary() -> void:
@@ -277,9 +374,9 @@ func _targets() -> void:
 # ---------------------------------------------------------------- helpers
 
 ## A flat ramp from `top` down to `bottom` in any direction.
-func _slope(top: Vector3, bottom: Vector3, width: float, kind: Kind) -> void:
+func _slope(top: Vector3, bottom: Vector3, width: float, kind: Kind) -> StaticBody3D:
 	var f := (bottom - top).normalized()
 	var x := Vector3.UP.cross(f).normalized()
 	var y := f.cross(x).normalized()
 	var basis := Basis(x, y, f)
-	_box_basis((top + bottom) * 0.5 - y * 0.5, Vector3(width, 1, top.distance_to(bottom)), basis, kind)
+	return _box_basis((top + bottom) * 0.5 - y * 0.5, Vector3(width, 1, top.distance_to(bottom)), basis, kind)
