@@ -10,7 +10,7 @@ This repo is currently the **movement sandbox**: a graybox level for building an
 2. Open Godot, choose **Import**, and select `project.godot` in this folder.
 3. Press **F5** (or the play button). You spawn on the run track.
 
-Mouse/keyboard and controller both work (any XInput pad, including a wired or wireless Xbox 360 controller; the Settings tab lists the controllers it sees). Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, aim help, invert, third-person camera following flips, volume), and custom controls.
+Mouse/keyboard and controller both work (any XInput pad, including a wired or wireless Xbox 360 controller; the Settings tab lists the controllers it sees). Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, aim help, invert, third-person camera following flips, volume, music and sound-effect levels), and custom controls.
 
 ## Controls
 

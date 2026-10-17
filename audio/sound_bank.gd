@@ -29,6 +29,12 @@ static func wav(samples: PackedFloat32Array, loop := false) -> AudioStreamWAV:
 	return w
 
 
+## Frequency of a MIDI note (69 = A 440). Kept here as well as in MusicSynth
+## so the two scripts don't depend on each other.
+static func midi_hz(note: float) -> float:
+	return 440.0 * pow(2.0, (note - 69.0) / 12.0)
+
+
 ## Soft clip, so layers can be loud together without harsh clipping.
 static func sat(v: float) -> float:
 	return v / (1.0 + absf(v))
@@ -382,7 +388,7 @@ static func bank_chime(big: bool) -> AudioStreamWAV:
 	var s := _buffer(1.6 if big else 0.9)
 	var notes := [64, 67, 71, 76, 79] if big else [64, 71, 76]
 	for k in notes.size():
-		var hz := MusicSynth.midi_hz(notes[k])
+		var hz := midi_hz(notes[k])
 		var at := k * 0.06
 		_ring(s, at, [hz, hz * 2.0, hz * 2.98, hz * 4.1], 0.3, 4.0 if big else 6.0)
 		_noise(s, at, 0.02, 0.15, 0.95, 150.0, rng, 0.0003)
@@ -402,7 +408,7 @@ static func bail_sting() -> AudioStreamWAV:
 		var hz := 220.0 * pow(0.35, t / 0.6)
 		phase += TAU * hz / RATE
 		phase2 += TAU * hz * 1.06 / RATE
-		s[i] = SoundBank.sat((sin(phase) + sin(phase2) * 0.8) * 1.5) * exp(-t * 4.0) * 0.6
+		s[i] = sat((sin(phase) + sin(phase2) * 0.8) * 1.5) * exp(-t * 4.0) * 0.6
 	_thud(s, 0.0, 0.6, 60.0, 14.0, rng)
 	_peak(s, 0.7)
 	_fade_end(s, 30.0)
@@ -443,7 +449,7 @@ static func radio_sting(level: int) -> AudioStreamWAV:
 	var base: int = [64, 67, 71][clampi(level - 1, 0, 2)]
 	var notes := [base, base + 7, base + 12]
 	for k in notes.size():
-		var hz := MusicSynth.midi_hz(notes[k])
+		var hz := midi_hz(notes[k])
 		var start := int((0.08 + k * 0.11) * RATE)
 		for i in range(start, mini(s.size(), start + int(0.32 * RATE))):
 			var t := float(i - start) / RATE

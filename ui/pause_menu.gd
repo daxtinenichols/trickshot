@@ -228,6 +228,8 @@ func _build_settings() -> Control:
 	_slider_row(box, "fov", "Field of view", 70.0, 110.0, 1.0, "%.0f°")
 	_slider_row(box, "aim_assist", "Aim help (0 = off)", 0.0, 1.0, 0.05, "%.0f%%", 100.0)
 	_slider_row(box, "volume", "Volume", 0.0, 1.0, 0.05, "%.0f%%", 100.0)
+	_slider_row(box, "music_volume", "Music", 0.0, 1.0, 0.05, "%.0f%%", 100.0)
+	_slider_row(box, "sfx_volume", "Sound effects", 0.0, 1.0, 0.05, "%.0f%%", 100.0)
 	var inv := CheckButton.new()
 	inv.text = "Invert look up/down"
 	inv.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN

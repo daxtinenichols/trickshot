@@ -44,6 +44,9 @@ var camera_follow_flips := false
 var aim_assist := 0.5
 var fov := 85.0
 var volume := 0.8
+## Music and sound-effect levels, 0..1 (GameAudio's buses, under the main volume).
+var music_volume := 0.7
+var sfx_volume := 1.0
 ## action -> {"kbm": event dict or null, "pad": event dict or null}.
 ## Only actions the player changed are stored; the rest use the defaults.
 var custom_bindings := {}
@@ -69,6 +72,16 @@ func apply_to(p: Player) -> void:
 		(p.weapon as Pistol).aim_assist = aim_assist
 	var bus := AudioServer.get_bus_index("Master")
 	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(volume, 0.0001)))
+	apply_audio()
+
+
+## Music and SFX levels to GameAudio. Looked up by path so this works (and
+## parses) whether or not the audio autoload is there.
+func apply_audio() -> void:
+	var audio := get_node_or_null("/root/GameAudio")
+	if audio and audio.has_method("set_music_volume"):
+		audio.set_music_volume(music_volume)
+		audio.set_sfx_volume(sfx_volume)
 
 
 func reset_values() -> void:
@@ -80,6 +93,8 @@ func reset_values() -> void:
 	aim_assist = 0.5
 	fov = 85.0
 	volume = 0.8
+	music_volume = 0.7
+	sfx_volume = 1.0
 	changed.emit()
 
 
@@ -303,6 +318,8 @@ func save_settings(path := "") -> void:
 	cfg.set_value("look", "aim_assist", aim_assist)
 	cfg.set_value("look", "fov", fov)
 	cfg.set_value("audio", "volume", volume)
+	cfg.set_value("audio", "music_volume", music_volume)
+	cfg.set_value("audio", "sfx_volume", sfx_volume)
 	for action: String in custom_bindings:
 		cfg.set_value("bindings", action, custom_bindings[action])
 	cfg.save(path)
@@ -321,6 +338,8 @@ func load_settings(path := "") -> void:
 	aim_assist = cfg.get_value("look", "aim_assist", aim_assist)
 	fov = cfg.get_value("look", "fov", fov)
 	volume = cfg.get_value("audio", "volume", volume)
+	music_volume = cfg.get_value("audio", "music_volume", music_volume)
+	sfx_volume = cfg.get_value("audio", "sfx_volume", sfx_volume)
 	custom_bindings.clear()
 	if cfg.has_section("bindings"):
 		for saved in cfg.get_section_keys("bindings"):

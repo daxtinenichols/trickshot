@@ -24,6 +24,12 @@ extends Node
 ## Buses: Master > Music, SFX and Radio. set_music_volume()/set_sfx_volume()
 ## take 0..1.
 
+# Loaded by path, not by class name: an autoload that names a class the
+# editor hasn't registered yet (fresh files, before a project reload) fails
+# to parse and takes the game down with it.
+const Synth := preload("res://audio/music_synth.gd")
+const Bank := preload("res://audio/sound_bank.gd")
+
 const VARIATIONS := 6
 const POOL_SIZE := 20
 const WORLD_POOL_SIZE := 8
@@ -31,8 +37,8 @@ const WORLD_POOL_SIZE := 8
 ## Combo size (distinct tricks) at which each music layer comes in. The pad
 ## always plays; drums play quietly with no combo running.
 const LAYER_FROM := {
-	MusicSynth.Layer.DRUMS: 1, MusicSynth.Layer.BASS: 1,
-	MusicSynth.Layer.PERC: 3, MusicSynth.Layer.LEAD: 5,
+	Synth.Layer.DRUMS: 1, Synth.Layer.BASS: 1,
+	Synth.Layer.PERC: 3, Synth.Layer.LEAD: 5,
 }
 const IDLE_DRUMS := 0.5
 ## Bump to force a rebuild of everyone's cached sounds.
@@ -128,8 +134,8 @@ func _ready() -> void:
 	_radio = AudioStreamPlayer.new()
 	_radio.bus = &"Radio"
 	add_child(_radio)
-	layer_target.resize(MusicSynth.Layer.size())
-	layer_gain.resize(MusicSynth.Layer.size())
+	layer_target.resize(Synth.Layer.size())
+	layer_gain.resize(Synth.Layer.size())
 	get_tree().node_added.connect(_on_node_added)
 	if _headless:
 		# Tests need the sounds straight away, and render music themselves.
@@ -219,33 +225,33 @@ func set_sfx_volume(v: float) -> void:
 ## run on a worker thread.
 static func build_sounds() -> Dictionary:
 	var out := {}
-	for surface in SoundBank.SURFACES:
-		out["step_%s" % surface] = _variations(func(v: int) -> AudioStreamWAV: return SoundBank.footstep(surface, v))
-		out["land_%s" % surface] = _variations(func(v: int) -> AudioStreamWAV: return SoundBank.landing(surface, v), 3)
-	out.debris = _variations(SoundBank.debris, 3)
-	out.jump = _variations(SoundBank.jump, 4)
-	out.hand = _variations(SoundBank.hand_plant, 4)
-	out.whoosh = _variations(func(v: int) -> AudioStreamWAV: return SoundBank.whoosh(v), 4)
-	out.roll = _variations(SoundBank.roll, 3)
-	out.bonk = _variations(SoundBank.bonk, 2)
-	out.kick = _variations(SoundBank.kick_hit, 3)
-	out.door_bang = _variations(SoundBank.door_bang, 2)
-	out.door_close = _variations(SoundBank.door_close, 2)
-	out.glass = _variations(SoundBank.glass, 3)
-	out.slow_down = [SoundBank.slow_mo(true)]
-	out.slow_up = [SoundBank.slow_mo(false)]
-	out.bank = [SoundBank.bank_chime(false)]
-	out.bank_big = [SoundBank.bank_chime(true)]
-	out.bail = [SoundBank.bail_sting()]
-	out.radio_key = _variations(func(v: int) -> AudioStreamWAV: return SoundBank.radio_static(false, v), 3)
-	out.radio_crackle = SoundBank.radio_static(true)
+	for surface in Bank.SURFACES:
+		out["step_%s" % surface] = _variations(func(v: int) -> AudioStreamWAV: return Bank.footstep(surface, v))
+		out["land_%s" % surface] = _variations(func(v: int) -> AudioStreamWAV: return Bank.landing(surface, v), 3)
+	out.debris = _variations(Bank.debris, 3)
+	out.jump = _variations(Bank.jump, 4)
+	out.hand = _variations(Bank.hand_plant, 4)
+	out.whoosh = _variations(func(v: int) -> AudioStreamWAV: return Bank.whoosh(v), 4)
+	out.roll = _variations(Bank.roll, 3)
+	out.bonk = _variations(Bank.bonk, 2)
+	out.kick = _variations(Bank.kick_hit, 3)
+	out.door_bang = _variations(Bank.door_bang, 2)
+	out.door_close = _variations(Bank.door_close, 2)
+	out.glass = _variations(Bank.glass, 3)
+	out.slow_down = [Bank.slow_mo(true)]
+	out.slow_up = [Bank.slow_mo(false)]
+	out.bank = [Bank.bank_chime(false)]
+	out.bank_big = [Bank.bank_chime(true)]
+	out.bail = [Bank.bail_sting()]
+	out.radio_key = _variations(func(v: int) -> AudioStreamWAV: return Bank.radio_static(false, v), 3)
+	out.radio_crackle = Bank.radio_static(true)
 	for level in MILESTONES.size():
-		out["sting_%d" % (level + 1)] = [SoundBank.radio_sting(level + 1)]
-	out.wind_low = SoundBank.wind_loop(false)
-	out.wind_high = SoundBank.wind_loop(true)
-	out.slide_concrete = SoundBank.slide_loop(&"concrete")
-	out.slide_asphalt = SoundBank.slide_loop(&"asphalt")
-	out.slide_metal = SoundBank.slide_loop(&"metal")
+		out["sting_%d" % (level + 1)] = [Bank.radio_sting(level + 1)]
+	out.wind_low = Bank.wind_loop(false)
+	out.wind_high = Bank.wind_loop(true)
+	out.slide_concrete = Bank.slide_loop(&"concrete")
+	out.slide_asphalt = Bank.slide_loop(&"asphalt")
+	out.slide_metal = Bank.slide_loop(&"metal")
 	return out
 
 
@@ -278,10 +284,10 @@ func _load_or_build() -> void:
 		bank = build_sounds()
 	_set_sounds.call_deferred(bank)
 	var layers: Array = cached.get("music", [])
-	if layers.size() != MusicSynth.Layer.size():
+	if layers.size() != Synth.Layer.size():
 		layers = []
-		for layer in MusicSynth.Layer.values():
-			layers.append(MusicSynth.render(layer))
+		for layer in Synth.Layer.values():
+			layers.append(Synth.render(layer))
 	_music_streams = layers
 	_start_music.call_deferred()
 	if cached.is_empty():
@@ -302,7 +308,7 @@ static func _pack(stream: AudioStreamWAV) -> Array:
 static func _unpack(a: Array) -> AudioStreamWAV:
 	var w := AudioStreamWAV.new()
 	w.format = AudioStreamWAV.FORMAT_16_BITS
-	w.mix_rate = SoundBank.RATE
+	w.mix_rate = Bank.RATE
 	w.data = a[0]
 	if a[1]:
 		w.loop_mode = AudioStreamWAV.LOOP_FORWARD
@@ -367,12 +373,12 @@ func _start_music() -> void:
 ## tricks.
 static func layer_targets(tricks: int) -> PackedFloat32Array:
 	var out := PackedFloat32Array()
-	out.resize(MusicSynth.Layer.size())
-	out[MusicSynth.Layer.PAD] = 1.0
+	out.resize(Synth.Layer.size())
+	out[Synth.Layer.PAD] = 1.0
 	for layer: int in LAYER_FROM:
 		out[layer] = 1.0 if tricks >= LAYER_FROM[layer] else 0.0
 	if tricks <= 0:
-		out[MusicSynth.Layer.DRUMS] = IDLE_DRUMS
+		out[Synth.Layer.DRUMS] = IDLE_DRUMS
 	return out
 
 
@@ -428,7 +434,7 @@ func _update_music(real_delta: float) -> void:
 	_bail_duck = maxf(_bail_duck - real_delta, 0.0)
 	for i in layer_gain.size():
 		var want := layer_target[i]
-		if _bail_duck > 0.0 and i != MusicSynth.Layer.PAD:
+		if _bail_duck > 0.0 and i != Synth.Layer.PAD:
 			want = 0.0
 		# Layers come in fast and leave slowly.
 		var rate := 2.5 if want > layer_gain[i] else 0.6

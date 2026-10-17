@@ -113,6 +113,21 @@ func test_loaded_custom_key_is_freed_from_defaults() -> void:
 	check(not InputMap.action_has_event("steer", _key(KEY_SHIFT)), "and no longer also steers")
 
 
+func test_music_and_sfx_volume_reach_the_audio_and_save() -> void:
+	Settings.music_volume = 0.3
+	Settings.sfx_volume = 0.6
+	Settings.apply_audio()
+	check_near(GameAudio.music_volume, 0.3, 0.001, "music level reaches the audio")
+	check_near(GameAudio.sfx_volume, 0.6, 0.001, "sfx level reaches the audio")
+	Settings.save_settings()
+	Settings.reset_values()
+	Settings.load_settings()
+	check_near(Settings.music_volume, 0.3, 0.001, "music level saved")
+	check_near(Settings.sfx_volume, 0.6, 0.001, "sfx level saved")
+	Settings.reset_values()
+	Settings.apply_audio()
+
+
 func test_reset_bindings() -> void:
 	Settings.rebind("jump", _key(KEY_J))
 	Settings.reset_bindings()

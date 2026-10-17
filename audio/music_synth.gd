@@ -11,6 +11,8 @@ extends RefCounted
 ##   LEAD   a gritty pentatonic riff with echo
 ## Chords: Em | Em | C | C | Am | Am | B | B.
 
+const Bank := preload("res://audio/sound_bank.gd")
+
 enum Layer { PAD, DRUMS, BASS, PERC, LEAD }
 
 const RATE := 44100
@@ -57,8 +59,8 @@ static func render(layer: Layer, bars := BARS) -> AudioStreamWAV:
 		Layer.BASS: _bass(s)
 		Layer.PERC: _perc(s, bars)
 		Layer.LEAD: _lead(s)
-	SoundBank._peak(s, LEVELS[layer])
-	return SoundBank.wav(s, true)
+	Bank._peak(s, LEVELS[layer])
+	return Bank.wav(s, true)
 
 
 static func _saw(phase: float) -> float:
@@ -72,7 +74,7 @@ static func _bar_at(t: float) -> int:
 # ---------------------------------------------------------------- layers
 
 static func _pad(s: PackedFloat32Array) -> void:
-	var rng := SoundBank._rng(20001)
+	var rng := Bank._rng(20001)
 	var phases := PackedFloat32Array()
 	phases.resize(8)
 	var lp := 0.0
@@ -113,7 +115,7 @@ static func _kick(rng: RandomNumberGenerator) -> PackedFloat32Array:
 	for i in s.size():
 		var t := float(i) / RATE
 		phase += TAU * (48.0 + 140.0 * exp(-t * 35.0)) / RATE
-		s[i] = SoundBank.sat(sin(phase) * exp(-t * 9.0) * 2.2) + rng.randf_range(-1.0, 1.0) * exp(-t * 300.0) * 0.3
+		s[i] = Bank.sat(sin(phase) * exp(-t * 9.0) * 2.2) + rng.randf_range(-1.0, 1.0) * exp(-t * 300.0) * 0.3
 	return s
 
 
@@ -146,8 +148,8 @@ static func _hat(rng: RandomNumberGenerator, open: bool) -> PackedFloat32Array:
 static func _clank(rng: RandomNumberGenerator, base: float) -> PackedFloat32Array:
 	var s := PackedFloat32Array()
 	s.resize(int(0.5 * RATE))
-	SoundBank._ring(s, 0.0, [base, base * 2.41, base * 3.77, base * 5.93], 0.5, 9.0)
-	SoundBank._noise(s, 0.0, 0.03, 0.5, 0.9, 120.0, rng, 0.0003)
+	Bank._ring(s, 0.0, [base, base * 2.41, base * 3.77, base * 5.93], 0.5, 9.0)
+	Bank._noise(s, 0.0, 0.03, 0.5, 0.9, 120.0, rng, 0.0003)
 	return s
 
 
@@ -159,7 +161,7 @@ static func _stamp(s: PackedFloat32Array, hit: PackedFloat32Array, at: float, ga
 
 
 static func _drums(s: PackedFloat32Array, bars: int) -> void:
-	var rng := SoundBank._rng(20002)
+	var rng := Bank._rng(20002)
 	var kick := _kick(rng)
 	var hat := _hat(rng, true)
 	for bar in bars:
@@ -172,7 +174,7 @@ static func _drums(s: PackedFloat32Array, bars: int) -> void:
 
 
 static func _perc(s: PackedFloat32Array, bars: int) -> void:
-	var rng := SoundBank._rng(20003)
+	var rng := Bank._rng(20003)
 	var snare := _snare(rng)
 	var hat := _hat(rng, false)
 	var clank_hi := _clank(rng, 610.0)
@@ -207,7 +209,7 @@ static func _bass(s: PackedFloat32Array) -> void:
 		var env := exp(-in_note * 6.0) * smoothstep(0.0, 0.004, in_note) * smoothstep(eighth, eighth - 0.01, in_note)
 		var cut := 0.05 + 0.3 * exp(-in_note * 18.0)
 		lp += (_saw(phase) - lp) * cut
-		var v := SoundBank.sat(lp * 3.0) * 0.9 + sin(TAU * sub) * 0.35
+		var v := Bank.sat(lp * 3.0) * 0.9 + sin(TAU * sub) * 0.35
 		s[i] = v * (0.35 + 0.65 * env)
 	# The oscillators restart at the loop point: dip through zero there.
 	var k := int(0.003 * RATE)
@@ -244,7 +246,7 @@ static func _lead(s: PackedFloat32Array) -> void:
 		if on:
 			env = exp(-in_note * 4.0) * smoothstep(0.0, 0.006, in_note)
 		lp += (sq * env - lp) * 0.18
-		dry[i] = SoundBank.sat(lp * 2.0)
+		dry[i] = Bank.sat(lp * 2.0)
 	# Dotted-eighth echo, wrapping round the loop.
 	var d := int(BEAT * 0.75 * RATE)
 	for i in s.size():
