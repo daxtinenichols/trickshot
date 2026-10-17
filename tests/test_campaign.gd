@@ -572,7 +572,7 @@ func test_route_turns_and_forks() -> void:
 	var b: MissionBuilder = level.builder
 	check(b.encounters.size() == 1, "one encounter")
 	var enc: Node3D = b.encounters[0]
-	check(enc.enemies.size() == 2, "a raider and a trooper stand-in; no drone script yet (%d)" % enc.enemies.size())
+	check(enc.enemies.size() == 3, "a raider, a trooper and a drone (%d)" % enc.enemies.size())
 	var end: Array = m.route_end
 	check(absf(float(m.route_end_yaw) - 90.0) < 0.1, "the route ends heading left of where it began (%s)" % m.route_end_yaw)
 	await _bot_run("twists", false)

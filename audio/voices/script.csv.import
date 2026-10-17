@@ -1,0 +1,19 @@
+[remap]
+
+importer="csv_translation"
+type="Translation"
+uid="uid://d0na0ehr5xwfw"
+
+[deps]
+
+files=["res://audio/voices/script.file.translation", "res://audio/voices/script.where.translation", "res://audio/voices/script.line.translation"]
+
+source_file="res://audio/voices/script.csv"
+dest_files=["res://audio/voices/script.file.translation", "res://audio/voices/script.where.translation", "res://audio/voices/script.line.translation"]
+
+[params]
+
+compress=1
+delimiter=0
+unescape_keys=false
+unescape_translations=true

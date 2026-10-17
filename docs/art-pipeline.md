@@ -102,8 +102,9 @@ and the `landed` / `trick` / `respawned` signals.
   run speed, red at top speed. Motion trails stream from hands and feet
   above run pace (third person), and speed lines build at the screen edges
   in first person.
-- **Color language** from the graybox carries over: blue = wallrun, yellow =
-  vault/mantle/climb, green = slide, red = targets.
+- **Color language** from the graybox stays in the graybox (F9): blue =
+  wallrun, yellow = vault/mantle/climb, green = slide, red = targets. With
+  the look on, obstacles are dressed as the city instead (see below).
 
 `ArtLook` (autoload) applies all of this to whatever level runs. For the
 code-built sandbox it swaps the graybox materials; real maps use
@@ -123,7 +124,24 @@ posterized into a few flat steps so it sits inside the cel bands. Dust
 settles on top faces, grime streaks down walls. `ArtLook.SURFACES` maps each
 gameplay kind to a surface; a builder can set a visual-only `look` meta on a
 body (e.g. `"FACADE"`) to dress it differently from its gameplay kind. Cel
-lighting is shared through `art/shaders/toon_light.gdshaderinc`.
+lighting is shared through `art/shaders/toon_light.gdshaderinc`. Surfaces 8-10
+are brick, corrugated sheet metal (ribs bend the normal, and fade out with
+distance so they don't shimmer) and wood planks.
+
+## Obstacles that blend in
+
+`art/look/obstacle_dresser.gd` (loaded by path from ArtLook) dresses every
+PARKOUR, WALLRUN and SLIDE box that has no `look` meta: thin waist-high
+boxes become concrete barriers, low brick walls, rails or sandbags; head
+height bars become pipes or I-beams; blocks become crate stacks, planters or
+brick; climb faces become brick or concrete walls with a drainpipe; wallrun
+walls become sheet-metal hoardings on posts, billboards or containers; slide
+ramps become bent sheet metal. The style comes from the box's shape and the
+variant from a hash of its position (same every run); a builder can pick one
+with the `dress` meta (`"crates"`, `"barrier"`, `"escalator"`... or `"none"`).
+Dresses are visual only and fill the same box (detail sticks out a few cm),
+so collision never changes. The language stays consistent so it reads at
+speed: ribbed metal = run along it, concrete/brick/crates = vault or climb.
 
 ## Gun
 
@@ -147,11 +165,19 @@ player, HUD and menu. That keeps every size tied to the movement numbers and
 lets tests run the real map:
 
 - **Rooftops** (`maps/rooftop_course_builder.gd`, `maps/course_timer.gd`): a
-  timed course along -Z. `tests/test_maps.gd` runs a scripted player from
-  start to finish without falling, so a change that breaks the route fails CI.
+  timed ~950 m course in three legs (toward -Z, -X, then -Z) with two banked
+  corners (`MapPieces.banked_turn`) and forks. Each leg is authored in its own
+  frame (`LEG2`, `LEG3`; local -Z is forward) with the `_f*` helpers.
+  Checkpoints are gates (position + heading), so the timer follows the turns.
+  `RooftopCourseBuilder.path()` is the racing line; `tests/test_maps.gd`
+  `_run_path` drives a scripted player along it (steps keyed by distance
+  along the path, lanes as offsets to its right) from start to finish
+  without falling, so a change that breaks the route fails CI.
 - **Combo Park** (`maps/combo_park_builder.gd`): an open yard of features a
-  few steps apart. Tests check each spawn and that the tower, half-pipe,
-  loop, zigzag and sideways ramps work in place.
+  few steps apart, then a long park (canal, wall alley, rollers, a curved
+  overpass) with the high road above its east side. Tests check each spawn,
+  the tower, half-pipe, loop, zigzag and sideways ramps in place, and run the
+  high road and the overpass end to end.
 - **Ruined Mall** (`maps/mall_builder.gd`): two floors round a skylit
   atrium, with escalators, a bridge, hanging billboards to wallrun, shops
   with breakable storefront glass, a collapsed walkway beside a wallrun wall,
