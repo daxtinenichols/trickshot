@@ -18,8 +18,10 @@ const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
 const RAIDER_SCRIPT := preload("res://enemies/raider.gd")
 const MUTANT_SCRIPT := preload("res://enemies/mutant.gd")
-## Kinds enemies/ hasn't made yet, and what stands in for them meanwhile.
-const STAND_INS := {"trooper": "raider"}
+## Kinds enemies/ hasn't made yet, and what stands in for them meanwhile
+## (drones of every kind are left out until they exist).
+const STAND_INS := {"trooper": "raider", "shield": "raider", "marksman": "raider", "heavy": "raider",
+	"brute": "mutant", "leaper": "mutant", "crawler": "mutant"}
 
 @export_file("*.json") var mission_path := ""
 ## Rebuilds the layout (editor helper: tick it after editing the JSON).
@@ -116,6 +118,11 @@ func _piece(p: Dictionary) -> void:
 		var s: Array = p.get("size", [12, 12])
 		var b := _box_basis(Vector3(at.x, at.y * 0.5, at.z), Vector3(s[0], at.y, s[1]), basis, Kind.NEUTRAL)
 		b.set_meta("look", p.get("look", "FACADE"))
+	elif p.has("slab"):
+		# A building with any convex footprint: "slab" is its corners
+		# [[x, z], ...] in order, "top" its roof height.
+		var b := _slab(p.slab, float(p.get("top", 6.0)))
+		b.set_meta("look", p.get("look", "FACADE"))
 	elif p.has("prop"):
 		PropKit.place(_root, p.prop, Transform3D(basis, vec(p.get("at", [0, 0, 0]))), p.get("collide", true))
 	elif p.has("row"):
@@ -128,6 +135,8 @@ func _piece(p: Dictionary) -> void:
 			PropKit.place(_root, p.row, Transform3D(basis, a.lerp(b, t)))
 	elif p.has("door"):
 		_door(vec(p.door))
+		if yaw != 0.0 and not Engine.is_editor_hint():
+			_root.get_child(-1).rotation.y = yaw
 	elif p.has("window"):
 		var s: Array = p.get("size", [2.2, 1.4])
 		_window(vec(p.window), Vector2(s[0], s[1]))
@@ -144,7 +153,7 @@ func _piece(p: Dictionary) -> void:
 	elif p.has("quarter_pipe"):
 		_surface(MapPieces.turned(SurfaceShapes.quarter_pipe(vec(p.quarter_pipe), p.get("radius", 4.0), p.get("angle", 80.0), p.get("straight", 1.0), p.get("width", 8.0)), vec(p.quarter_pipe), yaw))
 	elif p.has("bank"):
-		_surface(MapPieces.bank(vec(p.bank), p.get("length", 10.0), p.get("side", 1.0), p.get("radius", 3.0), p.get("angle", 60.0), p.get("straight", 1.0)))
+		_surface(MapPieces.turned(MapPieces.bank(vec(p.bank), p.get("length", 10.0), p.get("side", 1.0), p.get("radius", 3.0), p.get("angle", 60.0), p.get("straight", 1.0)), vec(p.bank), yaw))
 	elif p.has("label"):
 		_label(p.label, vec(p.get("at", [0, 2, 0])), p.get("size", 0.8))
 	elif p.has("mark"):
@@ -160,6 +169,59 @@ func _piece(p: Dictionary) -> void:
 		_encounter(p)
 	else:
 		push_warning("MissionBuilder: unknown piece %s" % p)
+
+
+## A prism from the street (y 0) up to `top` over a convex footprint.
+func _slab(corners: Array, top: float) -> StaticBody3D:
+	var ring: PackedVector2Array = []
+	for c: Array in corners:
+		ring.append(Vector2(c[0], c[1]))
+	# Wind the ring counter-clockwise seen from above (x right, z down the
+	# screen), so faces point out.
+	var area := 0.0
+	for i in ring.size():
+		var a := ring[i]
+		var b := ring[(i + 1) % ring.size()]
+		area += a.x * b.y - b.x * a.y
+	if area > 0.0:
+		ring.reverse()
+	var center := Vector2.ZERO
+	for v in ring:
+		center += v
+	center /= ring.size()
+	var body := StaticBody3D.new()
+	body.collision_layer = 1
+	body.collision_mask = 0
+	body.position = Vector3(center.x, 0, center.y)
+	body.set_meta("kind", "NEUTRAL")
+	var pts: PackedVector3Array = []
+	for v in ring:
+		pts.append(Vector3(v.x - center.x, 0, v.y - center.y))
+		pts.append(Vector3(v.x - center.x, top, v.y - center.y))
+	var shape := CollisionShape3D.new()
+	var hull := ConvexPolygonShape3D.new()
+	hull.points = pts
+	shape.shape = hull
+	body.add_child(shape)
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	var n := ring.size()
+	for i in n:
+		var a := Vector3(ring[i].x - center.x, 0, ring[i].y - center.y)
+		var b := Vector3(ring[(i + 1) % n].x - center.x, 0, ring[(i + 1) % n].y - center.y)
+		var up := Vector3(0, top, 0)
+		for v: Vector3 in [a, b + up, b, a, a + up, b + up]:
+			st.add_vertex(v)
+	for i in range(1, n - 1):
+		for v: Vector2 in [ring[0], ring[i + 1], ring[i]]:
+			st.add_vertex(Vector3(v.x - center.x, top, v.y - center.y))
+	st.generate_normals()
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = st.commit()
+	mesh.material_override = _material(Kind.NEUTRAL)
+	body.add_child(mesh)
+	_root.add_child(body)
+	return body
 
 
 ## A flat ramp from `top` to `bottom` in any direction (routes turn).

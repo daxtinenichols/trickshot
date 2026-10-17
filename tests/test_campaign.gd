@@ -591,3 +591,47 @@ func test_route_from_base_exit() -> void:
 	check(is_equal_approx(leg0[1], -438.0) and is_zero_approx(leg0[0]), "starts at the mall's EXIT (%s)" % [leg0])
 	check(m.route_legs.size() == 2 and is_equal_approx(m.route_legs[1][2], -PI * 0.5), "a right corner turns toward +X")
 	check(float(m.route_end[0]) > 30.0, "and ends off to the right (%s)" % [m.route_end])
+
+
+const ANGLES := "res://tests/fixtures/route_angles.json"
+
+
+## Corners of 45 degrees: diagonal legs turn their roofs, a slab fills each
+## corner, checkpoints on a diagonal are turned regions, typed enemies
+## spawn (or their stand-ins do), free pieces turn with their leg, and a
+## bot finishes the run.
+func test_route_45_degree_corners() -> void:
+	var m := Campaign.load_mission_file(ANGLES)
+	check(m.route_legs.size() == 5, "four corners make five legs (%d)" % m.route_legs.size())
+	check(is_equal_approx(float(m.route_legs[1][2]), PI * 0.25), "a 45 degree left corner (%s)" % m.route_legs[1][2])
+	check(absf(float(m.route_legs[3][2]) + PI * 0.25) < 0.001, "two right corners make 45 degrees right of the start (%s)" % m.route_legs[3][2])
+	var slabs := 0
+	var diagonal := false
+	var bank_yaw := INF
+	for p: Dictionary in m.pieces:
+		if p.has("slab"):
+			slabs += 1
+		if p.has("building") and is_equal_approx(fposmod(float(p.get("yaw", 0.0)), 90.0), 45.0):
+			diagonal = true
+		if p.has("bank"):
+			bank_yaw = float(p.get("yaw", 0.0))
+	check(slabs == 4, "a slab for every 45 degree corner (%d)" % slabs)
+	check(diagonal, "roofs on a diagonal leg are turned 45 degrees")
+	check(is_zero_approx(bank_yaw), "a free piece turns with its leg (back square here: %s)" % bank_yaw)
+	var cp: Dictionary = m.checkpoints[0]
+	check(is_equal_approx(float(cp.get("area_yaw", 0.0)), 45.0), "a checkpoint on the diagonal is a turned region (%s)" % cp)
+	var at := MissionBuilder.vec(cp.at)
+	var along := Basis(Vector3.UP, PI * 0.25) * Vector3(0, 0, -1)
+	var across := Basis(Vector3.UP, PI * 0.25) * Vector3(1, 0, 0)
+	check(MissionRun.inside(cp, at + across * 6.5), "the region spans the turned roof")
+	check(not MissionRun.inside(cp, at + along * 3.0), "and is thin along the run")
+	await _load_file(ANGLES)
+	var b: MissionBuilder = level.builder
+	var enc: Node3D = b.encounters[0]
+	check(enc.enemies.size() >= 3, "shield, marksman and brute spawn, as stand-ins if need be (%d)" % enc.enemies.size())
+	# Standing on a corner slab.
+	var corner_mid := Vector3(float(m.route_legs[1][0]), 20.0, float(m.route_legs[1][1]))
+	var q := PhysicsRayQueryParameters3D.create(corner_mid, corner_mid + Vector3.DOWN * 30.0, 1)
+	var hit := player.get_world_3d().direct_space_state.intersect_ray(q)
+	check(not hit.is_empty() and absf(hit.position.y - 10.0) < 0.01, "the corner slab is a roof at 10 m (%s)" % [hit.get("position", null)])
+	await _bot_run("45 degree corners", false)
