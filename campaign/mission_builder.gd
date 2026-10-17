@@ -338,6 +338,7 @@ func _encounter(p: Dictionary) -> void:
 		var other := enemy_of_type(String(e.get("type", "")))
 		if other == null:
 			continue
+		other.set_meta("enemy_type", String(e.get("type", "")))
 		for k: String in e:
 			if k not in ["type", "at", "yaw", "wake"] and k in other:
 				other.set(k, e[k])

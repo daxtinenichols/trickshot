@@ -7,7 +7,7 @@ extends TestCase
 
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
-const PIECE_KEYS := ["box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
+const PIECE_KEYS := ["slab", "box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
 	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter"]
 
 var level: Node3D
@@ -125,9 +125,10 @@ func test_every_built_mission_loads_and_spawns_are_standable() -> void:
 			await _step(40)
 			check(player.state == Player.State.GROUND, "%s spawn %d: standing (%s)" % [title, s + 1, Player.State.keys()[player.state]])
 			check_near(player.global_position.y, b.spawns[s].origin.y, 0.08, "%s spawn %d: at its height" % [title, s + 1])
-			var z0 := player.global_position.z
+			# Forward is along the spawn's facing (routes turn).
+			var p0 := player.global_position
 			await _step(25, TestWorld.forward_input())
-			check(z0 - player.global_position.z > 1.5, "%s spawn %d: free to run forward" % [title, s + 1])
+			check((player.global_position - p0).dot(-b.spawns[s].basis.z) > 1.5, "%s spawn %d: free to run forward" % [title, s + 1])
 		level.queue_free()
 		await tree.process_frame
 
@@ -447,16 +448,21 @@ func test_dawn_run_can_be_finished() -> void:
 func test_on_air_lookouts_are_raiders() -> void:
 	await _load(_index("m02_on_air"))
 	var b: MissionBuilder = level.builder
-	check(b.encounters.size() == 1, "On Air has one encounter")
+	check(b.encounters.size() == 2, "On Air has two lookout posts")
 	var enc: Node3D = b.encounters[0]
-	check(enc.enemies.size() == 3, "three raiders (%d)" % enc.enemies.size())
+	var n: int = enc.enemies.size()
+	check(n == 4 or n == 5, "four raiders, and the camera drone once it exists (%d)" % n)
 	for e: Node in enc.enemies:
+		if e.get_meta("enemy_type", "") != "":
+			continue
 		check(e.get_script() == MissionBuilder.RAIDER_SCRIPT, "lookouts are raiders")
 		check(absf(e.global_position.y - 8.0) < 0.5, "standing on the roof (%s)" % e.global_position)
 	check(enc.covers.size() > 0, "with cover spots")
 	check(level.find_children("*", "CanvasLayer", false, false).any(func(n: Node) -> bool: return n.get_script() == level.HURT_OVERLAY_SCRIPT), "and the hurt overlay")
 	# Step onto the lookout roof: they wake.
 	player.respawn(b.spawns[2])
+	var c: Vector3 = enc.bounds.get_center()
+	player.global_position = Vector3(c.x, 8.05, c.z)
 	await _step(5)
 	check(enc.phase == EnemyEncounter.Phase.ACTIVE, "the encounter starts on the roof")
 	check(run.objective == 1, "practice from the lookout roof starts at the shooting")
@@ -468,13 +474,13 @@ func test_on_air_lookouts_are_raiders() -> void:
 	await _step(2)
 	check(run.downs == 1, "went down once")
 	check(player.global_position.distance_to(b.spawns[2].origin) < 1.0, "back at the checkpoint (%s)" % player.global_position)
-	check(enc.alive_count() == 3, "raiders reset")
+	check(enc.alive_count() == n, "raiders reset")
 	check(run.objective_text().contains("(0 / 3)"), "count starts over (%s)" % run.objective_text())
 	for e: Node in enc.enemies:
 		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
 	await _step(2)
-	check(run.objective == 2, "three raiders down")
-	check(run.headshots == 3, "headshots counted (%d)" % run.headshots)
+	check(run.objective == 2, "the lookouts are down")
+	check(run.headshots == n, "headshots counted (%d)" % run.headshots)
 	await _step(400)
 	check(enc.alive_count() == 0, "a cleared encounter stays cleared")
 
@@ -622,6 +628,12 @@ func test_route_45_degree_corners() -> void:
 	var b: MissionBuilder = level.builder
 	var enc: Node3D = b.encounters[0]
 	check(enc.enemies.size() >= 3, "shield, marksman and brute spawn, as stand-ins if need be (%d)" % enc.enemies.size())
+	var heard: Array = []
+	run.event.connect(func(e: String) -> void: heard.append(e))
+	var shield: Node = enc.enemies[0]
+	check(shield.get_meta("enemy_type", "") == "shield", "enemies remember the type they were asked for")
+	shield.take_hit({"damage": 500.0, "zone": &"body", "position": shield.global_position})
+	check(heard.has("kill:shield"), "a kill names its type for the radio (%s)" % [heard])
 	# Standing on a corner slab.
 	var corner_mid := Vector3(float(m.route_legs[1][0]), 20.0, float(m.route_legs[1][1]))
 	var q := PhysicsRayQueryParameters3D.create(corner_mid, corner_mid + Vector3.DOWN * 30.0, 1)

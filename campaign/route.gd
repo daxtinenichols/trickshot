@@ -56,6 +56,7 @@ static func expand(mission: Dictionary) -> Dictionary:
 		# Legs: the frame each stretch between corners is laid out in.
 		"legs": [{"o": origin.origin, "yaw": origin.yaw, "z0": 0.0, "start": 6.0}],
 		"leg": 0, "dx": 0.0, "fork": null, "forks": [],
+		"chalk": mission.get("chalk", false),
 	}
 	if mission.has("route_origin") or mission.get("route_from", "") == "base_exit":
 		st.y = origin.origin.y
@@ -288,7 +289,16 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	# (At street level, y 0, the street itself is the floor.)
 	_height(st, z0, z0 - length)
 	_set_low(st, st.y)
+	if seg.has("interior"):
+		_interior(st, z0, length, w, float(seg.interior))
 	var busy: Array = []
+	if st.chalk:
+		# Courier chalk where each roof starts: orange on the main line,
+		# faded on the other line of a fork.
+		if st.dx == 0.0:
+			_add(st, {"prop": "chalk_arrow", "at": [0, st.y, z0 - 2.5]})
+		else:
+			_add(st, {"mark": [0, st.y, z0 - 2.5], "size": [1.0, 1.8], "color": "#9a7a62"})
 	var after_wallrun: bool = st.get("after_wallrun", false)
 	st.after_wallrun = false
 	if after_wallrun:
@@ -299,6 +309,20 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 		_clutter(st, z0, length, busy)
 	st.z = z0 - length
 	st.roof_end = st.z
+
+
+## Walls and a roof over a roof's whole length, `height` m up: the inside
+## of a building (a warehouse, an office floor). Gaps in the roof every
+## 10 m are skylights.
+static func _interior(st: Dictionary, z0: float, length: float, w: float, height: float) -> void:
+	var y: float = st.y
+	for side: float in [-1.0, 1.0]:
+		_add(st, {"box": [side * (w * 0.5 + 0.25), y + height * 0.5, z0 - length * 0.5], "size": [0.5, height, length], "kind": "NEUTRAL", "look": "FACADE"})
+	var d := 0.0
+	while d < length - 0.5:
+		var l := minf(8.0, length - d)
+		_add(st, {"box": [0, y + height + 0.25, z0 - d - l * 0.5], "size": [w + 1.0, 0.5, l], "kind": "NEUTRAL", "look": "RUST"})
+		d += 10.0
 
 
 static func _height(st: Dictionary, from_z: float, to_z: float) -> void:
