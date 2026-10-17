@@ -178,7 +178,9 @@ func _unhandled_input(event: InputEvent) -> void:
 		_root.visible = not _root.visible
 
 
-func _process(delta: float) -> void:
+func _process(frame_delta: float) -> void:
+	# Real time, so slow motion doesn't stretch the HUD.
+	var delta := frame_delta / maxf(Engine.time_scale, 0.01)
 	_toast_time -= delta
 	_toast.modulate.a = clampf(_toast_time, 0.0, 1.0)
 	if player == null:

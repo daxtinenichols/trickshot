@@ -122,8 +122,9 @@ func multiplier() -> int:
 	return entries.size()
 
 
+## The points shown (rounded) times the multiplier, so the card's sum adds up.
 func combo_total() -> int:
-	return roundi(combo_points * multiplier())
+	return roundi(combo_points) * multiplier()
 
 
 ## 1x at run pace or slower, 2x at top speed and above.

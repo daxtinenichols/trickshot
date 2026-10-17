@@ -296,6 +296,22 @@ func test_shooting_a_window_breaks_it() -> void:
 	check(win.is_broken, "shot window shatters")
 
 
+func test_no_bullet_marks_on_breakable_glass_or_doors() -> void:
+	await _setup()
+	var win := BreakableWindow.new()
+	w.add_child(win)
+	win.global_position = Vector3(0, 1.0, -8)
+	await w.step(2)
+	await _shoot(Vector3(0, 1.6, -8))
+	check(win.is_broken, "shot window shatters")
+	check(_gun()._impacts.is_empty(), "no bullet hole left hanging where the glass was")
+	await _settle_gun()
+	w.add_box(Vector3(3, 1.5, -10), Vector3(2, 3, 0.4))
+	await w.step(2)
+	await _shoot(Vector3(3, 1.5, -10))
+	check(_gun()._impacts.size() == 1, "solid walls still get marks")
+
+
 func test_hip_fire_shot_through_crosshair_at_range() -> void:
 	# First-shot accuracy: a 60 m headshot from the hip with no aiming.
 	await _setup()
@@ -371,6 +387,37 @@ func test_aim_help_never_goes_through_walls() -> void:
 	w.add_box(Vector3(0, 1.62, -12), Vector3(0.6, 0.6, 0.2))
 	await w.step(2)
 	check(await _assisted_shot(_head(t) + Vector3(0.6, 0, 0), 1.0) != &"head", "no bending onto a head behind cover")
+
+
+func test_aim_help_body_hit_never_jumps_to_another_target() -> void:
+	var p := await _setup()
+	# A chest hit on the edge of a near target, with another target's head
+	# just past that edge, further away and in plain view.
+	var near := _target(Vector3(0, 0, -10))
+	var aim := Vector3(0.22, 1.3, -10)
+	var eye := p.global_position + Vector3(0, p.head.position.y, 0)
+	var far_head := eye + (aim - eye).normalized() * 30.0 + Vector3(0.3, 0, 0)
+	var far := _target(far_head - Vector3(0, ShootingTarget.HEAD_HEIGHT, 0))
+	await w.step(2)
+	_gun().aim_assist = 1.0
+	var before := hits.size()
+	await _shoot(aim)
+	check(hits.size() == before + 1, "the shot hit something")
+	if hits.size() > before:
+		check(hits[before].target == near and hits[before].zone == &"body", "it stays a body hit on the target that was shot (got %s)" % hits[before].zone)
+	check(far.health == far.max_health, "the far target is untouched")
+
+
+func test_aim_help_does_not_slow_look_over_hidden_targets() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	w.add_box(Vector3(0, 1.5, -10), Vector3(3, 3, 0.3))  # a wall in front of it
+	await w.step(2)
+	_aim(_head(t))
+	await w.step(1)
+	_aim(_head(t))
+	_gun().aim_assist = 1.0
+	check(_gun().look_slowdown() == 1.0, "full speed when the target is behind a wall (%.2f)" % _gun().look_slowdown())
 
 
 func test_aim_help_slows_controller_look_over_targets() -> void:

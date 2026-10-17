@@ -44,7 +44,9 @@ func is_showing() -> bool:
 	return _alpha > 0.0
 
 
-func _process(delta: float) -> void:
+func _process(frame_delta: float) -> void:
+	# Real time, so slow motion doesn't stretch the HUD.
+	var delta := frame_delta / maxf(Engine.time_scale, 0.01)
 	if _alpha <= 0.0 and _ring < 0.0:
 		return
 	_alpha = maxf(_alpha - delta * _fade, 0.0)

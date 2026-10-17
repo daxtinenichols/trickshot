@@ -47,6 +47,8 @@ var volume := 0.8
 ## action -> {"kbm": event dict or null, "pad": event dict or null}.
 ## Only actions the player changed are stored; the rest use the defaults.
 var custom_bindings := {}
+## Saved binding names from older versions -> the action they are now.
+const RENAMED_ACTIONS := {"boost": "steer"}
 ## Where settings are saved (tests point this somewhere else).
 var save_path := PATH
 
@@ -321,11 +323,35 @@ func load_settings(path := "") -> void:
 	volume = cfg.get_value("audio", "volume", volume)
 	custom_bindings.clear()
 	if cfg.has_section("bindings"):
-		for action in cfg.get_section_keys("bindings"):
+		for saved in cfg.get_section_keys("bindings"):
+			# Shift's action was renamed from boost (the boost was removed).
+			var action: String = RENAMED_ACTIONS.get(saved, saved)
 			if not InputMap.has_action(action):
 				continue
-			var slots: Dictionary = cfg.get_value("bindings", action, {})
+			var slots: Dictionary = cfg.get_value("bindings", saved, {})
 			custom_bindings[action] = slots
 			_set_slot(action, false, decode_event(slots.get("kbm")))
 			_set_slot(action, true, decode_event(slots.get("pad")))
+		_free_taken_defaults()
 	changed.emit()
+
+
+## After loading custom bindings: an action still on its default loses any
+## input a custom binding took, so one input never does two things (a save
+## from before an action existed can't know to take it away).
+func _free_taken_defaults() -> void:
+	for pair: Array in REBINDABLE:
+		var other: String = pair[0]
+		if custom_bindings.has(other):
+			continue
+		for existing in InputMap.action_get_events(other):
+			if _taken_by_custom(existing):
+				InputMap.action_erase_event(other, existing)
+
+
+func _taken_by_custom(ev: InputEvent) -> bool:
+	for action: String in custom_bindings:
+		for mine in InputMap.action_get_events(action):
+			if _same_input(ev, mine):
+				return true
+	return false

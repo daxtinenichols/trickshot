@@ -55,7 +55,7 @@ func shatter(push: Vector3) -> bool:
 	_shape.set_deferred("disabled", true)
 	_mesh.visible = false
 	_spawn_shards(push)
-	get_tree().create_timer(RESET_AFTER).timeout.connect(_restore)
+	get_tree().create_timer(RESET_AFTER, false).timeout.connect(_restore)
 	return true
 
 
@@ -90,7 +90,7 @@ func _spawn_shards(push: Vector3) -> void:
 		shard.global_position = global_transform * Vector3(rng.randf_range(-size.x, size.x) * 0.45, rng.randf_range(0.1, size.y - 0.1), 0)
 		shard.linear_velocity = push + Vector3(rng.randf_range(-1.5, 1.5), rng.randf_range(0.0, 2.0), rng.randf_range(-1.5, 1.5))
 		shard.angular_velocity = Vector3(rng.randf_range(-8, 8), rng.randf_range(-8, 8), rng.randf_range(-8, 8))
-		get_tree().create_timer(2.5).timeout.connect(shard.queue_free)
+		get_tree().create_timer(2.5, false).timeout.connect(shard.queue_free)
 
 
 func _glass() -> StandardMaterial3D:

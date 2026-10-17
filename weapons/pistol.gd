@@ -229,26 +229,35 @@ func _assisted(from: Vector3, dir: Vector3, result: Dictionary) -> Dictionary:
 	if hit_zone == &"head":
 		return {}
 	var cone := stats.assist_head_cone if hit_zone != &"" else stats.assist_miss_cone
+	var hit_target: Object = result.collider.get_meta("target") if hit_zone != &"" and (result.collider as Object).has_meta("target") else null
 	var best := {}
 	var best_score := INF
 	for hb: Node3D in assist_candidates(from, dir, cone * aim_assist):
 		var head: bool = hb.get_meta("zone") == &"head"
-		if hit_zone != &"" and not head:
+		# A body hit only ever moves up to that same target's head.
+		if hit_zone != &"" and (not head or hb.get_meta("target", null) != hit_target):
 			continue
 		var angle := dir.angle_to(hb.global_position - from)
 		# Heads win over bodies at a similar angle.
 		var score := angle * (0.5 if head else 1.0)
 		if score >= best_score:
 			continue
-		var q := PhysicsRayQueryParameters3D.create(from, from + (hb.global_position - from) * 1.05, HITBOX_MASK)
-		if player:
-			q.exclude = [player.get_rid()]
-		var r := get_world_3d().direct_space_state.intersect_ray(q)
-		if r.is_empty() or r.collider != hb:
+		var r := _clear_view(from, hb)
+		if r.is_empty():
 			continue
 		best = r
 		best_score = score
 	return best
+
+
+## The ray from `from` to the hitbox's centre, if it reaches it with nothing
+## in the way; else {}.
+func _clear_view(from: Vector3, hb: Node3D) -> Dictionary:
+	var q := PhysicsRayQueryParameters3D.create(from, from + (hb.global_position - from) * 1.05, HITBOX_MASK)
+	if player:
+		q.exclude = [player.get_rid()]
+	var r := get_world_3d().direct_space_state.intersect_ray(q)
+	return r if not r.is_empty() and r.collider == hb else {}
 
 
 ## Live hitboxes (group "hitboxes", layer 4) whose centre is within
@@ -276,9 +285,11 @@ func look_slowdown() -> float:
 		return 1.0
 	var from := camera.global_position
 	var dir := -camera.global_basis.z
-	if assist_candidates(from, dir, stats.assist_slow_cone * aim_assist).is_empty():
-		return 1.0
-	return lerpf(1.0, stats.assist_slow_speed, aim_assist)
+	for hb in assist_candidates(from, dir, stats.assist_slow_cone * aim_assist):
+		# Only targets you can actually see.
+		if not _clear_view(from, hb).is_empty():
+			return lerpf(1.0, stats.assist_slow_speed, aim_assist)
+	return 1.0
 
 
 func _resolve_hit(result: Dictionary, from: Vector3, dir: Vector3) -> void:
@@ -422,7 +433,10 @@ func _effects(end: Vector3, result: Dictionary) -> void:
 	var tw := tracer.create_tween()
 	tw.tween_property(mat, "albedo_color:a", 0.0, 0.06)
 	tw.tween_callback(tracer.queue_free)
-	if not result.is_empty() and result.collider is StaticBody3D and not (result.collider as Object).has_meta("target"):
+	# Bullet holes only on solid world geometry: not targets, and not glass
+	# or doors that break or swing away and would leave them hanging in air.
+	if not result.is_empty() and result.collider is StaticBody3D and not (result.collider as Object).has_meta("target") \
+			and not (result.collider as Node).is_in_group("breakable"):
 		_impact_mark(result.position, result.normal)
 
 

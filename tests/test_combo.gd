@@ -37,6 +37,9 @@ func test_variety_sets_multiplier_and_repeats_decay() -> void:
 	# slide 50 + vault 75 + slide 50*0.6 = 155
 	check_near(c.combo_points, 155.0, 0.01, "repeat worth 60% of the last")
 	check(c.combo_total() == 310, "total = points x multiplier (got %d)" % c.combo_total())
+	# The total matches the rounded points shown on screen times the multiplier.
+	c.combo_points = 100.4
+	check(c.combo_total() == 200, "100 shown x2 = 200, not 201 (got %d)" % c.combo_total())
 
 
 func test_speed_and_quality_scale_points() -> void:

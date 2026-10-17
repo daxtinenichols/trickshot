@@ -92,6 +92,27 @@ func test_bindings_and_values_survive_save_and_load() -> void:
 	check_near(Settings.fov, 100.0, 0.001, "fov loaded")
 
 
+## Saves from before the boost was removed keep Shift on "boost": it moves to
+## steer, and nothing else keeps a key a custom binding took.
+func test_old_boost_binding_moves_to_steer() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("bindings", "boost", {"kbm": GameSettings.encode_event(_key(KEY_V)), "pad": null})
+	cfg.save(TEST_PATH)
+	Settings.load_settings()
+	check(InputMap.action_has_event("steer", _key(KEY_V)), "the old boost key steers")
+	check(Settings.custom_bindings.has("steer") and not Settings.custom_bindings.has("boost"), "stored under steer")
+
+
+func test_loaded_custom_key_is_freed_from_defaults() -> void:
+	# A save that put Shift on jump, written before steer existed.
+	var cfg := ConfigFile.new()
+	cfg.set_value("bindings", "jump", {"kbm": GameSettings.encode_event(_key(KEY_SHIFT)), "pad": null})
+	cfg.save(TEST_PATH)
+	Settings.load_settings()
+	check(InputMap.action_has_event("jump", _key(KEY_SHIFT)), "Shift jumps")
+	check(not InputMap.action_has_event("steer", _key(KEY_SHIFT)), "and no longer also steers")
+
+
 func test_reset_bindings() -> void:
 	Settings.rebind("jump", _key(KEY_J))
 	Settings.reset_bindings()

@@ -197,7 +197,9 @@ func _on_added(trick_name: StringName, points: int) -> void:
 		old.queue_free()
 
 
-func _process(delta: float) -> void:
+func _process(frame_delta: float) -> void:
+	# Real time, so slow motion doesn't stretch the HUD.
+	var delta := frame_delta / maxf(Engine.time_scale, 0.01)
 	_flash_time -= delta
 	_flash.modulate.a = clampf(_flash_time / 0.4, 0.0, 1.0)
 	_flash.visible = _flash_time > 0.0
