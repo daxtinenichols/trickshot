@@ -67,6 +67,10 @@ var _phase := 0.0
 var _climb_phase := 0.0
 ## Facing, in the player's frame (PI = where the player looks).
 var _heading := PI
+var _last_yaw := 0.0
+## The pose actually shown: eases toward the blended pose so state changes,
+## overlays and noisy inputs never pop a joint.
+var _shown := {}
 var _turn_lean := 0.0
 var _wall_side := 1.0
 var _tuck := 0.0
@@ -102,9 +106,12 @@ func _ready() -> void:
 func setup(p: Player) -> void:
 	player = p
 	_heading = PI
+	_last_yaw = p.yaw
 	p.landed.connect(_on_landed)
 	p.trick.connect(_on_trick)
-	p.respawned.connect(func() -> void: _heading = PI)
+	p.respawned.connect(func() -> void:
+		_heading = PI
+		_last_yaw = p.yaw)
 	trails = MotionTrails.new()
 	add_child(trails)
 	trails.setup(p, self)
@@ -166,7 +173,7 @@ func _process(delta: float) -> void:
 	for k: String in _weights:
 		var rate: float = BLEND_RATE[k]
 		_weights[k] = lerpf(_weights[k], targets.get(k, 0.0), 1.0 - exp(-rate * delta))
-	_apply_pose(_blend())
+	_apply_pose(_ease_pose(_blend(), delta))
 	_update_root(delta)
 
 
@@ -288,6 +295,19 @@ func _blend() -> Dictionary:
 	return out
 
 
+## How fast the shown pose follows the blended one (1/s): fast enough to
+## keep kicks and flips crisp, slow enough to round off any snap.
+const POSE_EASE := 24.0
+
+
+func _ease_pose(pose: Dictionary, delta: float) -> Dictionary:
+	var k := 1.0 - exp(-POSE_EASE * delta)
+	for bone: String in _bones:
+		var target: Quaternion = pose.get(bone, Quaternion.IDENTITY)
+		_shown[bone] = target if not _shown.has(bone) else (_shown[bone] as Quaternion).slerp(target, k)
+	return _shown
+
+
 ## Weighted average of poses, joint by joint (quaternion blend).
 func _weighted(poses: Dictionary) -> Dictionary:
 	var acc := {}  # bone -> [Quaternion, total weight]
@@ -371,6 +391,14 @@ func _update_root(delta: float) -> void:
 				target = atan2(vel.x, vel.z)
 	if player.state in [Player.State.WALLRUN, Player.State.VAULT, Player.State.MANTLE, Player.State.SLIDE, Player.State.PRONE_SLIDE] and speed > 0.5:
 		target = atan2(vel.x, vel.z)
+	# The body keeps its facing in the world when the view turns, then turns
+	# toward where it's going. (Following the view instantly and easing back
+	# made it wobble on every mouse movement.) On ramps and loops the frame
+	# itself tilts, so it stays relative there.
+	var yaw_step := wrapf(player.yaw - _last_yaw, -PI, PI)
+	_last_yaw = player.yaw
+	if player.state != Player.State.SURFACE:
+		_heading = wrapf(_heading - yaw_step, -PI, PI)
 	var before := _heading
 	_heading = lerp_angle(_heading, target, 1.0 - exp(-rate * delta))
 	var turn_rate := wrapf(_heading - before, -PI, PI) / maxf(delta, 0.001)

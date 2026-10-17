@@ -17,7 +17,12 @@ signal toggled(on: bool)
 
 const GRAYBOX_SHADER := preload("res://levels/graybox.gdshader")
 const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
-const WASTELAND_SHADER := preload("res://art/shaders/wasteland.gdshader")
+## Optional parts are loaded at runtime, not preloaded or named by class:
+## if one is missing or not imported yet (a fresh copy before the editor
+## reimports), it is skipped with a warning instead of taking the whole look
+## (environment, runner) down with it.
+const WASTELAND_SHADER_PATH := "res://art/shaders/wasteland.gdshader"
+const GUN_LOOK_PATH := "res://art/weapons/gun_look.gd"
 const OUTLINE_SHADER := preload("res://art/shaders/outline_post.gdshader")
 const SpeedLines := preload("res://art/fx/speed_lines.gd")
 const ChaseCamera := preload("res://art/look/chase_camera.gd")
@@ -64,6 +69,7 @@ var enabled := true
 var auto_attach := true
 
 var _world_materials := {}
+var _missing := {}
 var _swapped: Array = []  # [GeometryInstance3D, original material]
 var _env_backup := {}
 var _attached: Array = []  # nodes this look added, removed when turned off
@@ -126,7 +132,10 @@ func wasteland_material(kind: String, color := Color.TRANSPARENT, grid := 0.0) -
 	var key := "w/%s/%s/%.2f" % [kind, color.to_html(), grid]
 	if not _world_materials.has(key):
 		var m := ShaderMaterial.new()
-		m.shader = WASTELAND_SHADER
+		var shader := _optional(WASTELAND_SHADER_PATH) as Shader
+		if shader == null:
+			return world_material(color, grid)
+		m.shader = shader
 		m.set_shader_parameter("base_color", color)
 		m.set_shader_parameter("surface", spec[0])
 		m.set_shader_parameter("tex_scale", spec[1])
@@ -273,10 +282,12 @@ func attach_to_player(player: Player) -> void:
 	lines.setup(player)
 	var pistol := player.weapon as Pistol
 	if pistol and pistol.view_model:
-		var gun := GunLook.new()
-		gun.name = "GunLook"
-		_add(player, gun)
-		gun.setup(pistol, player.get_node("RunnerBody") as RunnerBody)
+		var script := _optional(GUN_LOOK_PATH) as Script
+		if script and script.can_instantiate():
+			var gun: Node3D = script.new()
+			gun.name = "GunLook"
+			_add(player, gun)
+			gun.setup(pistol, player.get_node("RunnerBody"))
 
 
 ## The player's runner body, built on first use. The first-person camera is
@@ -307,6 +318,18 @@ static func make_outline_quad() -> MeshInstance3D:
 	quad.position = Vector3(0, 0, -0.1)
 	quad.layers = 0xFFFFF
 	return quad
+
+
+## Loads an optional resource, or warns once and returns null.
+func _optional(path: String) -> Resource:
+	if _missing.has(path):
+		return null
+	var res: Resource = load(path) if ResourceLoader.exists(path) else null
+	if res == null or (res is Script and not (res as Script).can_instantiate()):
+		push_warning("ArtLook: couldn't load %s, skipping it (reload the project if it was just added)" % path)
+		_missing[path] = true
+		return null
+	return res
 
 
 func _add(parent: Node, child: Node) -> void:

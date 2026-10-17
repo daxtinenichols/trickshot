@@ -13,6 +13,8 @@ extends Node3D
 const MODEL := preload("res://art/weapons/scrap_pistol.glb")
 const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
 const FLASH_SHADER := preload("res://art/shaders/muzzle_flash.gdshader")
+## By path, not class_name, so this works before the editor registers it.
+const Audio := preload("res://art/fx/gun_audio.gd")
 
 ## The gun in the runner's right hand, relative to the hand bone (its +Y
 ## runs along the fingers, -X out of the back of the hand): barrel along the
@@ -136,10 +138,10 @@ func _build_materials() -> void:
 
 func _build_sounds() -> void:
 	for i in 4:
-		_shot_sounds.append(GunAudio.gunshot(i))
+		_shot_sounds.append(Audio.gunshot(i))
 	for i in 3:
-		_casing_sounds.append(GunAudio.casing(i))
-		_impact_sounds.append(GunAudio.impact(i))
+		_casing_sounds.append(Audio.casing(i))
+		_impact_sounds.append(Audio.impact(i))
 	for i in 3:
 		var a := AudioStreamPlayer.new()
 		a.volume_db = -3.0
