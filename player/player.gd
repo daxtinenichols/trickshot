@@ -87,6 +87,9 @@ var _roll_dir := 0.0
 var _roll_rate := 0.0
 ## A roll carried off a surface: keeps its rate until you lean.
 var _roll_carry := false
+## Still holding the lean you steered a wallrun with: it won't start a side
+## flip until you let go and lean again.
+var _lean_locked := false
 ## View turned by the player since the last tick, and the spin carried on
 ## from it in the air (yaw, pitch, rad/s).
 var _look_acc := Vector2.ZERO
@@ -392,6 +395,7 @@ func _change_state(to: State) -> void:
 		_roll_dir = signf(_exit_roll_rate)
 		_roll_rate = absf(_exit_roll_rate)
 		_roll_carry = _exit_roll_rate != 0.0
+		_lean_locked = from == State.WALLRUN and absf(lean) > 0.3
 		_exit_air_pitch = 0.0
 		_exit_spin = Vector2.ZERO
 		_exit_air_roll = 0.0
@@ -438,6 +442,10 @@ func _landing_tucked(fall: float) -> bool:
 ## open up and slow down. Opened up near level you settle upright; land
 ## on your side and you crash.
 func _tick_air_roll(f: InputFrame, delta: float) -> void:
+	if _lean_locked:
+		if absf(f.lean) > 0.3:
+			return
+		_lean_locked = false
 	if _roll_carry:
 		# Rolling off a surface: it turns at its own rate until you lean,
 		# then it's an ordinary side flip in that direction.
@@ -754,6 +762,14 @@ func _land(f: InputFrame) -> void:
 	var crouch_age := _since_crouch_press
 	var tucked := _landing_tucked(fall) and not _landing_tipped()
 	if _tuck_roll(f, fall, crouch_age):
+		return
+	if _landing_tipped() and not _landing_crashed() and not _diving:
+		# Down on your side partway round a side flip: a shoulder roll that
+		# keeps you moving. The further off upright, the more speed it costs.
+		var off := absf(rad_to_deg(wrapf(_air_roll, -PI, PI)))
+		var flipped := _sideflips_done > 0
+		_air_roll = 0.0
+		_start_roll(timing_quality(off, 25.0, 160.0), &"flip_roll" if flipped else &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
 		return
 	if _landing_tipped() or (_landing_crashed() and not tucked):
 		_diving = false

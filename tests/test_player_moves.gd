@@ -860,11 +860,52 @@ func test_side_flip_opened_up_spins_slower() -> void:
 	check(open < tucked * 0.6, "but slower than tucked (%.1f vs %.1f deg)" % [rad_to_deg(open), rad_to_deg(tucked)])
 
 
-func test_half_side_flip_crashes() -> void:
-	var p := await _airborne(4.0)
-	await w.step_until(func() -> bool: return p.air_roll() < deg_to_rad(-150.0), 90, _lean_frame(-1.0))
-	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
-	check(&"crash" in w.tricks_seen, "landing on your side is a crash")
+## Lands a running jump after side-flipping round to `roll_deg` (0 = no
+## flip). Returns {state on landing, speed before, speed a second later}.
+func _side_flip_landing(roll_deg: float) -> Dictionary:
+	if is_instance_valid(w):
+		w.queue_free()
+		await tree.process_frame
+	w = TestWorld.new()
+	tree.root.add_child(w)
+	w.add_floor()
+	var p := w.spawn_player(Vector3(0, 4.0, 0))
+	p.velocity = Vector3(0, 0, -9)
+	await w.step(1, _fwd())
+	if roll_deg > 0.0:
+		await w.step_until(func() -> bool: return p.air_roll() <= deg_to_rad(-roll_deg), 90, _lean(-1.0))
+	var out := {"state": "", "before": p.horizontal_speed(), "land": 0.0, "after": 0.0}
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120, _fwd())
+	out.state = Player.State.keys()[p.state]
+	out.land = p.horizontal_speed()
+	await w.step(60, _fwd())
+	out.after = p.horizontal_speed()
+	return out
+
+
+func test_landing_on_your_side_rolls_and_keeps_moving() -> void:
+	var clean := await _side_flip_landing(0.0)
+	var side := await _side_flip_landing(150.0)
+	check(side.state == "ROLL", "coming down on your side is a shoulder roll (%s)" % side.state)
+	check(not (&"crash" in w.tricks_seen), "not a crash")
+	check(side.after > side.before * 0.85, "keeps moving (%.1f -> %.1f m/s)" % [side.before, side.after])
+	check(clean.land >= side.land, "a clean landing keeps at least as much (%.1f vs %.1f m/s)" % [clean.land, side.land])
+
+
+func test_held_wallrun_lean_doesnt_side_flip() -> void:
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	# Lean into the wall until the run ends, still holding the lean.
+	await w.step_until(func() -> bool: return p.state != Player.State.WALLRUN, 300, _lean(1.0))
+	check(p.state == Player.State.AIR, "came off the wall (%s)" % Player.State.keys()[p.state])
+	await w.step(15, _lean(1.0))
+	check(absf(p.air_roll()) < 0.01, "the held lean doesn't start a side flip (%.0f deg)" % rad_to_deg(p.air_roll()))
+	await w.step(2, _fwd())
+	await w.step(10, _lean(1.0))
+	check(absf(p.air_roll()) > 0.3 or p.state != Player.State.AIR, "let go and lean again to side flip")
 
 
 func test_lean_on_the_ground_peeks() -> void:

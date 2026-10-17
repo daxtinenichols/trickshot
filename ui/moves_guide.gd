@@ -20,7 +20,7 @@ const MOVES := [
 	["Sideways ramps", "Run onto a purple bank at an angle, or across any steep ramp.", "Run along it tilted, like a wallrun. Steer or look up the slope to climb it; let go to drift down."],
 	["Boost", "{boost}.", "A short burst of speed on the ground, a ramp or a wall. Then it needs 2 s to recharge."],
 	["Lean / quick turn", "Hold {lean_left} or {lean_right}.", "Leans you to peek around corners. While held, the view turns faster and your run follows it without losing speed."],
-	["Side flip", "Hold {lean_left} or {lean_right} in the air.", "Rolls you sideways, the way you first pressed. Hold it (or {crouch}) to tuck and spin faster, let go to open up and slow down. Near level it settles; land on your side and you crash."],
+	["Side flip", "Hold {lean_left} or {lean_right} in the air.", "Rolls you sideways, the way you first pressed. Hold it (or {crouch}) to tuck and spin faster, let go to open up and slow down. Near level it settles; land on your side and you shoulder-roll, losing a little speed. Coming off a wallrun, let go of the lean and press it again to flip."],
 	["Kick", "{kick}.", "Opens doors and breaks windows. In the air, kick off walls and targets. More speed, bigger push."],
 	["Window smash", "Run, slide or dive into glass fast.", ""],
 	["Backflip", "In the air, keep moving the view up and over until it comes back around.", "Flick hard: past straight up it turns faster. Flick past halfway and let go, and momentum carries you round. Land level or you crash."],

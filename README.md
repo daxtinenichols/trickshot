@@ -65,7 +65,7 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 | Kick | F. In the air: kick off walls and targets | Kicking with speed pushes you further and keeps your speed along the wall. Kicks doors open and breaks windows |
 | Boost | Shift | A short burst of speed on the ground, a ramp or a wall, then a 2 s cooldown |
 | Lean / quick turn | Hold Q or E | Leans you to peek. While held, turning the view is faster and your run follows it without losing speed (in the air, part of your speed follows) |
-| Side flip | Hold Q or E in the air | Rolls you sideways one way (the first one you press). Holding it, or crouch, tucks you in and spins you faster; let go to open up and slow down. Near level it settles; land on your side and you crash |
+| Side flip | Hold Q or E in the air | Rolls you sideways one way (the first one you press). Holding it, or crouch, tucks you in and spins you faster; let go to open up and slow down. Near level it settles; land on your side and you shoulder-roll, keeping your speed (the further off level, the more it costs). A lean you were holding on a wallrun doesn't flip you as you come off: let go and lean again |
 | Window smash | Run, slide or dive into glass fast enough | |
 | Backflip / front flip | In the air, keep moving the view up and over (backflip) or down and over (front flip) until it comes back around | Past straight up/down the view turns faster, so commit to the flick. Flick hard past halfway and let go: momentum carries you round to level. Hold crouch to keep spinning. The HUD shows your flip progress. Land level or you crash |
 | 360 / 720 | In the air, turn a full circle | Momentum carries a fast spin round the same way as flips. Quick turn (Q/E) speeds the turn up |
