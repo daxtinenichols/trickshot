@@ -1,0 +1,144 @@
+{
+ "id": "m09_rail_bridge",
+ "title": "Rail Bridge",
+ "runner": "",
+ "par_seconds": 150,
+ "start": {"at": [0, 8, 2]},
+ "clutter": ["crate_wood", "barrel_rust", "generator", "tire_stack", "vent_stack", "debris_pile", "pallet", "loudspeaker_pole"],
+ "objectives": [
+  {"type": "reach", "name": "track nine", "text": "Run the old train line west", "at": "@Track nine"},
+  {"type": "shoot", "count": 4, "text": "Clear the squad on the signal gantry"},
+  {"type": "reach", "name": "the junction", "text": "Get back up on the line and reach the junction", "at": "@Junction"},
+  {"type": "reach", "name": "the station", "text": "Take the junction to the station", "at": "@Station"},
+  {"type": "shoot", "count": 5, "text": "Break the Ward at the station"},
+  {"type": "reach", "name": "the tower", "text": "Run the last stretch to the tower", "at": "end"}
+ ],
+ "route": [
+  {"roof": 80, "do": [
+   {"label": "RAIL BRIDGE", "at": 5, "size": 1.3},
+   {"mark": "#f57320", "at": 8},
+   {"hurdles": true, "at": 24},
+   {"prop": "shipping_container", "x": -4.6, "at": 38, "yaw": 90},
+   {"slide": true, "at": 56}
+  ]},
+  {"gap": 5},
+  {"roof": 92, "do": [
+   {"checkpoint": "Track nine", "at": 4, "objective": 1},
+   {"encounter": "gantry squad", "at": 10, "length": 52, "troopers": [[-3.6, 18, 0], [3.6, 24, 0.6], [-3.6, 36, 1.2]], "enemies": [{"type": "marksman", "x": 3.8, "d": 46, "wake": 0.8}]},
+   {"radio": {"who": "host", "line": "Oh dear. Section nine. Gone. What a shame."}, "at": 80, "radius": 9},
+   {"label": "SECTION 9", "at": 88}
+  ]},
+  {"ramp_down": 0, "length": 24},
+  {"roof": 74, "y": 0, "do": [
+   {"mark": "#ff8a1f", "at": 4},
+   {"prop": "chalk_arrow", "x": 0, "at": 6},
+   {"encounter": "street gunners", "at": 10, "length": 50, "raiders": [[-3.6, 16, 0], [3.6, 22, 0.5], [-3.6, 32, 1.0], [3.6, 40, 1.5], [-3.6, 46, 2.0]]},
+   {"prop": "car_wreck", "x": 4.4, "at": 64, "yaw": 80}
+  ]},
+  {"ramp_up": 8, "length": 24},
+  {"roof": 50, "y": 8, "do": [
+   {"checkpoint": "Back on the line", "at": 4, "objective": 2},
+   {"hurdles": true, "at": 26}
+  ]},
+  {"turn": "left", "angle": 45, "size": 22},
+  {"roof": 70, "do": [
+   {"slide": true, "at": 22},
+   {"hurdles": true, "at": 48}
+  ]},
+  {"turn": "left", "angle": 45, "size": 22},
+  {"roof": 64, "do": [
+   {"checkpoint": "Junction", "at": 4, "objective": 3},
+   {"radio": {"who": "mags", "line": "Drones with guns. They flash before they fire. One hit drops them."}, "at": 8, "radius": 8},
+   {"encounter": "junction drones", "at": 10, "length": 46, "troopers": [[-3.6, 30, 0.6], [3.6, 38, 1.2]], "enemies": [{"type": "gun_drone", "x": -2, "d": 14, "height": 4}, {"type": "gun_drone", "x": 2, "d": 22, "height": 4}, {"type": "gun_drone", "x": 0, "d": 34, "height": 4}]},
+   {"radio": {"who": "echo", "line": "Left at the junction, courier. Left. The right line ends in the sky."}, "at": 30, "radius": 9},
+   {"radio": {"who": "host", "line": "Who keeps doing that?"}, "at": 31, "radius": 9},
+   {"label": "JUNCTION", "at": 58}
+  ]},
+  {"fork": [
+   {"roof": 32, "do": [
+    {"label": "Right line", "at": 4},
+    {"hurdles": true, "at": 18}
+   ]},
+   {"gap": 7},
+   {"roof": 44, "y": 5, "do": [
+    {"encounter": "signal box", "at": 6, "length": 32, "troopers": [[3.6, 18, 0]], "enemies": [{"type": "marksman", "x": -3.8, "d": 26, "wake": 0.6}]},
+    {"tape": "m09_tape_signal_box", "x": 4.6, "at": 38}
+   ]},
+   {"roof": 40, "y": 8},
+   {"wallrun": 12, "side": -1},
+   {"roof": 40}
+  ], "side": 1},
+  {"roof": 70, "do": [
+   {"mark": "#ff8a1f", "at": 4},
+   {"prop": "chalk_arrow", "x": 0, "at": 6},
+   {"label": "Left line", "at": 6},
+   {"slide": true, "at": 30},
+   {"hurdles": true, "at": 56}
+  ]},
+  {"gap": 5},
+  {"roof": 86, "do": [
+   {"encounter": "carriages", "at": 6, "length": 52, "troopers": [[-3.6, 16, 0], [3.6, 24, 0.6], [-3.6, 34, 1.2], [3.6, 42, 1.8]]},
+   {"prop": "shipping_container", "x": 4.6, "at": 70, "yaw": 90}
+  ]},
+  {"join": true},
+  {"roof": 90, "do": [
+   {"checkpoint": "Station", "at": 4, "objective": 4},
+   {"label": "WEST CENTRAL", "at": 6, "size": 1.1},
+   {"encounter": "station squad", "at": 10, "length": 62, "troopers": [[-3.6, 18, 0], [3.6, 26, 0.6], [-3.6, 40, 1.2]], "enemies": [{"type": "shield", "x": 3.6, "d": 34, "wake": 0.9}, {"type": "marksman", "x": -3.8, "d": 54, "wake": 1.4}, {"type": "gun_drone", "x": -2, "d": 22, "height": 4}, {"type": "gun_drone", "x": 2, "d": 46, "height": 4}]}
+  ]},
+  {"turn": "right", "angle": 45, "size": 22},
+  {"roof": 62, "do": [
+   {"window": 3.3, "at": 24}
+  ]},
+  {"turn": "right", "angle": 45, "size": 22},
+  {"roof": 40, "do": [
+   {"label": "SECTION 4", "at": 30}
+  ]},
+  {"gap": 7},
+  {"roof": 44, "y": 5, "do": [
+   {"hurdles": true, "at": 20}
+  ]},
+  {"roof": 56, "y": 8, "do": [
+   {"encounter": "last gantry", "at": 6, "length": 40, "raiders": [[-3.6, 16, 0], [3.6, 22, 0.6], [-3.6, 30, 1.2], [3.6, 36, 1.8]]}
+  ]},
+  {"roof": 80, "do": [
+   {"hurdles": true, "at": 22},
+   {"prop": "antenna_mast", "x": -4.8, "at": 60},
+   {"label": "THE TOWER", "at": 66, "size": 1.5},
+   {"mark": "#f57320", "at": 68}
+  ]}
+ ],
+ "radio": [
+  {"on": "start", "who": "mags", "line": "The old train line. It's the last straight road to the tower."},
+  {"on": "go", "who": "host", "line": "New rules tonight, Port Calder! I'll be changing the route live. Let's see how our courier likes improv."},
+  {"on": "checkpoint:3", "who": "vell", "line": "Host, you were paid to end this."},
+  {"on": "checkpoint:3", "who": "host", "line": "And I was paid to make it entertaining, Commander. I'm doing both."},
+  {"on": "complete", "who": "mags", "line": "There's the tower. Go up it, kid."}
+ ],
+ "chatter": {
+  "headshot": [
+   {"who": "mags", "line": "Clean."},
+   {"who": "host", "line": "Ooh, the sponsor felt that one."}
+  ],
+  "bail": [
+   {"who": "host", "line": "Mind the gap, Parker! No, really, mind it. I blew it up."}
+  ],
+  "combo": [
+   {"who": "host", "line": "He's making my demolition look like a stunt course. I hate that."},
+   {"who": "mags", "line": "That's the line. Keep it."}
+  ],
+  "fall": [
+   {"who": "host", "line": "Off the rails! I've been waiting all night to say that."}
+  ],
+  "kill": [
+   {"who": "host", "line": "Another one off the sponsor's payroll. Very cost-effective, Parker."}
+  ],
+  "down": [
+   {"who": "mags", "line": "Up. Keep moving. Squads can't hit what won't stand still."},
+   {"who": "host", "line": "Down on the tracks! Somebody check the timetable."}
+  ],
+  "tape": [
+   {"who": "echo", "line": "...the trains stopped the week the Ward took the reservoir. They said it was the power. It was never the power."}
+  ]
+ }
+}
