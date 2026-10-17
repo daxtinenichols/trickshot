@@ -6,6 +6,7 @@ extends TestCase
 
 const ROOFTOPS := preload("res://maps/rooftops.tscn")
 const PARK := preload("res://maps/combo_park.tscn")
+const MALL := preload("res://maps/mall.tscn")
 
 var level: Node3D
 var player: Player
@@ -330,3 +331,48 @@ func test_rooftops_banked_ramp() -> void:
 			break
 	check(on > 15, "runs on the rooftop sideways ramp (%d frames)" % on)
 	check(player.global_position.y > 3.5, "still on the roof (%s)" % player.global_position)
+
+
+# ---------------------------------------------------------------- ruined mall
+
+func test_mall_spawns_are_standable() -> void:
+	await _load(MALL)
+	var b: MallBuilder = level.builder
+	check(b.spawns.size() == 6, "six spawns (%d)" % b.spawns.size())
+	for i in b.spawns.size():
+		level.go_to_zone(i)
+		await _step(40)
+		check(player.state == Player.State.GROUND, "spawn %d: standing (%s)" % [i + 1, Player.State.keys()[player.state]])
+		check_near(player.global_position.y, b.spawns[i].origin.y, 0.06, "spawn %d: on its floor" % (i + 1))
+		var z0 := player.global_position.z
+		await _step(30, TestWorld.forward_input())
+		check(z0 - player.global_position.z > 2.0, "spawn %d: free to run forward" % (i + 1))
+
+
+## Running straight up the west escalator ends on the upper floor.
+func test_mall_escalator_climbs() -> void:
+	await _load(MALL)
+	player.respawn(Transform3D(Basis.IDENTITY, Vector3(-MallBuilder.ESCALATOR_X, 0, -10)))
+	await _step(10)
+	var top := -INF
+	for i in 150:
+		player.scripted_input = _steer(-MallBuilder.ESCALATOR_X)
+		await tree.physics_frame
+		top = maxf(top, player.global_position.y)
+		if player.global_position.z < -32.0:
+			break
+	check(player.global_position.y > MallBuilder.UPPER_Y - 0.3, "reached the landing (%s, best y %.2f)" % [player.global_position, top])
+	check(player.state == Player.State.GROUND, "standing on it (%s)" % Player.State.keys()[player.state])
+
+
+## The storefronts are real breakable glass, turned to face the corridor.
+func test_mall_storefront_glass() -> void:
+	await _load(MALL)
+	var panes := tree.get_nodes_in_group("windows").filter(func(w: Node) -> bool: return level.is_ancestor_of(w))
+	check(panes.size() >= 20, "storefront and door glass (%d panes)" % panes.size())
+	var side := 0
+	for w: Node3D in panes:
+		if absf(absf(w.global_position.x) - MallBuilder.SHOP_X - 0.2) < 0.05:
+			side += 1
+			check_near(absf(w.global_basis.x.z), 1.0, 0.01, "shop pane spans along the front")
+	check(side >= 20, "two panes per ground shop (%d)" % side)

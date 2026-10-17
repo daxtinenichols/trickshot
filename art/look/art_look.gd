@@ -4,7 +4,7 @@ extends Node
 ##
 ## On (default): toon materials, ink outlines, a styled sky and light, and
 ## speed lines. F9 toggles it, to compare with the graybox. The runner body
-## (built by the corner cam, or here if a level has none) and the F10 chase
+## (built here, see ensure_body) and the F10 chase
 ## camera stay either way.
 ##
 ## Visuals only ever read the player's state; nothing here feeds back into
@@ -39,11 +39,14 @@ const PALETTE := {
 	"SLIDE": Color(0.25, 0.60, 0.45),
 	"SURFACE": Color(0.55, 0.37, 0.74),
 	"FACADE": Color(0.54, 0.50, 0.45),
+	"TILE": Color(0.66, 0.62, 0.55),
+	"RUST": Color(0.44, 0.38, 0.32),
+	"SIGN": Color(0.62, 0.30, 0.24),
 }
 
 ## Which wasteland.gdshader surface each kind uses, and its texture scale in
 ## meters. Painted kinds wear through to rust (metal) or concrete.
-enum Surface { PLAIN, CONCRETE, RUST, ASPHALT, PAINTED_METAL, PAINTED_CONCRETE, FACADE }
+enum Surface { PLAIN, CONCRETE, RUST, ASPHALT, PAINTED_METAL, PAINTED_CONCRETE, FACADE, TILE }
 const SURFACES := {
 	"FLOOR": [Surface.ASPHALT, 1.0],
 	"NEUTRAL": [Surface.CONCRETE, 1.0],
@@ -52,6 +55,9 @@ const SURFACES := {
 	"SLIDE": [Surface.PAINTED_METAL, 0.8],
 	"SURFACE": [Surface.PAINTED_METAL, 1.2],
 	"FACADE": [Surface.FACADE, 1.0],
+	"TILE": [Surface.TILE, 1.0],
+	"RUST": [Surface.RUST, 1.0],
+	"SIGN": [Surface.PAINTED_METAL, 0.7],
 }
 
 ## Ambient (shadow) color and strength: warm gray, like light bounced off dust.
@@ -180,7 +186,11 @@ func _restyle_geometry(g: GeometryInstance3D) -> void:
 	_swapped.append([g, m])
 	# A faint meter grid stays on the ground so distances still read.
 	var grid := 0.12 if kind == "FLOOR" else 0.0
-	if PALETTE.has(kind):
+	var body := g.get_parent()
+	if PALETTE.has(kind) and body and body.has_meta("look_color"):
+		# A map's own paint on a look (shop signs in brand colors).
+		g.material_override = wasteland_material(kind, body.get_meta("look_color"))
+	elif PALETTE.has(kind):
 		g.material_override = wasteland_material(kind, Color.TRANSPARENT, grid)
 	else:
 		# Custom colored marks (start/finish lines...): worn paint on concrete.

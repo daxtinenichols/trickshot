@@ -44,7 +44,7 @@ say so, since the script would overwrite those edits.
   `LeftUpperArm`...), T-pose rest. Any humanoid animation (mocap, CC0 packs,
   hand-keyed clips) retargets onto it in Godot with no renaming.
 - Shown on render layer 2. The first-person camera leaves that layer out;
-  the corner camera (F12) and the chase camera (F10) include it. The body
+  the chase camera (F10) includes it. The body
   still casts its shadow in first person. The view-model pistol is on its
   own layer (`Pistol.VIEW_LAYER`), which only the first-person camera sees.
 
@@ -109,7 +109,7 @@ and the `landed` / `trick` / `respawned` signals.
 code-built sandbox it swaps the graybox materials; real maps use
 `ArtLook.world_material(color)` directly.
 
-In game: **F12** toggles the corner camera, **F9** toggles the art look
+In game: **F9** toggles the art look
 (compare with graybox), **F10** toggles a full-screen chase camera (the wheel zooms it; zooming
 all the way in returns to first person).
 
@@ -152,6 +152,12 @@ lets tests run the real map:
 - **Combo Park** (`maps/combo_park_builder.gd`): an open yard of features a
   few steps apart. Tests check each spawn and that the tower, half-pipe,
   loop, zigzag and sideways ramps work in place.
+- **Ruined Mall** (`maps/mall_builder.gd`): two floors round a skylit
+  atrium, with escalators, a bridge, hanging billboards to wallrun, shops
+  with breakable storefront glass, a collapsed walkway beside a wallrun wall,
+  and a caved-in food court with a debris ramp up. Bodies carry visual-only
+  `look` (TILE, RUST, SIGN...) and `look_color` metas for the art pass.
+  Tests check each spawn, the escalator climb and the storefront glass.
 - **Sideways ramps** (`MapPieces.bank` in `maps/map_pieces.gd`): a quarter
   pipe turned to rise beside the way you run, with its flow along the run.
   The player rides them with the normal surface rules; steepness and radius

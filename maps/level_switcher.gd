@@ -6,6 +6,7 @@ const LEVELS := [
 	["res://levels/sandbox.tscn", "Sandbox"],
 	["res://maps/rooftops.tscn", "Rooftops"],
 	["res://maps/combo_park.tscn", "Combo Park"],
+	["res://maps/mall.tscn", "Ruined Mall"],
 ]
 const ACTION := "next_level"
 

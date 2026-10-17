@@ -1,6 +1,6 @@
 extends SceneTree
 ## Renders overview shots of the maps (art look on), for review:
-##   xvfb-run godot --path . -s res://art/tools/map_shots.gd -- <out_dir>
+##   xvfb-run godot --path . -s res://art/tools/map_shots.gd -- <out_dir> [name_prefix]
 
 const SHOTS := [
 	# [scene, camera position, look at, name]
@@ -13,6 +13,13 @@ const SHOTS := [
 	["res://maps/combo_park.tscn", Vector3(-22, 6, 14), Vector3(-38, 3, -2), "park_half_pipe"],
 	["res://maps/combo_park.tscn", Vector3(16, 6, 20), Vector3(34, 3, -30), "park_loop"],
 	["res://maps/combo_park.tscn", Vector3(-26, 5, 50), Vector3(-36, 1, 10), "park_banks"],
+	["res://maps/mall.tscn", Vector3(-12, 7, 46), Vector3(0, 4, 8), "mall_outside"],
+	["res://maps/mall.tscn", Vector3(-3, 8.2, -6), Vector3(2, 3, -40), "mall_atrium"],
+	["res://maps/mall.tscn", Vector3(0, 1.7, -8), Vector3(-4, 3, -28), "mall_escalators"],
+	["res://maps/mall.tscn", Vector3(-1, 1.7, -42), Vector3(1, 3, -62), "mall_billboards"],
+	["res://maps/mall.tscn", Vector3(15, 7.7, -26), Vector3(17, 6, -46), "mall_collapse"],
+	["res://maps/mall.tscn", Vector3(14, 1.7, -14), Vector3(19, 1.6, -40), "mall_shops"],
+	["res://maps/mall.tscn", Vector3(-6, 3.2, -71), Vector3(8, 1.5, -86), "mall_food_court"],
 ]
 
 var out := "user://map_shots"
@@ -26,11 +33,14 @@ func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() > 0:
 		out = args[0]
+	var only := args[1] if args.size() > 1 else ""
 	DirAccess.make_dir_recursive_absolute(out)
 	root.size = Vector2i(1280, 720)
 	var current := ""
 	var level: Node = null
 	for s: Array in SHOTS:
+		if not (s[3] as String).begins_with(only):
+			continue
 		if s[0] != current:
 			if level != null:
 				level.queue_free()
