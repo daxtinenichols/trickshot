@@ -150,7 +150,7 @@ Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbo
 
 Mags, the Host, Echo and Parker talk over the radio while you run, in spoken voices through a radio filter with subtitles low in the middle (Echo's coded messages break up with static, and raiders shout their taunts when they tag you); nothing stops the game. The clock starts when you leave the start, the objective shows under it, falling sends you to the last checkpoint, and lost broadcast tapes hide on the harder routes. Number keys jump to checkpoints as practice runs. Missions are data files; how to write one is in [docs/missions.md](docs/missions.md).
 
-Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide, purple is runnable ramps and loops, and red is targets (yellow heads are headshots).
+With the art look on, obstacles look like part of the city: concrete, brick, crates, rails and sandbags are for vaulting, mantling and climbing; corrugated sheet metal and billboards are for wallruns; pipes and girders at head height are for sliding under; bent sheet metal is for sliding down. Purple is runnable ramps and loops, and red is targets (yellow heads are headshots). **F9** switches to the graybox color code: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide.
 
 ## Tuning
 
