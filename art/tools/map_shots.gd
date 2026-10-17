@@ -4,6 +4,7 @@ extends SceneTree
 
 const SHOTS := [
 	# [scene, camera position, look at, name]
+	["res://levels/sandbox.tscn", Vector3(-121, 1.7, -2), Vector3(-122, 1.0, -22), "sandbox_range"],
 	["res://levels/sandbox.tscn", Vector3(16, 2.2, -4), Vector3(20, 0.6, -24), "sandbox_vaults"],
 	["res://levels/sandbox.tscn", Vector3(34, 4.5, 2), Vector3(42, 1.5, -30), "sandbox_mantles"],
 	["res://levels/sandbox.tscn", Vector3(66, 2.5, -2), Vector3(70, 3, -30), "sandbox_wallrun"],
@@ -24,6 +25,8 @@ const SHOTS := [
 	["res://maps/rooftops.tscn", Vector3(-206, 14, -600), Vector3(-196, 4, -700), "rooftops_finish"],
 	["res://maps/rooftops.tscn", Vector3(60, 170, 40), Vector3(-90, 0, -400), "rooftops_overview"],
 	["res://maps/combo_park.tscn", Vector3(0, 55, 62), Vector3(0, 0, -8), "park_overview"],
+	["res://maps/combo_park.tscn", Vector3(5.5, 1.8, 9.5), Vector3(8, 1.1, 6), "park_target"],
+	["res://maps/combo_park.tscn", Vector3(28, 2.5, -10), Vector3(26, 3, -28), "park_loop_close"],
 	["res://maps/combo_park.tscn", Vector3(-18, 9, 26), Vector3(0, 3, 0), "park_tower"],
 	["res://maps/combo_park.tscn", Vector3(-22, 6, 14), Vector3(-38, 3, -2), "park_half_pipe"],
 	["res://maps/combo_park.tscn", Vector3(16, 6, 20), Vector3(34, 3, -30), "park_loop"],

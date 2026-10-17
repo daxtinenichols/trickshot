@@ -12,16 +12,21 @@ extends RefCounted
 ##   pipes and girders at head height = slide under (thin PARKOUR bars)
 ##   bent sheet metal = slide down (SLIDE)
 ##   escalators (a map asks for them) = steps over a ramp you run or slide on
+##   poured concrete channel walls = banks you run along (SURFACE)
+##   riveted scrap-steel track with rims and ribs = loops and quarter pipes
+##   concrete ramps with kerbs = steep ramps you run up
 ##
-## ArtLook calls dress() for every PARKOUR, WALLRUN and SLIDE body that has no
-## "look" meta of its own. A map can pick the style with the body meta
+## ArtLook calls dress() for every PARKOUR, WALLRUN, SLIDE and SURFACE body
+## that has no "look" meta of its own, and for bodies whose "look" asks for a
+## whole building (see ArtLook.LOOK_DRESSES: "TOWER" is the broadcast tower). A map can pick the style with the body meta
 ## "dress" (one of STYLES, or "none" to keep the plain box). Otherwise the
 ## style comes from the box's shape, and the variant from a hash of where it
 ## stands, so it's the same every run. Loaded by path (no class_name).
 
 ## Every style dress() knows.
 const STYLES := ["barrier", "brick", "rail", "sandbags", "pipe", "crates", "planter",
-	"brick_wall", "concrete_wall", "hoarding", "billboard", "container", "sheet", "escalator"]
+	"brick_wall", "concrete_wall", "hoarding", "billboard", "container", "sheet", "escalator",
+	"channel", "track", "ramp", "broadcast_tower"]
 
 ## Paints, muted so nothing shouts. Hoardings keep a faded blue-green and
 ## crates and rails a little color, so the language still reads.
@@ -35,6 +40,15 @@ const STEEL := Color(0.42, 0.40, 0.37)
 const HOARDING_PAINTS := [Color(0.33, 0.47, 0.50), Color(0.40, 0.46, 0.40), Color(0.52, 0.44, 0.34), Color(0.36, 0.40, 0.48)]
 const CONTAINER_PAINTS := [Color(0.55, 0.27, 0.20), Color(0.24, 0.38, 0.46), Color(0.38, 0.44, 0.30)]
 const HAZARD := Color(0.70, 0.30, 0.22)
+## Runnable curves: one paint per kind of piece (not per piece), so a loop or
+## a bank built from dozens of strips reads as one structure.
+const TRACK_PAINT := Color(0.40, 0.44, 0.42)
+const CHANNEL := Color(0.52, 0.50, 0.47)
+## The broadcast tower: raw concrete, a rusted scaffold, red and white
+## aviation paint up top.
+const TOWER_CONCRETE := Color(0.50, 0.48, 0.45)
+const AVIATION_RED := Color(0.62, 0.20, 0.16)
+const AVIATION_WHITE := Color(0.80, 0.77, 0.70)
 const POSTER_PAINTS := [Color(0.78, 0.70, 0.52), Color(0.62, 0.30, 0.25), Color(0.30, 0.42, 0.52), Color(0.74, 0.58, 0.30)]
 
 
@@ -42,16 +56,19 @@ const POSTER_PAINTS := [Color(0.78, 0.70, 0.52), Color(0.62, 0.30, 0.25), Color(
 ## and the graybox mesh `core`). `look` is ArtLook, for its materials.
 ## Returns the node it added (a child of the body), or null if it left the
 ## box as it was. May hide `core`; the caller restores it.
-static func dress(body: Node3D, core: MeshInstance3D, look: Object) -> Node3D:
+static func dress(body: Node3D, core: MeshInstance3D, look: Object, forced := "") -> Node3D:
 	var size := _box_size(body)
 	if size == Vector3.ZERO:
 		return null
 	var kind: String = body.get_meta("kind", "")
-	var style: String = body.get_meta("dress", "")
+	var style: String = forced if forced != "" else body.get_meta("dress", "")
 	if style == "none":
 		return null
 	if style == "" or not STYLES.has(style):
-		style = pick_style(kind, size, body.global_position)
+		if kind == "SURFACE":
+			style = surface_style(body, size)
+		else:
+			style = pick_style(kind, size, body.global_position)
 	if style == "":
 		return null
 	var root := Node3D.new()
@@ -73,6 +90,10 @@ static func dress(body: Node3D, core: MeshInstance3D, look: Object) -> Node3D:
 		"container": d.container()
 		"sheet": d.sheet()
 		"escalator": d.escalator()
+		"channel": d.channel()
+		"track": d.track()
+		"ramp": d.ramp()
+		"broadcast_tower": d.broadcast_tower()
 	root.set_meta("style", style)
 	body.add_child(root)
 	return root
@@ -103,6 +124,19 @@ static func pick_style(kind: String, size: Vector3, at: Vector3) -> String:
 				return "planter" if h < 0.8 else "brick"
 			return "brick_wall" if h < 0.6 else "concrete_wall"
 	return ""
+
+
+## Runnable surfaces (SurfaceShapes pieces): a bank strip runs along its
+## long side (its "flow" lies along the box's x), a loop or quarter pipe
+## strip runs along z and is thin, a steep ramp is a thick slab.
+static func surface_style(body: Node3D, size: Vector3) -> String:
+	var flow: Vector3 = body.get_meta("flow", Vector3.ZERO)
+	var local := body.global_basis.orthonormalized().inverse() * flow
+	if absf(local.x) > absf(local.z):
+		return "channel"
+	if size.y >= 0.8:
+		return "ramp"
+	return "track"
 
 
 static func _box_size(body: Node) -> Vector3:
@@ -429,3 +463,225 @@ class _Dress:
 		under.transform = Transform3D(bt.basis, bt.origin - up * 0.3)
 		under.material_override = mat("RUST")
 		root.add_child(under)
+
+	# ------------------------------------------------------------ SURFACE
+	# These boxes are tilted (their y is the running surface's normal), so
+	# details are placed in the box's own axes, not along/across.
+
+	## A plain box in the body's own axes.
+	func raw(center: Vector3, size: Vector3, m: Material) -> MeshInstance3D:
+		var mi := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = size
+		mi.mesh = bm
+		mi.position = center
+		mi.material_override = m
+		root.add_child(mi)
+		return mi
+
+	## A strip of a bank: a section of a poured concrete storm-channel wall,
+	## with expansion joints across it every 4 m. Every strip of a bank has
+	## the same length and center line, so the joints line up up the curve.
+	func channel() -> void:
+		core_as("NEUTRAL", CHANNEL)
+		var joint := mat("NEUTRAL", CONCRETE_DARK.darkened(0.2))
+		var n := maxi(1, floori(s.x / 4.0))
+		for i in range(1, n):
+			var x := -s.x * 0.5 + s.x * i / n
+			raw(Vector3(x, 0, 0), Vector3(0.06, s.y + 0.02, s.z + 0.01), joint)
+
+	## A strip of a loop or quarter pipe: a riveted steel deck plate over a
+	## rusted rib, with a rim along each edge, like a ride welded together
+	## from scrap.
+	func track() -> void:
+		core_as("WALLRUN", TRACK_PAINT)
+		var rust := mat("RUST")
+		for x in [-s.x * 0.5 + 0.05, s.x * 0.5 - 0.05]:
+			raw(Vector3(x, 0.04, 0), Vector3(0.1, s.y + 0.08, s.z + 0.02), rust)
+		# A rib under the plate, and one more at the far end of long strips.
+		var ribs := [0.0] if s.z < 1.6 else [-s.z * 0.5 + 0.1, s.z * 0.5 - 0.1]
+		for z in ribs:
+			raw(Vector3(0, -s.y * 0.5 - 0.09, z), Vector3(s.x + 0.16, 0.18, 0.14), rust)
+
+	## A steep concrete ramp with a kerb along each side.
+	func ramp() -> void:
+		core_as("NEUTRAL", CONCRETE.darkened(0.04))
+		var kerb := mat("NEUTRAL", CONCRETE_DARK)
+		for x in [-s.x * 0.5 + 0.15, s.x * 0.5 - 0.15]:
+			raw(Vector3(x, 0.05, 0), Vector3(0.3, s.y + 0.1, s.z), kerb)
+
+	# ------------------------------------------------------------ BUILDINGS
+
+	## The broadcast tower (look "TOWER"): a raw concrete block wrapped in a
+	## rusted scaffold, ledges where the floors are, cable runs down the
+	## corners, red and white aviation paint at the top and a lattice mast
+	## with warning lights on the roof. The scaffold stays inside the
+	## building's box, so you can't run into anything you can't see; only
+	## the mast stands above the roof, where nobody can reach.
+	func broadcast_tower() -> void:
+		hide_core()
+		var shell := 1.2
+		var w := s.x - shell * 2.0
+		var d := s.z - shell * 2.0
+		var y0 := bottom()
+		# Raw concrete with deep vertical fins and a ledge at every floor,
+		# so it reads apart from the window-grid blocks around it.
+		raw(Vector3.ZERO, Vector3(w, s.y, d), mat("NEUTRAL", TOWER_CONCRETE))
+		var fin := mat("NEUTRAL", TOWER_CONCRETE.lightened(0.08))
+		var slot := mat("NEUTRAL", Color(0.20, 0.19, 0.18))
+		for face in [[Vector3.RIGHT, Vector3.BACK, w, d], [Vector3.BACK, Vector3.RIGHT, d, w]]:
+			var nrm: Vector3 = face[0]
+			var run: Vector3 = face[1]
+			var depth: float = face[2]
+			var span: float = face[3]
+			var n := maxi(2, roundi(span / 5.0))
+			for i in n + 1:
+				var t := -span * 0.5 + span * i / n
+				for sgn in [-1.0, 1.0]:
+					raw(nrm * sgn * (depth * 0.5 + 0.2) + run * t, nrm.abs() * 0.4 + run.abs() * 0.7 + Vector3.UP * s.y, fin)
+					if i < n:
+						# A dark window slot down the middle of each bay.
+						raw(nrm * sgn * (depth * 0.5 + 0.01) + run * (t + span / n * 0.5) + Vector3.UP * 2.0,
+							nrm.abs() * 0.04 + run.abs() * (span / n * 0.35) + Vector3.UP * (s.y - 14.0), slot)
+		var ledge := mat("NEUTRAL", CONCRETE_DARK)
+		var y := 6.0
+		while y < s.y - 8.0:
+			raw(Vector3(0, y0 + y, 0), Vector3(w + 0.9, 0.5, d + 0.9), ledge)
+			y += 6.0
+		var bands := 4
+		for i in bands:
+			var c := AVIATION_RED if i % 2 == 0 else AVIATION_WHITE
+			raw(Vector3(0, top() - 1.0 - 1.6 * i, 0), Vector3(w + 0.1, 1.6, d + 0.1), mat("SIGN", c))
+		raw(Vector3(0, top() + 0.6, 0), Vector3(w + 0.4, 1.2, d + 0.4), ledge)
+		_scaffold(w, d, shell)
+		_cables(w, d)
+		_mast()
+
+	## A tubular scaffold on every face, in the outer shell of the box: poles
+	## every 3 m, ledgers every 2 m, plank decks every 6 m, and braces.
+	## Faces alternate how high it reaches, like work stopped at different
+	## floors.
+	func _scaffold(w: float, d: float, shell: float) -> void:
+		var steel := mat("RUST")
+		var plank := mat("WOOD", TIMBER.darkened(0.1))
+		var faces := [
+			[Vector3.RIGHT, Vector3.BACK, w * 0.5 + shell * 0.5, d],
+			[Vector3.LEFT, Vector3.FORWARD, w * 0.5 + shell * 0.5, d],
+			[Vector3.BACK, Vector3.LEFT, d * 0.5 + shell * 0.5, w],
+			[Vector3.FORWARD, Vector3.RIGHT, d * 0.5 + shell * 0.5, w],
+		]
+		for fi in faces.size():
+			var normal: Vector3 = faces[fi][0]
+			var run: Vector3 = faces[fi][1]
+			var out: float = faces[fi][2]
+			var span: float = faces[fi][3]
+			var reach := s.y * (0.92 if (fi + int(h * 4.0)) % 2 == 0 else 0.62)
+			var y0 := bottom()
+			var mid := y0 + reach * 0.5
+			var n := maxi(2, roundi(span / 3.0))
+			for i in n + 1:
+				var t := -span * 0.5 + span * i / n
+				for o in [-0.4, 0.4]:
+					_pole(normal * (out + o) + run * t + Vector3.UP * mid, Vector3.UP, reach, 0.07, steel)
+			var y := 2.0
+			while y <= reach:
+				for o in [-0.4, 0.4]:
+					_pole(normal * (out + o) + Vector3.UP * (y0 + y), run, span, 0.05, steel)
+				if int(y) % 6 == 0:
+					raw(normal * out + Vector3.UP * (y0 + y - 0.1), (run.abs() * span + normal.abs() * 0.9 + Vector3.UP * 0.06), plank)
+				y += 2.0
+			# Weathered sheeting hung over some bays, two floors high.
+			var sheet_paints := [HOARDING_PAINTS[0], HOARDING_PAINTS[2], CONCRETE]
+			for i in n:
+				var k := fposmod(h * 13.0 + fi * 0.37 + i * 0.61, 1.0)
+				if k < 0.3:
+					var top_y := clampf(fposmod(k * 97.0, 1.0) * reach, 14.0, reach - 2.0)
+					raw(normal * (out + 0.5) + run * (-span * 0.5 + span * (i + 0.5) / n) + Vector3.UP * (y0 + top_y - 6.0),
+						run.abs() * (span / n - 0.2) + normal.abs() * 0.04 + Vector3.UP * 12.0,
+						mat("CORRUGATED", sheet_paints[i % 3]))
+			# A brace across every other bay, zigzagging up the face.
+			var bay := span / n
+			var level := 0
+			y = 0.0
+			while y + 6.0 <= reach:
+				for i in range(level % 2, n, 2):
+					var a := normal * (out + 0.45) + run * (-span * 0.5 + bay * i) + Vector3.UP * (y0 + y)
+					var b := normal * (out + 0.45) + run * (-span * 0.5 + bay * (i + 1)) + Vector3.UP * (y0 + y + 6.0)
+					_pole((a + b) * 0.5, (b - a).normalized(), a.distance_to(b), 0.05, steel)
+				level += 1
+				y += 6.0
+
+	## Bundles of black cable down two corners.
+	func _cables(w: float, d: float) -> void:
+		var cable := mat("NEUTRAL", Color(0.16, 0.15, 0.14))
+		for corner in [Vector3(w * 0.5 + 0.25, 0, d * 0.5 + 0.25), Vector3(-w * 0.5 - 0.25, 0, -d * 0.5 - 0.25)]:
+			for k in 3:
+				var off := Vector3(0.18 * k, 0, -0.12 * k) if corner.x > 0 else Vector3(-0.12 * k, 0, 0.18 * k)
+				_pole(corner + off, Vector3.UP, s.y, 0.07, cable)
+
+	## A tapering four-legged lattice mast on the roof, cross-braced, with red
+	## warning lights at the top and halfway.
+	func _mast() -> void:
+		var red := mat("SIGN", AVIATION_RED)
+		var white := mat("SIGN", AVIATION_WHITE)
+		var steel := red
+		var height := minf(60.0, s.y * 0.8)
+		var base := minf(8.0, minf(s.x, s.z) * 0.3)
+		var y0 := top() + 1.2
+		var legs: Array[Vector3] = []
+		for c in [Vector2(1, 1), Vector2(-1, 1), Vector2(-1, -1), Vector2(1, -1)]:
+			legs.append(Vector3(c.x, 0, c.y))
+		var tip := 0.6
+		# A transmitter hut at the mast's foot.
+		raw(Vector3(base * 0.5 + 4.0, y0 + 1.6, 0), Vector3(6, 3.2, 5), mat("CORRUGATED", STEEL))
+		for l in legs:
+			var a := l * base * 0.5 + Vector3.UP * y0
+			var b := l * tip * 0.5 + Vector3.UP * (y0 + height)
+			_pole((a + b) * 0.5, (b - a).normalized(), a.distance_to(b), 0.25, red)
+		var rings := maxi(3, roundi(height / 5.0))
+		for r in rings:
+			var t := float(r) / rings
+			var t2 := float(r + 1) / rings
+			var half := lerpf(base, tip, t) * 0.5
+			var half2 := lerpf(base, tip, t2) * 0.5
+			steel = red if (r / 2) % 2 == 0 else white
+			for i in 4:
+				var a := legs[i] * half + Vector3.UP * (y0 + height * t)
+				var b := legs[(i + 1) % 4] * half + Vector3.UP * (y0 + height * t)
+				var c := legs[(i + 1) % 4] * half2 + Vector3.UP * (y0 + height * t2)
+				_pole((a + b) * 0.5, (b - a).normalized(), a.distance_to(b), 0.12, steel)
+				_pole((a + c) * 0.5, (c - a).normalized(), a.distance_to(c), 0.09, steel)
+		var light := StandardMaterial3D.new()
+		light.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
+		light.albedo_color = Color(1.0, 0.25, 0.15)
+		light.emission_enabled = true
+		light.emission = Color(1.0, 0.2, 0.1)
+		light.emission_energy_multiplier = 3.0
+		for y in [y0 + height + 0.4, y0 + height * 0.5]:
+			var mi := MeshInstance3D.new()
+			var sm := SphereMesh.new()
+			sm.radius = 0.5
+			sm.height = 1.0
+			mi.mesh = sm
+			mi.position = Vector3.UP * y
+			mi.material_override = light
+			mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+			root.add_child(mi)
+
+	## A cylinder from its center along `axis`.
+	func _pole(center: Vector3, axis: Vector3, length: float, radius: float, m: Material) -> void:
+		var mi := MeshInstance3D.new()
+		var cm := CylinderMesh.new()
+		cm.top_radius = radius
+		cm.bottom_radius = radius
+		cm.height = length
+		cm.radial_segments = 6
+		cm.rings = 1
+		mi.mesh = cm
+		var up := axis.normalized()
+		var side := up.cross(Vector3.FORWARD if absf(up.z) < 0.9 else Vector3.RIGHT).normalized()
+		mi.basis = Basis(side, up, side.cross(up))
+		mi.position = center
+		mi.material_override = m
+		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if radius < 0.1 else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
+		root.add_child(mi)

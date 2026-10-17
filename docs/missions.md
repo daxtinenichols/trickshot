@@ -186,7 +186,7 @@ two or three seconds gets you caught.
 
 | piece | fields |
 |---|---|
-| `{"building": [x, roof_y, z], "size": [w, d]}` | a building from the street to its roof (ruined facade look) |
+| `{"building": [x, roof_y, z], "size": [w, d]}` | a building from the street to its roof (ruined facade look); `"look": "TOWER"` dresses it as the broadcast tower (scaffold, aviation paint, lattice mast on the roof) |
 | `{"box": [x, y, z], "size": [w, h, d], "kind": "WALLRUN"}` | a block; kind is the color language: `FLOOR`, `NEUTRAL`, `WALLRUN` (blue), `PARKOUR` (yellow), `SLIDE` (green), `SURFACE`; `look` overrides the art look (e.g. `FACADE`); `yaw` in degrees |
 | `{"prop": "car_wreck", "at": [x, y, z], "yaw": 70}` | a prop from the kit (below) |
 | `{"row": "barricade_jersey", "from": [..], "to": [..], "count": 6}` | a row of one prop |
