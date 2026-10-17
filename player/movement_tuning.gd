@@ -92,6 +92,28 @@ extends Resource
 ## Max angle between your movement and the wall (degrees) to start a wallrun.
 @export_range(0.0, 90.0, 1.0) var wallrun_max_entry_angle := 60.0
 
+@export_group("Ramps and loops")
+## Steep ramps and loops (anything in the "runnable" group) can be run on.
+## Gravity along them, as a fraction of normal gravity.
+@export_range(0.0, 2.0, 0.01) var surface_gravity_scale := 0.6
+## How fast running (holding forward) speeds you up on them, up to top speed.
+@export_range(0.0, 30.0, 0.1) var surface_accel := 6.5
+## Speed needed to stay on a vertical surface. Below this you drop off.
+@export_range(0.0, 20.0, 0.1) var surface_min_speed := 3.0
+## Speed needed to stay on upside down (the top of a loop).
+@export_range(0.0, 30.0, 0.1) var surface_inverted_speed := 6.0
+## Steering on a surface (degrees per second at full left/right).
+@export_range(0.0, 360.0, 1.0) var surface_steer := 70.0
+## Push into the surface (m/s) that keeps your feet on it.
+@export_range(0.0, 10.0, 0.1) var surface_stick := 2.0
+## How strongly a track (loop) steers you along itself.
+@export_range(0.0, 20.0, 0.1) var surface_flow_assist := 5.0
+## How quickly your body (and view) turns to match the surface.
+@export_range(1.0, 60.0, 0.5) var surface_align_rate := 18.0
+## Runnable slopes flatter than this (normal y) are just ground.
+@export_range(0.5, 1.0, 0.005) var surface_enter_flatness := 0.95
+@export_range(0.5, 1.0, 0.005) var surface_exit_flatness := 0.97
+
 @export_group("Wall jump and climb")
 @export_range(0.0, 20.0, 0.1) var wall_jump_push := 6.0
 @export_range(0.0, 20.0, 0.1) var wall_jump_up := 7.2

@@ -36,6 +36,7 @@ const KEYS := {
 	"zone_8": [KEY_8],
 	"zone_9": [KEY_9],
 	"zone_10": [KEY_0],
+	"zone_11": [KEY_MINUS],
 }
 
 const MOUSE_BUTTONS := {

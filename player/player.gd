@@ -13,7 +13,7 @@ signal state_changed(from: State, to: State)
 signal landed(fall_speed: float)
 signal respawned
 
-enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL, STUN, PRONE, PRONE_SLIDE }
+enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL, STUN, PRONE, PRONE_SLIDE, SURFACE }
 
 const RADIUS := 0.38
 const EYE_OFFSET := 0.14
@@ -74,6 +74,20 @@ var _ground_flick := 0.0
 ## Where the roll's visual forward spin starts (radians, view pitch).
 var _roll_spin_from := 0.0
 var _spawn := Transform3D.IDENTITY
+
+# Running on steep ramps and loops (SURFACE). The body turns to match the
+# surface, so the view goes upside down with it.
+## Normal of the surface you're running on.
+var _surface_n := Vector3.UP
+## The body's up, easing toward _surface_n so seams don't jolt the view.
+var _surface_up := Vector3.UP
+## Where you're looking, relative to the direction you're running.
+var _surface_look_yaw := 0.0
+var _surface_looped := false
+## Direction the track under you runs (from its "flow" meta), or zero.
+var _surface_flow := Vector3.ZERO
+## Visual: roll left over when coming off a surface upside down, eased out.
+var _surface_exit_roll := 0.0
 
 # Scripted vault / mantle path (quadratic bezier).
 var _path_from := Vector3.ZERO
@@ -174,6 +188,10 @@ func capture_mouse(on: bool) -> void:
 ## way over is a flip and turning a full circle is a 360. On the ground the
 ## pitch is clamped as usual.
 func _look(d_yaw: float, d_pitch: float) -> void:
+	if state == State.SURFACE:
+		_surface_look_yaw = wrapf(_surface_look_yaw + d_yaw, -PI, PI)
+		pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
+		return
 	yaw = wrapf(yaw + d_yaw, -PI, PI)
 	if state == State.AIR:
 		if absf(wrapf(pitch, -PI, PI)) > deg_to_rad(75.0):
@@ -214,7 +232,8 @@ func simulate(f: InputFrame, delta: float) -> void:
 	if f.turn_pressed:
 		_quick_turn()
 	_apply_auto_turn(delta)
-	rotation = Vector3(0.0, yaw, 0.0)
+	if state != State.SURFACE:
+		rotation = Vector3(0.0, yaw, 0.0)
 	lean = move_toward(lean, clampf(f.lean, -1.0, 1.0), tuning.lean_speed * delta)
 	var wish := wish_direction(f)
 	if _ground_flick >= deg_to_rad(tuning.ground_roll_flick) and state in [State.GROUND, State.CROUCH, State.SLIDE] \
@@ -236,6 +255,7 @@ func simulate(f: InputFrame, delta: float) -> void:
 		State.STUN: _tick_stun(f, wish, delta)
 		State.PRONE: _tick_prone(f, wish, delta)
 		State.PRONE_SLIDE: _tick_prone_slide(f, wish, delta)
+		State.SURFACE: _tick_surface(f, delta)
 
 	_update_momentum(delta)
 	if global_position.y < -40.0:
@@ -249,7 +269,7 @@ func _update_timers(f: InputFrame, delta: float) -> void:
 	_wall_jump_lock = maxf(_wall_jump_lock - delta, 0.0)
 	_since_wall += delta
 	_crouch_hold = _crouch_hold + delta if f.crouch_held else 0.0
-	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.PRONE, State.PRONE_SLIDE]:
+	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.PRONE, State.PRONE_SLIDE, State.SURFACE]:
 		_since_floor = 0.0
 		_ground_time += delta
 	else:
@@ -379,7 +399,7 @@ func _smash_breakables() -> void:
 
 
 func _check_wall_impact() -> void:
-	if state not in [State.GROUND, State.AIR]:
+	if state not in [State.GROUND, State.AIR] or not _runnable_contact().is_empty():
 		return
 	var n := MovementMath.horizontal(_wall_normal).normalized()
 	var into := -MovementMath.horizontal(_pre_move_velocity).dot(n)
@@ -444,6 +464,8 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), wish_speed, tuning.ground_accel, delta)
 	velocity.y -= tuning.gravity * delta
 	_move()
+	if _try_enter_surface():
+		return
 	if not is_on_floor():
 		_change_state(State.AIR)
 
@@ -532,6 +554,8 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 			velocity = Vector3(h.x, velocity.y, h.z)
 	_move()
 
+	if _try_enter_surface():
+		return
 	if is_on_floor():
 		_land(f)
 		return
@@ -632,6 +656,8 @@ func _tick_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 	velocity.y -= tuning.gravity * delta
 	_move()
 
+	if _try_enter_surface():
+		return
 	if not is_on_floor():
 		_change_state(State.AIR)
 	elif horizontal_speed() < tuning.slide_exit_speed:
@@ -962,6 +988,198 @@ func _tick_wallclimb(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.AIR)
 
 
+# ---------------------------------------------------------------- steep ramps and loops
+
+## The first contact with a runnable surface (group "runnable") from the
+## last move, as {normal, collider}, or {}.
+func _runnable_contact() -> Dictionary:
+	for i in get_slide_collision_count():
+		var c := get_slide_collision(i)
+		var col := c.get_collider()
+		if _is_running_face(col, c.get_normal()):
+			return {"normal": c.get_normal(), "collider": col}
+	return {}
+
+
+## Runnable pieces of track (with a "face" meta) are only runnable on their
+## running side, not their edges or underside.
+static func _is_running_face(col: Object, normal: Vector3) -> bool:
+	if not (col is Node and (col as Node).is_in_group("runnable")):
+		return false
+	return not col.has_meta("face") or normal.dot(col.get_meta("face")) > 0.8
+
+
+static func _flow_of(col: Object) -> Vector3:
+	return col.get_meta("flow") if col != null and col.has_meta("flow") else Vector3.ZERO
+
+
+## Speed you need to keep running on a surface with this normal: none on
+## floor-like slopes, more on steep ones, the most upside down.
+func surface_need_speed(n: Vector3) -> float:
+	var floor_y := cos(floor_max_angle)
+	if n.y >= floor_y:
+		return 0.0
+	var t := clampf((floor_y - n.y) / (floor_y + 1.0), 0.0, 1.0)
+	return lerpf(tuning.surface_min_speed, tuning.surface_inverted_speed, t)
+
+
+## Running (or sliding, or landing fast) onto a steep runnable surface
+## sticks you to it.
+func _try_enter_surface() -> bool:
+	var c := _runnable_contact()
+	if c.is_empty():
+		return false
+	var n: Vector3 = c.normal
+	if n.y > tuning.surface_enter_flatness:
+		return false
+	var v := _pre_move_velocity
+	var along := v - n * v.dot(n)
+	if along.length() < 0.1:
+		return false
+	# From the ground the run carries straight into the ramp (as if it had a
+	# smooth curve at the bottom); from the air only the part of your speed
+	# along the surface counts.
+	var speed := along.length() if state == State.AIR else maxf(along.length(), MovementMath.horizontal(v).length())
+	if speed < surface_need_speed(n) + 0.5:
+		return false
+	velocity = along.normalized() * speed
+	var travel_yaw := yaw
+	var h := MovementMath.horizontal(velocity)
+	if h.length() > 0.2:
+		travel_yaw = atan2(-h.x, -h.z)
+	_change_state(State.SURFACE)
+	_surface_n = n
+	_surface_up = Vector3.UP
+	_surface_look_yaw = angle_difference(travel_yaw, yaw)
+	_surface_looped = false
+	_surface_flow = _flow_of(c.collider)
+	_orient_to_surface()
+	_trick(&"ramp_run")
+	return true
+
+
+func _tick_surface(f: InputFrame, delta: float) -> void:
+	var n := _surface_n
+	if _jump_buffer <= tuning.jump_buffer:
+		velocity += n * tuning.jump_velocity
+		_jump_buffer = 999.0
+		_jumped_since_floor = true
+		_leave_surface()
+		_change_state(State.AIR)
+		return
+	# Gravity along the surface slows you going up and speeds you coming
+	# down; holding forward keeps running, up to your top speed.
+	var v := velocity - n * velocity.dot(n)
+	var down := Vector3.DOWN - n * Vector3.DOWN.dot(n)
+	v += down * tuning.gravity * tuning.surface_gravity_scale * delta
+	var speed := v.length()
+	var dir := v / speed if speed > 0.01 else -global_basis.z
+	dir = dir.rotated(n, -f.move.x * deg_to_rad(tuning.surface_steer) * delta)
+	# Tracks (loops) gently steer you along themselves, either way round.
+	var flow := _surface_flow - n * _surface_flow.dot(n)
+	if flow.length() > 0.1:
+		flow = flow.normalized() * signf(dir.dot(flow))
+		if dir.dot(flow) > 0.5:
+			dir = dir.slerp(flow, 1.0 - exp(-tuning.surface_flow_assist * delta)).normalized()
+	if f.move.y > 0.3:
+		speed = minf(speed + tuning.surface_accel * delta, maxf(speed, tuning.top_speed))
+	elif f.move.y < -0.3:
+		speed = maxf(speed - tuning.surface_accel * delta, 0.0)
+	if speed < surface_need_speed(n):
+		# Too slow to hold on: drop off.
+		velocity = dir * speed + n * 1.0
+		_leave_surface()
+		_change_state(State.AIR)
+		return
+	# A loop counts once you've been upside down and come back down the
+	# other side still on the track.
+	if n.y < -0.7:
+		_surface_looped = true
+	elif n.y > 0.7 and _surface_looped:
+		_surface_looped = false
+		_trick(&"loop")
+	_surface_up = _surface_up.slerp(n, 1.0 - exp(-tuning.surface_align_rate * delta)).normalized()
+	velocity = dir * speed - n * tuning.surface_stick
+	up_direction = n
+	_orient_to_surface()
+	_move()
+	var floor_hit := _floor_contact()
+	if floor_hit.is_empty():
+		# Off the lip of a ramp (or the surface ran out): fly.
+		_leave_surface()
+		_change_state(State.AIR)
+		return
+	var nn: Vector3 = floor_hit.normal
+	var runnable: bool = floor_hit.runnable
+	if nn.dot(n) < cos(deg_to_rad(30.0)):
+		# A sharp edge (the lip at the top of a ramp): fly off it.
+		_leave_surface()
+		_change_state(State.AIR)
+		return
+	if nn.y > tuning.surface_exit_flatness or (not runnable and nn.y >= cos(floor_max_angle)):
+		var keep := velocity - Vector3.UP * velocity.dot(Vector3.UP)
+		_leave_surface()
+		velocity = keep.normalized() * speed if keep.length() > 0.01 else Vector3.ZERO
+		_change_state(State.GROUND)
+		return
+	_surface_n = nn
+	_surface_flow = floor_hit.flow
+	# Keep the speed through the seams between surface pieces.
+	var t := velocity - nn * velocity.dot(nn)
+	velocity = t.normalized() * speed if t.length() > 0.01 else velocity
+
+
+## The floor touched in the last move (relative to up_direction), as
+## {normal, runnable}, or {}.
+func _floor_contact() -> Dictionary:
+	if not is_on_floor():
+		return {}
+	var limit := cos(floor_max_angle) - 0.01
+	for i in get_slide_collision_count():
+		var c := get_slide_collision(i)
+		if c.get_normal().dot(up_direction) >= limit:
+			var col := c.get_collider()
+			return {"normal": get_floor_normal(), "runnable": _is_running_face(col, c.get_normal()), "flow": _flow_of(col)}
+	return {"normal": get_floor_normal(), "runnable": false, "flow": Vector3.ZERO}
+
+
+## Turns the body so its up matches the surface and it faces where it's going.
+func _orient_to_surface() -> void:
+	var u := _surface_up
+	var fwd := velocity - u * velocity.dot(u)
+	if fwd.length() < 0.05:
+		fwd = -global_basis.z - u * (-global_basis.z).dot(u)
+	fwd = fwd.normalized()
+	global_basis = Basis(fwd.cross(u), u, -fwd).orthonormalized()
+
+
+## Back to upright: works out the world yaw/pitch you were looking along and
+## eases out any leftover roll (coming off a loop upside down).
+func _leave_surface() -> void:
+	var view := global_basis * Basis.from_euler(Vector3(pitch, _surface_look_yaw, 0.0))
+	var fwd := -view.z
+	var h := Vector2(fwd.x, fwd.z)
+	if h.length() < 0.05:
+		var body_fwd := -global_basis.z
+		h = Vector2(body_fwd.x, body_fwd.z)
+	yaw = atan2(-h.x, -h.y)
+	pitch = clampf(asin(clampf(fwd.y, -1.0, 1.0)), deg_to_rad(-89.0), deg_to_rad(89.0))
+	var upright := Basis.from_euler(Vector3(pitch, yaw, 0.0))
+	_surface_exit_roll = upright.y.signed_angle_to(view.y, -upright.z)
+	up_direction = Vector3.UP
+	_surface_up = Vector3.UP
+	_surface_look_yaw = 0.0
+	# Turn upright around the middle of the body, not the feet, so coming
+	# off upside down doesn't swing your head through the track.
+	var center := global_position + global_basis.y * (_height * 0.5)
+	rotation = Vector3(0.0, yaw, 0.0)
+	global_position = center - Vector3.UP * (_height * 0.5)
+
+
+## Up direction of the body (tilts on ramps and loops).
+func body_up() -> Vector3:
+	return global_basis.y
+
 # ---------------------------------------------------------------- vault / mantle
 
 ## Looks for something in front to vault over or mantle onto. With
@@ -1232,7 +1450,10 @@ func _apply_auto_turn(delta: float) -> void:
 	if _turn_left <= 0.0:
 		return
 	var step := minf(delta, _turn_left)
-	yaw = wrapf(yaw + _turn_rate * step, -PI, PI)
+	if state == State.SURFACE:
+		_surface_look_yaw = wrapf(_surface_look_yaw + _turn_rate * step, -PI, PI)
+	else:
+		yaw = wrapf(yaw + _turn_rate * step, -PI, PI)
 	_turn_left -= step
 
 
@@ -1245,6 +1466,8 @@ func set_spawn(t: Transform3D) -> void:
 func respawn(t: Variant = null) -> void:
 	if t is Transform3D:
 		_spawn = t
+	if state == State.SURFACE:
+		_leave_surface()
 	global_position = _spawn.origin
 	set_view(_spawn.basis.get_euler().y, 0.0)
 	velocity = Vector3.ZERO
@@ -1289,7 +1512,7 @@ func _process(delta: float) -> void:
 	var settle := exp(-_kick_recovery * delta)
 	_kick_pitch *= settle
 	_kick_yaw *= settle
-	head.rotation = Vector3(pitch + _kick_pitch + roll_spin(), 0.0, 0.0)
+	head.rotation = Vector3(pitch + _kick_pitch + roll_spin(), _surface_look_yaw if state == State.SURFACE else 0.0, 0.0)
 
 	var speed := horizontal_speed()
 	var target_eye := _height - EYE_OFFSET
@@ -1318,7 +1541,8 @@ func _process(delta: float) -> void:
 		_air_roll_view = wrapf(_air_roll, -PI, PI)
 	else:
 		_air_roll_view = lerp_angle(_air_roll_view, 0.0, 1.0 - exp(-12.0 * delta))
-	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view)
+	_surface_exit_roll = lerp_angle(_surface_exit_roll, 0.0, 1.0 - exp(-6.0 * delta))
+	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view + _surface_exit_roll)
 	camera.position = Vector3(_peek * tuning.lean_offset, 0.0, 0.0)
 
 	var over := clampf((speed - tuning.run_speed) / maxf(tuning.top_speed + 4.0 - tuning.run_speed, 0.1), 0.0, 1.0)
@@ -1393,6 +1617,8 @@ func shot_tags() -> Array[StringName]:
 			tags.append(&"climbing")
 		State.VAULT, State.MANTLE:
 			tags.append(&"vaulting")
+		State.SURFACE:
+			tags.append(&"surface")
 	if _diving and state == State.AIR:
 		tags.append(&"diving")
 	if state == State.AIR:
@@ -1402,7 +1628,7 @@ func shot_tags() -> Array[StringName]:
 			tags.append(&"spinning")
 		if absf(_air_roll) > deg_to_rad(90.0):
 			tags.append(&"side_flipping")
-	if cos(pitch) < 0.0 or cos(_air_roll) < 0.0:
+	if cos(pitch) < 0.0 or cos(_air_roll) < 0.0 or body_up().y < 0.0:
 		tags.append(&"upside_down")
 	if horizontal_speed() >= tuning.top_speed * 0.9:
 		tags.append(&"fast")

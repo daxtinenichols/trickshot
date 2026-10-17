@@ -45,6 +45,8 @@ const TRICK_NAMES := {
 	&"ground_roll": "ROLL",
 	&"flip_roll": "FLIP ROLL",
 	&"sideflip": "SIDE FLIP",
+	&"ramp_run": "RAMP RUN",
+	&"loop": "LOOP",
 	&"kick_off": "KICK-OFF",
 	&"hard_landing": "HARD LANDING",
 	&"wall_impact": "BONK",
@@ -80,6 +82,8 @@ const SHOT_TAG_NAMES := {
 	&"flipping": "MID-FLIP",
 	&"spinning": "MID-SPIN",
 	&"upside_down": "UPSIDE DOWN",
+	&"side_flipping": "MID-SIDE-FLIP",
+	&"surface": "RAMP",
 	&"fast": "FAST",
 }
 

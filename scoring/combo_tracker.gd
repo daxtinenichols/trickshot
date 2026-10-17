@@ -45,6 +45,8 @@ const POINTS := {
 	&"backflip": 300,
 	&"frontflip": 300,
 	&"sideflip": 300,
+	&"ramp_run": 75,
+	&"loop": 500,
 	&"spin_360": 200,
 	&"spin_720": 500,
 	&"spin_1080": 900,
@@ -67,6 +69,7 @@ const BAIL_TRICKS := [&"crash", &"hard_landing", &"wall_impact"]
 const HOLDING_STATES := [
 	Player.State.SLIDE, Player.State.WALLRUN, Player.State.WALLCLIMB,
 	Player.State.VAULT, Player.State.MANTLE, Player.State.ROLL, Player.State.PRONE_SLIDE,
+	Player.State.SURFACE,
 ]
 const REST_STATES := [Player.State.GROUND, Player.State.CROUCH, Player.State.PRONE]
 
