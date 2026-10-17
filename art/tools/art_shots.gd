@@ -20,7 +20,7 @@ const POSES := ["idle", "run_a", "run_b", "crouch", "slide", "jump_rise", "fall"
 
 var out := "user://art_shots"
 var level: Node3D
-var player: Player
+var player  # untyped: Player needs autoloads, which load after this script compiles
 
 
 func _initialize() -> void:

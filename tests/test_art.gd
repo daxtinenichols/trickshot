@@ -227,6 +227,26 @@ func test_gun_look_replaces_the_test_pistol_visuals() -> void:
 	_look().set_enabled(true)
 
 
+func test_body_holds_its_facing_when_the_view_snaps() -> void:
+	# Running straight, a sudden mouse flick must not swing the body with the
+	# camera and back (that read as jitter in third person).
+	var body: RunnerBody = ArtLook.ensure_body(player)
+	level.go_to_zone(0)
+	player.scripted_input = TestWorld.forward_input()
+	for i in 90:
+		await tree.physics_frame
+	var facing := func() -> Vector3:
+		var f := body.global_basis.z
+		return Vector3(f.x, 0, f.z).normalized()
+	var before: Vector3 = facing.call()
+	player.set_view(player.yaw + 0.6, player.pitch)
+	# process_frame fires before nodes' _process: wait for the body's update.
+	await tree.process_frame
+	await tree.process_frame
+	var after: Vector3 = facing.call()
+	check(before.angle_to(after) < 0.15, "body barely turns on the flick frame (%.2f rad)" % before.angle_to(after))
+
+
 func test_body_is_smooth_in_slow_motion() -> void:
 	# In slow-mo the sim ticks less often than frames are drawn; the body must
 	# follow the interpolated transform, moving a little every frame instead
