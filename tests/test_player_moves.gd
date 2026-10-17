@@ -1055,7 +1055,7 @@ func _lean_wallrun(lean: float) -> Dictionary:
 	tree.root.add_child(w)
 	var ok := await _enter_wallrun()
 	var p := w.player
-	var out := {"ok": ok, "top": 0.0, "frames": 0, "dist": 0.0}
+	var out := {"ok": ok, "top": 0.0, "frames": 0, "dist": 0.0, "angle": 0.0}
 	if not ok:
 		return out
 	var y0 := p.global_position.y
@@ -1064,6 +1064,9 @@ func _lean_wallrun(lean: float) -> Dictionary:
 		await w.step(1, _lean(lean))
 		out.frames += 1
 		out.top = maxf(out.top, p.global_position.y - y0)
+		if p.state == Player.State.WALLRUN:
+			out.angle = maxf(out.angle, p.wallrun_angle())
+			check(p.wallrun_speed() > 0.0, "wallrun speed is reported")
 	out.dist = z0 - p.global_position.z
 	return out
 
@@ -1075,6 +1078,7 @@ func test_lean_angles_the_wallrun() -> void:
 	check(plain.ok and up.ok and down.ok, "all three wallrun")
 	check(up.top > plain.top + 1.0, "leaning toward the wall runs up it (%.2f m vs %.2f m)" % [up.top, plain.top])
 	check(down.frames < plain.frames, "leaning away brings you down sooner (%d vs %d frames)" % [down.frames, plain.frames])
+	check(up.angle > 0.3, "the path angles up the wall (%.2f rad)" % up.angle)
 	check(plain.dist > up.dist, "a flat run goes further along the wall (%.1f m vs %.1f m)" % [plain.dist, up.dist])
 
 

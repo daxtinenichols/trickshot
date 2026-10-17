@@ -1711,6 +1711,17 @@ func boost_cooldown() -> float:
 	return _boost_cooldown / maxf(tuning.boost_cooldown, 0.01)
 
 
+## The wallrun's path angle up the wall in radians (negative runs down it).
+## Only meaningful while wallrunning.
+func wallrun_angle() -> float:
+	return _wallrun_angle
+
+
+## Speed along the wallrun's path (m/s). Only meaningful while wallrunning.
+func wallrun_speed() -> float:
+	return _wallrun_speed
+
+
 # ---------------------------------------------------------------- respawn
 
 func set_spawn(t: Transform3D) -> void:
