@@ -255,6 +255,33 @@ func test_chase_camera_can_follow_side_flips() -> void:
 	cam.queue_free()
 
 
+func test_runner_holds_raises_and_reloads_the_gun() -> void:
+	var gun: Pistol = player.weapon
+	_look().attach_to_player(player)
+	var body: RunnerBody = player.get_node("RunnerBody")
+	level.go_to_zone(9)
+	for i in 40:
+		await tree.process_frame
+	var hand_y := func() -> float: return body.bone_world_position("RightHand").y - player.global_position.y
+	var low: float = hand_y.call()
+	gun.trigger_pressed = true
+	for i in 12:
+		await tree.process_frame
+	var raised: float = hand_y.call()
+	check(raised > low + 0.25, "hip fire raises the gun hand (%.2f -> %.2f m)" % [low, raised])
+	for i in 80:
+		await tree.process_frame
+	check(hand_y.call() < raised - 0.2, "and lowers it again after a moment (%.2f m)" % hand_y.call())
+	var apart := func() -> float: return body.bone_world_position("LeftHand").distance_to(body.bone_world_position("RightHand"))
+	var before: float = apart.call()
+	gun.reload_pressed = true
+	for i in 30:
+		await tree.process_frame
+	check(apart.call() < before - 0.15, "reload brings the hands together (%.2f -> %.2f m)" % [before, apart.call()])
+	var held: Node3D = player.get_node("GunLook").held_model
+	check(held.is_visible_in_tree(), "gun stays in hand")
+
+
 func test_gun_look_replaces_the_test_pistol_visuals() -> void:
 	var gun: Pistol = player.weapon
 	_look().attach_to_player(player)
