@@ -73,13 +73,16 @@ func _physics_process(_delta: float) -> void:
 		phase = Phase.RUNNING
 		_toast("GO!")
 	if phase == Phase.RUNNING or practice:
+		# Gates in order: the course turns, so each is a line across the
+		# roof on its own heading, not a z.
 		var cps: Array = RooftopCourseBuilder.CHECKPOINTS
-		while checkpoint < cps.size() and pos.z < cps[checkpoint][0]:
+		while checkpoint < cps.size() and RooftopCourseBuilder.past_gate(cps[checkpoint], pos):
 			checkpoint += 1
 			player.set_spawn(builder.checkpoint_spawn(checkpoint))
 			if phase == Phase.RUNNING:
-				_toast("Checkpoint: %s  %s" % [cps[checkpoint - 1][1], format_time(seconds())])
-	if phase == Phase.RUNNING and pos.z < RooftopCourseBuilder.FINISH_Z:
+				_toast("Checkpoint: %s  %s" % [cps[checkpoint - 1][2], format_time(seconds())])
+	if phase == Phase.RUNNING and checkpoint == RooftopCourseBuilder.CHECKPOINTS.size() \
+			and RooftopCourseBuilder.past_gate(RooftopCourseBuilder.FINISH, pos):
 		_finish()
 	_refresh()
 

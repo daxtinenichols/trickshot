@@ -120,6 +120,65 @@ func test_restyle_switches_on_and_off() -> void:
 	check(_graybox_count() == 0, "and replaced again when back on")
 
 
+## Obstacles get dressed as part of the city (concrete, brick, crates,
+## hoardings) without touching what you collide with, and turning the look
+## off brings the plain color-coded blocks back.
+func test_obstacles_dress_as_the_city() -> void:
+	var look := _look()
+	var shapes := {}
+	var kinds := {"PARKOUR": 0, "WALLRUN": 0}
+	for body: Node in level.find_children("*", "StaticBody3D", true, false):
+		var k: String = body.get_meta("kind", "")
+		if kinds.has(k) and not body.has_meta("look"):
+			kinds[k] += 1
+			for c in body.get_children():
+				if c is CollisionShape3D:
+					shapes[c] = [(c.shape as BoxShape3D).size, (c as Node3D).global_transform]
+	check(kinds.PARKOUR > 0 and kinds.WALLRUN > 0, "the sandbox has obstacles to dress")
+	look._apply_all(level)
+	var dressed := {}
+	var styles := {}
+	for body: Node in level.find_children("*", "StaticBody3D", true, false):
+		var k: String = body.get_meta("kind", "")
+		if kinds.has(k) and not body.has_meta("look"):
+			var d := body.get_node_or_null("Dress")
+			if d != null:
+				dressed[k] = dressed.get(k, 0) + 1
+				styles[d.get_meta("style")] = true
+	check(dressed.get("PARKOUR", 0) == kinds.PARKOUR, "every vault, ledge and climb dressed (%d of %d)" % [dressed.get("PARKOUR", 0), kinds.PARKOUR])
+	check(dressed.get("WALLRUN", 0) == kinds.WALLRUN, "every wallrun wall dressed (%d of %d)" % [dressed.get("WALLRUN", 0), kinds.WALLRUN])
+	check(styles.size() >= 4, "in a mix of styles (%s)" % [styles.keys()])
+	var same := true
+	for c: CollisionShape3D in shapes:
+		if (c.shape as BoxShape3D).size != shapes[c][0] or not c.global_transform.is_equal_approx(shapes[c][1]):
+			same = false
+	check(same, "collision untouched")
+	look.set_enabled(false)
+	var left := 0
+	var hidden := 0
+	for body: Node in level.find_children("*", "StaticBody3D", true, false):
+		if body.has_node("Dress"):
+			left += 1
+		for c in body.get_children():
+			if c is MeshInstance3D and not (c as MeshInstance3D).visible:
+				hidden += 1
+	check(left == 0 and hidden == 0, "look off: plain blocks back (%d dressed, %d hidden)" % [left, hidden])
+	look.set_enabled(true)
+	var again := 0
+	for body: Node in level.find_children("*", "StaticBody3D", true, false):
+		if body.has_node("Dress"):
+			again += 1
+	check(again == kinds.PARKOUR + kinds.WALLRUN + _count_kind("SLIDE"), "dressed again when back on")
+
+
+func _count_kind(kind: String) -> int:
+	var n := 0
+	for body: Node in level.find_children("*", "StaticBody3D", true, false):
+		if body.get_meta("kind", "") == kind and not body.has_meta("look"):
+			n += 1
+	return n
+
+
 func _graybox_count() -> int:
 	var n := 0
 	for g: GeometryInstance3D in level.find_children("*", "GeometryInstance3D", true, false):
