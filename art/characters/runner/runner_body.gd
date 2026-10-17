@@ -39,15 +39,15 @@ const CONTACTS := {
 	"LeftLowerLeg": 0.06, "RightLowerLeg": 0.06, "LeftHand": 0.04, "RightHand": 0.04,
 	"Hips": 0.13, "UpperChest": 0.13, "Head": 0.12,
 }
-## States where the body stands, crouches or lies on the floor.
+## States where the body stands, crouches or rolls on the floor.
 const GROUNDED_STATES := [Player.State.GROUND, Player.State.CROUCH, Player.State.SLIDE,
-	Player.State.ROLL, Player.State.STUN, Player.State.PRONE, Player.State.PRONE_SLIDE,
+	Player.State.ROLL, Player.State.STUN,
 	Player.State.SURFACE]
 ## How fast each pose eases in/out (1/s). Higher = snappier.
 const BLEND_RATE := {
 	"idle": 6.0, "run": 10.0, "crouch": 12.0, "slide": 12.0, "rise": 9.0, "fall": 6.0,
 	"tuck": 12.0, "vault": 16.0, "mantle_hang": 16.0, "mantle_push": 14.0, "wallrun": 14.0,
-	"climb": 14.0, "stun": 14.0, "prone": 8.0, "dive": 12.0, "kick": 22.0,
+	"climb": 14.0, "stun": 14.0, "kick": 22.0,
 }
 
 var player: Player
@@ -219,10 +219,7 @@ func _targets(delta: float) -> Dictionary:
 		Player.State.SLIDE:
 			t["slide"] = 1.0
 		Player.State.AIR:
-			if player.is_diving():
-				t["dive"] = 1.0
-			else:
-				_air_targets(t, vel, air)
+			_air_targets(t, vel, air)
 		Player.State.VAULT:
 			t["vault"] = 1.0
 		Player.State.MANTLE:
@@ -238,10 +235,6 @@ func _targets(delta: float) -> Dictionary:
 			t["tuck"] = 1.0
 		Player.State.STUN:
 			t["stun"] = 1.0
-		Player.State.PRONE:
-			t["prone"] = 1.0
-		Player.State.PRONE_SLIDE:
-			t["dive"] = 1.0
 		_:
 			# A state added later: stand or fall until it gets its own pose.
 			if player.is_on_floor():
@@ -293,8 +286,6 @@ func _blend() -> Dictionary:
 			"wallrun": poses[k] = RunnerPoses.wallrun(_phase, _wall_side)
 			"climb": poses[k] = RunnerPoses.climb(_climb_phase)
 			"stun": poses[k] = RunnerPoses.stun()
-			"prone": poses[k] = RunnerPoses.prone()
-			"dive": poses[k] = RunnerPoses.dive()
 			"kick": poses[k] = RunnerPoses.kick()
 	# The kick is an overlay: it takes over the body on top of whatever the
 	# other poses blend to, instead of being averaged in with them.
@@ -349,7 +340,7 @@ func _weighted(poses: Dictionary) -> Dictionary:
 func _add_aim(pose: Dictionary) -> void:
 	var twist := clampf(wrapf(PI - _heading, -PI, PI), deg_to_rad(-70.0), deg_to_rad(70.0))
 	var look := clampf(player.pitch, deg_to_rad(-50.0), deg_to_rad(50.0)) * (1.0 - _tuck)
-	var aim_weight := clampf(1.0 - weight("prone") - weight("tuck") * 0.7, 0.0, 1.0)
+	var aim_weight := clampf(1.0 - weight("tuck") * 0.7, 0.0, 1.0)
 	for part: Array in [["Spine", 0.25, 0.0], ["Chest", 0.35, 0.25], ["Neck", 0.2, 0.35], ["Head", 0.2, 0.4]]:
 		var extra := Quaternion.from_euler(Vector3(-look * part[2], twist * part[1], 0.0) * aim_weight)
 		pose[part[0]] = extra * pose.get(part[0], Quaternion.IDENTITY)
@@ -367,7 +358,7 @@ func _add_aim(pose: Dictionary) -> void:
 ## the air; less while the hands are busy (climbing, mantling, vaulting).
 func _gun_hold_weight() -> float:
 	var busy := weight("climb") + weight("mantle_hang") + weight("mantle_push") + weight("vault") * 0.7 \
-		+ weight("stun") + weight("prone") + weight("tuck") * 0.4 + weight("wallrun") * 0.3
+		+ weight("stun") + weight("tuck") * 0.4 + weight("wallrun") * 0.3
 	return clampf(1.0 - busy, 0.0, 1.0)
 
 
@@ -449,7 +440,7 @@ func _update_root(delta: float) -> void:
 		_:
 			if speed > 1.0 and _run_direction() > 0.0:
 				target = atan2(vel.x, vel.z)
-	if player.state in [Player.State.WALLRUN, Player.State.VAULT, Player.State.MANTLE, Player.State.SLIDE, Player.State.PRONE_SLIDE] and speed > 0.5:
+	if player.state in [Player.State.WALLRUN, Player.State.VAULT, Player.State.MANTLE, Player.State.SLIDE] and speed > 0.5:
 		target = atan2(vel.x, vel.z)
 	# The body keeps its facing in the world when the view turns, then turns
 	# toward where it's going. (Following the view instantly and easing back
@@ -476,20 +467,17 @@ func _update_root(delta: float) -> void:
 	var pitch := 0.0
 	var pivot := Vector3(0, 0.95, 0)
 	var offset := Vector3.ZERO
-	if player.state == Player.State.AIR and not player.is_diving():
+	if player.state == Player.State.AIR:
 		pitch = wrapf(-air.y, -PI, PI)
 		roll += wrapf(player.air_roll(), -PI, PI)
 	elif player.state == Player.State.ROLL:
 		pitch = wrapf(TAU * player.roll_progress(), -PI, PI)
 		pivot = Vector3(0, 0.5, 0)
-	var lie := weight("prone") + weight("dive") * 0.9
-	pitch += deg_to_rad(88.0) * lie
 	# Runners lean into speed, more while speeding up, upright when braking
 	# (applied to the upper body in _add_lean so the feet stay planted).
 	_accel = lerpf(_accel, (speed - _prev_speed) / maxf(delta, 0.001), 1.0 - exp(-6.0 * delta))
 	_prev_speed = speed
 	_drive = (deg_to_rad(10.0) * clampf(speed / 12.0, 0.0, 1.0) + clampf(_accel * 0.01, -0.14, 0.12)) * weight("run")
-	offset += Vector3(0, 0.15, -0.85) * lie
 	_root_pitch = lerp_angle(_root_pitch, pitch, 1.0 - exp(-30.0 * delta))
 	_root_roll = lerp_angle(_root_roll, roll, 1.0 - exp(-(30.0 if player.state == Player.State.AIR else 12.0) * delta))
 	_pivot = _pivot.lerp(pivot, 1.0 - exp(-12.0 * delta))

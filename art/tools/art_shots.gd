@@ -16,7 +16,7 @@ const VIEWS := [
 ]
 
 const POSES := ["idle", "run_a", "run_b", "crouch", "slide", "jump_rise", "fall", "tuck",
-	"vault", "mantle_hang", "mantle_push", "wallrun", "climb", "stun", "dive", "kick"]
+	"vault", "mantle_hang", "mantle_push", "wallrun", "climb", "stun", "kick"]
 
 var out := "user://art_shots"
 var level: Node3D
@@ -134,7 +134,6 @@ func _pose(p: String) -> Dictionary:
 		"wallrun": return RunnerPoses.wallrun(0.2, 1.0)
 		"climb": return RunnerPoses.climb(0.2)
 		"stun": return RunnerPoses.stun()
-		"dive": return RunnerPoses.dive()
 		"kick": return RunnerPoses.kick()
 	return {}
 

@@ -224,33 +224,6 @@ static func stun() -> Dictionary:
 	})
 
 
-## Lying flat, face down (the root is tipped forward 90 degrees separately).
-static func prone() -> Dictionary:
-	return mirror({
-		"Neck": Vector3(-36, 0, 0),
-		"Head": Vector3(-30, 0, 0),
-		"LeftUpperArm": Vector3(120, 0, 40),
-		"LeftLowerArm": Vector3(90, 0, 0),
-		"LeftUpperLeg": Vector3(0, 0, 8),
-		"LeftFoot": Vector3(40, 0, 0),
-	})
-
-
-## Dolphin dive: arms reaching forward, body stretched out.
-static func dive() -> Dictionary:
-	return mirror({
-		"Spine": Vector3(-8, 0, 0),
-		"Chest": Vector3(-6, 0, 0),
-		"Neck": Vector3(-34, 0, 0),
-		"Head": Vector3(-20, 0, 0),
-		"LeftUpperArm": Vector3(166, 0, 8),
-		"LeftLowerArm": Vector3(8, 0, 0),
-		"LeftUpperLeg": Vector3(-10, 0, 6),
-		"LeftLowerLeg": Vector3(-20, 0, 0),
-		"LeftFoot": Vector3(40, 0, 0),
-	})
-
-
 ## Front kick (doors, windows, kick-offs): leading leg driven out straight.
 static func kick() -> Dictionary:
 	return {
