@@ -18,8 +18,8 @@ const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
 const RAIDER_SCRIPT := preload("res://enemies/raider.gd")
 const MUTANT_SCRIPT := preload("res://enemies/mutant.gd")
-## Kinds enemies/ hasn't made yet, and what stands in for them meanwhile
-## (drones of every kind are left out until they exist).
+## What stands in for a kind whose script is missing (every type in
+## docs/enemies.md has one now; this only guards a missed import).
 const STAND_INS := {"trooper": "raider", "shield": "raider", "marksman": "raider", "heavy": "raider",
 	"brute": "mutant", "leaper": "mutant", "crawler": "mutant"}
 
@@ -71,8 +71,9 @@ func build() -> void:
 		var script: Script = load(base_path)
 		base = script.new()
 		base.name = "Base"
-		if mission.has("route") and "open_exit" in base:
-			# The route carries on past the base's exit.
+		if (mission.has("route") or mission.get("open_exit", false)) and "open_exit" in base:
+			# The route (or the mission's own pieces) carries on past the
+			# base's exit.
 			base.open_exit = true
 		add_child(base)  # builds itself in _ready
 	for piece: Dictionary in mission.get("pieces", []):
@@ -323,6 +324,9 @@ func _encounter(p: Dictionary) -> void:
 	# A mission's encounter stays cleared; the sandbox arena's restarts.
 	enc.restart_time = p.get("restart", INF)
 	enc.max_aiming = p.get("max_aiming", enc.max_aiming)
+	for k: String in ["hear_shots", "hearing_radius", "wake_distance"]:
+		if p.has(k):
+			enc.set(k, p[k])
 	for c: Dictionary in p.get("cover", []):
 		enc.add_cover_wall(vec(c.get("at", [0, 0, 0])), c.get("length", 2.0), c.get("thickness", 0.55),
 				deg_to_rad(c.get("yaw", 0.0)), c.get("spacing", 2.2))
@@ -338,6 +342,7 @@ func _encounter(p: Dictionary) -> void:
 		var other := enemy_of_type(String(e.get("type", "")))
 		if other == null:
 			continue
+		other.set_meta("enemy_type", String(e.get("type", "")))
 		for k: String in e:
 			if k not in ["type", "at", "yaw", "wake"] and k in other:
 				other.set(k, e[k])

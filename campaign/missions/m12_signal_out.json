@@ -2,30 +2,103 @@
  "id": "m12_signal_out",
  "title": "Signal Out",
  "runner": "echo",
- "fail_y": 20,
- "par_seconds": 40,
- "start": {"at": [0, 40, -3]},
+ "par_seconds": 120,
+ "start": {"at": [0, 58, 2]},
  "pursuer": {"name": "THE HOST", "speed": 7.6, "speed_gain": 0.03, "max_speed": 9.4, "delay": 2.5, "catch_distance": 1.6, "leash": 22, "catchup_speed": 12.5},
- "checkpoints": [
-  {"name": "Transmitter deck", "at": [0, 36, -34], "size": [14, 8, 4], "objective": 0},
-  {"name": "Antenna yard", "at": [0, 36, -78], "size": [14, 8, 4], "objective": 0},
-  {"name": "Lower roofs", "at": [0, 27, -107], "size": [22, 8, 6], "objective": 0}
- ],
+ "clutter": ["vent_stack", "ac_unit", "satellite_dish", "generator", "debris_pile", "barrel_rust", "antenna_mast"],
  "objectives": [
-  {"type": "reach", "name": "the Silt stairwell", "text": "Outrun the Host. Lead him down to the Silt", "at": [0, 27, -173], "size": [12, 8, 6]}
+  {"type": "reach", "name": "the Silt stairwell", "text": "Outrun the Host. Lead him down to the Silt", "at": "end"}
+ ],
+ "route": [
+  {"roof": 44, "do": [
+   {"label": "SIGNAL OUT: run", "at": 3, "size": 1.4},
+   {"piece": {"fire": [-4.4, 0, -3.4], "size": [2.5, 2, 2]}, "at": 0},
+   {"piece": {"fire": [4.6, 0, -3.2], "size": [2, 1.6, 2]}, "at": 0},
+   {"prop": "radio_set", "x": 3.8, "at": 5, "yaw": 200},
+   {"prop": "generator", "x": -4.6, "at": 6, "yaw": 90},
+   {"radio": {"who": "parker", "line": "Barriers. Jump into them and you'll go over without slowing."}, "at": 8, "radius": 5},
+   {"hurdles": true, "at": 14},
+   {"piece": {"fire": [-5, 0, -18], "size": [1.6, 1.2, 1.6]}, "at": 0},
+   {"radio": {"who": "parker", "line": "Bar ahead. Slide under it."}, "at": 24, "radius": 4},
+   {"slide": true, "at": 32}
+  ]},
+  {"ramp_down": 52, "length": 18},
+  {"roof": 56, "y": 52, "do": [
+   {"checkpoint": "Transmitter deck", "at": 4, "objective": 0},
+   {"piece": {"fire": [5.2, 0, -10], "size": [1.4, 1.6, 2]}, "at": 0},
+   {"prop": "satellite_dish", "x": -5, "at": 12, "yaw": 160},
+   {"encounter": "deck cameras", "at": 16, "length": 30, "enemies": [{"type": "camera_drone", "x": -3, "d": 12, "height": 4}, {"type": "camera_drone", "x": 3, "d": 24, "height": 4}]},
+   {"hurdles": true, "at": 36}
+  ]},
+  {"gap": 6},
+  {"roof": 64, "y": 48, "do": [
+   {"prop": "loudspeaker_pole", "x": -5.2, "at": 20, "yaw": 40},
+   {"piece": {"fire": [-3, 0, -26], "size": [2, 1.4, 1.6]}, "at": 0},
+   {"radio": {"who": "parker", "line": "Gap's too wide to jump. Wall on your right, run it."}, "at": 44, "radius": 7}
+  ]},
+  {"wallrun": 12, "side": 1},
+  {"roof": 50, "do": [
+   {"checkpoint": "Antenna yard", "at": 16, "objective": 0},
+   {"prop": "antenna_mast", "x": -4.4, "at": 24}
+  ]},
+  {"turn": "left", "angle": 45, "size": 22},
+  {"roof": 56, "do": [
+   {"slide": true, "at": 26}
+  ]},
+  {"turn": "left", "angle": 45, "size": 22},
+  {"ramp_down": 42, "length": 20},
+  {"roof": 66, "y": 42, "do": [
+   {"hurdles": true, "at": 14},
+   {"piece": {"fire": [4.8, 0, -24], "size": [1.6, 1.2, 1.6]}, "at": 0},
+   {"prop": "vent_stack", "x": -5, "at": 30},
+   {"radio": {"who": "parker", "line": "Big drop. Crouch right before you land and roll out of it."}, "at": 52, "radius": 6}
+  ]},
+  {"gap": 7},
+  {"roof": 58, "y": 38, "do": [
+   {"hurdles": true, "at": 28}
+  ]},
+  {"turn": "right", "size": 22},
+  {"roof": 60, "do": [
+   {"checkpoint": "Lower roofs", "at": 4, "objective": 0},
+   {"prop": "water_tank", "x": -7.4, "at": 8},
+   {"piece": {"bank": [3.2, 0, 0], "length": 14, "side": 1}, "at": 14, "length": 14},
+   {"encounter": "roof cameras", "at": 32, "length": 30, "enemies": [{"type": "camera_drone", "x": -3, "d": 12, "height": 4}, {"type": "camera_drone", "x": 3, "d": 24, "height": 4}]}
+  ]},
+  {"ramp_down": 32, "length": 22},
+  {"roof": 76, "y": 32, "do": [
+   {"window": 3.3, "at": 20},
+   {"piece": {"fire": [-7, 0, -40], "size": [2.5, 1.6, 2.5]}, "at": 0},
+   {"prop": "car_wreck", "x": -4.8, "at": 48, "yaw": 20},
+   {"hurdles": true, "at": 58}
+  ]},
+  {"gap": 6},
+  {"roof": 54, "y": 28, "do": [
+   {"prop": "tire_stack", "x": -5, "at": 30}
+  ]},
+  {"turn": "right", "angle": 45, "size": 22},
+  {"roof": 44, "do": [
+   {"hurdles": true, "at": 20}
+  ]},
+  {"turn": "left", "angle": 45, "size": 22},
+  {"roof": 66, "do": [
+   {"slide": true, "at": 24},
+   {"radio": {"who": "parker", "line": "Last gap. Kick off the pillar if you need the distance."}, "at": 52, "radius": 8},
+   {"piece": {"box": [0, -3.5, -4], "size": [1.2, 7.0, 1.2], "kind": "NEUTRAL"}, "at": 66}
+  ]},
+  {"gap": 8},
+  {"roof": 60, "y": 24, "do": [
+   {"prop": "loudspeaker_pole", "x": -4.8, "at": 30, "yaw": 180},
+   {"label": "THE SILT", "at": 50, "size": 1.4},
+   {"mark": "#f57320", "at": 48}
+  ]}
  ],
  "radio": [
   {"on": "start", "who": "host", "line": "Change of programming, Port Calder! Our courier is pinned under my antenna, and his wife is making a break for it."},
   {"on": "start", "who": "parker", "line": "Echo. Run. Don't look back, don't stop. I'll talk you down."},
   {"on": "go", "who": "echo", "line": "Running. Talk to me, Parker."},
-  {"at": [0, 40, -9], "radius": 5, "who": "parker", "line": "Barriers. Jump into them and you'll go over without slowing."},
-  {"at": [0, 40, -19], "radius": 4, "who": "parker", "line": "Bar ahead. Slide under it."},
   {"on": "checkpoint:0", "who": "host", "line": "I used to chase the ratings, darling. Now I'm chasing you. So much more fun."},
-  {"at": [4, 36, -56], "radius": 7, "who": "parker", "line": "Gap's too wide to jump. Wall on your right, run it."},
   {"on": "checkpoint:1", "who": "echo", "line": "He's still behind me. I can hear him laughing."},
-  {"at": [0, 36, -96], "radius": 6, "who": "parker", "line": "Big drop. Crouch right before you land and roll out of it."},
   {"on": "checkpoint:2", "who": "host", "line": "Slowing down? I can hear you breathing on my frequency, sweetheart."},
-  {"at": [1.5, 27, -140], "radius": 8, "who": "parker", "line": "Last gap. Kick off the pillar if you need the distance."},
   {"on": "complete", "who": "host", "line": "Where are you taking me, Echo? That's... that's the Silt. What are those... Echo? ECHO!"},
   {"on": "complete", "who": "echo", "line": "That's the end of the show, Port Calder."},
   {"on": "complete", "who": "parker", "line": "Echo?"},
@@ -50,59 +123,8 @@
   ]
  },
  "pieces": [
-  {"box": [0, -0.5, -90], "size": [140, 1, 240], "kind": "FLOOR"},
-  {"building": [0, 40, -14], "size": [12, 28]},
-  {"building": [0, 36, -48], "size": [12, 32]},
-  {"building": [0, 36, -88], "size": [12, 24]},
-  {"building": [0, 27, -127], "size": [20, 46]},
-  {"building": [0, 27, -167], "size": [12, 22]},
-
-  {"label": "SIGNAL OUT: run", "at": [0, 44, -6], "size": 1.4},
-  {"fire": [-4.4, 40, -1.4], "size": [2.5, 2, 2]},
-  {"fire": [4.6, 40, -1.2], "size": [2, 1.6, 2]},
-  {"prop": "radio_set", "at": [3.8, 40, -3], "yaw": 200},
-  {"prop": "generator", "at": [-4.6, 40, -4], "yaw": 90},
-  {"row": "barricade_jersey", "from": [-5, 40, -12], "to": [5, 40, -12], "count": 6},
-  {"box": [0, 41.35, -24], "size": [12, 0.5, 0.6], "kind": "PARKOUR"},
-  {"box": [-5.8, 40.55, -24], "size": [0.4, 1.1, 0.6], "kind": "NEUTRAL"},
-  {"box": [5.8, 40.55, -24], "size": [0.4, 1.1, 0.6], "kind": "NEUTRAL"},
-  {"fire": [-5, 40, -16], "size": [1.6, 1.2, 1.6]},
-
-  {"fire": [5.2, 36, -40], "size": [1.4, 1.6, 2]},
-  {"prop": "satellite_dish", "at": [-5.0, 36, -38], "yaw": 160},
-  {"prop": "debris_pile", "at": [-4.2, 36, -48]},
-  {"prop": "loudspeaker_pole", "at": [-5.2, 36, -58], "yaw": 40},
-  {"box": [-5.8, 36.4, -60], "size": [0.4, 0.8, 8], "kind": "NEUTRAL"},
-  {"box": [6.5, 38.5, -70], "size": [1, 9, 18], "kind": "WALLRUN"},
-  {"fire": [-3, 36, -63], "size": [2, 1.4, 1.6]},
-
-  {"prop": "antenna_mast", "at": [-4.4, 36, -82]},
-  {"row": "barricade_jersey", "from": [-5, 36, -86], "to": [5, 36, -86], "count": 6},
-  {"fire": [4.8, 36, -92], "size": [1.6, 1.2, 1.6]},
-  {"prop": "vent_stack", "at": [-5, 36, -95]},
-
-  {"prop": "water_tank", "at": [-7.4, 27, -108]},
-  {"bank": [6.5, 27, -106], "length": 10.0, "side": 1.0, "radius": 3.0, "angle": 60.0, "straight": 1.0},
-  {"prop": "sandbag_wall", "at": [1.75, 27, -116]},
-  {"prop": "sandbag_wall", "at": [5.75, 27, -116]},
-  {"prop": "barricade_jersey", "at": [1.75, 27, -126]},
-  {"prop": "barricade_jersey", "at": [3.75, 27, -126]},
-  {"prop": "barricade_jersey", "at": [5.75, 27, -126]},
-  {"prop": "tire_stack", "at": [-5, 27, -120]},
-  {"fire": [-7, 27, -132], "size": [2.5, 1.6, 2.5]},
-  {"prop": "car_wreck", "at": [-6.5, 27, -143], "yaw": 20},
-  {"box": [0, 23.5, -153], "size": [1.2, 7.0, 1.2], "kind": "NEUTRAL"},
-
-  {"prop": "loudspeaker_pole", "at": [-4.8, 27, -168], "yaw": 180},
-  {"mark": [0, 27, -173], "size": [12, 0.8], "color": "#f57320"},
-  {"label": "THE SILT", "at": [0, 30.5, -176], "size": 1.4},
-  {"prop": "barricade_scrap", "at": [0, 27, -177.5]},
-
-  {"building": [-24, 46, -30], "size": [14, 14], "look": "FACADE"},
-  {"prop": "antenna_mast", "at": [-24, 46, -30]},
-  {"fire": [-24, 46, -26], "size": [4, 3, 3]},
-  {"building": [24, 30, -60], "size": [12, 16]},
-  {"building": [-26, 24, -110], "size": [12, 14]},
-  {"building": [26, 18, -150], "size": [14, 18]}
+  {"building": [-26, 66, -20], "size": [14, 14], "look": "FACADE"},
+  {"prop": "antenna_mast", "at": [-26, 66, -20]},
+  {"fire": [-26, 66, -16], "size": [4, 3, 3]}
  ]
 }

@@ -13,8 +13,9 @@ enum Phase { READY, RUNNING, COMPLETE }
 
 ## A named moment the radio can react to: "start", "go", "objective:N"
 ## (objective N became active), "done:N", "checkpoint:N", "fall", "caught",
-## "tape", "kill", "headshot", "combo", "bail", "down" (enemies took you
-## down), "complete".
+## "tape", "kill", "kill:<enemy type>", "headshot", "combo", "bail", "down"
+## (enemies took you down), "fate:spared" / "fate:not_spared" (a boss like
+## Juno was beaten and you chose), "complete".
 signal event(name: String)
 signal objective_changed(index: int)
 signal completed(result: Dictionary)
@@ -80,7 +81,9 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 		enc.started.connect(_on_encounter_started)
 		enc.reset_done.connect(_on_encounter_reset)
 		for e: Node in enc.enemies:
-			e.killed.connect(_on_target_killed)
+			e.killed.connect(_on_target_killed.bind(String(e.get_meta("enemy_type", ""))))
+			if e.has_signal("fate_decided"):
+				e.fate_decided.connect(func(fate: String) -> void: event.emit("fate:" + fate))
 	var health := p.get_node_or_null("PlayerHealth")
 	if health != null:
 		health.died.connect(_on_player_down)
@@ -198,6 +201,8 @@ func _check_objective(pos: Vector3) -> void:
 			done = _multiplier_since >= int(o.multiplier)
 		"shoot":
 			done = _shoot_progress(o) >= int(o.get("count", 1))
+		"clear":
+			done = encounter_cleared(String(o.get("encounter", "")))
 		"collect":
 			done = tapes_found.size() >= int(o.get("count", builder.tapes.size()))
 	if done:
@@ -206,6 +211,15 @@ func _check_objective(pos: Vector3) -> void:
 			_complete()
 		else:
 			_begin_objective(objective + 1)
+
+
+## True once the encounter with this id is cleared (every enemy down, or out
+## of the fight like a spared Juno).
+func encounter_cleared(id: String) -> bool:
+	for enc: Node3D in builder.encounters:
+		if enc.get_meta("id", "") == id:
+			return enc.phase == enc.Phase.CLEARED
+	return false
 
 
 func _shoot_progress(o: Dictionary) -> int:
@@ -337,8 +351,11 @@ func _on_banked(_points: int, multiplier: int, total: int) -> void:
 		event.emit("combo")
 
 
-func _on_target_killed(info: Dictionary) -> void:
+func _on_target_killed(info: Dictionary, type := "") -> void:
 	kills += 1
+	if type != "":
+		# "kill:camera_drone": the radio can react to one kind of enemy.
+		event.emit("kill:" + type)
 	if info.get("zone", &"body") == &"head":
 		headshots += 1
 		event.emit("headshot")

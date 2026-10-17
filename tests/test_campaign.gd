@@ -8,7 +8,7 @@ extends TestCase
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
-	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter"]
+	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab"]
 
 var level: Node3D
 var player: Player
@@ -125,9 +125,11 @@ func test_every_built_mission_loads_and_spawns_are_standable() -> void:
 			await _step(40)
 			check(player.state == Player.State.GROUND, "%s spawn %d: standing (%s)" % [title, s + 1, Player.State.keys()[player.state]])
 			check_near(player.global_position.y, b.spawns[s].origin.y, 0.08, "%s spawn %d: at its height" % [title, s + 1])
-			var z0 := player.global_position.z
+			# Forward is the way the spawn faces (routes turn, so not always -Z).
+			var p0 := player.global_position
+			var fwd := -b.spawns[s].basis.z
 			await _step(25, TestWorld.forward_input())
-			check(z0 - player.global_position.z > 1.5, "%s spawn %d: free to run forward" % [title, s + 1])
+			check((player.global_position - p0).dot(fwd) > 1.5, "%s spawn %d: free to run forward" % [title, s + 1])
 		level.queue_free()
 		await tree.process_frame
 
@@ -137,8 +139,10 @@ func test_menu_lists_every_mission() -> void:
 	tree.root.add_child(menu)
 	await tree.process_frame
 	check(menu._buttons.size() == Campaign.mission_count(), "a button per mission")
-	menu._select(_index("m05_atrium"))
-	check(menu._play.disabled, "an unbuilt mission can't be played")
+	var unbuilt := range(Campaign.mission_count()).filter(func(i: int) -> bool: return not Campaign.is_built(i))
+	if not unbuilt.is_empty():
+		menu._select(unbuilt[0])
+		check(menu._play.disabled, "an unbuilt mission can't be played")
 	menu._select(0)
 	check(not menu._play.disabled, "mission 0 can")
 	menu.queue_free()
@@ -167,12 +171,18 @@ func test_checkpoints_falls_and_objectives() -> void:
 	player.global_position = Vector3(0, 13.05, -109)
 	await _step(3)
 	check(run.objective == 1, "delivered: on to the next objective")
-	player.global_position = Vector3(0, 4.05, -190)
+	player.global_position = _camp()
 	await _step(3)
 	check(run.phase == MissionRun.Phase.COMPLETE, "reaching camp completes the mission")
 	check(Campaign.is_complete(_index("m00_dawn_run")), "progress saved")
 	check(level.mission_hud.results_visible(), "results shown")
 	check(int(Campaign.best(_index("m00_dawn_run")).ticks) == run.ticks, "best time saved")
+
+
+## Dawn Run's camp: the end of its route along the docks.
+func _camp() -> Vector3:
+	var at := MissionBuilder.vec(run.mission.objectives[1].at)
+	return Vector3(at.x, 4.05, at.z)
 
 
 func test_zone_key_starts_a_practice_run() -> void:
@@ -181,7 +191,7 @@ func test_zone_key_starts_a_practice_run() -> void:
 	await _step(3)
 	check(run.practice and run.checkpoint == 3, "practice from the third checkpoint")
 	check(run.objective == 1, "on that checkpoint's objective (%d)" % run.objective)
-	player.global_position = Vector3(0, 4.05, -190)
+	player.global_position = _camp()
 	await _step(3)
 	check(run.phase == MissionRun.Phase.COMPLETE, "can finish")
 	check(not Campaign.is_complete(_index("m00_dawn_run")), "but a practice run saves nothing")
@@ -279,7 +289,7 @@ func test_standing_still_in_the_chase_gets_you_caught() -> void:
 	check(run.pursuer != null, "the finale has a pursuer")
 	check(player.get_meta("runner") == "echo", "played as Echo")
 	await _step(5)
-	player.global_position = Vector3(0, 40.05, -6)
+	player.global_position = level.builder.spawns[0].origin + Vector3(0, 0.05, -8)
 	await _step(1)
 	check(run.phase == MissionRun.Phase.RUNNING, "the chase starts when you move")
 	var caught := false
@@ -427,36 +437,74 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 	return false
 
 
-const DAWN_RUN_ROUTE := [
-	[-12.6, "jump", 0.0], [-19.6, "jump", 0.0], [-26.5, "crouch", 0.0], [-38.8, "jump", 0.0],
-	[-42.0, "", 3.3], [-55.0, "crouch", 3.3], [-62.0, "", 5.4], [-71.3, "jump", 7.0],
-	[-86.0, "", 0.3], [-90.6, "jump", 0.3], [-102.2, "jump", 0.3], [-110.5, "crouch", 0.3],
-	[-122.0, "roll", 0.3], [-130.0, "", 1.5], [-140.6, "jump", 1.5], [-150.6, "jump", 1.5],
-	[-160.6, "jump", 1.5], [-171.3, "jump", 1.5],
-]
+## Rooftops as legs for the bot: the lines between its corners, so local z
+## runs on continuously from leg to leg ([origin x, origin z, yaw, z0]).
+const ROOFTOPS_LEGS := [[0.0, 0.0, 0.0, 0.0], [0.0, -369.0, PI * 0.5, -369.0], [-198.0, -369.0, 0.0, -567.0]]
 
 
+## test_maps' run of the whole Rooftops course (distances along its racing
+## line, which rounds the corners) turned into steps on ROOFTOPS_LEGS.
+func _rooftops_steps() -> Array:
+	var course: Array = load("res://tests/test_maps.gd").get_script_constant_map().COURSE_ROUTE
+	var out: Array = []
+	for step: Array in course:
+		var s: float = step[0]
+		var shift := 0.0 if s < 378.7 else (7.3 if s < 570.0 else 15.0)
+		out.append([-s - shift, step[1], step[2]])
+	return out
+
+
+## Dawn Run is the whole Rooftops course (the delivery on its high roof),
+## then the mission's own route along the docks to camp.
 func test_dawn_run_can_be_finished() -> void:
 	await _load(_index("m00_dawn_run"))
+	PlayerHealth.ensure(player).can_die = false
 	await _step(10)
-	var done := await _run_route(DAWN_RUN_ROUTE)
-	check(done, "a scripted run finishes Dawn Run (stopped at %s, objective %d)" % [player.global_position, run.objective])
+	var m: Dictionary = run.mission
+	var exit_z: float = float(m.route_legs[0][1]) - 198.0
+	var base_done := await _run_route(_rooftops_steps(), 9000, exit_z + 6.0, ROOFTOPS_LEGS)
+	check(not base_done and run.objective == 1, "the bot crosses Rooftops with the parcel delivered (objective %d, at %s)" % [run.objective, player.global_position])
+	var done := await _run_route(m.bot, 3000, -INF, m.route_legs)
+	check(done, "and finishes Dawn Run at camp (stopped at %s, objective %d)" % [player.global_position, run.objective])
+	check(run.falls == 0, "without falling (%d)" % run.falls)
+	check(m.checkpoints.size() == 10 and m.checkpoints[0].name == "Door and window", "the base's checkpoints come before the route's")
+
+
+## The Yard: the yard's lessons, then out of the park's far end and down
+## the mission's own streets to the south gate.
+func test_the_yard_ends_at_the_south_gate() -> void:
+	await _load(_index("m01_the_yard"))
+	var m: Dictionary = run.mission
+	check(m.route_length > 150.0, "a run out past the park (%d m)" % int(m.route_length))
+	var exit: Transform3D = load(m.base).EXIT
+	player.respawn(exit)
+	player.set_spawn(exit)
+	await _step(10)
+	# The lessons, done for the bot.
+	run._begin_objective(4)
+	var done := await _run_route(m.bot, 2400, -INF, m.route_legs)
+	check(done, "a bot runs from the park's exit to the gate (stopped at %s, objective %d)" % [player.global_position, run.objective])
 	check(run.falls == 0, "without falling (%d)" % run.falls)
 
 
 func test_on_air_lookouts_are_raiders() -> void:
 	await _load(_index("m02_on_air"))
 	var b: MissionBuilder = level.builder
-	check(b.encounters.size() == 1, "On Air has one encounter")
+	check(b.encounters.size() == 2, "On Air has two lookout posts")
 	var enc: Node3D = b.encounters[0]
-	check(enc.enemies.size() == 3, "three raiders (%d)" % enc.enemies.size())
+	var n: int = enc.enemies.size()
+	check(n == 4 or n == 5, "four raiders, and the camera drone once it exists (%d)" % n)
 	for e: Node in enc.enemies:
+		if e.get_meta("enemy_type", "") != "":
+			continue
 		check(e.get_script() == MissionBuilder.RAIDER_SCRIPT, "lookouts are raiders")
 		check(absf(e.global_position.y - 8.0) < 0.5, "standing on the roof (%s)" % e.global_position)
 	check(enc.covers.size() > 0, "with cover spots")
 	check(level.find_children("*", "CanvasLayer", false, false).any(func(n: Node) -> bool: return n.get_script() == level.HURT_OVERLAY_SCRIPT), "and the hurt overlay")
 	# Step onto the lookout roof: they wake.
 	player.respawn(b.spawns[2])
+	var c: Vector3 = enc.bounds.get_center()
+	player.global_position = Vector3(c.x, 8.05, c.z)
 	await _step(5)
 	check(enc.phase == EnemyEncounter.Phase.ACTIVE, "the encounter starts on the roof")
 	check(run.objective == 1, "practice from the lookout roof starts at the shooting")
@@ -468,30 +516,24 @@ func test_on_air_lookouts_are_raiders() -> void:
 	await _step(2)
 	check(run.downs == 1, "went down once")
 	check(player.global_position.distance_to(b.spawns[2].origin) < 1.0, "back at the checkpoint (%s)" % player.global_position)
-	check(enc.alive_count() == 3, "raiders reset")
+	check(enc.alive_count() == n, "raiders reset")
 	check(run.objective_text().contains("(0 / 3)"), "count starts over (%s)" % run.objective_text())
 	for e: Node in enc.enemies:
 		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
 	await _step(2)
-	check(run.objective == 2, "three raiders down")
-	check(run.headshots == 3, "headshots counted (%d)" % run.headshots)
+	check(run.objective == 2, "the lookouts are down")
+	check(run.headshots == n, "headshots counted (%d)" % run.headshots)
 	await _step(400)
 	check(enc.alive_count() == 0, "a cleared encounter stays cleared")
-
-
-const SIGNAL_OUT_ROUTE := [
-	[-10.4, "jump", 0.0], [-19.5, "crouch", 0.0], [-26.8, "jump", 0.0],
-	[-36.0, "", 3.3], [-54.0, "", 5.4], [-63.3, "jump", 7.0],
-	[-78.0, "", 0.3], [-84.4, "jump", 0.3], [-98.0, "roll", 0.3], [-106.0, "", 1.5],
-	[-114.6, "jump", 3.75], [-124.6, "jump", 3.75], [-140.0, "", 1.5], [-149.3, "jump", 1.5],
-]
 
 
 func test_signal_out_can_be_escaped() -> void:
 	await _load(_index("m12_signal_out"))
 	await _step(10)
-	var done := await _run_route(SIGNAL_OUT_ROUTE)
+	var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
+	var done := await _run_route(run.mission.bot, frames, -INF, run.mission.route_legs)
 	check(done, "a scripted run outruns the Host (stopped at %s)" % player.global_position)
+	check(run.mission.route_length >= 900.0, "a long chase (%d m)" % int(run.mission.route_length))
 	check(run.catches == 0, "without being caught (%d)" % run.catches)
 	check(run.falls == 0, "without falling (%d)" % run.falls)
 	check(Campaign.echo_unlocked(), "Echo unlocked")
@@ -508,6 +550,11 @@ func test_route_missions_can_be_finished() -> void:
 		var path: String = all[i].get("file", "")
 		if path == "" or not Campaign.load_mission_file(path).has("bot"):
 			continue
+		# ROUTE_ONLY=m08 runs just the matching missions (while tuning one).
+		if OS.has_environment("ROUTE_ONLY") and not String(all[i].id).contains(OS.get_environment("ROUTE_ONLY")):
+			continue
+		if Campaign.load_mission_file(path).get("route_from", "") == "base_exit":
+			continue  # the base map comes first: its own test runs it
 		for alt: bool in [false, true]:
 			if alt and not Campaign.load_mission_file(path).has("bot_alt"):
 				continue
@@ -522,7 +569,7 @@ func _bot_run(label: String, alt := false) -> void:
 	var health := PlayerHealth.ensure(player)
 	health.can_die = false
 	run.event.connect(func(e: String) -> void:
-		if e.begins_with("objective:") and run.current_objective().get("type", "") == "shoot":
+		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear"]:
 			for enc: Node3D in level.builder.encounters:
 				for en: Node in enc.enemies:
 					if not en.is_dead:
@@ -530,6 +577,10 @@ func _bot_run(label: String, alt := false) -> void:
 	await _step(10)
 	var bot: Array = run.mission.bot_alt if alt else run.mission.bot
 	var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
+	if OS.has_environment("ROUTE_ONLY"):
+		print("  %s: %d m, %d legs, %d checkpoints, %d encounters, %d enemies, legs %s" % [label, int(run.mission.route_length),
+			run.mission.route_legs.size(), level.builder.spawns.size() - 1, level.builder.encounters.size(),
+			level.builder.encounters.reduce(func(n: int, e: Node) -> int: return n + e.enemies.size(), 0), run.mission.route_legs])
 	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []))
 	check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [label, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
 	check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])
@@ -622,9 +673,186 @@ func test_route_45_degree_corners() -> void:
 	var b: MissionBuilder = level.builder
 	var enc: Node3D = b.encounters[0]
 	check(enc.enemies.size() >= 3, "shield, marksman and brute spawn, as stand-ins if need be (%d)" % enc.enemies.size())
+	var heard: Array = []
+	run.event.connect(func(e: String) -> void: heard.append(e))
+	var shield: Node = enc.enemies[0]
+	check(shield.get_meta("enemy_type", "") == "shield", "enemies remember the type they were asked for")
+	shield.take_hit({"damage": 500.0, "zone": &"body", "position": shield.global_position})
+	check(heard.has("kill:shield"), "a kill names its type for the radio (%s)" % [heard])
 	# Standing on a corner slab.
 	var corner_mid := Vector3(float(m.route_legs[1][0]), 20.0, float(m.route_legs[1][1]))
 	var q := PhysicsRayQueryParameters3D.create(corner_mid, corner_mid + Vector3.DOWN * 30.0, 1)
 	var hit := player.get_world_3d().direct_space_state.intersect_ray(q)
 	check(not hit.is_empty() and absf(hit.position.y - 10.0) < 0.01, "the corner slab is a roof at 10 m (%s)" % [hit.get("position", null)])
 	await _bot_run("45 degree corners", false)
+
+
+# ---------------------------------------------------------------- hand-made levels
+
+## Missions laid out by hand on a base map (the mall missions) can't use a
+## route's bot, so they carry a "bot_path": waypoints [x, z, action] the
+## bot runs through in order ("jump", "crouch" or "roll" when it reaches
+## one), and "bot_path_alt" for a second line if there is one. Enemies can't take it down and any shooting objective is done for
+## it, like the route bots.
+func test_hand_made_missions_can_be_finished() -> void:
+	var all := Campaign.missions()
+	var ran := 0
+	for i in all.size():
+		var path: String = all[i].get("file", "")
+		if path == "" or not Campaign.load_mission_file(path).has("bot_path"):
+			continue
+		for key: String in ["bot_path", "bot_path_alt"]:
+			if not Campaign.load_mission_file(path).has(key):
+				continue
+			var label: String = all[i].id + (" (high line)" if key == "bot_path_alt" else "")
+			await _load(i)
+			var health := PlayerHealth.ensure(player)
+			health.can_die = false
+			_auto_shoot_objectives()
+			await _step(10)
+			var done := await _run_path(run.mission[key])
+			check(done, "%s: a bot finishes it (stopped at %s, objective %d)" % [label, player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
+			check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])
+			level.queue_free()
+			level = null
+			await tree.process_frame
+			ran += 1
+	check(ran >= 1, "hand-made missions were run (%d)" % ran)
+
+
+func _auto_shoot_objectives() -> void:
+	run.event.connect(func(e: String) -> void:
+		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear"]:
+			for enc: Node3D in level.builder.encounters:
+				for en: Node in enc.enemies:
+					if not en.is_dead:
+						en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position}))
+
+
+## Runs through waypoints [x, z, action?] in order, turning its view toward
+## the next one while on its feet. Returns true once the mission is
+## complete.
+func _run_path(path: Array, max_frames := 6000) -> bool:
+	var next := 0
+	var roll_armed := false
+	var crouch_until := -1
+	for i in max_frames:
+		if run.phase == MissionRun.Phase.COMPLETE:
+			return true
+		var pos := player.global_position
+		var here := Vector2(pos.x, pos.z)
+		var f := InputFrame.new()
+		# Reached a waypoint (or passed it along its leg): act, move on.
+		while next < path.size():
+			var w: Array = path[next]
+			var p := Vector2(w[0], w[1])
+			var prev := Vector2(path[next - 1][0], path[next - 1][1]) if next > 0 else here
+			var leg := (p - prev).normalized()
+			if here.distance_to(p) > 1.2 and (here - p).dot(leg) < 0.0:
+				break
+			match w[2] if w.size() > 2 else "":
+				"jump":
+					f.jump_pressed = true
+					f.jump_held = true
+				"crouch":
+					f.crouch_pressed = true
+					f.crouch_held = true
+					crouch_until = i + 30
+				"roll":
+					roll_armed = true
+			next += 1
+		if OS.has_environment("ROUTE_LOG") and i % 10 == 0:
+			print("  t%4d pos %s wp %d state %s speed %.1f obj %d falls %d" % [i, pos.snapped(Vector3.ONE * 0.01), next, Player.State.keys()[player.state], player.horizontal_speed(), run.objective, run.falls])
+		var target := Vector2(path[mini(next, path.size() - 1)][0], path[mini(next, path.size() - 1)][1])
+		var to := target - here
+		var dir := Vector3(to.x, 0.0, to.y).normalized() if to.length() > 0.01 else -Basis(Vector3.UP, player.yaw).z
+		if player.state not in [Player.State.AIR, Player.State.WALLRUN]:
+			var want := atan2(-dir.x, -dir.z)
+			var turn := clampf(angle_difference(player.yaw, want), -TURN_RATE / 60.0, TURN_RATE / 60.0)
+			if absf(turn) > 0.0001:
+				player._look(turn, 0.0)
+		var face := Basis(Vector3.UP, player.yaw)
+		var move := Vector2(dir.dot(face.x), dir.dot(-face.z))
+		if move.y > 0.0:
+			move /= move.y
+		f.move = Vector2(clampf(move.x, -0.6, 0.6), 1.0)
+		if roll_armed and player.state == Player.State.AIR and player.velocity.y < 0.0:
+			var q := PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 1.2, 1)
+			q.exclude = [player.get_rid()]
+			if not player.get_world_3d().direct_space_state.intersect_ray(q).is_empty():
+				f.crouch_pressed = true
+				f.crouch_held = true
+				roll_armed = false
+		if i < crouch_until:
+			f.crouch_held = true
+		if player.state == Player.State.WALLRUN and player.wallrun_angle() < 0.05:
+			f.lean = 1.0 if player._lean_toward_wall(1.0) > 0.0 else -1.0
+		player.scripted_input = f
+		await tree.physics_frame
+	return false
+
+
+## m07: Juno can't be killed outright, so her fight is a `clear` objective;
+## sparing her or not plays a different line.
+func test_juno_fate_picks_the_line() -> void:
+	var i := _index_of("m07_parking_spiral")
+	for choice: String in ["spared", "not_spared"]:
+		await _load(i)
+		var events: Array[String] = []
+		run.event.connect(func(e: String) -> void: events.append(e))
+		var enc: Node3D = null
+		for e: Node3D in level.builder.encounters:
+			if e.get_meta("id", "") == "Juno":
+				enc = e
+		check(enc != null, "m07 has Juno's encounter")
+		if enc == null:
+			return
+		var juno: Node = null
+		for en: Node in enc.enemies:
+			if en.has_signal("fate_decided"):
+				juno = en
+		check(juno != null, "Juno is the real Juno, not a stand-in")
+		if juno == null:
+			return
+		check(not run.encounter_cleared("Juno"), "Juno's fight isn't cleared at the start")
+		enc.start()
+		for en: Node in enc.enemies:
+			if en != juno:
+				en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position})
+		juno.take_hit({"damage": 1000.0, "zone": &"body", "position": juno.global_position})
+		check(juno.is_beaten and juno.fate == "", "a big hit beats Juno without killing her")
+		if choice == "not_spared":
+			juno.take_hit({"damage": 10.0, "zone": &"body", "position": juno.global_position})
+		else:
+			juno._decide("spared")
+			juno._leave()
+		check(("fate:" + choice) in events, "%s: the radio hears fate:%s (%s)" % [choice, choice, events])
+		check(run.encounter_cleared("Juno"), "%s: Juno's fight is cleared" % choice)
+		var lines: Array = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.get("on", "") == "fate:" + choice)
+		check(lines.size() == 1, "%s: m07 has one line for it" % choice)
+		level.queue_free()
+		level = null
+		await tree.process_frame
+
+
+## m05: the arena's shots wake its sleeping Hollows.
+func test_atrium_shots_wake_sleepers() -> void:
+	await _load(_index_of("m05_atrium"))
+	var arena: Node3D = null
+	for e: Node3D in level.builder.encounters:
+		if e.get_meta("id", "") == "arena":
+			arena = e
+	check(arena != null and arena.hear_shots, "m05's arena hears shots")
+	var sleepers: Array = arena.enemies.filter(func(e: Node) -> bool: return e.sleeper)
+	check(sleepers.size() >= 4, "the arena has sleeping Hollows (%d)" % sleepers.size())
+	level.queue_free()
+	level = null
+	await tree.process_frame
+
+
+func _index_of(id: String) -> int:
+	var all := Campaign.missions()
+	for i in all.size():
+		if all[i].id == id:
+			return i
+	return -1
