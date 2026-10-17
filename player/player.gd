@@ -255,6 +255,15 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		_surface_look_yaw = wrapf(_surface_look_yaw + d_yaw, -PI, PI)
 		pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
 		return
+	if state == State.AIR:
+		# Aim follows the view however you're turned: tilted by a side flip,
+		# the view moves with the tilted screen, and upside down (past
+		# vertical in a flip) turning left and right swap round.
+		var r := _air_roll
+		var dx := d_yaw * cos(r) - d_pitch * sin(r)
+		var dy := d_yaw * sin(r) + d_pitch * cos(r)
+		d_yaw = -dx if cos(pitch) < 0.0 else dx
+		d_pitch = dy
 	if _turn_mod:
 		d_yaw *= tuning.quick_turn_look_scale
 		_turn_carry += d_yaw

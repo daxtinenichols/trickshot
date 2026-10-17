@@ -908,6 +908,35 @@ func test_held_wallrun_lean_doesnt_side_flip() -> void:
 	check(absf(p.air_roll()) > 0.3 or p.state != Player.State.AIR, "let go and lean again to side flip")
 
 
+## Moves the view as a mouse would (right / up on screen) while held at an
+## angle in the air, and returns how the crosshair moved on screen.
+func _aim_on_screen(view_pitch: float, view_roll: float, right: float, up: float) -> Vector2:
+	var p := await _airborne(20.0)
+	p.set_physics_process(false)
+	p.pitch = view_pitch
+	p._air_roll = view_roll
+	p.rotation = Vector3(0.0, p.yaw, 0.0)
+	p._process(0.0)
+	var before := p.camera.global_basis
+	p._look(-right * 0.05, up * 0.05)
+	p.rotation = Vector3(0.0, p.yaw, 0.0)  # what the next tick does
+	p._process(0.0)
+	var moved := -p.camera.global_basis.z - (-before.z)
+	return Vector2(moved.dot(before.x), moved.dot(before.y))
+
+
+func test_aim_follows_the_view_in_the_air() -> void:
+	for c: Array in [[0.0, 0.0, "upright"], [PI, 0.0, "upside down"], [0.0, PI * 0.5, "on your side"], [2.4, 1.0, "mid flip and tilted"]]:
+		var r := await _aim_on_screen(c[0], c[1], 1.0, 0.0)
+		check(r.x > 0.03 and absf(r.y) < r.x * 0.5, "%s: moving right aims right (%s)" % [c[2], r])
+		var u := await _aim_on_screen(c[0], c[1], 0.0, 1.0)
+		check(u.y > 0.03 and absf(u.x) < u.y * 0.5, "%s: moving up aims up (%s)" % [c[2], u])
+		w.queue_free()
+		await tree.process_frame
+		w = TestWorld.new()
+		tree.root.add_child(w)
+
+
 func test_lean_on_the_ground_peeks() -> void:
 	w.add_floor()
 	var p := await _settle()
