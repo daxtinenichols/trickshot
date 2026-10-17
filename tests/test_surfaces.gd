@@ -167,6 +167,30 @@ func test_steer_up_a_sideways_ramp_by_looking() -> void:
 	check(up.top > plain.top + 0.5, "looking up the ramp climbs it (%.2f m vs %.2f m)" % [up.top, plain.top])
 
 
+func test_running_across_a_ramp_holds_your_line() -> void:
+	# The bank's shape, but a plain ramp: its track runs up the slope.
+	var across := await _ride_bank(func(_p: Player, f: InputFrame) -> InputFrame: return f, 0.35)
+	await after_each()
+	before_each()
+	w.add_floor()
+	var mid := Vector3(-1.0, 0.0, 5.0 - 50.0)
+	var ramp := MapPieces.turned(SurfaceShapes.quarter_pipe(mid, 3.0, 65.0, 4.0, 100.0), mid, PI * 0.5)
+	for piece in ramp:
+		check(absf((piece.flow as Vector3).z) < 0.01, "the ramp's track runs up it")
+	w.add_surface(ramp)
+	var p := await _settle(Vector3(0.5, 0.05, 0))
+	p.set_view(0.35)
+	var frames := 0
+	for i in 360:
+		if p.state == Player.State.SURFACE:
+			frames += 1
+		await w.step(1, _fwd())
+		if p.global_position.z < -85.0:
+			break
+	check(frames > 40, "runs along the ramp like a wallrun (%d frames)" % frames)
+	check(frames >= across.frames * 0.8, "about as long as along a sideways ramp (%d vs %d frames)" % [frames, across.frames])
+
+
 func test_bailing_off_a_loop_keeps_turning() -> void:
 	w.add_floor()
 	_add_loop(-70.0)

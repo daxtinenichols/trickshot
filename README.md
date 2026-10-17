@@ -58,7 +58,7 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 | Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; the steeper you're running up it, the harder. Chain wall to wall |
 | Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it (your view stays put; hold Q or E while turning to face away quickly) |
 | Ramp run / loop | Run onto a purple ramp or loop | Gravity slows you going up and speeds you coming down. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off. Drop off upside down and you keep turning the way the loop turned you, so you can come round and land it like a flip. Launch off the lip of a ramp for air tricks |
-| Sideways ramp | Run onto a purple bank at an angle | Run along it tilted; steer with the stick or look up the slope to climb it, let go to drift down |
+| Sideways ramp | Run onto a purple bank at an angle, or across any steep ramp | Run along it tilted like a wallrun; steer with the stick or look up the slope to climb it, let go to drift down |
 | Roll | On the ground, flick the view down past your feet | A forward roll, like a flip on the ground. Keeps your speed |
 | Ground roll | Double-tap crouch while running | A quick forward roll that keeps your speed |
 | Landing roll | Hold crouch in the air (from any angle, even mid-flip), or land tucked forward | You curl into a ball and roll out of big drops without losing speed instead of a stun |

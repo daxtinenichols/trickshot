@@ -17,7 +17,7 @@ const MOVES := [
 	["Wall hop", "Press {jump} while wallrunning or next to a wall in the air.", "You kick off in the direction you're heading. The steeper you're running up the wall, the harder you kick off. Chain wall to wall."],
 	["Wall climb", "Jump at a wall head-on.", "Straighter and faster gets you higher. Press {jump} mid-climb to kick back off."],
 	["Ramps and loops", "Run onto a purple ramp or loop.", "Going up slows you. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off (off a loop upside down, you keep turning, so come round and land it). Launch off a ramp's lip for air tricks. {jump} jumps off."],
-	["Sideways ramps", "Run onto a purple bank at an angle.", "Run along it tilted. Steer or look up the slope to climb it; let go to drift down."],
+	["Sideways ramps", "Run onto a purple bank at an angle, or across any steep ramp.", "Run along it tilted, like a wallrun. Steer or look up the slope to climb it; let go to drift down."],
 	["Boost", "{boost}.", "A short burst of speed on the ground, a ramp or a wall. Then it needs 2 s to recharge."],
 	["Lean / quick turn", "Hold {lean_left} or {lean_right}.", "Leans you to peek around corners. While held, the view turns faster and your run follows it without losing speed."],
 	["Side flip", "Hold {lean_left} or {lean_right} in the air.", "Rolls you sideways, the way you first pressed. Hold it (or {crouch}) to tuck and spin faster, let go to open up and slow down. Near level it settles; land on your side and you crash."],

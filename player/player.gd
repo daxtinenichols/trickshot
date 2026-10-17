@@ -1312,11 +1312,13 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 	var g := down * tuning.gravity * tuning.surface_gravity_scale * delta
 	var heading := v.normalized() if v.length() > 0.01 else -global_basis.z
 	# The part of gravity along your path slows or speeds you; the part
-	# across it (running sideways along a bank) pulls you down the slope
+	# across it (running sideways along a slope) pulls you down the slope
 	# more gently, like a wallrun on a slope.
-	# Loops and ramps (tracks that run up the slope) keep full gravity so
-	# you come round them; on sideways ramps it's gentler.
-	var track := _surface_flow.length() > 0.1 and not _is_bank(n, _surface_flow)
+	# Running up or round loops and ramps (tracks that run up the slope)
+	# keeps full gravity so you come round them. Running across any slope,
+	# a ramp's included, holds your line like a sideways ramp.
+	var track := _surface_flow.length() > 0.1 and not _is_bank(n, _surface_flow) \
+			and not _runs_across(n, heading)
 	var g_along := heading * g.dot(heading)
 	v += g_along + (g - g_along) * (1.0 if track else tuning.surface_cross_gravity)
 	var speed := v.length()
@@ -1384,6 +1386,15 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 	# Keep the speed through the seams between surface pieces.
 	var t := velocity - nn * velocity.dot(nn)
 	velocity = t.normalized() * speed if t.length() > 0.01 else velocity
+
+
+## Is `dir` running across the slope (more sideways than up or down it)?
+static func _runs_across(n: Vector3, dir: Vector3) -> bool:
+	var down := Vector3.DOWN - n * Vector3.DOWN.dot(n)
+	var along := dir - n * dir.dot(n)
+	if down.length() < 0.3 or along.length() < 0.1:
+		return false
+	return absf(along.normalized().dot(down.normalized())) < 0.5
 
 
 ## A sideways ramp: its track runs across the slope rather than up it.
