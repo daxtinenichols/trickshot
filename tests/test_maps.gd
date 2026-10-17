@@ -376,3 +376,39 @@ func test_mall_storefront_glass() -> void:
 			side += 1
 			check_near(absf(w.global_basis.x.z), 1.0, 0.01, "shop pane spans along the front")
 	check(side >= 20, "two panes per ground shop (%d)" % side)
+
+
+## No running off the world: from outside each edge, looking in at running,
+## jumping and wallrun heights, the first thing hit is the ring of buildings
+## standing on the floor's edge.
+func _check_closed(center: Vector3, size: Vector2, depth := 10.0) -> void:
+	var space := level.get_world_3d().direct_space_state
+	var half := size * 0.5
+	var open := 0
+	var samples := 0
+	for side: Vector3 in [Vector3.RIGHT, Vector3.LEFT, Vector3.FORWARD, Vector3.BACK]:
+		var along := Vector3(side.z, 0, side.x)
+		var reach := half.x if side.x != 0.0 else half.y
+		var span := half.y if side.x != 0.0 else half.x
+		for t in range(-10, 11):
+			for h: float in [1.0, 8.0, 16.0]:
+				var edge := center + side * reach + along * span * t * 0.095 + Vector3(0, h, 0)
+				var from := edge + side * (depth + 5.0)
+				var q := PhysicsRayQueryParameters3D.create(from, edge - side * 2.0, 1)
+				var r := space.intersect_ray(q)
+				samples += 1
+				if r.is_empty() or from.distance_to(r.position) > 5.2:
+					open += 1
+					if open <= 3:
+						print("    open edge at %s" % edge)
+	check(open == 0, "edges closed (%d of %d samples open)" % [open, samples])
+
+
+func test_park_edges_closed() -> void:
+	await _load(PARK)
+	_check_closed(Vector3.ZERO, Vector2(ComboParkBuilder.HALF * 2, ComboParkBuilder.HALF * 2))
+
+
+func test_mall_edges_closed() -> void:
+	await _load(MALL)
+	_check_closed(MallBuilder.GROUND_CENTER, MallBuilder.GROUND_SIZE)

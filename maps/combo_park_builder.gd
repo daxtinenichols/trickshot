@@ -45,6 +45,7 @@ func build() -> void:
 	_banks(Vector3(-34, 0, 0))
 	_stepping_stones()
 	_edges()
+	_boundary()
 	_targets()
 
 
@@ -157,6 +158,13 @@ func _banks(c: Vector3) -> void:
 func _edges() -> void:
 	for x: float in [-42.0, 42.0]:
 		_box(Vector3(x, 3, 0), Vector3(1, 6, 84), Kind.WALLRUN)
+
+
+## Ruined buildings all round the yard, so there is no running off the world.
+func _boundary() -> void:
+	for piece in MapPieces.perimeter(Vector3.ZERO, Vector2(HALF * 2, HALF * 2)):
+		var t: Transform3D = piece.transform
+		_box_basis(t.origin, piece.size, t.basis, Kind.NEUTRAL).set_meta("look", "FACADE")
 
 
 ## Small pieces between the big features, so there is always something to

@@ -37,6 +37,10 @@ const SHOP_X := 20.0  # shop fronts
 const SHOP_LEN := 12.0
 const ESCALATOR_X := 6.0
 const ESCALATOR_W := 2.4
+## Everything outside: the lot, the ground round the building and the ring of
+## ruined buildings that closes the map.
+const GROUND_CENTER := Vector3(0, 0, -25)
+const GROUND_SIZE := Vector2(120, 190)
 ## The east walkway's collapsed stretch (z range).
 const HOLE := Vector2(-38.0, -46.0)
 
@@ -112,8 +116,12 @@ func _parking_lot() -> void:
 	for x: float in [-6.5, 6.5]:
 		_prop("barricade_jersey", Vector3(x, 0, 15), PI * 0.5 * signf(x) * 0.3)
 	_prop("loudspeaker_pole", Vector3(8, 0, 13), PI)
-	# Ground around the building, and low concrete barriers all round.
-	_part(Vector3(0, -0.52, -45), Vector3(80, 1, 110), Kind.FLOOR)
+	# Ground around the building, low concrete kerbs round the lot, and the
+	# ruined town all round so there is no running off the world.
+	_part(Vector3(0, -0.52, GROUND_CENTER.z), Vector3(GROUND_SIZE.x, 1, GROUND_SIZE.y), Kind.FLOOR)
+	for piece in MapPieces.perimeter(GROUND_CENTER, GROUND_SIZE):
+		var t: Transform3D = piece.transform
+		_part_basis(t.origin, piece.size, t.basis, Kind.NEUTRAL, "FACADE")
 	for x: float in [-40.0, 40.0]:
 		_part(Vector3(x, 0.5, -25), Vector3(0.6, 1, 150), Kind.PARKOUR, "NEUTRAL")
 	for z: float in [-100.0, 50.0]:
