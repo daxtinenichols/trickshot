@@ -9,6 +9,11 @@ extends Camera3D
 ## the player's interpolated transform rigidly (no positional lag), so the
 ## runner stays steady on screen at any frame rate; only zoom and wall
 ## pull-in are smoothed. (The in-game corner camera is separate.)
+##
+## Follow flips (off by default): the orbit turns with the first-person
+## view's full orientation, so flips, side flips and rolls tumble the
+## camera with the runner; mouse look still moves it on top. Read from the
+## `camera_follow_flips` setting when Settings has one, else `follow_flips`.
 
 ## Wheel actions, registered here like ArtLook's function keys so the rebind
 ## menu reserves them.
@@ -26,6 +31,8 @@ var distance := 5.2
 var tilt_deg := 28.0
 ## The point it orbits, above the runner's feet.
 var look_height := 0.9
+## Fallback when Settings has no camera_follow_flips value.
+var follow_flips := false
 var _active := false
 var _zoom := 5.2  # smoothed distance
 var _pull := 9999.0  # wall pull-in, smoothed
@@ -45,6 +52,8 @@ func setup(p: Player) -> void:
 
 
 func _ready() -> void:
+	# After the player has placed its first-person view this frame.
+	process_priority = 100
 	top_level = true
 	fov = 70.0
 	near = 0.05
@@ -104,14 +113,27 @@ func _snap() -> void:
 	_place(0.0)
 
 
+func follows_flips() -> bool:
+	var settings := get_node_or_null("/root/Settings")
+	var v: Variant = settings.get("camera_follow_flips") if settings else null
+	return v if v is bool else follow_flips
+
+
 func _place(real_delta: float) -> void:
 	var vt := player.visual_transform()
 	var frame := vt.basis.orthonormalized()
 	var pivot := vt.origin + frame.y * look_height
-	# Level view = tilt_deg down; looking up swings the camera low, looking
-	# down swings it overhead.
-	var angle := clampf(deg_to_rad(tilt_deg) - player.pitch, deg_to_rad(-55.0), deg_to_rad(85.0))
-	var orbit := frame * Basis(Vector3.RIGHT, -angle)
+	var orbit: Basis
+	if follows_flips():
+		# The first-person view already carries yaw, pitch, flips and rolls.
+		var view := player.camera.global_basis.orthonormalized()
+		pivot = vt.origin + player.body_up().normalized() * look_height
+		orbit = view * Basis(Vector3.RIGHT, -deg_to_rad(tilt_deg))
+	else:
+		# Level view = tilt_deg down; looking up swings the camera low,
+		# looking down swings it overhead.
+		var angle := clampf(deg_to_rad(tilt_deg) - player.pitch, deg_to_rad(-55.0), deg_to_rad(85.0))
+		orbit = frame * Basis(Vector3.RIGHT, -angle)
 	var back := orbit.z
 	var want := _zoom
 	# Pull in in front of walls; ease back out so it doesn't pop.

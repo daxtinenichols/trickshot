@@ -200,6 +200,32 @@ func test_chase_camera_tilts_with_the_view_and_zooms_to_first_person() -> void:
 	cam.queue_free()
 
 
+func test_chase_camera_can_follow_side_flips() -> void:
+	ArtLook.ensure_body(player)
+	var cam: Camera3D = preload("res://art/look/chase_camera.gd").new()
+	level.add_child(cam)
+	cam.setup(player)
+	cam.set_active(true)
+	player.set_physics_process(false)
+	player.state = Player.State.AIR
+	player.velocity = Vector3.ZERO
+	player._air_roll = 1.0
+	for i in 20:
+		await tree.process_frame
+	var tilt := func() -> float: return cam.global_basis.y.angle_to(Vector3.UP)
+	var level_tilt: float = tilt.call()
+	cam.follow_flips = true
+	await tree.process_frame
+	await tree.process_frame
+	var follow_tilt: float = tilt.call()
+	var up_view := player.camera.global_basis.y
+	check(level_tilt < 0.5, "off: the camera stays upright through a side flip (%.2f rad)" % level_tilt)
+	check(follow_tilt > 0.7, "on: the camera rolls with the side flip (%.2f rad)" % follow_tilt)
+	check(cam.global_basis.x.dot(player.camera.global_basis.x) > 0.95, "rolls the same way as the view (up %s)" % up_view)
+	cam.set_active(false)
+	cam.queue_free()
+
+
 func test_gun_look_replaces_the_test_pistol_visuals() -> void:
 	var gun: Pistol = player.weapon
 	_look().attach_to_player(player)
