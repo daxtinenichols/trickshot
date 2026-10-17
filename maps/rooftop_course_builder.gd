@@ -11,6 +11,8 @@ extends SandboxBuilder
 ## Sizes come from the movement numbers: 1.6 m jump apex, ~9 m running jump
 ## at top speed, ~10-13 m wallruns, 3 m climb + mantle.
 
+const PropKit := preload("res://art/props/prop_kit.gd")
+
 ## Roof top height, z start, z end (z runs negative), width.
 const ROOFS := [
 	[10.0, 0.0, -40.0, 12.0],    # R1 start: hurdles, slide bar
@@ -18,7 +20,13 @@ const ROOFS := [
 	[10.0, -84.0, -104.0, 12.0], # R3: after the wallrun gap
 	[13.0, -104.0, -124.0, 12.0],# R4: 3 m higher, climb up to it
 	[4.0, -128.0, -172.0, 20.0], # R5: 9 m drop, loop
-	[4.0, -178.0, -200.0, 12.0], # R6: finish
+	[4.0, -178.0, -240.0, 12.0], # R6: rooftop sprint
+	[4.0, -246.0, -300.0, 14.0], # R7: AC field
+	[7.0, -300.0, -372.0, 12.0], # R8: climb up to it, window wall
+	[7.0, -386.0, -430.0, 12.0], # R9: after the plank, hurdles
+	[7.0, -442.0, -500.0, 12.0], # R10: after the left wallrun gap
+	[4.0, -514.0, -580.0, 16.0], # R11: slide down to it, loop, hurdles
+	[4.0, -586.0, -660.0, 12.0], # R12: finish; past EXIT is left clear
 ]
 
 ## Where each part starts (z) and its name, in order. The first is the
@@ -28,8 +36,22 @@ const CHECKPOINTS := [
 	[-45.0, "Door and window"],
 	[-85.0, "Climb"],
 	[-129.0, "Drop and loop"],
+	[-179.0, "Rooftop sprint"],
+	[-301.0, "Plank and alley"],
+	[-443.0, "Slide down"],
 ]
-const FINISH_Z := -186.0
+const FINISH_Z := -600.0
+## Where a run starts and ends (spawns[0] is ENTRY). The campaign reads these
+## by path and carries on past EXIT.
+const ENTRY := Transform3D(Basis.IDENTITY, Vector3(0, 10, -2))
+const EXIT := Transform3D(Basis.IDENTITY, Vector3(0, 4, -620))
+## The street below, closed all round by tall buildings.
+const STREET_CENTER := Vector3(0, 0, -330)
+const STREET_SIZE := Vector2(160, 720)
+
+## Leave the far (-Z) edge open so a mission can carry on past it. Set
+## before the builder enters the tree.
+@export var open_exit := false
 ## Below this height you're in the street: back to the last checkpoint.
 const FAIL_Y := 2.5
 
@@ -44,11 +66,14 @@ func build() -> void:
 	zone_names.clear()
 
 	# The street, far below.
-	_box(Vector3(0, -0.5, -100), Vector3(160, 1, 320), Kind.FLOOR)
+	_box(Vector3(STREET_CENTER.x, -0.5, STREET_CENTER.z), Vector3(STREET_SIZE.x, 1, STREET_SIZE.y), Kind.FLOOR)
+	for piece in MapPieces.perimeter(STREET_CENTER, STREET_SIZE, 18.0, 30.0, 16.0, 10.0, open_exit):
+		var t: Transform3D = piece.transform
+		_box_basis(t.origin, piece.size, t.basis, Kind.NEUTRAL).set_meta("look", "FACADE")
 	for r: Array in ROOFS:
 		_roof(r[0], r[1], r[2], r[3])
 
-	_spawn_at(Vector3(0, 10, -2), "1 · START")
+	_spawn_at(ENTRY.origin, "1 · START")
 	_label("ROOFTOPS: reach the finish as fast as you can", Vector3(0, 14.2, -6), 1.3)
 	_line(START_Z, 10.0, Color(0.3, 0.9, 0.45))
 	_section_hurdles()
@@ -56,6 +81,9 @@ func build() -> void:
 	_section_wallrun_gap()
 	_section_climb()
 	_section_drop()
+	_section_sprint()
+	_section_plank_alley()
+	_section_slide_down()
 	_section_finish()
 	_skyline()
 
@@ -137,19 +165,77 @@ func _section_drop() -> void:
 	_box(Vector3(0, 3.5, -175), Vector3(1.2, 7.0, 1.2), Kind.NEUTRAL)
 
 
+## R6-R7: a long flat sprint to build speed (hurdles and a slide bar keep the
+## combo going), a gap, then a field of rooftop plant either side of a clear
+## lane, ending at a climb face.
+func _section_sprint() -> void:
+	_spawn_at(Vector3(0, 4, -181), "5 · ROOFTOP SPRINT")
+	_label("Long straight: build your speed", Vector3(0, 7.5, -186), 0.9)
+	for z: float in [-200.0, -215.0]:
+		_box(Vector3(0, 4.5, z), Vector3(12, 1.0, 0.4), Kind.PARKOUR)
+	_box(Vector3(0, 5.35, -228), Vector3(12, 0.5, 0.6), Kind.PARKOUR)
+	for x: float in [-5.8, 5.8]:
+		_box(Vector3(x, 4.55, -228), Vector3(0.4, 1.1, 0.6), Kind.NEUTRAL)
+	_label("Jump the gap", Vector3(0, 7, -236), 0.8)
+	# R7: plant either side of the lane, a vault row, the climb face.
+	for i in 5:
+		var z := -252.0 - i * 9.0
+		var side := -1.0 if i % 2 == 0 else 1.0
+		_prop("ac_unit", Vector3(side * 4.5, 4, z), PI * 0.5 * side)
+		_prop("vent_stack", Vector3(-side * 5.5, 4, z - 3.0), 0.0)
+	_box(Vector3(0, 4.5, -262), Vector3(14, 1.0, 0.4), Kind.PARKOUR)
+	_box(Vector3(0, 5.5, -299.85), Vector3(14, 3.0, 0.3), Kind.PARKOUR)
+	_label("Climb", Vector3(0, 8.8, -296), 0.8)
+
+
+## R8-R10: a window wall, a plank over a 14 m gap, hurdles, then a wallrun
+## gap with the wall on the left this time.
+func _section_plank_alley() -> void:
+	_spawn_at(Vector3(0, 7, -303), "6 · PLANK AND ALLEY")
+	var z := -315.0
+	var y := 7.0
+	_box(Vector3(-3.4, y + 1.5, z), Vector3(5.2, 3.0, 0.3), Kind.NEUTRAL)
+	_window(Vector3(0.3, y, z), Vector2(2.2, 1.4))
+	_box(Vector3(0.3, y + 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)
+	_box(Vector3(3.7, y + 1.5, z), Vector3(4.6, 3.0, 0.3), Kind.NEUTRAL)
+	_label("Slide through", Vector3(0.3, y + 3.6, z + 0.4), 0.8)
+	# A fallen girder across the gap: keep straight.
+	_box(Vector3(0.3, 6.75, -379), Vector3(1.2, 0.5, 15.0), Kind.NEUTRAL).set_meta("look", "RUST")
+	_label("Across the girder", Vector3(0.3, 9.5, -368), 0.8)
+	for hz: float in [-398.0, -410.0]:
+		_box(Vector3(0, 7.5, hz), Vector3(12, 1.0, 0.4), Kind.PARKOUR)
+	_box(Vector3(-6.5, 9.5, -436.0), Vector3(1.0, 9.0, 18.0), Kind.WALLRUN)
+	_box(Vector3(5.8, 7.4, -426.0), Vector3(0.4, 0.8, 8.0), Kind.NEUTRAL)
+	_label("Wallrun the left wall", Vector3(0, 10, -424), 0.8)
+
+
+## R10-R11: a slide ramp down over the gap, then a wide roof with an optional
+## loop on the right and hurdles, and a last gap with a kick-off pillar.
+func _section_slide_down() -> void:
+	_spawn_at(Vector3(0.3, 7, -445), "7 · SLIDE DOWN")
+	_ramp(Vector3(0, 7, -500), Vector3(0, 4, -514), 6.0, Kind.SLIDE)
+	_label("Slide down (Ctrl) to keep your speed", Vector3(0, 10, -494), 0.8)
+	_surface(SurfaceShapes.loop(Vector3(10.0, 4.0, -540), 4.5, 3.5, 5.5))
+	_label("LOOP (optional)", Vector3(10.0, 14.5, -540), 1.0)
+	for hz: float in [-530.0, -548.0, -562.0]:
+		_box(Vector3(-1.5, 4.45, hz), Vector3(9.0, 0.9, 0.4), Kind.PARKOUR)
+	_box(Vector3(0, 3.5, -583), Vector3(1.2, 7.0, 1.2), Kind.NEUTRAL)
+	_label("Last gap", Vector3(0, 7, -574), 0.8)
+
+
 func _section_finish() -> void:
 	_line(FINISH_Z, 4.0, Color(1.0, 0.85, 0.2))
 	_label("FINISH", Vector3(0, 8.2, FINISH_Z), 1.8)
 	# Shooting gallery past the finish line for a victory lap.
-	_target(Vector3(-3, 4, -196), ShootingTarget.Motion.STATIC)
-	_target(Vector3(3, 4, -196), ShootingTarget.Motion.STRAFE, 2.5, 3.0)
+	_target(Vector3(-3, 4, -612), ShootingTarget.Motion.STATIC)
+	_target(Vector3(3, 4, -612), ShootingTarget.Motion.STRAFE, 2.5, 3.0)
 
 
 ## A few tall blocks around the course so it reads as a city, not a void.
 func _skyline() -> void:
 	var rng := RandomNumberGenerator.new()
 	rng.seed = 7
-	for i in 18:
+	for i in 60:
 		var side := -1.0 if i % 2 == 0 else 1.0
 		var z := -10.0 - i * 11.0
 		var h := rng.randf_range(14.0, 34.0)
@@ -170,6 +256,11 @@ func _roof(top: float, z0: float, z1: float, width: float) -> void:
 ## Start and finish lines: a colored stripe across the roof.
 func _line(z: float, y: float, color: Color) -> void:
 	_floor_mark(Vector3(0, y, z), Vector2(12, 0.8), color)
+
+
+## A prop from the shared kit (art/props), loaded by path.
+func _prop(prop_name: String, at: Vector3, yaw: float) -> void:
+	PropKit.place(_root, prop_name, Transform3D(Basis(Vector3.UP, yaw), at))
 
 
 func _spawn_at(pos: Vector3, title: String) -> void:

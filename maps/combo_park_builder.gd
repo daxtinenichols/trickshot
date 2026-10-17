@@ -17,7 +17,19 @@ extends SandboxBuilder
 ## wall to ride back toward the middle. Sizes come from the movement numbers:
 ## 1.5 m steps mantle, 3 m faces climb, 1 m blocks vault, 1.1 m bars slide.
 
-const HALF := 66.0  # yard is 132 x 132 m
+const HALF := 66.0  # the first yard is 132 x 132 m
+## The long park north of the yard: canal, wall alley, rollers, out at EXIT.
+const FAR_Z := -430.0
+const FLOOR_CENTER := Vector3(0, 0, (HALF + FAR_Z) * 0.5)
+const FLOOR_SIZE := Vector2(HALF * 2, HALF - FAR_Z)
+## Where a run starts and ends (spawns[0] is ENTRY). The campaign reads these
+## by path and carries on past EXIT.
+const ENTRY := Transform3D(Basis.IDENTITY, Vector3(0, 0, 30))
+const EXIT := Transform3D(Basis.IDENTITY, Vector3(0, 0, -410))
+
+## Leave the far (-Z) edge open so a mission can carry on past it. Set
+## before the builder enters the tree.
+@export var open_exit := false
 ## Sideways ramps: curve radius and how steep they get (degrees).
 const BANK_RADIUS := 3.0
 const BANK_ANGLE := 60.0
@@ -33,8 +45,8 @@ func build() -> void:
 	spawns.clear()
 	zone_names.clear()
 
-	_box(Vector3(0, -0.5, 0), Vector3(HALF * 2, 1, HALF * 2), Kind.FLOOR)
-	_spawn(Vector3(0, 0, 30), "1 · COMBO PARK")
+	_box(Vector3(FLOOR_CENTER.x, -0.5, FLOOR_CENTER.z), Vector3(FLOOR_SIZE.x, 1, FLOOR_SIZE.y), Kind.FLOOR)
+	_spawn(ENTRY.origin, "1 · COMBO PARK")
 	_label("Chain different moves without stopping. Combos bank when you land", Vector3(0, 3.2, 26), 0.9)
 	_tower()
 	_half_pipe(Vector3(-30, 0, 0))
@@ -45,6 +57,9 @@ func build() -> void:
 	_banks(Vector3(-34, 0, 0))
 	_stepping_stones()
 	_edges()
+	_canal(-78.0, -200.0)
+	_wall_alley(-206.0, -296.0)
+	_rollers(-304.0, 6)
 	_boundary()
 	_targets()
 
@@ -161,8 +176,70 @@ func _edges() -> void:
 
 
 ## Ruined buildings all round the yard, so there is no running off the world.
+## The long park: a 120 m canal (two sideways ramps facing each other) to
+## carve down at speed, side features to peel off to.
+func _canal(z0: float, z1: float) -> void:
+	_spawn(Vector3(0, 0, z0 + 4.0), "7 · CANAL")
+	_label("The canal: ride the sides, never stop", Vector3(0, 3.5, z0), 0.9)
+	var length := z0 - z1
+	_surface(MapPieces.bank(Vector3(-5, 0, z0), length, -1.0, 3.0, 65.0, 1.0))
+	_surface(MapPieces.bank(Vector3(5, 0, z0), length, 1.0, 3.0, 65.0, 1.0))
+	# Kick-off pillars and slide bars along the canal floor, off the middle.
+	for i in 5:
+		var z := z0 - 18.0 - i * 22.0
+		if i % 2 == 0:
+			_box(Vector3(0, 1.35, z), Vector3(10, 0.5, 0.6), Kind.PARKOUR)
+		else:
+			_box(Vector3(2.5 * (1 if i % 4 == 1 else -1), 0.5, z), Vector3(3, 1, 0.8), Kind.PARKOUR)
+	# Off to the sides: long blue walls and a green slide tower.
+	for x: float in [-24.0, 24.0]:
+		_box(Vector3(x, 3, (z0 + z1) * 0.5), Vector3(1, 6, length - 20.0), Kind.WALLRUN)
+	_box(Vector3(40, 3, -150), Vector3(10, 6, 10), Kind.NEUTRAL)
+	_box(Vector3(40, 0.75, -142), Vector3(4, 1.5, 6), Kind.PARKOUR)
+	_box(Vector3(40, 2.25, -144), Vector3(4, 1.5, 2), Kind.PARKOUR)
+	_slope(Vector3(40, 6, -155), Vector3(40, 0, -175), 6.0, Kind.SLIDE)
+	_slope(Vector3(35, 6, -150), Vector3(20, 0, -150), 6.0, Kind.SLIDE)
+
+
+## Eight blue walls alternating sides (wall to wall without touching the
+## ground), and a long parallel pair to the west for wall-to-wall jumps.
+func _wall_alley(z0: float, z1: float) -> void:
+	_spawn(Vector3(0, 0, z0 + 1.0), "8 · WALL ALLEY")
+	_label("Wall to wall, all the way down", Vector3(0, 3.5, z0 - 2.0), 0.9)
+	for i in 8:
+		var side := -1.0 if i % 2 == 0 else 1.0
+		_box(Vector3(side * 3.0, 3.5, z0 - 10.0 - i * 9.0), Vector3(1, 7, 8), Kind.WALLRUN)
+	_floor_mark(Vector3(0, 0, (z0 + z1) * 0.5 - 4.0), Vector2(5, z0 - z1 - 6.0), Color(0.85, 0.3, 0.25))
+	for x: float in [-22.0, -16.0]:
+		_box(Vector3(x, 3, (z0 + z1) * 0.5), Vector3(1, 6, z0 - z1), Kind.WALLRUN)
+	# East: a run of mantle blocks rising and falling.
+	for i in 6:
+		var h := 1.5 * float(1 + mini(i, 5 - i))
+		_box(Vector3(20, h * 0.5, z0 - 8.0 - i * 4.0), Vector3(4, h, 4), Kind.PARKOUR)
+
+
+## Green rollers: rise and fall in a line, to pump (slide down each back for
+## speed). Clear lanes either side.
+func _rollers(z0: float, count: int) -> void:
+	_spawn(Vector3(0, 0, z0 + 4.0), "9 · ROLLERS")
+	_label("Rollers: slide down the backs", Vector3(0, 4.0, z0 + 1.0), 0.9)
+	var z := z0 - 2.0
+	for i in count:
+		var top := 1.8
+		_slope(Vector3(0, top, z - 5.0), Vector3(0, 0, z), 10.0, Kind.SLIDE)
+		_box(Vector3(0, top * 0.5, z - 6.0), Vector3(10, top, 2), Kind.SLIDE)
+		_slope(Vector3(0, top, z - 7.0), Vector3(0, 0, z - 12.0), 10.0, Kind.SLIDE)
+		z -= 14.0
+	# Kick pillars along the outside lanes, and a last vault line.
+	for x: float in [-12.0, 12.0]:
+		for i in 4:
+			_box(Vector3(x, 3, z0 - 10.0 - i * 20.0), Vector3(1.2, 6, 1.2), Kind.NEUTRAL)
+	_box(Vector3(0, 0.5, z - 6.0), Vector3(14, 1, 0.8), Kind.PARKOUR)
+	_label("EXIT", Vector3(0, 4.0, EXIT.origin.z), 1.6)
+
+
 func _boundary() -> void:
-	for piece in MapPieces.perimeter(Vector3.ZERO, Vector2(HALF * 2, HALF * 2)):
+	for piece in MapPieces.perimeter(FLOOR_CENTER, FLOOR_SIZE, 18.0, 30.0, 16.0, 10.0, open_exit):
 		var t: Transform3D = piece.transform
 		_box_basis(t.origin, piece.size, t.basis, Kind.NEUTRAL).set_meta("look", "FACADE")
 
@@ -183,6 +260,11 @@ func _stepping_stones() -> void:
 
 
 func _targets() -> void:
+	_target(Vector3(-19, 0, -120), ShootingTarget.Motion.STRAFE, 2.0, 3.0)
+	_target(Vector3(40, 6, -150), ShootingTarget.Motion.STATIC)
+	_target(Vector3(10, 0, -250), ShootingTarget.Motion.BOB)
+	_target(Vector3(-19, 0, -270), ShootingTarget.Motion.STATIC)
+	_target(Vector3(0, 0, -390), ShootingTarget.Motion.STRAFE, 6.0, 4.0)
 	_target(Vector3(0, 6, -2), ShootingTarget.Motion.STATIC)
 	_target(Vector3(-12, 0, -24), ShootingTarget.Motion.STRAFE, 4.0, 4.0)
 	_target(Vector3(14, 0, -22), ShootingTarget.Motion.CIRCLE, 4.0, 3.0)

@@ -106,6 +106,26 @@ const COURSE_ROUTE := [
 	[-150.6, "jump", 1.5],
 	[-160.6, "jump", 1.5],
 	[-171.3, "jump", 1.5],    # gap to R6
+	[-180.0, "", 0.0],
+	[-198.6, "jump", 0.0],    # hurdles at -200, -215
+	[-213.6, "jump", 0.0],
+	[-223.5, "crouch", 0.0],  # slide bar at -228
+	[-238.8, "jump", 0.0],    # gap to R7
+	[-260.6, "jump", 0.0],    # vault row at -262
+	[-298.2, "jump", 0.3],    # climb face at -300
+	[-311.5, "crouch", 0.3],  # window at -315: slide through
+	[-320.0, "", 0.3],        # line up with the girder
+	[-396.6, "jump", 0.0],    # hurdles at -398, -410
+	[-408.6, "jump", 0.0],
+	[-418.0, "", -5.4],       # toward the left wall
+	[-429.3, "jump", -7.0],   # gap: into the wallrun wall
+	[-444.0, "", 0.3],
+	[-499.0, "crouch", 0.3],  # slide down the ramp
+	[-516.0, "", 0.0],
+	[-528.6, "jump", 0.0],    # hurdles at -530, -548, -562
+	[-546.6, "jump", 0.0],
+	[-560.6, "jump", 0.0],
+	[-579.3, "jump", 1.5],    # last gap
 ]
 
 
@@ -115,6 +135,7 @@ func test_rooftops_spawns_are_standable() -> void:
 	await _load(ROOFTOPS)
 	var b: RooftopCourseBuilder = level.builder
 	check(b.spawns.size() == 1 + RooftopCourseBuilder.CHECKPOINTS.size(), "start + one spawn per checkpoint")
+	check(b.spawns[0] == RooftopCourseBuilder.ENTRY, "spawns[0] is ENTRY")
 	for i in b.spawns.size():
 		level.go_to_zone(i)
 		await _step(40)
@@ -130,13 +151,13 @@ func test_rooftops_full_run() -> void:
 	var timer: CourseTimer = level.timer
 	await _step(10)
 	check(timer.phase == CourseTimer.Phase.READY, "waits at the start")
-	var done := await _run_route(COURSE_ROUTE, RooftopCourseBuilder.FINISH_Z - 1.0, 2400)
+	var done := await _run_route(COURSE_ROUTE, RooftopCourseBuilder.FINISH_Z - 1.0, 7200)
 	check(done, "a scripted run reaches the finish (stopped at %s)" % player.global_position)
 	check(timer.falls == 0, "without falling (%d falls)" % timer.falls)
 	check(timer.phase == CourseTimer.Phase.FINISHED, "timer finished")
 	check(timer.checkpoint == RooftopCourseBuilder.CHECKPOINTS.size(), "passed every checkpoint")
 	check(timer.best_ticks == timer.ticks and timer.ticks > 0, "set a best time")
-	check_between(timer.seconds(), 15.0, 45.0, "plausible time (%.2f s)" % timer.seconds())
+	check_between(timer.seconds(), 40.0, 120.0, "plausible time (%.2f s)" % timer.seconds())
 
 
 func test_rooftops_fall_returns_to_checkpoint() -> void:
@@ -203,7 +224,8 @@ func test_rooftops_finish_time_formats() -> void:
 func test_park_spawns_are_standable() -> void:
 	await _load(PARK)
 	var b: ComboParkBuilder = level.builder
-	check(b.spawns.size() == 6, "six spawns (%d)" % b.spawns.size())
+	check(b.spawns.size() == 9, "nine spawns (%d)" % b.spawns.size())
+	check(b.spawns[0] == ComboParkBuilder.ENTRY, "spawns[0] is ENTRY")
 	for i in b.spawns.size():
 		level.go_to_zone(i)
 		await _step(40)
@@ -407,7 +429,7 @@ func _check_closed(center: Vector3, size: Vector2, depth := 10.0) -> void:
 
 func test_park_edges_closed() -> void:
 	await _load(PARK)
-	_check_closed(Vector3.ZERO, Vector2(ComboParkBuilder.HALF * 2, ComboParkBuilder.HALF * 2))
+	_check_closed(ComboParkBuilder.FLOOR_CENTER, ComboParkBuilder.FLOOR_SIZE)
 
 
 func test_mall_edges_closed() -> void:
@@ -465,3 +487,32 @@ func test_mall_roof_access() -> void:
 		if best > MallBuilder.ROOF_Y + 0.3:
 			break
 	check(best > MallBuilder.ROOF_Y + 0.3, "reached the roof (best y %.2f, at %s)" % [best, player.global_position])
+
+
+func test_rooftops_edges_closed() -> void:
+	await _load(ROOFTOPS)
+	_check_closed(RooftopCourseBuilder.STREET_CENTER, RooftopCourseBuilder.STREET_SIZE)
+
+
+## The canal carries speed: run down the middle of it and stay on the floor
+## the whole way.
+func test_park_canal_run() -> void:
+	await _load(PARK)
+	level.go_to_zone(6)
+	await _step(10)
+	var low := INF
+	for i in 900:
+		var f := _steer(0.0)
+		# Slide under the bars at -96, -140 and -184.
+		for bar: float in [-96.0, -140.0, -184.0]:
+			var d := player.global_position.z - bar
+			if d < 5.0 and d > -1.0:
+				f.crouch_pressed = d > 4.0
+				f.crouch_held = true
+		player.scripted_input = f
+		await tree.physics_frame
+		low = minf(low, player.global_position.y)
+		if player.global_position.z < -205.0:
+			break
+	check(player.global_position.z < -205.0, "ran the length of the canal (at %s)" % player.global_position)
+	check(low > -0.2, "never fell through")
