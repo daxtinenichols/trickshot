@@ -1,0 +1,1281 @@
+{
+ "ac_unit": {
+  "about": "A rooftop air-con box: vault it or run over it.",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.525,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     1.6,
+     1.05,
+     1.0
+    ]
+   }
+  ],
+  "size": [
+   1.95,
+   1.07,
+   1.1
+  ],
+  "tags": [
+   "vault"
+  ],
+  "tris": 296
+ },
+ "antenna_mast": {
+  "about": "A 12 m lattice radio mast, the Static's relay: three legs, cross",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     6.0,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.9,
+     12.0,
+     0.9
+    ]
+   }
+  ],
+  "size": [
+   1.6,
+   14.16,
+   1.059
+  ],
+  "tags": [
+   "landmark"
+  ],
+  "tris": 1072
+ },
+ "barrel_rust": {
+  "about": "",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.45,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.6,
+     0.9,
+     0.6
+    ]
+   }
+  ],
+  "size": [
+   0.585,
+   0.905,
+   0.6
+  ],
+  "tags": [
+   "vault"
+  ],
+  "tris": 248
+ },
+ "barricade_jersey": {
+  "about": "A 2 m concrete road barrier (0.8 m): a quick vault.",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.4,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     2.0,
+     0.8,
+     0.5
+    ]
+   }
+  ],
+  "size": [
+   2.0,
+   0.8,
+   0.62
+  ],
+  "tags": [
+   "vault"
+  ],
+  "tris": 76
+ },
+ "barricade_scrap": {
+  "about": "A Static roadblock: sheet metal, tires and rebar spikes, 1.6 m.",
+  "bottom": -0.021,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.8,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     3.0,
+     1.6,
+     0.6
+    ]
+   }
+  ],
+  "size": [
+   3.172,
+   1.969,
+   0.84
+  ],
+  "tags": [
+   "mantle",
+   "cover"
+  ],
+  "tris": 688
+ },
+ "billboard": {
+  "about": "A roadside billboard (6 x 3 m panel at 5-8 m), papered over with the",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     -2.0,
+     2.6,
+     0.15
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.25,
+     5.2,
+     0.25
+    ]
+   },
+   {
+    "center": [
+     2.0,
+     2.6,
+     0.15
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.25,
+     5.2,
+     0.25
+    ]
+   },
+   {
+    "center": [
+     0,
+     6.6,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     6.2,
+     3.2,
+     0.2
+    ]
+   },
+   {
+    "center": [
+     0,
+     4.98,
+     -0.35
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     6.0,
+     0.06,
+     0.6
+    ]
+   }
+  ],
+  "size": [
+   6.2,
+   8.2,
+   0.925
+  ],
+  "tags": [
+   "wallrun",
+   "story"
+  ],
+  "tris": 312
+ },
+ "car_wreck": {
+  "about": "A rusted sedan on flat tires, nose toward -Z: vault the hood.",
+  "bottom": -0.08,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.45,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     1.8,
+     0.9,
+     4.4
+    ]
+   },
+   {
+    "center": [
+     0,
+     1.15,
+     0.15
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     1.6,
+     0.5,
+     2.2
+    ]
+   }
+  ],
+  "size": [
+   1.92,
+   1.47,
+   4.54
+  ],
+  "tags": [
+   "vault",
+   "cover"
+  ],
+  "tris": 616
+ },
+ "chalk_arrow": {
+  "about": "An orange courier route mark painted on the ground, pointing -Z.",
+  "bottom": 0.0,
+  "colliders": [],
+  "size": [
+   0.691,
+   0.006,
+   1.274
+  ],
+  "tags": [
+   "decal"
+  ],
+  "tris": 36
+ },
+ "crate_stack": {
+  "about": "Two crates and a small one beside them: a 1.8 m mantle.",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     -0.05,
+     0.45,
+     0.0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     1.0,
+     0.9,
+     1.0
+    ]
+   },
+   {
+    "center": [
+     0.03,
+     1.325,
+     0.04
+    ],
+    "rot": [
+     0,
+     7,
+     0
+    ],
+    "size": [
+     0.95,
+     0.85,
+     0.95
+    ]
+   },
+   {
+    "center": [
+     0.95,
+     0.3,
+     0.1
+    ],
+    "rot": [
+     0,
+     -12,
+     0
+    ],
+    "size": [
+     0.7,
+     0.6,
+     0.7
+    ]
+   }
+  ],
+  "size": [
+   1.911,
+   1.75,
+   1.09
+  ],
+  "tags": [
+   "mantle"
+  ],
+  "tris": 1992
+ },
+ "crate_wood": {
+  "about": "A 0.9 m courier crate: the standard vault.",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.45,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     1.0,
+     0.9,
+     1.0
+    ]
+   }
+  ],
+  "size": [
+   1.0,
+   0.9,
+   1.028
+  ],
+  "tags": [
+   "vault"
+  ],
+  "tris": 672
+ },
+ "debris_pile": {
+  "about": "Rubble: concrete chunks and rebar, ~0.8 m high.",
+  "bottom": -0.126,
+  "colliders": [
+   {
+    "center": [
+     0.0,
+     0.25,
+     0.0
+    ],
+    "rot": [
+     6,
+     20,
+     -4
+    ],
+    "size": [
+     1.2,
+     0.5,
+     0.9
+    ]
+   },
+   {
+    "center": [
+     0.9,
+     0.18,
+     0.4
+    ],
+    "rot": [
+     -8,
+     -30,
+     10
+    ],
+    "size": [
+     0.9,
+     0.4,
+     0.7
+    ]
+   },
+   {
+    "center": [
+     -0.9,
+     0.16,
+     -0.3
+    ],
+    "rot": [
+     12,
+     50,
+     6
+    ],
+    "size": [
+     0.8,
+     0.35,
+     0.6
+    ]
+   }
+  ],
+  "size": [
+   2.816,
+   1.273,
+   2.005
+  ],
+  "tags": [
+   "clutter"
+  ],
+  "tris": 828
+ },
+ "dumpster": {
+  "about": "",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.6,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     1.9,
+     1.2,
+     1.2
+    ]
+   }
+  ],
+  "size": [
+   1.979,
+   1.55,
+   1.275
+  ],
+  "tags": [
+   "mantle",
+   "cover"
+  ],
+  "tris": 336
+ },
+ "fence_chainlink": {
+  "about": "A 3 m chain-link panel, 2.2 m tall: climb it or wallrun it.",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     1.1,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     3.0,
+     2.2,
+     0.08
+    ]
+   }
+  ],
+  "size": [
+   3.08,
+   2.459,
+   0.08
+  ],
+  "tags": [
+   "wallrun",
+   "climb"
+  ],
+  "tris": 624
+ },
+ "generator": {
+  "about": "A raider generator: what powers the Host's speakers.",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.46,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     1.45,
+     0.92,
+     0.85
+    ]
+   }
+  ],
+  "size": [
+   1.443,
+   1.2,
+   0.85
+  ],
+  "tags": [
+   "vault"
+  ],
+  "tris": 372
+ },
+ "loudspeaker_pole": {
+  "about": "The Host's voice on every street: a pole of horn speakers.",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     2.3,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.18,
+     4.6,
+     0.18
+    ]
+   }
+  ],
+  "size": [
+   1.862,
+   4.6,
+   1.663
+  ],
+  "tags": [
+   "story"
+  ],
+  "tris": 636
+ },
+ "pallet": {
+  "about": "",
+  "bottom": -0.001,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.075,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     1.2,
+     0.15,
+     1.0
+    ]
+   }
+  ],
+  "size": [
+   1.22,
+   0.15,
+   1.0
+  ],
+  "tags": [],
+  "tris": 484
+ },
+ "plank_bridge": {
+  "about": "A 4 m run of planks across a gap (runs along Z).",
+  "bottom": -0.005,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.05,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.8,
+     0.1,
+     4.0
+    ]
+   }
+  ],
+  "size": [
+   0.888,
+   0.105,
+   4.183
+  ],
+  "tags": [
+   "bridge"
+  ],
+  "tris": 836
+ },
+ "planter_tub": {
+  "about": "A half-barrel of rooftop greens from a Line camp.",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.275,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     1.0,
+     0.55,
+     1.0
+    ]
+   }
+  ],
+  "size": [
+   1.014,
+   0.855,
+   1.04
+  ],
+  "tags": [],
+  "tris": 688
+ },
+ "radio_set": {
+  "about": "A camp radio on a crate: Mags's rig, or one left playing the Host.",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.44,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.7,
+     0.88,
+     0.7
+    ]
+   }
+  ],
+  "size": [
+   0.7,
+   1.742,
+   0.72
+  ],
+  "tags": [
+   "story",
+   "vault"
+  ],
+  "tris": 908
+ },
+ "railing": {
+  "about": "A 2 m roof-edge railing: a waist-high vault.",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.525,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     2.0,
+     1.05,
+     0.08
+    ]
+   }
+  ],
+  "size": [
+   2.0,
+   1.05,
+   0.06
+  ],
+  "tags": [
+   "vault"
+  ],
+  "tris": 220
+ },
+ "sandbag_wall": {
+  "about": "A 2 m wall of sandbags, 1 m tall: vault or take cover.",
+  "bottom": -0.005,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.5,
+     0.04
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     2.0,
+     1.0,
+     0.55
+    ]
+   }
+  ],
+  "size": [
+   2.012,
+   0.989,
+   0.54
+  ],
+  "tags": [
+   "vault",
+   "cover"
+  ],
+  "tris": 1440
+ },
+ "satellite_dish": {
+  "about": "",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.6,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.2,
+     1.2,
+     0.2
+    ]
+   }
+  ],
+  "size": [
+   1.4,
+   1.926,
+   1.07
+  ],
+  "tags": [],
+  "tris": 208
+ },
+ "scaffold_bay": {
+  "about": "One 2 x 1.2 m bay of scaffolding, 3 m tall, decked at 1.5 m and 3 m.",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     1.53,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     2.0,
+     0.1,
+     1.2
+    ]
+   },
+   {
+    "center": [
+     0,
+     3.03,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     2.0,
+     0.1,
+     1.2
+    ]
+   },
+   {
+    "center": [
+     -1.0,
+     1.65,
+     -0.6
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.06,
+     3.3,
+     0.06
+    ]
+   },
+   {
+    "center": [
+     -1.0,
+     1.65,
+     0.6
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.06,
+     3.3,
+     0.06
+    ]
+   },
+   {
+    "center": [
+     1.0,
+     1.65,
+     -0.6
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.06,
+     3.3,
+     0.06
+    ]
+   },
+   {
+    "center": [
+     1.0,
+     1.65,
+     0.6
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.06,
+     3.3,
+     0.06
+    ]
+   }
+  ],
+  "size": [
+   2.052,
+   3.85,
+   1.26
+  ],
+  "tags": [
+   "climb"
+  ],
+  "tris": 704
+ },
+ "shipping_container": {
+  "about": "A 6 m dock container lying along X: wallrun its sides, run its roof.",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     1.3,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     6.0,
+     2.6,
+     2.44
+    ]
+   }
+  ],
+  "size": [
+   6.042,
+   2.6,
+   2.505
+  ],
+  "tags": [
+   "wallrun",
+   "roof"
+  ],
+  "tris": 2656
+ },
+ "street_sign": {
+  "about": "",
+  "bottom": 0.001,
+  "colliders": [
+   {
+    "center": [
+     0,
+     1.45,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.1,
+     2.9,
+     0.1
+    ]
+   }
+  ],
+  "size": [
+   0.913,
+   2.899,
+   0.762
+  ],
+  "tags": [],
+  "tris": 64
+ },
+ "tape_cassette": {
+  "about": "A lost broadcast tape (collectible), drawn 3x size so it reads at",
+  "bottom": 0.0,
+  "colliders": [],
+  "size": [
+   0.3,
+   0.192,
+   0.046
+  ],
+  "tags": [
+   "collectible"
+  ],
+  "tris": 136
+ },
+ "tarp_shelter": {
+  "about": "A camp lean-to: four posts and a sagging tarp.",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     -1.4,
+     1.2,
+     -1.1
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.09,
+     2.4,
+     0.09
+    ]
+   },
+   {
+    "center": [
+     1.4,
+     1.2,
+     -1.1
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.09,
+     2.4,
+     0.09
+    ]
+   },
+   {
+    "center": [
+     -1.4,
+     0.9,
+     1.1
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.09,
+     1.8,
+     0.09
+    ]
+   },
+   {
+    "center": [
+     1.4,
+     0.9,
+     1.1
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.09,
+     1.8,
+     0.09
+    ]
+   },
+   {
+    "center": [
+     -0.7,
+     0.25,
+     0.3
+    ],
+    "rot": [
+     0,
+     15,
+     0
+    ],
+    "size": [
+     0.6,
+     0.5,
+     0.6
+    ]
+   }
+  ],
+  "size": [
+   3.1,
+   2.456,
+   2.29
+  ],
+  "tags": [
+   "camp"
+  ],
+  "tris": 932
+ },
+ "tire_stack": {
+  "about": "",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.36,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.72,
+     0.72,
+     0.72
+    ]
+   }
+  ],
+  "size": [
+   0.721,
+   0.72,
+   0.72
+  ],
+  "tags": [
+   "vault"
+  ],
+  "tris": 372
+ },
+ "vent_stack": {
+  "about": "",
+  "bottom": 0.0,
+  "colliders": [
+   {
+    "center": [
+     0,
+     0.85,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.4,
+     1.7,
+     0.4
+    ]
+   }
+  ],
+  "size": [
+   0.64,
+   1.71,
+   0.64
+  ],
+  "tags": [],
+  "tris": 156
+ },
+ "water_tank": {
+  "about": "A rooftop water tank on legs.",
+  "bottom": -0.0,
+  "colliders": [
+   {
+    "center": [
+     -0.8,
+     0.75,
+     -0.8
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.14,
+     1.5,
+     0.14
+    ]
+   },
+   {
+    "center": [
+     -0.8,
+     0.75,
+     0.8
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.14,
+     1.5,
+     0.14
+    ]
+   },
+   {
+    "center": [
+     0.8,
+     0.75,
+     -0.8
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.14,
+     1.5,
+     0.14
+    ]
+   },
+   {
+    "center": [
+     0.8,
+     0.75,
+     0.8
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     0.14,
+     1.5,
+     0.14
+    ]
+   },
+   {
+    "center": [
+     0,
+     2.56,
+     0
+    ],
+    "rot": [
+     0,
+     0,
+     0
+    ],
+    "size": [
+     2.0,
+     2.12,
+     2.0
+    ]
+   }
+  ],
+  "size": [
+   2.4,
+   4.12,
+   2.4
+  ],
+  "tags": [
+   "cover"
+  ],
+  "tris": 724
+ }
+}
