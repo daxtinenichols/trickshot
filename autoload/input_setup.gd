@@ -14,7 +14,8 @@ const KEYS := {
 	"jump": [KEY_SPACE],
 	"crouch": [KEY_CTRL, KEY_C],
 	"kick": [KEY_F],
-	"boost": [KEY_SHIFT],
+	# Held: the mouse leans you into turns, and rolls you in the air and on walls.
+	"steer": [KEY_SHIFT],
 	"lean_left": [KEY_Q],
 	"lean_right": [KEY_E],
 	"reload": [KEY_R],
@@ -51,9 +52,8 @@ const PAD_BUTTONS := {
 	"reload": [JOY_BUTTON_X],
 	"fire_mode": [JOY_BUTTON_DPAD_LEFT],
 	"reset": [JOY_BUTTON_BACK],
-	# Bumpers lean and quick turn; clicking the left stick boosts, like a
-	# sprint button. The D-pad is for things you don't press mid-move.
-	"boost": [JOY_BUTTON_LEFT_STICK],
+	# Bumpers lean and quick turn. The D-pad is for things you don't press
+	# mid-move.
 	"lean_left": [JOY_BUTTON_LEFT_SHOULDER],
 	"lean_right": [JOY_BUTTON_RIGHT_SHOULDER],
 	"slow_mo": [JOY_BUTTON_DPAD_DOWN],

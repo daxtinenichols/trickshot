@@ -229,15 +229,15 @@ extends Resource
 @export_range(0.0, 2000.0, 10.0) var spin_carry_min := 270.0
 @export_range(0.0, 2.0, 0.01) var spin_carry_time := 0.3
 
-@export_group("Quick turn and boost")
+@export_group("Quick turn and mouse steering")
 ## Holding a lean button turns the view this many times faster toward that
 ## side (Q left, E right); turning the other way is normal speed.
 @export_range(1.0, 5.0, 0.1) var quick_turn_look_scale := 2.5
-## Holding boost (Shift) in the air or on a wall, moving the mouse left and
+## Holding steer (Shift) in the air or on a wall, moving the mouse left and
 ## right rolls you instead of turning: a side flip in the air, rolling your
 ## path round on a wall. This scales how far (1 = as far as it would turn).
 @export_range(0.1, 4.0, 0.05) var mouse_roll_scale := 1.0
-## Holding boost on your feet, turning the mouse leans you that way: the
+## Holding steer (Shift) on your feet, turning the mouse leans you that way: the
 ## faster you turn, the more you lean (full lean at this many degrees per
 ## second), and the more you lean, the harder the turn (up to
 ## quick_turn_look_scale), with your speed swinging round like a quick turn.
@@ -245,11 +245,6 @@ extends Resource
 ## While quick turning, your speed turns with your view: all of it on the
 ## ground, this share of it in the air.
 @export_range(0.0, 1.0, 0.01) var quick_turn_air_carry := 0.35
-## Speed added by a boost (m/s), and seconds before the next one.
-@export_range(0.0, 10.0, 0.1) var boost_speed := 3.5
-@export_range(0.0, 10.0, 0.1) var boost_cooldown := 2.0
-## Seconds the boost holds your top speed up, fading back over this time.
-@export_range(0.0, 3.0, 0.05) var boost_time := 0.8
 
 @export_group("Breakables")
 ## Speed at which running or sliding into a window smashes it.

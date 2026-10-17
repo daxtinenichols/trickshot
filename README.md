@@ -21,7 +21,6 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Jump / vault / climb | Space | A |
 | Crouch / slide / roll (double-tap to roll) | Ctrl or C | B |
 | Kick | F | R3 |
-| Boost (short burst of speed, 2 s cooldown) | Shift | L3 (click the left stick) |
 | Mouse lean and roll (test): hold Shift and move the mouse left/right. Running, you lean into the turn (faster turn = more lean = harder turn, speed kept); in the air or on a wall you roll instead of turn | Shift + mouse | |
 | Lean / quick turn (side flip in the air, steer a wallrun) | Q / E | LB / RB |
 | Fire | Left mouse | Right trigger |
@@ -63,7 +62,6 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 | Ground roll | Double-tap crouch while running | A quick forward roll that keeps your speed |
 | Landing roll | Hold crouch in the air (from any angle, even mid-flip), or land tucked forward | You curl into a ball and roll out of big drops without losing speed instead of a stun |
 | Kick | F. In the air: kick off walls and targets | Kicking with speed pushes you further and keeps your speed along the wall. Kicks doors open and breaks windows |
-| Boost | Shift | A short burst of speed on the ground, a ramp or a wall, then a 2 s cooldown |
 | Lean / quick turn | Hold Q or E | Leans you to peek. While held, turning the view toward that side (Q left, E right) is faster and your run follows it without losing speed (in the air, part of your speed follows) |
 | Side flip | Hold Q or E in the air | Rolls you sideways one way (the first one you press). Holding it, or crouch, tucks you in and spins you faster; let go to open up and slow down. Near level it settles; land on your side and you shoulder-roll, keeping your speed (the further off level, the more it costs). A lean you were holding on a wallrun doesn't flip you as you come off: let go and lean again |
 | Window smash | Run or slide into glass fast enough | Low windows are too low to run through: slide under them |

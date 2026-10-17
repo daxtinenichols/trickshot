@@ -18,7 +18,7 @@ const REBINDABLE := [
 	["jump", "Jump / vault / climb"],
 	["crouch", "Crouch / slide / roll"],
 	["kick", "Kick"],
-	["boost", "Boost"],
+	["steer", "Steer with the mouse (hold)"],
 	["lean_left", "Lean left / quick turn / side flip"],
 	["lean_right", "Lean right / quick turn / side flip"],
 	["fire", "Fire"],

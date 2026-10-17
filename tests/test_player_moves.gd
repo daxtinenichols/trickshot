@@ -773,7 +773,7 @@ func test_side_flip_opened_up_spins_slower() -> void:
 
 func test_mouse_roll_rolls_you_directly() -> void:
 	var p := await _airborne(10.0)
-	# Boost held, the mouse rolls you by as much as it moves, either way.
+	# Shift held, the mouse rolls you by as much as it moves, either way.
 	# Slowly (2 degrees a tick is 120 degrees a second).
 	for i in 15:
 		p.roll_look(deg_to_rad(2.0))
@@ -881,7 +881,7 @@ func test_lean_on_the_ground_peeks() -> void:
 	check(not (&"sideflip" in w.tricks_seen), "no flip on the ground")
 
 
-## Runs up to speed, then turns right with the mouse lean (boost held) at
+## Runs up to speed, then turns right with the mouse lean (Shift held) at
 ## `deg_per_tick` for 20 ticks. Returns [lean, yaw turned, speed after].
 func _mouse_lean_turn(deg_per_tick: float) -> Array:
 	w.add_floor()
@@ -1006,36 +1006,6 @@ func test_quick_turn_only_toward_its_side() -> void:
 func test_plain_turn_is_normal_speed() -> void:
 	var p := await _turn_run(0.0)
 	check_near(rad_to_deg(absf(angle_difference(0.0, p.yaw))), 36.0, 0.5, "without lean the view turns as you move it")
-
-
-func test_boost() -> void:
-	w.add_floor()
-	var p := await _settle()
-	await _run_to(7.0)
-	var before := p.horizontal_speed()
-	var f := _fwd()
-	f.boost_pressed = true
-	await w.step(1, f)
-	await w.step(9, _fwd())
-	check(p.horizontal_speed() > before + p.tuning.boost_speed * 0.6, "shift boosts your speed (%.2f -> %.2f)" % [before, p.horizontal_speed()])
-	var boosted := p.horizontal_speed()
-	await w.step(1, f)
-	check(p.horizontal_speed() < boosted + 0.5, "cooldown: no second boost right away")
-	await w.step(60, _fwd())
-	check(p.horizontal_speed() < boosted - 1.0, "the boost fades (%.2f)" % p.horizontal_speed())
-	await w.step(int(p.tuning.boost_cooldown * 60.0) + 2, _fwd())
-	before = p.horizontal_speed()
-	await w.step(1, f)
-	check(p.horizontal_speed() > before + 1.0, "boost is back after the cooldown")
-
-
-func test_no_boost_in_the_air() -> void:
-	var p := await _airborne(6.0)
-	p.velocity = Vector3(0, 0, -6)
-	var f := InputFrame.new()
-	f.boost_pressed = true
-	await w.step(1, f)
-	check(p.horizontal_speed() < 6.5, "no air dash")
 
 
 func test_strafing_is_sprinting() -> void:

@@ -142,19 +142,16 @@ var _path_exit_velocity := Vector3.ZERO
 var _turn_side := 0.0
 ## The last tick rolled you with the mouse.
 var _mouse_rolled := false
-# Mouse roll (boost held + mouse left/right in the air or on a wall):
+# Mouse roll (Shift held + mouse left/right in the air or on a wall):
 # radians gathered since the last tick, and what this tick uses.
 var _roll_input := 0.0
 var _roll_tick := 0.0
-# Mouse lean (boost held + turning on your feet): turn gathered since the
+# Mouse lean (Shift held + turning on your feet): turn gathered since the
 # last tick (radians, + = left), and the lean it gives (-1 left .. 1 right).
 var _mouse_turn := 0.0
 var _mouse_lean := 0.0
 ## View yaw turned while quick turning since the last tick (radians).
 var _turn_carry := 0.0
-var _boost_cooldown := 0.0
-## Seconds left of the boost's raised top speed.
-var _boost_time := 0.0
 ## Speed into a wall hit this tick (a bonk unless the hit becomes a move).
 var _pending_impact := 0.0
 
@@ -230,11 +227,11 @@ func _unhandled_input(event: InputEvent) -> void:
 		var m := event as InputEventMouseMotion
 		var sens := tuning.mouse_sensitivity * aim_sensitivity_scale()
 		var d_pitch := -m.relative.y * sens * (-1.0 if invert_y else 1.0)
-		if Input.is_action_pressed("boost") and state in [State.AIR, State.WALLRUN]:
-			# Holding boost, left and right rolls you instead of turning.
+		if Input.is_action_pressed("steer") and state in [State.AIR, State.WALLRUN]:
+			# Holding steer (Shift), left and right rolls you instead of turning.
 			roll_look(m.relative.x * sens)
 			_look(0.0, d_pitch)
-		elif Input.is_action_pressed("boost"):
+		elif Input.is_action_pressed("steer"):
 			# On your feet it leans you into the turn.
 			lean_look(-m.relative.x * sens, d_pitch)
 		else:
@@ -308,7 +305,7 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		pitch = clampf(raw, deg_to_rad(-89.0), deg_to_rad(89.0))
 
 
-## Mouse lean (boost held on your feet): turns the view like _look, and
+## Mouse lean (Shift held on your feet): turns the view like _look, and
 ## the turn's speed leans you into it, turning harder the more you lean.
 func lean_look(d_yaw: float, d_pitch: float) -> void:
 	_mouse_turn += d_yaw
@@ -363,8 +360,6 @@ func simulate(f: InputFrame, delta: float) -> void:
 	# On a wall, lean angles your run instead.
 	_turn_side = signf(f.lean) if absf(f.lean) > 0.3 and state != State.WALLRUN else 0.0
 	_carry_turn()
-	if f.boost_pressed:
-		_boost(f)
 	if state != State.SURFACE:
 		rotation = Vector3(0.0, yaw, 0.0)
 	lean = move_toward(lean, clampf(f.lean + _mouse_lean, -1.0, 1.0), tuning.lean_speed * delta)
@@ -405,8 +400,6 @@ func _update_timers(f: InputFrame, delta: float) -> void:
 	_since_crouch_press = 0.0 if f.crouch_pressed else _since_crouch_press + delta
 	_slide_cooldown = maxf(_slide_cooldown - delta, 0.0)
 	_wall_jump_lock = maxf(_wall_jump_lock - delta, 0.0)
-	_boost_cooldown = maxf(_boost_cooldown - delta, 0.0)
-	_boost_time = maxf(_boost_time - delta, 0.0)
 	_since_wall += delta
 	_crouch_hold = _crouch_hold + delta if f.crouch_held else 0.0
 	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.SURFACE]:
@@ -531,7 +524,7 @@ func _tick_air_roll(f: InputFrame, delta: float) -> void:
 	_air_roll += _roll_dir * _roll_rate * delta
 
 
-## Rolling with the mouse (boost held) turns you directly, either way.
+## Rolling with the mouse (Shift held) turns you directly, either way.
 ## Let go mid-spin and a fast roll carries on like an opened-up side flip
 ## (settling near level); a slow one just stops where it is.
 func _mouse_roll(delta: float) -> bool:
@@ -714,8 +707,6 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# at something. Backpedalling caps at run speed; momentum only carries
 	# forward and sideways.
 	var top := MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) if f.move.y > -0.3 else tuning.run_speed
-	# A boost lifts your top speed for a moment, fading back down.
-	top += tuning.boost_speed * _boost_time / maxf(tuning.boost_time, 0.01)
 	var wish_speed := top * wish.length()
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), wish_speed, tuning.ground_accel, delta)
 	velocity.y -= tuning.gravity * delta
@@ -1113,7 +1104,7 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# the wall turns it up, away turns it down.
 	a -= g * cos(a) / maxf(speed, 1.0) * delta
 	a += _lean_toward_wall(f.lean) * deg_to_rad(tuning.wallrun_angle_rate) * delta
-	# Rolling with the mouse (boost held) turns the path the same way, by
+	# Rolling with the mouse (Shift held) turns the path the same way, by
 	# as much as you move it.
 	a += _roll_tick * _wall_side()
 	a = clampf(a, -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
@@ -1797,7 +1788,7 @@ func _can_stand() -> bool:
 	return _shape_fits(_stand_shape, global_position)
 
 
-# ---------------------------------------------------------------- quick turn / boost
+# ---------------------------------------------------------------- quick turn
 
 ## Quick turn: while a lean button is held the view turns faster and your
 ## speed swings round with it, so a hard turn doesn't cost you speed.
@@ -1815,23 +1806,6 @@ func _carry_turn() -> void:
 		return
 	var h := MovementMath.horizontal(velocity).rotated(Vector3.UP, turned * share)
 	velocity = Vector3(h.x, velocity.y, h.z)
-
-
-## Shift: a short burst of speed where you're going, then a cooldown. Only
-## with your feet on something (no air dash).
-func _boost(f: InputFrame) -> void:
-	if _boost_cooldown > 0.0 or state not in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.SURFACE, State.WALLRUN]:
-		return
-	var h := MovementMath.horizontal(velocity)
-	var dir := h.normalized() if h.length() > 1.0 else wish_direction(f).normalized()
-	if dir == Vector3.ZERO:
-		dir = forward()
-	var speed := minf(h.length() + tuning.boost_speed, maxf(h.length(), tuning.top_speed + tuning.boost_speed))
-	h = dir * speed
-	velocity = Vector3(h.x, velocity.y, h.z)
-	_boost_cooldown = tuning.boost_cooldown
-	_boost_time = tuning.boost_time
-	_trick_feedback(&"boost")
 
 
 ## How far the view can lean sideways (`want`, + right) without poking into
@@ -1862,11 +1836,6 @@ func visual_transform() -> Transform3D:
 	if state == State.SURFACE:
 		return Transform3D(Basis(_prev_rotation.slerp(Quaternion(global_basis.orthonormalized()), t)), pos)
 	return Transform3D(Basis(Vector3.UP, yaw), pos)
-
-
-## 0 = boost ready, 1 = just used.
-func boost_cooldown() -> float:
-	return _boost_cooldown / maxf(tuning.boost_cooldown, 0.01)
 
 
 ## The wallrun's path angle up the wall in radians (negative runs down it).
@@ -1926,8 +1895,6 @@ func respawn(t: Variant = null) -> void:
 	_ground_flick = 0.0
 	lean = 0.0
 	_turn_carry = 0.0
-	_boost_cooldown = 0.0
-	_boost_time = 0.0
 	_roll_input = 0.0
 	_roll_tick = 0.0
 	_mouse_rolled = false
