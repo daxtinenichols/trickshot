@@ -156,13 +156,17 @@ func _skyline() -> void:
 		var z := -10.0 - i * 11.0
 		var h := rng.randf_range(14.0, 34.0)
 		var w := rng.randf_range(8.0, 14.0)
-		_box(Vector3(side * rng.randf_range(20.0, 30.0), h * 0.5, z), Vector3(w, h, rng.randf_range(8.0, 12.0)), Kind.NEUTRAL)
+		var b := _box(Vector3(side * rng.randf_range(20.0, 30.0), h * 0.5, z), Vector3(w, h, rng.randf_range(8.0, 12.0)), Kind.NEUTRAL)
+		b.set_meta("look", "FACADE")
 
 
 # ---------------------------------------------------------------- helpers
 
+## A building whose roof is part of the course; its sides look like a ruined
+## facade (the art look reads the "look" meta; gameplay only sees NEUTRAL).
 func _roof(top: float, z0: float, z1: float, width: float) -> void:
-	_box(Vector3(0, top * 0.5, (z0 + z1) * 0.5), Vector3(width, top, absf(z1 - z0)), Kind.NEUTRAL)
+	var b := _box(Vector3(0, top * 0.5, (z0 + z1) * 0.5), Vector3(width, top, absf(z1 - z0)), Kind.NEUTRAL)
+	b.set_meta("look", "FACADE")
 
 
 ## Start and finish lines: a colored stripe across the roof.
