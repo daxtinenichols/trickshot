@@ -93,6 +93,28 @@ func _run() -> void:
 	cam.look_at_from_position(p + Vector3(0.55, 1.45, -0.7), p + Vector3(0.15, 1.35, -0.3))
 	await _frames(20)
 	_save("tp_closeup")
+	cam.queue_free()
+	gun.aim_held = false
+	# The real third-person camera: running, hip fire, reload, aiming.
+	var chase = player.get_node("ChaseCamera")
+	level.go_to_zone(0)
+	await _frames(10)
+	chase.set_active(true)
+	player.scripted_input = InputFrame.make(Vector2(0, -1))
+	await _frames(50)
+	_save("chase_run")
+	gun.trigger_pressed = true
+	await _frames(4)
+	_save("chase_hipfire")
+	gun.reload_pressed = true
+	await _frames(25)
+	_save("chase_reload")
+	await _frames(60)
+	player.scripted_input = InputFrame.new()
+	await _frames(40)
+	gun.aim_held = true
+	await _frames(30)
+	_save("chase_ads")
 	quit()
 
 

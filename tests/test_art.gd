@@ -158,8 +158,8 @@ func test_chase_camera_looks_down_on_the_runner() -> void:
 	await tree.process_frame
 	var rel := player.global_basis.inverse() * (cam.global_position - player.global_position)
 	check(rel.y > 2.5 and rel.z > 3.5, "up and behind (%s)" % rel)
-	var down := rad_to_deg(asin(-(-cam.global_basis.z).y))
-	check_between(down, 18.0, 35.0, "looks down on the runner (%.0f degrees)" % down)
+	var to_body := cam.global_position.y - (player.global_position.y + 1.0)
+	check(to_body > 1.0, "above the runner's head, looking past it (%.1f m)" % to_body)
 	cam.set_active(false)
 	cam.queue_free()
 
@@ -196,6 +196,33 @@ func test_chase_camera_tilts_with_the_view_and_zooms_to_first_person() -> void:
 	check(not cam.is_active() and player.camera.current, "zoomed all the way in = first person")
 	_wheel(cam, MOUSE_BUTTON_WHEEL_DOWN)
 	check(cam.is_active() and cam.current, "scrolling out of first person comes back to third")
+	cam.set_active(false)
+	cam.queue_free()
+
+
+func test_chase_camera_crosshair_is_where_shots_go() -> void:
+	# Shots come from the first-person view; the third-person screen centre
+	# must sit on the same point, from over the shoulder.
+	ArtLook.ensure_body(player)
+	level.go_to_zone(9)  # shooting range
+	await tree.physics_frame
+	var cam: Camera3D = preload("res://art/look/chase_camera.gd").new()
+	level.add_child(cam)
+	cam.setup(player)
+	cam.set_active(true)
+	for yaw: float in [0.0, 0.5, -0.4]:
+		player.set_view(yaw, -0.05)
+		for i in 30:
+			await tree.process_frame
+		var eye := player.camera.global_transform
+		var q := PhysicsRayQueryParameters3D.create(eye.origin, eye.origin - eye.basis.z * 120.0, 1 | 4)
+		q.exclude = [player.get_rid()]
+		var r := player.get_world_3d().direct_space_state.intersect_ray(q)
+		var hit: Vector3 = eye.origin - eye.basis.z * 120.0 if r.is_empty() else r.position
+		var centre := cam.global_position - cam.global_basis.z * cam.global_position.distance_to(hit)
+		check(centre.distance_to(hit) < 0.3, "screen centre on the shot's landing point (off by %.2f m)" % centre.distance_to(hit))
+	var right := cam.global_basis.x.dot(cam.global_position - player.global_position)
+	check(right > 0.3, "over the right shoulder (%.2f m)" % right)
 	cam.set_active(false)
 	cam.queue_free()
 
