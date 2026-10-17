@@ -104,14 +104,19 @@ extends Resource
 @export_range(0.0, 20.0, 0.1) var surface_min_speed := 3.0
 ## Speed needed to stay on upside down (the top of a loop).
 @export_range(0.0, 30.0, 0.1) var surface_inverted_speed := 6.0
-## Steering on a surface (degrees per second at full left/right).
-@export_range(0.0, 360.0, 1.0) var surface_steer := 70.0
+## How fast you can turn while running on a ramp, loop or bank (degrees/s),
+## toward where you look or with the stick.
+@export_range(0.0, 360.0, 1.0) var surface_steer := 110.0
+## Share of gravity that pulls your path down a slope when you run across
+## it (banks). Lower holds your line like a wallrun.
+@export_range(0.0, 1.0, 0.01) var surface_cross_gravity := 0.35
 ## Push into the surface (m/s) that keeps your feet on it.
 @export_range(0.0, 10.0, 0.1) var surface_stick := 2.0
 ## How strongly a track (loop) steers you along itself.
 @export_range(0.0, 20.0, 0.1) var surface_flow_assist := 5.0
-## How quickly your body (and view) turns to match the surface.
-@export_range(1.0, 60.0, 0.5) var surface_align_rate := 18.0
+## How quickly your body (and view) turns to match the surface. Lower is
+## smoother over the seams between track pieces, higher hugs the track.
+@export_range(1.0, 60.0, 0.5) var surface_align_rate := 12.0
 ## Runnable slopes flatter than this (normal y) are just ground.
 @export_range(0.5, 1.0, 0.005) var surface_enter_flatness := 0.95
 @export_range(0.5, 1.0, 0.005) var surface_exit_flatness := 0.97

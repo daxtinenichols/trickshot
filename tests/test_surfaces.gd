@@ -112,3 +112,56 @@ func test_entering_a_ramp_keeps_the_view() -> void:
 	var cam := p.camera.global_basis
 	# A few frames on, the view has only tilted as far as the ramp turned it.
 	check(cam.z.dot(Vector3(0, 0, 1)) > 0.95, "still looking down the run (%s)" % -cam.z)
+
+
+## A sideways ramp (the maps' kind) along -Z, rising to the left (-X), its
+## low edge at x = -1, from z = 5 to -95.
+func _add_bank() -> void:
+	w.add_surface(MapPieces.bank(Vector3(-1.0, 0.0, 5.0), 100.0, -1.0, 3.0, 65.0, 4.0))
+
+
+## Runs onto the bank at a slight angle; `steer(p)` runs every frame on it.
+## Returns {frames on the bank, top height}.
+func _ride_bank(steer: Callable, view := 0.08) -> Dictionary:
+	w.add_floor()
+	_add_bank()
+	var p := await _settle(Vector3(0.5, 0.05, 0))
+	p.set_view(view)
+	var out := {"frames": 0, "top": 0.0}
+	for i in 360:
+		var f := _fwd()
+		if p.state == Player.State.SURFACE:
+			out.frames += 1
+			out.top = maxf(out.top, p.global_position.y)
+			f = steer.call(p, f)
+		await w.step(1, f)
+		if p.global_position.z < -85.0:
+			break
+	return out
+
+
+func test_run_along_a_sideways_ramp() -> void:
+	# Angled into it, with no steering: up the slope a way, then back down.
+	var r := await _ride_bank(func(_p: Player, f: InputFrame) -> InputFrame: return f, 0.35)
+	check(r.frames > 40, "runs along the sideways ramp (%d frames, %.2f m)" % [r.frames, r.top])
+
+
+func test_steer_up_a_sideways_ramp_with_the_stick() -> void:
+	var plain := await _ride_bank(func(_p: Player, f: InputFrame) -> InputFrame: return f)
+	await after_each()
+	before_each()
+	var up := await _ride_bank(func(_p: Player, _f: InputFrame) -> InputFrame: return InputFrame.make(Vector2(-0.6, 1.0)))
+	check(up.top > plain.top + 0.5, "steering left climbs the ramp (%.2f m vs %.2f m)" % [up.top, plain.top])
+
+
+func test_steer_up_a_sideways_ramp_by_looking() -> void:
+	var plain := await _ride_bank(func(_p: Player, f: InputFrame) -> InputFrame: return f)
+	await after_each()
+	before_each()
+	var looked := [false]
+	var up := await _ride_bank(func(p: Player, f: InputFrame) -> InputFrame:
+		if not looked[0]:
+			looked[0] = true
+			p._look(0.5, 0.0)  # look up the slope
+		return f)
+	check(up.top > plain.top + 0.5, "looking up the ramp climbs it (%.2f m vs %.2f m)" % [up.top, plain.top])

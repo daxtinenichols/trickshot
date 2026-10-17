@@ -235,6 +235,10 @@ func _zone_ramps(o: Vector3) -> void:
 		var z := right.z - 5.0 * sin(a) - (h - (5.0 - 5.0 * cos(a))) / tan(a)
 		_label("%d m" % roundi(h), Vector3(right.x + 2.6, h, z), 1.0)
 	_label("Steep ramp: how high can you run?", right + Vector3(0, 3.2, 2), 0.8)
+	# Far right: a sideways ramp. Run along it; steer or look up it to climb.
+	var bank := o + Vector3(20, 0, -8)
+	_surface(MapPieces.bank(bank, 70.0, 1.0, 3.0, 65.0, 4.0))
+	_label("Sideways ramp: run along it, steer or look up it to climb", bank + Vector3(-1, 3.2, 2), 0.8)
 
 
 func _surface(pieces: Array[Dictionary]) -> void:
