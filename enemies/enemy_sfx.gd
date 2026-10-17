@@ -32,6 +32,14 @@ static func get_sound(sound: StringName) -> AudioStreamWAV:
 				_cache[sound] = _growl()
 			&"swipe":
 				_cache[sound] = _swipe()
+			&"drone_shot":
+				_cache[sound] = _crack(41, 0.12, 2400.0, 40.0)
+			&"soldier_shot":
+				_cache[sound] = _crack(43, 0.2, 900.0, 22.0)
+			&"crash":
+				_cache[sound] = _crash()
+			&"clank":
+				_cache[sound] = _clank()
 			_:
 				return null
 	return _cache[sound]
@@ -92,6 +100,48 @@ static func _swipe() -> AudioStreamWAV:
 		var t := float(i) / RATE
 		smooth = lerpf(smooth, rng.randf_range(-1.0, 1.0), 0.35)
 		s[i] = smooth * sin(PI * t / 0.18) * 0.8
+	return _wav(s)
+
+
+## A short, tight shot: noise burst with a ringing tone (`tone` Hz).
+static func _crack(seed_value: int, length: float, tone: float, decay: float) -> AudioStreamWAV:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = seed_value
+	var n := int(RATE * length)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		var noise := rng.randf_range(-1.0, 1.0) * exp(-t * decay * 1.4)
+		var ring := sin(TAU * tone * t) * exp(-t * decay)
+		var thump := sin(TAU * 110.0 * t) * exp(-t * 30.0)
+		s[i] = noise * 0.55 + ring * 0.25 + thump * 0.5
+	return _wav(s)
+
+
+## A drone hitting the ground: a crunch and rattling metal.
+static func _crash() -> AudioStreamWAV:
+	var rng := RandomNumberGenerator.new()
+	rng.seed = 53
+	var n := int(RATE * 0.6)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		var rattle := rng.randf_range(-1.0, 1.0) * exp(-t * 7.0) * (0.6 + 0.4 * sin(TAU * 23.0 * t))
+		var ping := (sin(TAU * 1830.0 * t) + sin(TAU * 2610.0 * t)) * exp(-t * 9.0) * 0.2
+		s[i] = rattle * 0.7 + ping + sin(TAU * 60.0 * t) * exp(-t * 20.0) * 0.6
+	return _wav(s)
+
+
+## A bullet glancing off a riot shield.
+static func _clank() -> AudioStreamWAV:
+	var n := int(RATE * 0.3)
+	var s := PackedFloat32Array()
+	s.resize(n)
+	for i in n:
+		var t := float(i) / RATE
+		s[i] = (sin(TAU * 1240.0 * t) * 0.5 + sin(TAU * 1970.0 * t) * 0.3 + sin(TAU * 3110.0 * t) * 0.2) * exp(-t * 14.0) * 0.6
 	return _wav(s)
 
 

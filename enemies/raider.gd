@@ -60,6 +60,8 @@ const BODY_SIZE := Vector3(0.55, 1.3, 0.34)
 ## 1.2 m cover wall, with the top of the head just showing).
 const DUCK_DROP := 0.62
 const MUZZLE := Vector3(0.22, 1.42, -0.55)
+## Windup multiplier while a spotter drone has you marked.
+const SPOTTED_WINDUP := 0.6
 
 var state := State.HOLD
 var state_time := 0.0
@@ -101,6 +103,10 @@ func _build() -> void:
 	var body_y := BODY_SIZE.y * 0.5 + 0.12
 	_hitbox(&"body", box_shape(BODY_SIZE), Vector3(0, body_y, 0))
 	_hitbox(&"head", sphere_shape(HEAD_RADIUS), Vector3(0, HEAD_HEIGHT, 0))
+	_build_laser()
+
+
+func _build_placeholder() -> void:
 	var cloth := _material(Color(0.62, 0.2, 0.16))
 	var dark := _material(Color(0.18, 0.16, 0.15))
 	var head := _material(Color(1.0, 0.82, 0.28))
@@ -112,6 +118,9 @@ func _build() -> void:
 	_mesh_sphere(HEAD_RADIUS, Vector3(0, HEAD_HEIGHT, 0), head)
 	_mesh_box(Vector3(0.34, 0.07, 0.05), Vector3(0, HEAD_HEIGHT + 0.02, -0.2), dark)
 	_mesh_box(Vector3(0.08, 0.1, 0.8), MUZZLE + Vector3(0, 0, 0.3), dark)
+
+
+func _build_laser() -> void:
 	_laser = MeshInstance3D.new()
 	var lb := BoxMesh.new()
 	lb.size = Vector3(1, 1, 1)
@@ -164,7 +173,16 @@ func is_aiming() -> bool:
 
 
 func is_locked() -> bool:
-	return is_aiming() and state_time >= windup - lock_time
+	return is_aiming() and state_time >= aim_time() - lock_time
+
+
+## The windup it's using right now: shorter while a spotter drone marks you.
+func aim_time() -> float:
+	return maxf(windup * (SPOTTED_WINDUP if _spotted() else 1.0), lock_time + 0.2)
+
+
+func _spotted() -> bool:
+	return encounter != null and encounter.has_method("is_spotted") and encounter.is_spotted()
 
 
 func muzzle_position() -> Vector3:
@@ -183,7 +201,8 @@ func _think(delta: float) -> void:
 	state_time += delta
 	var to_player := EnemyMath.horizontal(player.global_position - global_position)
 	var dist := to_player.length()
-	var sees := can_see_player(standing_eye())
+	# Marked by a spotter drone: it knows where you are, even behind cover.
+	var sees := can_see_player(standing_eye()) or _spotted()
 	_no_sight = 0.0 if sees else _no_sight + delta
 	_since_pick += delta
 	match state:
@@ -214,13 +233,14 @@ func _think(delta: float) -> void:
 			_duck_toward(0.0, delta, 6.0)
 			face_toward(player.global_position, delta)
 			steer(Vector3.ZERO, accel, delta)
-			telegraph = clampf(state_time / windup, 0.0, 1.0)
-			if state_time < windup - lock_time:
+			var wind := aim_time()
+			telegraph = clampf(state_time / wind, 0.0, 1.0)
+			if state_time < wind - lock_time:
 				var want := (_aim_point() - muzzle_position()).normalized()
 				aim_dir = EnemyMath.turn_dir(aim_dir, want, deg_to_rad(aim_track_rate) * delta)
-			elif state_time - delta < windup - lock_time:
+			elif state_time - delta < wind - lock_time:
 				EnemySfx.play_at(self, &"lock", -4.0)
-			if state_time >= windup:
+			if state_time >= wind:
 				_fire()
 				_set_state(State.RECOVER)
 		State.RECOVER:
@@ -272,8 +292,13 @@ func _fire() -> void:
 	ammo -= 1
 	shots_fired += 1
 	_release_token()
+	_spawn_bullet(aim_dir)
+	EnemySfx.play_at(self, &"raider_shot", -2.0)
+
+
+func _spawn_bullet(dir: Vector3) -> void:
 	var b := EnemyProjectile.new()
-	b.velocity = aim_dir * bullet_speed
+	b.velocity = dir * bullet_speed
 	b.damage = bullet_damage
 	b.player = player
 	b.player_health = player_health
@@ -284,7 +309,6 @@ func _fire() -> void:
 	var parent: Node = encounter if encounter else get_parent()
 	parent.add_child(b)
 	b.global_position = muzzle_position()
-	EnemySfx.play_at(self, &"raider_shot", -2.0)
 
 
 func _on_bullet_hit(amount: float) -> void:
@@ -364,8 +388,61 @@ func _release_token() -> void:
 
 # ---------------------------------------------------------------- presentation
 
+func _model_path() -> String:
+	return "res://enemies/models/raider.glb"
+
+
+func _on_model() -> void:
+	body.show_part("ScrapShield", false)
+
+
+## The gun part in the model and the hand holds on it (rifle frame,
+## barrel toward -Z): grip, handguard and magazine.
+var rifle_part := "Rifle"
+var rifle_grip := Vector3(0, -0.035, 0.02)
+var rifle_fore := Vector3(0, -0.01, -0.3)
+var rifle_mag := Vector3(0, -0.12, -0.13)
+
+var _aim_w := 0.0
+var _reload_w := 0.0
+
+
+func _animate_body(delta: float) -> void:
+	var speed := EnemyMath.horizontal(velocity).length()
+	body.step(speed, 1.5, delta)
+	var aiming := state in [State.AIM, State.RECOVER]
+	_aim_w = move_toward(_aim_w, 1.0 if aiming else 0.0, delta * (7.0 if aiming else 3.0))
+	_reload_w = move_toward(_reload_w, 1.0 if state == State.RELOAD else 0.0, delta * 5.0)
+	var lower := Poses.blend(Poses.stand(), Poses.legs(body.phase, speed / move_speed), clampf(speed, 0.0, 1.0))
+	lower = Poses.blend(lower, Poses.kneel(), duck)
+	lower = _lower_pose(lower)
+	var local_aim := Basis(Vector3.UP, yaw).inverse() * aim_dir
+	var pitch := rad_to_deg(asin(clampf(local_aim.y, -1.0, 1.0)))
+	var upper := Poses.blend(Poses.low_ready(), Poses.aim(pitch), _aim_w)
+	var pose := Poses.layer(lower, upper)
+	if is_staggered():
+		pose = Poses.add(pose, Poses.flinch())
+	body.show_pose(pose, delta)
+	hold_rifle(local_aim, _aim_w, _reload_w, rifle_fore.lerp(rifle_mag, _reload_w))
+
+
+## A chance for a subclass to change the legs (hops, kneeling...).
+func _lower_pose(base: Dictionary) -> Dictionary:
+	return base
+
+
+## Puts the rifle where the state says and both hands on it.
+func hold_rifle(local_aim: Vector3, aim_w: float, reload_w: float, left_hold: Vector3) -> void:
+	var chest: Vector3 = body.global_transform.affine_inverse() * body.bone_position("UpperChest")
+	var xf := Poses.rifle_xf(chest, local_aim, aim_w, reload_w, body.phase)
+	body.hold(rifle_part, xf)
+	body.reach("Right", xf * rifle_grip, Poses.RIGHT_POLE)
+	body.reach("Left", xf * left_hold, Poses.LEFT_POLE)
+
+
 func _animate(delta: float) -> void:
-	_pose.position.y = -DUCK_DROP * duck if not is_dead else _pose.position.y
+	if body == null:
+		_pose.position.y = -DUCK_DROP * duck if not is_dead else _pose.position.y
 	_taunt_time = maxf(_taunt_time - delta, 0.0)
 	_taunt.visible = _taunt_time > 0.0 and not is_dead
 	_draw_laser()
