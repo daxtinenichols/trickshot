@@ -72,6 +72,10 @@ See `m03_glass_district.json`.
 | `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof |
 | `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
 | `{"ramp_up": y}` / `{"ramp_down": y, "length": 22}` | a ramp to a new height (down is a slide ramp) |
+| `{"street": m}` | a stretch at street level (y 0) |
+| `{"turn": "left", "size": 20}` | a corner: a square roof `size` m across where the run turns 90° left or right |
+| `{"fork": [segments], "side": 1, "spread": 18}` | the route splits on a wide roof: `fork` is a second line run beside the main one (right, or `-1` left), while the segments after it carry on the main line |
+| `{"join": true}` | the two lines meet again on a wide roof (the shorter one is lengthened); both must end at the same height |
 
 Features on a roof, `at` meters from its start:
 
@@ -82,11 +86,27 @@ Features on a roof, `at` meters from its start:
 | `{"window": x}` | a wall across with a low window at x to slide through |
 | `{"hop": true, "side": -1}` | a wall hop pair |
 | `{"checkpoint": "Name", "objective": 1}` | a checkpoint; objectives and radio can use `"at": "@Name"`, and `"at": "end"` for the route's end |
-| `{"encounter": "id", "length": 40, "raiders": [[x, d, wake]], "mutants": [[x, d]]}` | enemies (d from the feature); raiders get sandbags 3 m in front |
+| `{"encounter": "id", "length": 40, "raiders": [[x, d, wake]], "mutants": [[x, d]], "troopers": [[x, d, wake]], "drones": [[x, d, height]]}` | enemies (d from the feature); raiders and troopers get sandbags 3 m in front, drones hover `height` m up |
 | `{"tape": "id", "x": 4.6, "height": 0}` | a lost tape |
 | `{"radio": {"who", "line"}, "radius": 7}` | a radio line played here |
 | `{"prop": "car_wreck", "x": -4, "yaw": 80}`, `{"label": "text"}`, `{"mark": "#f57320"}` | dressing |
 | `{"lane": x}` | where the test bot runs from here |
+
+Corners are always 90°, so everything after one is laid out turned with
+the run (checkpoints face along it, enemy areas stay boxes). Missions keep
+heading west overall: turn back the other way after a corner. A fork's line
+can't hold checkpoints, corners or another fork; put its own hazards and
+pickups on it (a high line of climbs and wallruns, a low line through the
+street, an encounter on one of them).
+
+Where the route begins: by default at the world origin heading -Z. Set
+`"route_origin": {"at": [x, y, z], "yaw": 90}`, or `"route_from":
+"base_exit"` to carry on from the base map's `EXIT` (the base's far edge is
+then left open).
+
+The test bot runs every route mission (`bot`), and again down the other
+line of every fork (`bot_alt`); `route_legs` tells it where the corners
+are, so its triggers are distances along the run, not world z.
 
 Roofs also get edge clutter from `clutter` (a mission-level list of props),
 kept out of run-ups, landings and features. Keep lines long and open:
@@ -189,7 +209,12 @@ and they reset; going down sends you back to the last checkpoint. `yaw` 180
 faces +Z (toward a runner coming down the usual -Z route); `wake` delays an
 enemy by that many seconds. `cover` rows are spots raiders hide behind, one
 every `spacing` m (2.2) on both sides of a low wall `length` m long; put a
-`sandbag_wall` or barricade there too. Optional: `max_aiming` (2: raiders
+`sandbag_wall` or barricade there too. Other kinds go in `"enemies": [{"type": "drone", "at": [...], "yaw": 180}]`:
+each type spawns `res://enemies/<type>.gd` (same contract as raiders), and
+any other field sets that enemy's property of the same name. Until a kind
+exists, `trooper` stands in as a raider and `drone` is left out, so keep a
+`shoot` count within the enemies that are sure to spawn.
+Optional: `max_aiming` (2: raiders
 aiming at once), `restart` (seconds before a cleared encounter comes back;
 never by default). Every kill counts toward `shoot` objectives, like targets.
 

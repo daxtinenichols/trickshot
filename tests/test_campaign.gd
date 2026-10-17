@@ -40,6 +40,19 @@ func _load(i: int) -> void:
 	await tree.physics_frame
 
 
+## Loads a mission data file that isn't in the campaign (test fixtures).
+func _load_file(path: String) -> void:
+	Campaign.current = -1
+	level = MISSION.instantiate()
+	(level.get_node("Builder") as MissionBuilder).mission_path = path
+	tree.root.add_child(level)
+	player = level.get_node("Player")
+	player.use_device_input = false
+	player.scripted_input = InputFrame.new()
+	run = level.run
+	await tree.physics_frame
+
+
 func _step(frames: int, f: InputFrame = null) -> void:
 	player.scripted_input = f if f != null else InputFrame.new()
 	for i in frames:
@@ -292,32 +305,102 @@ func test_beating_the_finale_unlocks_echo() -> void:
 
 # ---------------------------------------------------------------- full runs
 
-## Forward with a little strafe to hold lane x (the view faces -Z).
-func _steer(x: float) -> InputFrame:
-	var side := (x - player.global_position.x) * 0.8 - player.velocity.x * 0.25
-	return InputFrame.make(Vector2(clampf(side, -0.6, 0.6), 1.0))
+## The route's legs ([origin x, origin z, yaw, z0] each, from Route): the
+## bot works in its current leg's frame, x across the run and z along it
+## (decreasing as it goes). One leg at the origin for hand-made routes.
+var _legs: Array = [[0.0, 0.0, 0.0, 0.0]]
+var _leg := 0
+## Start turning this far before a corner's center.
+const TURN_LEAD := 8.0
+## How fast the bot turns its view (rad/s).
+const TURN_RATE := 5.0
 
 
-## Same scripted runner as test_maps: [trigger_z, action, lane_x] steps.
-## Returns true once the mission is complete; false if it runs out of time
-## or passes stop_z first.
-func _run_route(route: Array, max_frames := 2400, stop_z := -INF) -> bool:
-	var lane: float = route[0][2] if route[0][1] == "" and not is_nan(route[0][2]) else player.global_position.x
+## A world position in leg `leg`'s frame: (across, along).
+func _local(pos: Vector3, leg: int) -> Vector2:
+	var l: Array = _legs[leg]
+	var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
+	return Vector2(v.x, v.z + l[3])
+
+
+func _leg_point(leg: int, x: float, z: float) -> Vector3:
+	var l: Array = _legs[leg]
+	var v := Basis(Vector3.UP, float(l[2])) * Vector3(x, 0.0, z - l[3])
+	return Vector3(l[0] + v.x, 0.0, l[1] + v.z)
+
+
+## Moves on to the next leg once past the corner's diagonal.
+func _update_leg(pos: Vector3) -> void:
+	while _leg + 1 < _legs.size():
+		var pivot: float = _legs[_leg + 1][3]
+		var u := pivot - _local(pos, _leg).y
+		var v := pivot - _local(pos, _leg + 1).y
+		if u + v <= 0.0:
+			return
+		_leg += 1
+
+
+## Forward along the leg with a little strafe to hold lane x. Near a corner,
+## or veering across to the other line of a fork, it heads for a point
+## ahead instead and turns its view that way while on its feet.
+func _steer(x: float, veer: bool) -> InputFrame:
+	var pos := player.global_position
+	var here := _local(pos, _leg)
+	var leg_basis := Basis(Vector3.UP, float(_legs[_leg][2]))
+	var right := leg_basis.x
+	var fwd := -leg_basis.z
+	var side := (x - here.x) * 0.8 - player.velocity.dot(right) * 0.25
+	var wish := fwd + right * clampf(side, -0.6, 0.6)
+	var want_yaw: float = _legs[_leg][2]
+	var target := Vector3.INF
+	if _leg + 1 < _legs.size() and here.y < float(_legs[_leg + 1][3]) + TURN_LEAD:
+		target = _leg_point(_leg + 1, 0.0, float(_legs[_leg + 1][3]) - 6.0)
+	elif veer:
+		target = _leg_point(_leg, x, here.y - 8.0)
+	if target != Vector3.INF:
+		var dir := Vector3(target.x - pos.x, 0.0, target.z - pos.z).normalized()
+		wish = dir
+		want_yaw = atan2(-dir.x, -dir.z)
+	if player.state not in [Player.State.AIR, Player.State.WALLRUN]:
+		var turn := clampf(angle_difference(player.yaw, want_yaw), -TURN_RATE / 60.0, TURN_RATE / 60.0)
+		if absf(turn) > 0.0001:
+			player._look(turn, 0.0)
+	var face := Basis(Vector3.UP, player.yaw)
+	var move := Vector2(wish.dot(face.x), wish.dot(-face.z))
+	if move.y > 0.0:
+		move /= move.y
+	return InputFrame.make(Vector2(clampf(move.x, -0.6, 0.6), 1.0))
+
+
+## Same scripted runner as test_maps: [trigger_z, action, lane_x] steps in
+## the route's frame ("veer" heads across to a far lane). Returns true once
+## the mission is complete; false if it runs out of time or passes stop_z
+## first.
+func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = []) -> bool:
+	_legs = legs if not legs.is_empty() else [[0.0, 0.0, 0.0, 0.0]]
+	_leg = 0
+	var lane: float = route[0][2] if route[0][1] == "" and not is_nan(route[0][2]) else _local(player.global_position, 0).x
+	var veer := false
 	var next := 0
 	var roll_armed := false
 	for i in max_frames:
 		var pos := player.global_position
 		if run.phase == MissionRun.Phase.COMPLETE:
 			return true
-		if pos.z < stop_z:
+		_update_leg(pos)
+		var z := _local(pos, _leg).y
+		if z < stop_z:
 			return false
 		if OS.has_environment("ROUTE_LOG") and i % 10 == 0:
-			print("  t%4d pos %s state %s speed %.1f obj %d falls %d caught %d gap %.1f" % [i, pos.snapped(Vector3.ONE * 0.01), Player.State.keys()[player.state], player.horizontal_speed(), run.objective, run.falls, run.catches, run.pursuer.gap if run.pursuer else 0.0])
-		var f := _steer(lane)
-		while next < route.size() and pos.z < route[next][0]:
+			print("  t%4d pos %s leg %d along %.1f state %s speed %.1f obj %d falls %d caught %d gap %.1f" % [i, pos.snapped(Vector3.ONE * 0.01), _leg, z, Player.State.keys()[player.state], player.horizontal_speed(), run.objective, run.falls, run.catches, run.pursuer.gap if run.pursuer else 0.0])
+		if veer and absf(lane - _local(pos, _leg).x) < 1.5:
+			veer = false
+		var f := _steer(lane, veer)
+		while next < route.size() and z < route[next][0]:
 			var step: Array = route[next]
 			if not is_nan(step[2]):
 				lane = step[2]
+				veer = step[1] == "veer"
 			match step[1]:
 				"jump":
 					f.jump_pressed = true
@@ -336,7 +419,7 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF) -> bool:
 				f.crouch_held = true
 				roll_armed = false
 		if player.state == Player.State.SLIDE or player.state == Player.State.CROUCH:
-			f.crouch_held = player.global_position.z > route[next - 1][0] - 4.0 if next > 0 else false
+			f.crouch_held = z > route[next - 1][0] - 4.0 if next > 0 else false
 		if player.state == Player.State.WALLRUN and player.wallrun_angle() < 0.05:
 			f.lean = 1.0 if player._lean_toward_wall(1.0) > 0.0 else -1.0
 		player.scripted_input = f
@@ -416,7 +499,8 @@ func test_signal_out_can_be_escaped() -> void:
 
 ## Every mission built from a route: a bot runs the route it generates
 ## from start to finish (enemies can't take it down, and any shooting
-## objective is done for it), without falling.
+## objective is done for it), without falling; where the route forks, a
+## second run takes the other line of every fork.
 func test_route_missions_can_be_finished() -> void:
 	var all := Campaign.missions()
 	var ran := 0
@@ -424,24 +508,79 @@ func test_route_missions_can_be_finished() -> void:
 		var path: String = all[i].get("file", "")
 		if path == "" or not Campaign.load_mission_file(path).has("bot"):
 			continue
-		await _load(i)
-		var health := PlayerHealth.ensure(player)
-		health.can_die = false
-		run.event.connect(func(e: String) -> void:
-			if e.begins_with("objective:") and run.current_objective().get("type", "") == "shoot":
-				for enc: Node3D in level.builder.encounters:
-					for en: Node in enc.enemies:
-						if not en.is_dead:
-							en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position}))
-		await _step(10)
-		var bot: Array = run.mission.bot
-		var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
-		var done := await _run_route(bot, frames)
-		check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [all[i].id, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
-		check(run.falls == 0, "%s: without falling (%d)" % [all[i].id, run.falls])
-		check(run.mission.route_length >= 500.0, "%s: a long run (%d m)" % [all[i].id, int(run.mission.route_length)])
-		ran += 1
-		level.queue_free()
-		level = null
-		await tree.process_frame
+		for alt: bool in [false, true]:
+			if alt and not Campaign.load_mission_file(path).has("bot_alt"):
+				continue
+			await _load(i)
+			await _bot_run(all[i].id + (" (other lines)" if alt else ""), alt)
+			ran += 1
 	check(ran >= 1, "route missions were run (%d)" % ran)
+
+
+## Runs the loaded mission's route bot (or its fork lines) to the end.
+func _bot_run(label: String, alt := false) -> void:
+	var health := PlayerHealth.ensure(player)
+	health.can_die = false
+	run.event.connect(func(e: String) -> void:
+		if e.begins_with("objective:") and run.current_objective().get("type", "") == "shoot":
+			for enc: Node3D in level.builder.encounters:
+				for en: Node in enc.enemies:
+					if not en.is_dead:
+						en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position}))
+	await _step(10)
+	var bot: Array = run.mission.bot_alt if alt else run.mission.bot
+	var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
+	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []))
+	check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [label, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
+	check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])
+	check(run.mission.route_length >= 500.0, "%s: a long run (%d m)" % [label, int(run.mission.route_length)])
+	level.queue_free()
+	level = null
+	await tree.process_frame
+
+
+const Route_ := preload("res://campaign/route.gd")
+const TWISTS := "res://tests/fixtures/route_twists.json"
+
+
+## A route with corners, climbs, drops, ramps and a fork: its pieces turn
+## with each leg, checkpoints face along the run, and bots finish both
+## lines of the fork.
+func test_route_turns_and_forks() -> void:
+	var m := Campaign.load_mission_file(TWISTS)
+	check(m.route_legs.size() == 4, "three corners make four legs (%d)" % m.route_legs.size())
+	check(m.has("bot_alt"), "the fork gives a second bot run")
+	check(m.route_length > 650.0, "a long route (%d m)" % int(m.route_length))
+	var yaws := {}
+	for p: Dictionary in m.pieces:
+		var y := fposmod(float(p.get("yaw", 0.0)), 90.0)
+		if p.has("building") and not (is_zero_approx(y) or is_equal_approx(y, 90.0)):
+			check(false, "buildings stay square to the grid (%s)" % p)
+		if p.has("building"):
+			yaws[roundi(fposmod(float(p.get("yaw", 0.0)), 360.0))] = true
+	check(yaws.has(90), "legs after a left corner turn their buildings")
+	var corner: Dictionary = m.checkpoints[0]
+	check(is_equal_approx(float(corner.yaw), 90.0), "the checkpoint after the left corner faces along the run (%s)" % corner.yaw)
+	check(corner.at[0] < -10.0, "and sits off to the left of the start (%s)" % [corner.at])
+	await _load_file(TWISTS)
+	var b: MissionBuilder = level.builder
+	check(b.encounters.size() == 1, "one encounter")
+	var enc: Node3D = b.encounters[0]
+	check(enc.enemies.size() == 2, "a raider and a trooper stand-in; no drone script yet (%d)" % enc.enemies.size())
+	var end: Array = m.route_end
+	check(absf(float(m.route_end_yaw) - 90.0) < 0.1, "the route ends heading left of where it began (%s)" % m.route_end_yaw)
+	await _bot_run("twists", false)
+	await _load_file(TWISTS)
+	await _bot_run("twists (fork)", true)
+	check(end[1] == 7.0, "on the last roof")
+
+
+## A route can carry on from its base map's exit (the mall's loading dock
+## road) instead of the world origin.
+func test_route_from_base_exit() -> void:
+	var m := Route_.expand({"id": "t", "base": "res://maps/mall_builder.gd", "route_from": "base_exit",
+		"route": [{"roof": 40}, {"turn": "right"}, {"roof": 40}]})
+	var leg0: Array = m.route_legs[0]
+	check(is_equal_approx(leg0[1], -438.0) and is_zero_approx(leg0[0]), "starts at the mall's EXIT (%s)" % [leg0])
+	check(m.route_legs.size() == 2 and is_equal_approx(m.route_legs[1][2], -PI * 0.5), "a right corner turns toward +X")
+	check(float(m.route_end[0]) > 30.0, "and ends off to the right (%s)" % [m.route_end])
