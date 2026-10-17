@@ -20,6 +20,7 @@ const SHOTS := [
 	["res://maps/mall.tscn", Vector3(15, 7.7, -26), Vector3(17, 6, -46), "mall_collapse"],
 	["res://maps/mall.tscn", Vector3(14, 1.7, -14), Vector3(19, 1.6, -40), "mall_shops"],
 	["res://maps/mall.tscn", Vector3(-6, 3.2, -71), Vector3(8, 1.5, -86), "mall_food_court"],
+	["res://maps/mall.tscn", Vector3(4, 7.9, -71.5), Vector3(-20, 6.6, -73), "mall_camp"],
 ]
 
 var out := "user://map_shots"
