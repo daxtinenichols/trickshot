@@ -216,7 +216,8 @@ extends Resource
 @export_range(90.0, 1440.0, 10.0) var side_flip_speed := 480.0
 ## Let go of lean within this many degrees of level and you settle upright.
 @export_range(0.0, 90.0, 1.0) var side_settle_degrees := 40.0
-## Landing rolled over further than this (degrees) is a crash.
+## Landing rolled over further than this (degrees) is a shoulder roll (a
+## crash if you're also flipped over), and you can't run onto a ramp.
 @export_range(10.0, 120.0, 1.0) var side_crash_degrees := 50.0
 ## Side flips keep their direction once started. Tucked (lean or crouch
 ## held) you spin at side_flip_speed; opened up, at this share of it.

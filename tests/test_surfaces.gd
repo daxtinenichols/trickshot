@@ -262,3 +262,20 @@ func test_bailing_off_a_loop_keeps_turning() -> void:
 	await w.step(10)
 	check(p.pitch > pitch0 + deg_to_rad(5.0), "keeps turning the way the loop turned you (%.1f -> %.1f deg)" % [rad_to_deg(pitch0), rad_to_deg(p.pitch)])
 	check(absf(p._air_pitch) > PI * 0.5, "counts as partway into a flip (%.0f deg)" % rad_to_deg(p._air_pitch))
+
+
+## Coming out of a loop onto the ground counts as being on the ground: run
+## off a ledge after it and a late jump still works.
+func test_coyote_jump_after_running_a_loop() -> void:
+	w.add_box(Vector3(0, -0.5, -40), Vector3(400, 1, 100))  # floor ends at z = -90
+	w.add_box(Vector3(0, -20.5, 0), Vector3(400, 1, 400))
+	_add_loop(-70.0)
+	var p := await _settle()
+	await w.step_until(func() -> bool: return p.state == Player.State.SURFACE, 900, _fwd())
+	p._jumped_since_floor = true  # as if you'd jumped onto the loop
+	await w.step_until(func() -> bool: return p.global_position.z < -76.0 and p.state == Player.State.GROUND, 900, _fwd())
+	var off := await w.step_until(func() -> bool: return p.state == Player.State.AIR, 400, _fwd())
+	check(off, "ran off the ledge")
+	await w.step(3, _fwd())
+	await w.press(InputFrame.make(Vector2(0, 1), true))
+	check(p.velocity.y > 5.0, "late jump off the ledge works (vy %.1f)" % p.velocity.y)

@@ -72,6 +72,9 @@ var _height := 1.8
 var _stand_shape: CapsuleShape3D
 var _crouch_shape: CapsuleShape3D
 var _crouch_hold := 0.0
+## Crouch was already held when you left the ground (a slide hop): it
+## doesn't tuck until you let go and press it again.
+var _crouch_from_ground := false
 # Rotation done in the air since takeoff (radians, unwrapped).
 var _air_yaw := 0.0
 var _air_pitch := 0.0
@@ -178,10 +181,11 @@ var _kick_roll_vel := 0.0
 var _fov_base := 0.0
 var _fov_punch := 0.0
 
-## Set by the held weapon: 0 = hip, 1 = fully aimed down sights.
+## Look up/down flipped (player setting).
 var invert_y := false
 ## Multiplies look speed while aiming down sights (player setting).
 var ads_sensitivity := 1.0
+## Set by the held weapon: 0 = hip, 1 = fully aimed down sights.
 var aim_zoom := 0.0
 var aim_fov := 62.0
 var weapon: Node
@@ -205,7 +209,7 @@ func _ready() -> void:
 	_set_height(tuning.stand_height)
 	_spawn = global_transform
 	yaw = rotation.y
-	rotation = Vector3(0.0, yaw, 0.0)
+	basis = Basis(Vector3.UP, yaw)
 	floor_max_angle = deg_to_rad(46.0)
 	floor_snap_length = 0.35
 	wall_min_slide_angle = deg_to_rad(5.0)
@@ -329,7 +333,7 @@ func roll_look(d: float) -> void:
 func set_view(new_yaw: float, new_pitch := 0.0) -> void:
 	yaw = new_yaw
 	pitch = new_pitch
-	rotation = Vector3(0.0, yaw, 0.0)
+	basis = Basis(Vector3.UP, yaw)
 
 
 # ---------------------------------------------------------------- tick
@@ -361,7 +365,9 @@ func simulate(f: InputFrame, delta: float) -> void:
 	_turn_side = signf(f.lean) if absf(f.lean) > 0.3 and state != State.WALLRUN else 0.0
 	_carry_turn()
 	if state != State.SURFACE:
-		rotation = Vector3(0.0, yaw, 0.0)
+		# Set the whole basis, not `rotation`: that keeps the old scale, and
+		# float error shrinks it a little every tick.
+		basis = Basis(Vector3.UP, yaw)
 	lean = move_toward(lean, clampf(f.lean + _mouse_lean, -1.0, 1.0), tuning.lean_speed * delta)
 	var wish := wish_direction(f)
 	if _ground_flick >= deg_to_rad(tuning.ground_roll_flick) and state in [State.GROUND, State.CROUCH, State.SLIDE] \
@@ -402,6 +408,7 @@ func _update_timers(f: InputFrame, delta: float) -> void:
 	_wall_jump_lock = maxf(_wall_jump_lock - delta, 0.0)
 	_since_wall += delta
 	_crouch_hold = _crouch_hold + delta if f.crouch_held else 0.0
+	_crouch_from_ground = _crouch_from_ground and f.crouch_held
 	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.SURFACE]:
 		_since_floor = 0.0
 		_ground_time += delta
@@ -414,6 +421,12 @@ func wish_direction(f: InputFrame) -> Vector3:
 	var right := Vector3(-fwd.z, 0.0, fwd.x)
 	var w := right * f.move.x + fwd * f.move.y
 	return w.limit_length(1.0)
+
+
+## Where you're looking, from yaw and pitch alone (the camera adds recoil
+## and easing on top, which the simulation never reads).
+func look_direction() -> Vector3:
+	return Basis.from_euler(Vector3(pitch, yaw, 0.0)) * Vector3.FORWARD
 
 
 ## Horizontal look direction.
@@ -455,11 +468,23 @@ func _change_state(to: State) -> void:
 		_exit_spin = Vector2.ZERO
 		_exit_air_roll = 0.0
 		_exit_roll_rate = 0.0
+		# A mouse roll taken on a wall was for the wall, not a side flip.
+		_roll_tick = 0.0
+		_crouch_from_ground = _crouch_hold > 0.0 and from in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.SURFACE]
 	elif from == State.AIR:
 		_spin_vel = Vector2.ZERO
 		_carry_free = false
 		_roll_carry = false
 		_settle_pitch()
+		# Everything that read the air rotation (landing, surfaces) has; a
+		# flip doesn't carry onto a wall, a climb or the ground.
+		_air_yaw = 0.0
+		_air_pitch = 0.0
+		_air_roll = 0.0
+		_prev_air_roll = 0.0
+		_spins_done = 0
+		_flips_done = 0
+		_sideflips_done = 0
 	state_changed.emit(from, to)
 
 
@@ -493,7 +518,7 @@ func _landing_tucked(fall: float) -> bool:
 ## then set until you land; what you control is the speed, like curling up
 ## or opening out: hold lean (or crouch) to tuck and spin fast, let go to
 ## open up and slow down. Opened up near level you settle upright; land
-## on your side and you crash.
+## on your side and you shoulder-roll (on your side and mid-flip, you crash).
 func _tick_air_roll(f: InputFrame, delta: float) -> void:
 	if _mouse_roll(delta):
 		return
@@ -755,7 +780,8 @@ func _hop() -> void:
 
 
 func _jump() -> void:
-	velocity.y = tuning.jump_velocity
+	# A late (coyote) jump off a ramp lip adds to the climb you flew off with.
+	velocity.y = tuning.jump_velocity + (maxf(velocity.y, 0.0) if state == State.AIR else 0.0)
 	_jump_buffer = 999.0
 	_jumped_since_floor = true
 	_change_state(State.AIR)
@@ -807,13 +833,19 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 		return
 
 
-func _land(f: InputFrame) -> void:
-	var fall := -_pre_move_velocity.y
+## Feet back on something you can run on (ground, a ramp, a loop): kicks,
+## walls and climbs are fresh, and a late jump off the next edge works.
+func _touch_ground() -> void:
 	_kicks_left = tuning.kicks_per_air_time
 	_kicked_ids.clear()
 	_wallrun_used_normal = Vector3.ZERO
 	_climb_used = false
 	_jumped_since_floor = false
+
+
+func _land(f: InputFrame) -> void:
+	var fall := -_pre_move_velocity.y
+	_touch_ground()
 	_ground_time = 0.0
 	_land_press_age = _jump_buffer if _jump_buffer <= tuning.jump_buffer else -1.0
 	_dip = minf(fall * tuning.landing_dip, 0.4)
@@ -866,7 +898,7 @@ func _land(f: InputFrame) -> void:
 ## you're at. A crouch pressed just before landing is a slide landing
 ## instead (unless you'd otherwise crash or the drop is hard).
 func _tuck_roll(f: InputFrame, fall: float, crouch_age: float) -> bool:
-	if not f.crouch_held or _crouch_hold < tuning.tuck_hold_time or fall < tuning.tuck_roll_min_fall:
+	if not f.crouch_held or not is_tucked() or fall < tuning.tuck_roll_min_fall:
 		return false
 	var bad_angle := _landing_tipped() or _landing_crashed()
 	if not bad_angle and crouch_age <= tuning.slide_land_window and fall < tuning.hard_landing_speed:
@@ -883,7 +915,7 @@ func _tuck_roll(f: InputFrame, fall: float, crouch_age: float) -> bool:
 
 ## Tucked in the air (crouch held): you'll land in a roll.
 func is_tucked() -> bool:
-	return state == State.AIR and _crouch_hold >= tuning.tuck_hold_time
+	return state == State.AIR and _crouch_hold >= tuning.tuck_hold_time and not _crouch_from_ground
 
 
 # ---------------------------------------------------------------- slide
@@ -992,7 +1024,7 @@ func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
 ## Front kick on the ground: opens doors, breaks windows, shoves targets.
 func _ground_kick() -> void:
 	var eye := global_position + Vector3.UP * (_height - EYE_OFFSET)
-	var look := -camera.global_transform.basis.z
+	var look := look_direction()
 	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * (tuning.kick_range + 0.3), 1 | 4)
 	q.exclude = [get_rid()]
 	var hit := get_world_3d().direct_space_state.intersect_ray(q)
@@ -1072,7 +1104,7 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_set_height(tuning.stand_height if _can_stand() else tuning.crouch_height)
 	if _jump_buffer <= tuning.jump_buffer:
 		# The steeper you're running up the wall, the harder you kick off.
-		var steep := clampf(_wallrun_angle / deg_to_rad(tuning.wallrun_max_up_angle), 0.0, 1.0)
+		var steep := clampf(_wallrun_angle / maxf(deg_to_rad(tuning.wallrun_max_up_angle), 0.001), 0.0, 1.0)
 		_wall_jump(wish, &"wall_jump", 1.0 + tuning.wallrun_steep_kick * steep)
 		_tick_air(f, wish, delta)
 		return
@@ -1292,12 +1324,15 @@ func _try_enter_surface() -> bool:
 	if h.length() > 0.2:
 		travel_yaw = atan2(-h.x, -h.z)
 	var view_before := Basis.from_euler(Vector3(pitch, yaw, -_air_roll if state == State.AIR else 0.0))
+	if state != State.GROUND:
+		_ground_time = 0.0
+	_touch_ground()
 	_change_state(State.SURFACE)
 	_surface_n = n
 	_surface_up = Vector3.UP
 	_body_spin = Vector3.ZERO
 	_surface_look_yaw = angle_difference(travel_yaw, yaw)
-	rotation = Vector3(0.0, travel_yaw, 0.0)  # start upright, facing the run
+	basis = Basis(Vector3.UP, travel_yaw)  # start upright, facing the run
 	_surface_looped = false
 	_surface_flow = _flow_of(c.collider)
 	_orient_to_surface(0.0)
@@ -1398,6 +1433,7 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 		var keep := velocity - Vector3.UP * velocity.dot(Vector3.UP)
 		_leave_surface(true)
 		velocity = keep.normalized() * speed if keep.length() > 0.01 else Vector3.ZERO
+		_touch_ground()
 		_change_state(State.GROUND)
 		return
 	_surface_n = nn
@@ -1523,7 +1559,7 @@ func _leave_surface(onto_ground := false) -> void:
 	# Turn upright around the middle of the body, not the feet, so coming
 	# off upside down doesn't swing your head through the track.
 	var center := global_position + global_basis.y * (_height * 0.5)
-	rotation = Vector3(0.0, yaw, 0.0)
+	basis = Basis(Vector3.UP, yaw)
 	global_position = center - Vector3.UP * (_height * 0.5)
 
 
@@ -1616,13 +1652,15 @@ func probe_obstacle(grounded: bool) -> Dictionary:
 	if depth > 0.0 and height <= tuning.vault_max_height + (0.0 if grounded else 0.25):
 		var land: Vector3 = face.position - n * (depth + RADIUS + 0.35)
 		land.y = maxf(far_floor_y, feet.y - 3.0) + 0.02
-		if _shape_fits(_stand_shape, land):
+		if _shape_fits(_stand_shape, land) and _path_clear(top_y, land):
 			return {"kind": &"vault", "height": height, "top": top_y, "face_normal": n, "land": land,
 				"face_dist": _face_distance(face.position), "reach": height / max_h, "grounded": grounded}
 
 	# Mantle: stand on top, a little way in from the edge.
 	var stand_on: Vector3 = face.position - n * (RADIUS + 0.2)
 	stand_on.y = top_y + 0.03
+	if not _path_clear(top_y, stand_on):
+		return {}
 	if _shape_fits(_stand_shape, stand_on):
 		return {"kind": &"mantle", "height": height, "top": top_y, "face_normal": n, "land": stand_on,
 			"face_dist": _face_distance(face.position), "reach": height / max_h, "grounded": grounded}
@@ -1630,6 +1668,24 @@ func probe_obstacle(grounded: bool) -> Dictionary:
 		return {"kind": &"mantle", "height": height, "top": top_y, "face_normal": n, "land": stand_on, "crouch": true,
 			"face_dist": _face_distance(face.position), "reach": height / max_h, "grounded": grounded}
 	return {}
+
+
+## Is there room to pass over the top, from where you are to `to`? The top
+## ray can miss a thin piece (a pane of glass on a sill, a railing beside a
+## ramp) and find a lower top behind it; this sweeps a slim body just above
+## the top so you never vault or mantle through it.
+func _path_clear(top_y: float, to: Vector3) -> bool:
+	var probe := CapsuleShape3D.new()
+	probe.radius = 0.25
+	probe.height = 0.9
+	var from := Vector3(global_position.x, top_y + 0.1 + probe.height * 0.5, global_position.z)
+	var q := PhysicsShapeQueryParameters3D.new()
+	q.shape = probe
+	q.transform = Transform3D(Basis.IDENTITY, from)
+	q.motion = Vector3(to.x, from.y, to.z) - from
+	q.collision_mask = 1
+	q.exclude = [get_rid()]
+	return get_world_3d().direct_space_state.cast_motion(q)[0] >= 1.0
 
 
 func _face_distance(p: Vector3) -> float:
@@ -1699,6 +1755,8 @@ func _tick_scripted(_delta: float) -> void:
 		_change_state(State.AIR)
 		_move()
 		if is_on_floor():
+			_touch_ground()
+			_ground_time = 0.0
 			_change_state(State.CROUCH if not _can_stand() else State.GROUND)
 
 
@@ -1709,7 +1767,7 @@ func _try_kick_off() -> bool:
 		return false
 	var space := get_world_3d().direct_space_state
 	var eye := global_position + Vector3.UP * (_height - EYE_OFFSET)
-	var look := -camera.global_transform.basis.z if is_inside_tree() else forward()
+	var look := look_direction()
 	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * tuning.kick_range, 1 | 4)
 	q.exclude = [get_rid()]
 	var hit := space.intersect_ray(q)
@@ -1732,7 +1790,7 @@ func _try_kick_off() -> bool:
 		return false
 	if collider and collider.is_in_group("breakable"):
 		# Doors and windows give way: no surface to push off.
-		collider.on_kicked(self, -camera.global_transform.basis.z)
+		collider.on_kicked(self, look)
 		_kicks_left -= 1
 		_trick(&"door_kick" if collider.is_in_group("doors") else &"window_kick")
 		return true
@@ -1863,7 +1921,7 @@ func respawn(t: Variant = null) -> void:
 	global_position = _spawn.origin
 	set_view(_spawn.basis.get_euler().y, 0.0)
 	_prev_origin = global_position
-	_prev_rotation = Quaternion(global_basis)
+	_prev_rotation = Quaternion(global_basis.orthonormalized())
 	velocity = Vector3.ZERO
 	momentum = 0.0
 	_set_height(tuning.stand_height)
@@ -1902,6 +1960,10 @@ func respawn(t: Variant = null) -> void:
 	_mouse_lean = 0.0
 	_prev_air_roll = 0.0
 	_jump_buffer = 999.0
+	_since_wall = 999.0
+	_wall_jump_lock = 0.0
+	_view_offset = Quaternion.IDENTITY
+	_view_offset_start = Quaternion.IDENTITY
 	state_time = 0.0
 	respawned.emit()
 

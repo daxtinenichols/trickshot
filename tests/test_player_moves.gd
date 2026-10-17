@@ -1199,3 +1199,164 @@ func test_lean_never_puts_the_view_in_a_wall() -> void:
 	await w.step(40, f)
 	p._process(0.0)
 	check(p.camera.global_position.x < -p.tuning.lean_offset * 0.8, "leans fully where there's room (x %.2f)" % p.camera.global_position.x)
+
+
+# ------------------------------------------------------------------ debug pass regressions
+
+func test_side_flip_before_a_wall_does_not_follow_you_onto_it() -> void:
+	_add_side_wall()
+	w.add_floor()
+	var p := await _settle(Vector3(-1.8, 0.05, 0), -0.3)
+	await w.step_until(func() -> bool: return p.global_position.x > 0.3, 300, _fwd())
+	await w.press(_fwd_jump())
+	# Partway round a side flip when you reach the wall.
+	p._air_roll = 1.4
+	p._prev_air_roll = 1.4
+	var ok := await w.step_until(func() -> bool: return p.state == Player.State.WALLRUN, 90, _fwd())
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	check(p.air_roll() == 0.0, "the side flip ends on the wall")
+	check(not (&"upside_down" in p.shot_tags()), "not upside down while running the wall")
+	# Lean away so the run comes down onto the floor.
+	w.states_seen.clear()
+	w.tricks_seen.clear()
+	var f := _fwd()
+	f.lean = -1.0
+	await w.step_until(func() -> bool: return p.state != Player.State.WALLRUN, 150, f)
+	await w.step(2, _fwd())
+	check(not (Player.State.ROLL in w.states_seen), "runs off the wall onto the floor without a roll (%s)" % [w.states_seen.map(func(s: int) -> String: return Player.State.keys()[s])])
+	check(not (&"landing_roll" in w.tricks_seen), "no landing roll")
+
+
+func test_respawn_forgets_the_wall() -> void:
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	p.set_spawn(Transform3D(Basis.IDENTITY, Vector3(-30, 0.05, 10)))
+	await w.step(5, _fwd())
+	p.respawn()
+	w.tricks_seen.clear()
+	await w.step(1)
+	await w.press(InputFrame.make(Vector2.ZERO, true))
+	check(not (&"wall_hop" in w.tricks_seen), "no wall hop off a wall that isn't there")
+	check(MovementMath.horizontal(p.velocity).length() < 1.0, "no push sideways (%s)" % p.velocity)
+
+
+func test_mouse_roll_on_a_wall_stays_on_the_wall() -> void:
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	await w.step(3, _fwd())
+	p.roll_look(0.12)  # a mouse roll on the wall this tick
+	await w.press(_fwd_jump())
+	check(p.state == Player.State.AIR, "wall jump")
+	var g := _fwd_crouch_hold()
+	await w.step(30, g)
+	check(absf(rad_to_deg(p.air_roll())) < 30.0, "the wall's roll doesn't start a side flip (%.0f deg)" % rad_to_deg(p.air_roll()))
+
+
+func test_crouch_held_through_a_slide_hop_lands_in_a_slide() -> void:
+	w.add_floor()
+	await _settle()
+	var p := w.player
+	await w.step(60, _fwd())
+	await w.press(_fwd_crouch())
+	await w.step(15, _fwd_crouch_hold())
+	check(p.state == Player.State.SLIDE, "sliding")
+	var j := InputFrame.make(Vector2(0, 1), true, true)
+	j.crouch_pressed = false
+	await w.step(1, j)
+	check(p.state == Player.State.AIR and not p.is_tucked(), "a slide hop isn't a tuck")
+	w.states_seen.clear()
+	w.tricks_seen.clear()
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120, _fwd_crouch_hold())
+	check(p.state == Player.State.SLIDE, "lands back in the slide (%s)" % Player.State.keys()[p.state])
+	check(not (&"landing_roll" in w.tricks_seen), "no roll")
+	# Pressing crouch in the air still tucks.
+	await w.press(InputFrame.make(Vector2(0, 1), true))
+	await w.step(2, _fwd())
+	await w.press(_fwd_crouch())
+	await w.step(15, _fwd_crouch_hold())
+	check(p.is_tucked(), "crouch pressed in the air tucks")
+
+
+func test_late_jump_off_a_rising_lip_keeps_its_climb() -> void:
+	w.add_floor()
+	var p := await _settle()
+	# Just flown off the top of a ramp, still climbing fast.
+	p.global_position += Vector3(0, 3, 0)
+	p._change_state(Player.State.AIR)
+	p.velocity = Vector3(0, 12.0, -8.0)
+	p._since_floor = 0.0
+	p._jumped_since_floor = false
+	await w.press(_fwd_jump())
+	check(p.velocity.y > 12.0, "a coyote jump adds to the climb (vy %.1f)" % p.velocity.y)
+
+
+func test_kick_goes_where_you_look_not_where_the_camera_eases() -> void:
+	w.add_floor()
+	var door := KickDoor.new()
+	w.add_child(door)
+	door.global_position = Vector3(-0.55, 0, -1.5)
+	var p := await _settle()
+	# The camera still easing round from a loop, turned well off your aim.
+	p._view_offset_start = Quaternion(Vector3.UP, PI * 0.5)
+	p._view_offset = p._view_offset_start
+	p._view_offset_time = 0.0
+	p._view_offset_rate = 0.01
+	await w.step(2)
+	check((-p.camera.global_basis.z).dot(p.forward()) < 0.5, "the camera is turned away")
+	await w.press(InputFrame.make(Vector2.ZERO, false, false, true))
+	check(door.is_open, "the kick hits the door you're facing")
+
+
+## A pane of glass standing on a low sill: the sill looks vaultable, but the
+## glass above it is in the way.
+func test_no_vault_through_glass_on_a_sill() -> void:
+	w.add_floor()
+	w.add_box(Vector3(0, 0.2, -4.2), Vector3(4, 0.4, 0.4))  # sill, front face at z = -4
+	w.add_box(Vector3(0, 1.6, -4.2), Vector3(4, 2.4, 0.05))  # glass on it
+	var p := await _settle()
+	await w.step_until(func() -> bool: return p.global_position.z < -3.3, 120, _fwd())
+	w.states_seen.clear()
+	await w.press(_fwd_jump())
+	await w.step(60, _fwd())
+	check(not (Player.State.VAULT in w.states_seen) and not (Player.State.MANTLE in w.states_seen), "no vault or mantle")
+	check(p.global_position.z > -4.0, "still on this side (z %.2f)" % p.global_position.z)
+
+
+## A thin railing in front of a lower walkway: no mantling through the rail.
+func test_no_mantle_through_a_thin_rail() -> void:
+	w.add_floor()
+	w.add_box(Vector3(0, 0.5, -4.09), Vector3(4, 1.0, 0.18))  # rail, z -4.0 to -4.18
+	w.add_box(Vector3(0, 0.3, -5.2), Vector3(4, 0.6, 2.0))  # walkway behind it, lower than the rail
+	var p := await _settle()
+	await w.step_until(func() -> bool: return p.global_position.z < -3.3, 120, _fwd())
+	# Lowest the feet get while the body is over the rail.
+	var low := [INF]
+	var track := func() -> bool:
+		var z := p.global_position.z
+		if z < -4.0 + Player.RADIUS - 0.05 and z > -4.18 - Player.RADIUS + 0.05:
+			low[0] = minf(low[0], p.global_position.y)
+		return false
+	w.states_seen.clear()
+	await w.press(_fwd_jump())
+	await w.step_until(track, 90, _fwd())
+	# (A rounded capsule resting on the rail's edge sits a little below its top.)
+	check(low[0] > 0.85, "never passes through the rail (lowest feet over it %.2f)" % low[0])
+
+
+## Scale stays 1: turning every tick while moving used to shrink it.
+func test_turning_never_shrinks_the_player() -> void:
+	w.add_floor()
+	var p := await _settle()
+	for i in 600:
+		p.yaw = wrapf(p.yaw + 0.037, -PI, PI)
+		await w.step(1, _fwd())
+	var s := p.global_basis.get_scale()
+	check(absf(s.x - 1.0) < 1e-6 and absf(s.z - 1.0) < 1e-6, "scale %s" % s)
