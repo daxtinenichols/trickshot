@@ -73,6 +73,9 @@ var _last_yaw := 0.0
 var _shown := {}
 ## Hip fire raises the gun arm for a moment; each shot kicks it.
 var _fire_raise := 0.0
+var _prev_speed := 0.0
+var _accel := 0.0
+var _drive := 0.0
 var _recoil := 0.0
 var _turn_lean := 0.0
 var _wall_side := 1.0
@@ -407,7 +410,7 @@ func _add_gun_hold(pose: Dictionary) -> void:
 func _add_lean(pose: Dictionary) -> void:
 	var bend := deg_to_rad(14.0) * player.lean * (1.0 - _tuck)
 	for bone: String in ["Spine", "Chest"]:
-		pose[bone] = Quaternion(Vector3.BACK, bend) * pose.get(bone, Quaternion.IDENTITY)
+		pose[bone] = Quaternion(Vector3.RIGHT, _drive * 0.5) * Quaternion(Vector3.BACK, bend) * pose.get(bone, Quaternion.IDENTITY)
 
 
 func _to_quat(bone: String, e: Vector3) -> Quaternion:
@@ -481,6 +484,11 @@ func _update_root(delta: float) -> void:
 		pivot = Vector3(0, 0.5, 0)
 	var lie := weight("prone") + weight("dive") * 0.9
 	pitch += deg_to_rad(88.0) * lie
+	# Runners lean into speed, more while speeding up, upright when braking
+	# (applied to the upper body in _add_lean so the feet stay planted).
+	_accel = lerpf(_accel, (speed - _prev_speed) / maxf(delta, 0.001), 1.0 - exp(-6.0 * delta))
+	_prev_speed = speed
+	_drive = (deg_to_rad(10.0) * clampf(speed / 12.0, 0.0, 1.0) + clampf(_accel * 0.01, -0.14, 0.12)) * weight("run")
 	offset += Vector3(0, 0.15, -0.85) * lie
 	_root_pitch = lerp_angle(_root_pitch, pitch, 1.0 - exp(-30.0 * delta))
 	_root_roll = lerp_angle(_root_roll, roll, 1.0 - exp(-(30.0 if player.state == Player.State.AIR else 12.0) * delta))
