@@ -34,6 +34,7 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Slow motion (40% for 3 s, then a 6 s cooldown) | Click the mouse wheel | D-pad down |
 | HUD / tuning / speed trail | F1 / F2 / F4 | |
 | Art look / chase camera / next level / corner view | F9 / F10 / F11 / F12 | |
+| Zoom the third-person camera (in past the closest goes to first person) | Mouse wheel | |
 
 You always sprint: there's no walk or sprint key. Let go of the stick to stop.
 
@@ -166,4 +167,4 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 
 ## Art look
 
-The sandbox runs with the cel-shaded look on: toon shading, ink outlines, and speed lines at the screen edges when you're fast. **F9** switches between the art look and plain graybox. **F10** switches to a full-screen third-person chase camera (the F12 corner view shows the same runner) (motion trails stream from the hands and feet above run speed). How the art, animation and maps are made is in [docs/art-pipeline.md](docs/art-pipeline.md).
+The sandbox runs with the cel-shaded look on: toon shading, ink outlines, and speed lines at the screen edges when you're fast. **F9** switches between the art look and plain graybox. **F10** (or scrolling out of first person) switches to a full-screen third-person camera that tilts with your view and zooms with the wheel (the F12 corner view shows the same runner) (motion trails stream from the hands and feet above run speed). The world is a dusty post-apocalyptic city: procedural concrete, rust, cracked asphalt and chipped paint, all in world space with no texture files. The sidearm is a taped-up scrap pistol with a rusty compensator, in first person and in the runner's hand; shots have a cel muzzle flash, slide blowback, casings, tracers, sparks, dust and bullet holes, and layered procedural gunshot audio. How the art, animation and maps are made is in [docs/art-pipeline.md](docs/art-pipeline.md).

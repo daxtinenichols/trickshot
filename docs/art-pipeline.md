@@ -110,7 +110,31 @@ code-built sandbox it swaps the graybox materials; real maps use
 `ArtLook.world_material(color)` directly.
 
 In game: **F12** toggles the corner camera, **F9** toggles the art look
-(compare with graybox), **F10** toggles a full-screen chase camera.
+(compare with graybox), **F10** toggles a full-screen chase camera (the wheel zooms it; zooming
+all the way in returns to first person).
+
+## Environment textures
+
+`art/shaders/wasteland.gdshader` textures world geometry procedurally in
+world space (planar projection, no UVs or image files): `surface` picks
+concrete, rusted metal, asphalt, painted metal or concrete (chips show what's
+under the paint) or a building facade with a window grid. Detail is
+posterized into a few flat steps so it sits inside the cel bands. Dust
+settles on top faces, grime streaks down walls. `ArtLook.SURFACES` maps each
+gameplay kind to a surface; a builder can set a visual-only `look` meta on a
+body (e.g. `"FACADE"`) to dress it differently from its gameplay kind. Cel
+lighting is shared through `art/shaders/toon_light.gdshaderinc`.
+
+## Gun
+
+`art/source/build_gun.py` builds `art/weapons/scrap_pistol.glb` (beveled
+boxes, vertex colors, a separate "Slide" mesh). `art/weapons/gun_look.gd`
+puts it in first person under `Pistol.view_model` and in the runner's right
+hand, turns off the test pistol's builtin visuals, and draws every shot from
+the Pistol's `shot` signal: muzzle flash (`art/shaders/muzzle_flash.gdshader`),
+flash light, smoke, slide blowback (locked back on empty), casings, tracer,
+sparks, dust, chips and bullet-hole decals. Sounds are synthesized in
+`art/fx/gun_audio.gd`. Preview with `art/tools/gun_shots.gd`.
 F5-F8 are left alone because the Godot editor uses them to run, pause and
 stop the game.
 
