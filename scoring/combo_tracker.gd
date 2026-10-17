@@ -10,6 +10,7 @@ extends Node
 ## - The combo banks (points x multiplier go to your score) when you come to
 ##   rest or go `bank_after` seconds without a new trick. Sliding, wallrunning,
 ##   climbing and vaulting hold the clock.
+## - A kill finishes the combo: it banks right away, ending on the kill.
 ## - Bailing (crash, hard landing, slamming into a wall, falling out) loses it.
 ## - Damage scales with the combo: 1 + 0.2 per different trick, times the
 ##   speed bonus, capped at 3x.
@@ -17,7 +18,12 @@ extends Node
 ## Pure game logic: reads the player, never changes it.
 
 signal combo_changed
+## A trick (or shot style) was just added, worth `points` before the multiplier.
+signal added(trick_name: StringName, points: int)
 signal banked(points: int, multiplier: int, total: int)
+## A combo ended and scored. summary: {entries, points, multiplier, total,
+## reason (&"kill", &"rest", &"timeout")}.
+signal finished(summary: Dictionary)
 signal bailed(points: int, reason: StringName)
 
 ## Base points per trick. Names match Player.trick signal names, plus shot
@@ -176,6 +182,8 @@ func on_hit(info: Dictionary) -> void:
 		style.append(&"hit")
 	for s in style:
 		add(s, POINTS[s], speed)
+	if info.get("killed", false):
+		bank(&"kill")
 
 
 ## Adds a trick to the combo (starting one if needed). Returns its entry index.
@@ -194,20 +202,23 @@ func add(trick_name: StringName, base: float, speed: float, quality: float = -1.
 	combo_points += value
 	time_left = bank_after
 	_rest = 0.0
+	added.emit(trick_name, roundi(value))
 	combo_changed.emit()
 	return idx
 
 
-func bank() -> void:
+func bank(reason := &"rest") -> void:
 	if not is_active():
 		return
 	var total := combo_total()
 	var mult := multiplier()
 	var pts := roundi(combo_points)
+	var summary := {"entries": entries.duplicate(true), "points": pts, "multiplier": mult, "total": total, "reason": reason}
 	score += total
 	best_combo = maxi(best_combo, total)
 	_clear()
 	banked.emit(pts, mult, total)
+	finished.emit(summary)
 
 
 func bail(reason: StringName) -> void:
@@ -256,5 +267,7 @@ func tick(delta: float) -> void:
 		_rest += delta
 	else:
 		_rest = 0.0
-	if time_left <= 0.0 or _rest >= rest_time:
-		bank()
+	if time_left <= 0.0:
+		bank(&"timeout")
+	elif _rest >= rest_time:
+		bank(&"rest")
