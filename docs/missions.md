@@ -69,6 +69,7 @@ See `m03_glass_district.json`.
 | segment | |
 |---|---|
 | `{"roof": length, "y": h, "width": 12, "do": [...]}` | a roof (y 0 is the street). Higher than the roof before and straight on: a yellow face to climb (3 m max). Lower after a gap: a drop (roll from 3.5 m) |
+| `{"roof": 80, "y": 1, "interior": 6}` | the inside of a building: walls and a roof `interior` m over the floor, with skylights every 10 m (a warehouse, an office floor). Enter by ramp or straight on; climb out to a higher roof at its end |
 | `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof |
 | `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
 | `{"ramp_up": y}` / `{"ramp_down": y, "length": 22}` | a ramp to a new height (down is a slide ramp) |
@@ -113,6 +114,9 @@ The test bot runs every route mission (`bot`), and again down the other
 line of every fork (`bot_alt`); `route_legs` tells it where the corners
 are, so its triggers are distances along the run, not world z.
 
+`"chalk": true` paints the run: an orange courier chalk arrow where each
+main-line roof starts, and a faded mark on the other line of a fork.
+
 Roofs also get edge clutter from `clutter` (a mission-level list of props),
 kept out of run-ups, landings and features. Keep lines long and open:
 there is no speed cap, so a fast run must still land every roof.
@@ -154,7 +158,8 @@ Story lines play once, queued, without ever stopping the game:
 `who`: `mags`, `host`, `echo`, `parker`, `juno`. Triggers (`on`):
 `start` (mission loads), `go` (you leave the start), `objective:N` (objective
 N begins), `done:N`, `checkpoint:N`, `complete`, `time:SECONDS`, `fall`,
-`caught`, `down`, `tape`. Or use `at` with `radius`/`size` to play when you reach a
+`caught`, `down`, `tape`, `kill:TYPE` (the first kill of an enemy listed by
+type, like `kill:camera_drone`). Or use `at` with `radius`/`size` to play when you reach a
 spot.
 
 `chatter` holds reactions to how you play, by event: `bail`, `combo` (a
