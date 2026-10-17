@@ -11,7 +11,6 @@ extends Node3D
 var menu: PauseMenu
 var combo: ComboTracker
 var combo_hud: ComboHud
-var corner_cam: CornerCam
 
 
 func _ready() -> void:
@@ -27,9 +26,6 @@ func _ready() -> void:
 	combo_hud = ComboHud.new()
 	add_child(combo_hud)
 	combo_hud.setup(combo)
-	corner_cam = CornerCam.new()
-	add_child(corner_cam)
-	corner_cam.setup(player)
 	go_to_zone(0)
 	hud.show_toast("Esc: maps, moves list, settings and controls", 4.0)
 

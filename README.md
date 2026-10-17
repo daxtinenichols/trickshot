@@ -33,14 +33,14 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Jump to zone | 1–9, 0 = shooting range, - = ramps and loop | |
 | Slow motion (40% for 3 s, then a 6 s cooldown) | Click the mouse wheel | D-pad down |
 | HUD / tuning / speed trail | F1 / F2 / F4 | |
-| Art look / chase camera / next level / corner view | F9 / F10 / F11 / F12 | |
+| Art look / third-person camera / next level | F9 / F10 / F11 | |
 | Zoom the third-person camera (in past the closest goes to first person) | Mouse wheel | |
 
 You always sprint: there's no walk or sprint key. Let go of the stick to stop.
 
 Click the mouse wheel and time eases down to 40% for 3 seconds, then eases back; click again to end it early. It then needs 6 seconds to recharge (the readout under the score counts down). The screen edges darken while time is slowed. The game still runs the same 1/60 s steps, just less often, so a move in slow motion plays out exactly as it would at full speed.
 
-A small third-person view in the lower-left corner shows your character so you can see what your moves look like (F12 hides it).
+Play in first person, or press F10 (or scroll the wheel out) for third person.
 
 ## How the moves work
 
@@ -156,7 +156,7 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `targets/` | Shooting targets |
 | `levels/` | Sandbox scene, level builder (the layout is built in code), ramp and loop shapes, doors, windows, kick dummies |
 | `scoring/` | Combo tracker (Skate-style combos, score, combo damage) |
-| `ui/` | Debug HUD, combo HUD, corner third-person view, pause menu (moves list, settings, controls), tuning panel, hit marker, speed graph |
+| `ui/` | Debug HUD, combo HUD, pause menu (moves list, settings, controls), tuning panel, hit marker, speed graph |
 | `autoload/` | Default input bindings, player settings and custom bindings |
 | `fx/` | Speed trail |
 | `tests/` | Test runner and suites |
@@ -166,4 +166,4 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 
 ## Art look
 
-The sandbox runs with the cel-shaded look on: toon shading, ink outlines, and speed lines at the screen edges when you're fast. **F9** switches between the art look and plain graybox. **F10** (or scrolling out of first person) switches to a full-screen third-person camera that tilts with your view and zooms with the wheel (the F12 corner view shows the same runner) (motion trails stream from the hands and feet above run speed). The world is a dusty post-apocalyptic city: procedural concrete, rust, cracked asphalt and chipped paint, all in world space with no texture files. The sidearm is a taped-up scrap pistol with a rusty compensator, in first person and in the runner's hand; shots have a cel muzzle flash, slide blowback, casings, tracers, sparks, dust and bullet holes, and layered procedural gunshot audio. How the art, animation and maps are made is in [docs/art-pipeline.md](docs/art-pipeline.md).
+The sandbox runs with the cel-shaded look on: toon shading, ink outlines, and speed lines at the screen edges when you're fast. **F9** switches between the art look and plain graybox. **F10** (or scrolling out of first person) switches to a full-screen third-person camera that tilts with your view and zooms with the wheel (motion trails stream from the hands and feet above run speed). The world is a dusty post-apocalyptic city: procedural concrete, rust, cracked asphalt and chipped paint, all in world space with no texture files. The sidearm is a taped-up scrap pistol with a rusty compensator, in first person and in the runner's hand; shots have a cel muzzle flash, slide blowback, casings, tracers, sparks, dust and bullet holes, and layered procedural gunshot audio. How the art, animation and maps are made is in [docs/art-pipeline.md](docs/art-pipeline.md).

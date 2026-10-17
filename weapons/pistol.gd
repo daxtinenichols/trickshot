@@ -18,7 +18,7 @@ signal mode_changed(full_auto: bool)
 
 const HITBOX_MASK := 1 | 4
 ## Render layer bit for the first-person gun model (layer 3), so other
-## cameras (the corner cam) can leave it out.
+## cameras (the third-person chase cam) can leave it out.
 const VIEW_LAYER := 4
 
 @export var stats: WeaponStats

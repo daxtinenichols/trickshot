@@ -25,7 +25,6 @@ const KEYS := {
 	"debug_tuning": [KEY_F2],
 	"debug_slowmo": [KEY_F3],
 	"debug_trail": [KEY_F4],
-	"toggle_corner_cam": [KEY_F12],
 	"zone_1": [KEY_1],
 	"zone_2": [KEY_2],
 	"zone_3": [KEY_3],

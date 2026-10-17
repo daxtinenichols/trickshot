@@ -1,11 +1,11 @@
 extends TestCase
-## The runner body in the corner camera: building, render layers, poses per
-## state, the kick overlay, aiming and the F12 toggle. Presentation only.
+## The runner body (built by the art look): building, render layers, poses
+## per state, the kick overlay and aiming. Presentation only.
 
 const SANDBOX := preload("res://levels/sandbox.tscn")
 
 var _w: TestWorld
-var _cam: CornerCam
+var _rig: RunnerBody
 
 
 func _make() -> Player:
@@ -13,9 +13,7 @@ func _make() -> Player:
 	tree.root.add_child(_w)
 	_w.add_floor()
 	var p := _w.spawn_player(Vector3(0, 0.05, 0))
-	_cam = CornerCam.new()
-	_w.add_child(_cam)
-	_cam.setup(p)
+	_rig = ArtLook.ensure_body(p)
 	return p
 
 
@@ -23,7 +21,7 @@ func after_each() -> void:
 	if is_instance_valid(_w):
 		_w.queue_free()
 	_w = null
-	_cam = null
+	_rig = null
 	await tree.process_frame
 
 
@@ -36,21 +34,21 @@ func _hold(p: Player, s: Player.State, frames := 40) -> void:
 
 
 func _root() -> Basis:
-	return _cam.rig.model.transform.basis
+	return _rig.model.transform.basis
 
 
 func _hips_height() -> float:
-	return _cam.rig.to_local(_cam.rig.bone_world_position("Hips")).y
+	return _rig.to_local(_rig.bone_world_position("Hips")).y
 
 
 func _bone(name: String) -> Quaternion:
-	var sk := _cam.rig.skeleton
+	var sk := _rig.skeleton
 	return sk.get_bone_pose_rotation(sk.find_bone(name))
 
 
 func test_body_builds_and_attaches() -> void:
 	var p := _make()
-	var rig := _cam.rig
+	var rig := _rig
 	check(rig != null and rig.get_parent() == p, "body is a child of the player")
 	check(p.get_node("RunnerBody") == rig, "one body, shared with the art look")
 	await _hold(p, Player.State.GROUND, 10)
@@ -60,17 +58,13 @@ func test_body_builds_and_attaches() -> void:
 
 func test_layers_and_cull_masks() -> void:
 	var p := _make()
-	var meshes := _cam.rig.find_children("*", "MeshInstance3D", true, false)
+	var meshes := _rig.find_children("*", "MeshInstance3D", true, false)
 	check(not meshes.is_empty(), "body has meshes")
 	for m: MeshInstance3D in meshes:
 		check(m.layers == RunnerBody.LAYER, "%s on layer 2 only (%d)" % [m.name, m.layers])
 	check(p.camera.cull_mask & RunnerBody.LAYER == 0, "first-person camera skips the body")
 	check(p.camera.cull_mask & Pistol.VIEW_LAYER != 0, "first-person camera still sees the gun")
 	check(p.camera.cull_mask & 1 != 0, "first-person camera still sees the world")
-	check(_cam.camera.cull_mask & RunnerBody.LAYER != 0, "corner camera sees the body")
-	check(_cam.camera.cull_mask & 1 != 0, "corner camera sees the world")
-	check(_cam.camera.cull_mask & Pistol.VIEW_LAYER == 0, "corner camera skips the first-person gun")
-	check(_cam.viewport.world_3d == null and not _cam.viewport.own_world_3d, "corner view shares the main world")
 
 
 func test_roll_turns_body_over() -> void:
@@ -107,7 +101,7 @@ func test_flips_and_side_flips_turn_the_body() -> void:
 	# Model space: +Z is the body's front. A backflip tips the head back.
 	check_near(_root().get_rotation_quaternion().get_angle(), 2.0, 0.08, "turned by the air pitch")
 	check(_root().y.z < -0.5, "backflip tips the head backwards (%s)" % _root().y)
-	check(_cam.rig.weight("tuck") > 0.0 or _bone("LeftLowerLeg").get_angle() > 0.5, "tucks while flipping")
+	check(_rig.weight("tuck") > 0.0 or _bone("LeftLowerLeg").get_angle() > 0.5, "tucks while flipping")
 	p._air_pitch = 0.0
 	p._air_roll = 1.0
 	for i in 40:
@@ -171,7 +165,7 @@ func test_kick_overlay_plays_and_ends() -> void:
 		await tree.process_frame
 		peak = maxf(peak, rest.angle_to(_bone("LeftUpperLeg")))
 	check(peak > 0.8, "leg kicks up (%.2f rad)" % peak)
-	check(_cam.rig.weight("kick") < 0.05, "kick finishes")
+	check(_rig.weight("kick") < 0.05, "kick finishes")
 
 
 func test_aim_raises_gun_arm() -> void:
@@ -181,7 +175,7 @@ func test_aim_raises_gun_arm() -> void:
 	p.pitch = 0.0
 	for i in 40:
 		await tree.process_frame
-	var rig := _cam.rig
+	var rig := _rig
 	var dir := (rig.bone_world_position("RightHand") - rig.bone_world_position("RightLowerArm")).normalized()
 	check(p.aim_zoom > 0.99, "aimed in")
 	check(dir.dot(p.forward()) > 0.85, "gun arm points along the view when aiming (%s)" % dir)
@@ -197,8 +191,8 @@ func test_follows_the_player_on_ramps_and_loops() -> void:
 	p.velocity = p.global_basis * Vector3(0, 0, -9)
 	for i in 30:
 		await tree.process_frame
-	check(_cam.rig.global_basis.y.dot(p.global_basis.y) > 0.95, "body up matches the player's up (%s)" % _cam.rig.global_basis.y)
-	check(_cam.rig.weight("run") > 0.8, "runs on the surface")
+	check(_rig.global_basis.y.dot(p.global_basis.y) > 0.95, "body up matches the player's up (%s)" % _rig.global_basis.y)
+	check(_rig.weight("run") > 0.8, "runs on the surface")
 
 
 func test_every_state_poses_without_errors() -> void:
@@ -208,7 +202,7 @@ func test_every_state_poses_without_errors() -> void:
 	p.lean = 0.7
 	p.velocity = Vector3(0, 2, -9)
 	p._wall_normal = Vector3(1, 0, 0)
-	var sk := _cam.rig.skeleton
+	var sk := _rig.skeleton
 	for s: int in Player.State.values():
 		p.state = s as Player.State
 		p.state_time = 0.1
@@ -223,41 +217,15 @@ func test_every_state_poses_without_errors() -> void:
 	check(_root().get_rotation_quaternion().is_normalized(), "unknown state is fine")
 
 
-func test_f12_toggles_corner_view() -> void:
-	var p := _make()
-	check(InputMap.has_action("toggle_corner_cam"), "action registered")
-	check(not GameSettings.is_bindable(_f12(), false), "F12 is reserved")
-	check(_cam.is_enabled() and _cam.rig.visible, "on by default")
-	_cam._unhandled_input(_f12())
-	check(not _cam.is_enabled() and not _cam.frame.visible, "F12 hides it")
-	check(not _cam.rig.visible, "body hidden too")
-	check(_cam.viewport.render_target_update_mode == SubViewport.UPDATE_DISABLED, "stops rendering")
-	_cam._unhandled_input(_f12())
-	check(_cam.is_enabled() and _cam.rig.visible, "F12 brings it back")
-	check(p.camera.cull_mask & RunnerBody.LAYER == 0, "first-person still hides the body")
-
-
-func test_chase_camera_follows_behind_and_avoids_walls() -> void:
-	var p := _make()
-	await _hold(p, Player.State.GROUND, 10)
-	var cam := _cam.camera.global_position
-	var local := p.global_basis.inverse() * (cam - p.global_position)
-	check(local.z > 2.5 and local.x > 0.3 and local.y > 1.5, "behind, right and above (%s)" % local)
-	_w.add_box(p.global_position + Vector3(0, 1.5, 1.5), Vector3(6, 4, 0.4))
-	for i in 10:
-		await tree.process_frame
-	var pulled := p.global_basis.inverse() * (_cam.camera.global_position - p.global_position)
-	check(pulled.z < 1.3, "pulled in front of the wall (%s)" % pulled)
-
-
-func test_sandbox_has_corner_cam_and_survives_pause() -> void:
+func test_sandbox_has_the_body_and_survives_pause() -> void:
 	var level: Node3D = SANDBOX.instantiate()
 	tree.root.add_child(level)
 	var player: Player = level.get_node("Player")
 	player.use_device_input = false
 	await tree.process_frame
-	var cc: CornerCam = level.corner_cam
-	check(cc != null and cc.rig != null and cc.rig.get_parent() == player, "sandbox builds the corner cam")
+	# The art look attaches the body in a real game (not headless).
+	ArtLook.attach_to_player(player)
+	check(player.get_node_or_null("RunnerBody") != null, "sandbox has the runner body")
 	check(player.camera.cull_mask & RunnerBody.LAYER == 0, "sandbox first-person view hides the body")
 	level.menu.open(0)
 	for i in 5:
@@ -267,10 +235,3 @@ func test_sandbox_has_corner_cam_and_survives_pause() -> void:
 	await tree.process_frame
 	level.queue_free()
 	await tree.process_frame
-
-
-func _f12() -> InputEventKey:
-	var k := InputEventKey.new()
-	k.physical_keycode = KEY_F12
-	k.pressed = true
-	return k

@@ -50,7 +50,7 @@ const TRICK_NAMES := {
 	&"boost": "BOOST",
 }
 
-const HELP := "Esc: maps, moves list, settings and controls · Backspace respawn · 1-9 zones, 0 shooting range, - ramps and loop · F1 HUD · F2 tuning · wheel click slow-mo (F3 holds it) · wheel zoom (third person) · F4 speed trail · F9 art look · F10 chase cam · F11 next map (or pick one in the Esc menu) · F12 corner cam"
+const HELP := "Esc: maps, moves list, settings and controls · Backspace respawn · 1-9 zones, 0 shooting range, - ramps and loop · F1 HUD · F2 tuning · wheel click slow-mo (F3 holds it) · wheel zoom (third person) · F4 speed trail · F9 art look · F10 chase cam · F11 next map (or pick one in the Esc menu)"
 
 var player: Player
 
