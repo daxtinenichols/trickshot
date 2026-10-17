@@ -14,12 +14,10 @@ const STEP := 0.1
 const MIN_SPEED := 0.1
 const DEBUG_SPEED := 0.3
 
-## 1 = normal speed. The speed you picked; a hit-stop dips below it briefly.
+## 1 = normal speed.
 var speed := 1.0
-## The speed time actually runs at now.
+## The speed last applied to the engine.
 var applied := 1.0
-var _stop_until := 0
-var _stop_speed := 1.0
 
 var vignette: ColorRect
 var label: Label
@@ -84,25 +82,10 @@ func _unhandled_input(event: InputEvent) -> void:
 
 
 ## Sets the speed of time, clamped to 10%..100% in 1/60 steps (whole ticks
-## per second). Cancels a hit-stop.
+## per second).
 func set_speed(s: float) -> void:
 	speed = _snap(s)
-	_stop_until = 0
 	_apply()
-
-
-## Hit-stop: time dips to `at_speed` for `seconds` of real time (a kill or a
-## headshot landing), then comes back to the speed you picked.
-func hit_stop(seconds: float, at_speed: float) -> void:
-	if seconds <= 0.0:
-		return
-	_stop_until = Time.get_ticks_usec() + int(seconds * 1000000.0)
-	_stop_speed = at_speed
-	_apply()
-
-
-func is_hit_stopped() -> bool:
-	return _stop_until > 0
 
 
 static func _snap(s: float) -> float:
@@ -110,10 +93,9 @@ static func _snap(s: float) -> float:
 
 
 func _apply() -> void:
-	var s := speed if _stop_until == 0 else minf(speed, _snap(_stop_speed))
-	applied = s
-	Engine.physics_ticks_per_second = roundi(s * TICKS)
-	Engine.time_scale = s
+	applied = speed
+	Engine.physics_ticks_per_second = roundi(speed * TICKS)
+	Engine.time_scale = speed
 	var slowed := 1.0 - speed
 	vignette.visible = slowed > 0.0
 	(vignette.material as ShaderMaterial).set_shader_parameter("strength", 0.35 + 0.55 * slowed / (1.0 - MIN_SPEED))
@@ -126,6 +108,3 @@ func _process(_delta: float) -> void:
 	# follow it so the tick rate matches.
 	if not is_equal_approx(Engine.time_scale, applied):
 		set_speed(Engine.time_scale)
-	elif _stop_until > 0 and Time.get_ticks_usec() >= _stop_until:
-		_stop_until = 0
-		_apply()

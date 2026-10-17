@@ -14,7 +14,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
-	SlowMo.set_speed(1.0)  # ends any hit-stop
+	SlowMo.set_speed(1.0)
 	w.queue_free()
 	await tree.process_frame
 
@@ -318,30 +318,21 @@ func test_recoil_punches_up_then_settles() -> void:
 	check(p.camera.fov > p._fov_base + 0.2, "the view widens for a moment")
 
 
-func test_headshot_and_kill_catch_time() -> void:
+## Hits are felt through the gun, view and marker; time never stalls,
+## so shooting mid-run never breaks your flow.
+func test_headshots_and_kills_never_slow_time() -> void:
 	await _setup()
 	var t := _target(Vector3(0, 0, -15))
-	await _shoot(_head(t))
-	check(SlowMo.is_hit_stopped() and Engine.time_scale < 1.0, "a headshot catches time for a moment")
-	check(SlowMo.speed == 1.0, "without touching the slow-mo setting")
-	var t0 := Time.get_ticks_msec()
-	while SlowMo.is_hit_stopped() and Time.get_ticks_msec() - t0 < 2000:
-		await tree.process_frame
-	check(not SlowMo.is_hit_stopped() and Engine.time_scale == 1.0 and Engine.physics_ticks_per_second == 60, "then back to full speed")
-	await _settle_gun()
-	await _shoot(_chest(t))
-	check(not SlowMo.is_hit_stopped(), "a body shot doesn't")
-
-
-func test_hit_stop_keeps_your_slow_motion() -> void:
-	SlowMo.set_speed(0.5)
-	SlowMo.hit_stop(0.02, 0.2)
-	check_near(Engine.time_scale, 0.2, 0.001, "dips below your slow motion")
-	var t0 := Time.get_ticks_msec()
-	while SlowMo.is_hit_stopped() and Time.get_ticks_msec() - t0 < 2000:
-		await tree.process_frame
-	check_near(Engine.time_scale, 0.5, 0.001, "and comes back to it")
-	check_near(Engine.time_scale / Engine.physics_ticks_per_second, 1.0 / 60.0, 1e-9, "ticks stay 1/60 s throughout")
+	var killed := false
+	for i in 6:
+		await _shoot(_head(t))
+		check(Engine.time_scale == 1.0 and Engine.physics_ticks_per_second == 60, "time keeps running on hit %d" % i)
+		killed = hits.any(func(h: Dictionary) -> bool: return h.killed)
+		if killed:
+			break
+		await _settle_gun()
+	check(hits.size() > 0 and hits[0].zone == &"head", "headshots landed")
+	check(killed, "and a kill")
 
 
 func test_hit_marker_pops_on_hits() -> void:

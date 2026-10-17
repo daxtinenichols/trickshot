@@ -236,11 +236,6 @@ func _resolve_hit(result: Dictionary, from: Vector3, dir: Vector3) -> void:
 		collider.on_hit(info)
 	if target:
 		_play(_hit_audio, _head_tick if zone == &"head" else _body_tick)
-		# Hit-stop: time catches for a moment when a headshot or kill lands.
-		if info.killed:
-			SlowMo.hit_stop(stats.hitstop_kill, stats.hitstop_speed)
-		elif zone == &"head":
-			SlowMo.hit_stop(stats.hitstop_headshot, stats.hitstop_speed)
 	hit.emit(info)
 
 
