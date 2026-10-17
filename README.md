@@ -143,7 +143,7 @@ Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbo
 
 - **0 Dawn Run** (dock rooftops): deliver a parcel, run home, and hear the Host announce he has Echo.
 - **1 The Yard** (Combo Park): Mags's last lesson: a x3 combo, three dummies, two headshots, 6,000 points, then out the south gate.
-- **2 On Air** (warehouse roofs, 700 m): the Host names you on air; wallruns, wall hops and three of the Static's raiders shooting back from behind sandbags.
+- **2 On Air** (warehouse roofs, 540 m): the Host names you on air; wallruns, wall hops and three of the Static's raiders shooting back from behind sandbags.
 - **3 Glass District** (office roofs, 560 m): windows to slide through, a climb to the upper offices, toll spotters to take out, on to the Silt bridge.
 - **4 Silt Line** (the Silt, 530 m): the bridge is gone; run through the crawlers without stopping, climb onto the overpass and run it to Meridian Mall.
 - **12 Signal Out** (the burning tower): you play Echo and the Host chases you. He follows your exact path, never drops more than about 22 m behind, and catches you if you slow down; Parker coaches you on the radio. Beating it unlocks Echo as a runner for every mission.
