@@ -82,11 +82,12 @@ Story lines play once, queued, without ever stopping the game:
 `who`: `mags`, `host`, `echo`, `parker`, `juno`. Triggers (`on`):
 `start` (mission loads), `go` (you leave the start), `objective:N` (objective
 N begins), `done:N`, `checkpoint:N`, `complete`, `time:SECONDS`, `fall`,
-`caught`, `tape`. Or use `at` with `radius`/`size` to play when you reach a
+`caught`, `down`, `tape`. Or use `at` with `radius`/`size` to play when you reach a
 spot.
 
 `chatter` holds reactions to how you play, by event: `bail`, `combo` (a
-banked combo of x4 or more), `fall`, `kill`, `headshot`, `caught`, `tape`.
+banked combo of x4 or more), `fall`, `kill`, `headshot`, `down` (enemies
+took you down), `caught`, `tape`.
 Each is a list of `{"who", "line"}` used in turn, at most one every few
 seconds, and never over a story line.
 
@@ -122,6 +123,28 @@ two or three seconds gets you caught.
 | `{"mark": [x, y, z], "size": [w, d], "color": "#f57320"}` | painted floor mark |
 | `{"tape": [x, y, z], "id": "m02_tape_container"}` | a lost broadcast tape (collectible); ids must be unique |
 | `{"fire": [x, y, z], "size": [w, h, d]}` | flames and light, no collision |
+| `{"encounter": "name", "area": {...}, "raiders": [...], "mutants": [...], "cover": [...]}` | enemies (below) |
+
+### Enemies
+
+```json
+{"encounter": "lookouts", "area": {"at": [0, 12, -106], "size": [12, 10, 46]},
+ "raiders": [{"at": [-3, 8, -119], "yaw": 180}, {"at": [0, 8, -126], "yaw": 180, "wake": 1.5}],
+ "mutants": [{"at": [0, 8, -140], "leash_radius": 14, "aggro_radius": 10}],
+ "cover": [{"at": [-3, 8, -116], "length": 2.0, "yaw": 0}]}
+```
+
+The Host's raiders (rifles, take cover, a red laser before each shot) and
+mutants (rush and leap, leashed to where they stand) from `enemies/`. They
+wake when you step into `area` (a box: `at` center, `size` full size) and
+fight until they're all down. Leave the area for a few seconds, or go down,
+and they reset; going down sends you back to the last checkpoint. `yaw` 180
+faces +Z (toward a runner coming down the usual -Z route); `wake` delays an
+enemy by that many seconds. `cover` rows are spots raiders hide behind, one
+every `spacing` m (2.2) on both sides of a low wall `length` m long; put a
+`sandbag_wall` or barricade there too. Optional: `max_aiming` (2: raiders
+aiming at once), `restart` (seconds before a cleared encounter comes back;
+never by default). Every kill counts toward `shoot` objectives, like targets.
 
 ## Props
 

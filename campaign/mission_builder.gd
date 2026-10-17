@@ -4,7 +4,7 @@ extends SandboxBuilder
 ## Builds a mission's layout from its data file (campaign/missions/*.json,
 ## format in docs/missions.md): optionally an existing map as the base, then
 ## the mission's own pieces (boxes, buildings, props, doors, windows,
-## targets, ramps and loops, labels, tapes, fire).
+## targets, ramps and loops, labels, tapes, fire, enemy encounters).
 ##
 ## In the editor, set `mission_path` on the Builder node of
 ## campaign/mission.tscn to see a mission's layout; save the JSON and press
@@ -13,6 +13,11 @@ extends SandboxBuilder
 
 const PropKit := preload("res://art/props/prop_kit.gd")
 const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
+# Enemies load by path, not class_name (a stale class cache has broken
+# scenes before).
+const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
+const RAIDER_SCRIPT := preload("res://enemies/raider.gd")
+const MUTANT_SCRIPT := preload("res://enemies/mutant.gd")
 
 @export_file("*.json") var mission_path := ""
 ## Rebuilds the layout (editor helper: tick it after editing the JSON).
@@ -25,6 +30,8 @@ const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
 var mission := {}
 ## Collectible tapes: [{id, position, node}].
 var tapes: Array[Dictionary] = []
+## Enemy encounters (EnemyEncounter nodes), in the order they appear.
+var encounters: Array[Node3D] = []
 ## The base map's builder, when the mission builds on one.
 var base: SandboxBuilder
 
@@ -47,6 +54,7 @@ func build() -> void:
 	spawns.clear()
 	zone_names.clear()
 	tapes.clear()
+	encounters.clear()
 	mission = Campaign.load_mission_file(resolved_path())
 	if mission.is_empty():
 		_box(Vector3(0, -0.5, 0), Vector3(40, 1, 40), Kind.FLOOR)
@@ -139,6 +147,8 @@ func _piece(p: Dictionary) -> void:
 		_tape(String(p.get("id", "tape_%d" % tapes.size())), vec(p.tape))
 	elif p.has("fire"):
 		_fire(vec(p.fire), vec(p.get("size", [2, 1.5, 2]), Vector3(2, 1.5, 2)))
+	elif p.has("encounter"):
+		_encounter(p)
 	else:
 		push_warning("MissionBuilder: unknown piece %s" % p)
 
@@ -203,3 +213,49 @@ func _fire(pos: Vector3, size: Vector3) -> void:
 	light.position = pos + Vector3(0, size.y + 0.5, 0)
 	light.add_to_group("mission_fire")
 	_root.add_child(light)
+
+
+## An enemy encounter: raiders and mutants that wake when you step into its
+## area and fight until you clear it, leave it for a few seconds or go down
+## (then they reset). Cover rows give raiders spots to hide behind. MissionRun
+## hands it the player. In the editor the enemies show as labels.
+func _encounter(p: Dictionary) -> void:
+	var area: Dictionary = p.get("area", {})
+	var center := vec(area.get("at", [0, 0, 0]))
+	var size := vec(area.get("size", [20, 10, 20]), Vector3(20, 10, 20))
+	if Engine.is_editor_hint():
+		for kind: String in ["raiders", "mutants"]:
+			for e: Dictionary in p.get(kind, []):
+				_label(kind.trim_suffix("s").to_upper(), vec(e.get("at", [0, 0, 0])) + Vector3(0, 1.6, 0), 0.5)
+		return
+	var enc: Node3D = ENCOUNTER_SCRIPT.new()
+	enc.name = "Encounter_" + String(p.encounter).validate_node_name()
+	enc.set_meta("id", p.encounter)
+	enc.add_to_group("mission_encounters")
+	_root.add_child(enc)
+	enc.bounds = AABB(center - size * 0.5, size)
+	enc.entry = Transform3D(Basis.IDENTITY, center)
+	# A mission's encounter stays cleared; the sandbox arena's restarts.
+	enc.restart_time = p.get("restart", INF)
+	enc.max_aiming = p.get("max_aiming", enc.max_aiming)
+	for c: Dictionary in p.get("cover", []):
+		enc.add_cover_wall(vec(c.get("at", [0, 0, 0])), c.get("length", 2.0), c.get("thickness", 0.55),
+				deg_to_rad(c.get("yaw", 0.0)), c.get("spacing", 2.2))
+	for e: Dictionary in p.get("raiders", []):
+		enc.add_enemy(_enemy(RAIDER_SCRIPT.new(), e), _enemy_xf(e))
+	for e: Dictionary in p.get("mutants", []):
+		var m: Node3D = _enemy(MUTANT_SCRIPT.new(), e)
+		for k: String in ["leash_radius", "aggro_radius"]:
+			if e.has(k):
+				m.set(k, e[k])
+		enc.add_enemy(m, _enemy_xf(e))
+	encounters.append(enc)
+
+
+static func _enemy(e: Node3D, d: Dictionary) -> Node3D:
+	e.wake_delay = d.get("wake", 0.0)
+	return e
+
+
+static func _enemy_xf(d: Dictionary) -> Transform3D:
+	return Transform3D(Basis(Vector3.UP, deg_to_rad(d.get("yaw", 0.0))), vec(d.get("at", [0, 0, 0])))

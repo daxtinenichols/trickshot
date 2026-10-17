@@ -3,6 +3,8 @@ extends "res://levels/sandbox.gd"
 ## the mission being played (Campaign.current), plus the mission's rules
 ## (MissionRun), the radio and the mission HUD.
 
+const HURT_OVERLAY_SCRIPT := preload("res://enemies/hurt_overlay.gd")
+
 var run: MissionRun
 var radio: RadioFeed
 var mission_hud: MissionHud
@@ -18,6 +20,12 @@ func _ready() -> void:
 	run.name = "MissionRun"
 	add_child(run)
 	run.setup(player, b, combo, index)
+	var health := player.get_node_or_null("PlayerHealth")
+	if health != null:
+		# Enemies are here: show damage like the sandbox arena does.
+		var overlay: CanvasLayer = HURT_OVERLAY_SCRIPT.new()
+		add_child(overlay)
+		overlay.setup(health)
 	radio = RadioFeed.new()
 	add_child(radio)
 	radio.setup(run, player)

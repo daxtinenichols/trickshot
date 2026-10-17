@@ -13,7 +13,8 @@ enum Phase { READY, RUNNING, COMPLETE }
 
 ## A named moment the radio can react to: "start", "go", "objective:N"
 ## (objective N became active), "done:N", "checkpoint:N", "fall", "caught",
-## "tape", "kill", "headshot", "combo", "bail", "complete".
+## "tape", "kill", "headshot", "combo", "bail", "down" (enemies took you
+## down), "complete".
 signal event(name: String)
 signal objective_changed(index: int)
 signal completed(result: Dictionary)
@@ -29,6 +30,8 @@ var phase := Phase.READY
 var ticks := 0
 var falls := 0
 var catches := 0
+## Times enemies took you down.
+var downs := 0
 ## Started from a checkpoint key, so the result isn't saved.
 var practice := false
 ## Index into builder.spawns: 0 is the start, then each checkpoint.
@@ -72,6 +75,15 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 		combo.bailed.connect(func(_points: int, _reason: StringName) -> void: event.emit("bail"))
 	for t in b.find_children("*", "ShootingTarget", true, false):
 		(t as ShootingTarget).killed.connect(_on_target_killed)
+	for enc: Node3D in b.encounters:
+		enc.setup(p)
+		enc.started.connect(_on_encounter_started)
+		enc.reset_done.connect(_on_encounter_reset)
+		for e: Node in enc.enemies:
+			e.killed.connect(_on_target_killed)
+	var health := p.get_node_or_null("PlayerHealth")
+	if health != null:
+		health.died.connect(_on_player_down)
 	if mission.has("pursuer"):
 		pursuer = Pursuer.new()
 		pursuer.name = "Pursuer"
@@ -227,6 +239,7 @@ func _complete() -> void:
 		"best_combo": best_combo,
 		"falls": falls,
 		"catches": catches,
+		"downs": downs,
 		"tapes": tapes_found.duplicate(),
 		"total_tapes": total_tapes(),
 		"par_seconds": par_seconds(),
@@ -300,6 +313,7 @@ func _reset_run(index: int) -> void:
 	ticks = 0
 	falls = 0
 	catches = 0
+	downs = 0
 	checkpoint = index
 	practice = index != 0
 	tapes_found.clear()
@@ -310,6 +324,8 @@ func _reset_run(index: int) -> void:
 	player.set_spawn(builder.spawns[index])
 	if pursuer != null:
 		pursuer.reset(_start_pos)
+	for enc: Node3D in builder.encounters:
+		enc.reset()
 
 
 func _on_banked(_points: int, multiplier: int, total: int) -> void:
@@ -327,3 +343,26 @@ func _on_target_killed(info: Dictionary) -> void:
 		event.emit("headshot")
 	else:
 		event.emit("kill")
+
+
+## Going down to enemies sends you back to the last checkpoint (the
+## encounter has already reset), not to the encounter's entrance.
+func _on_encounter_started() -> void:
+	var health := player.get_node_or_null("PlayerHealth")
+	if health != null:
+		health.respawn_point = builder.spawns[checkpoint]
+
+
+## An encounter's enemies came back: a shoot objective counts again from
+## here, so kills from before don't count twice.
+func _on_encounter_reset() -> void:
+	if current_objective().get("type", "") == "shoot":
+		_kills_at = kills
+		_headshots_at = headshots
+
+
+func _on_player_down() -> void:
+	downs += 1
+	if pursuer != null:
+		pursuer.reset(builder.spawns[checkpoint].origin)
+	event.emit("down")
