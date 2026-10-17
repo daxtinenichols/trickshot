@@ -99,6 +99,17 @@ Scoring works like Skate. Every move and every stylish hit adds points to a runn
 
 Point values are in `scoring/combo_tracker.gd`.
 
+## Enemies
+
+The sandbox has an **enemy arena** right behind the start of zone 1: press 1, turn around and run in. The fight starts when you step inside, resets if you leave for a few seconds or go down, and restarts a few seconds after you clear it.
+
+- **Raiders** (the Static) keep their distance and duck behind low walls, then stand up to shoot. Every shot is telegraphed: a red laser tracks you while they aim, then it turns white and stops tracking (with a beep) just before the shot. Their bullets are bright slugs you can see, so moving sideways after the lock dodges them. Standing still, or running straight at a raider, gets you hit. At most two raiders aim at you at once. They back off if you get close.
+- **Mutants** (Hollows) guard their patch: they rush you when you come near, hop low walls, and leap when they're a few meters away. The leap is telegraphed (they crouch, glow and growl) and aimed at where you are, so a sidestep or a jump makes it miss, and they're winded for a moment after landing. Up close they wind up a swipe you can back out of. They give up a chase that runs long and walk back.
+- **Hitting them:** yellow heads are headshots (2.5x damage). Two headshots or four body shots drop a raider; a mutant takes two headshots or five body shots. With a combo going, a single headshot can kill. A headshot that doesn't kill makes them flinch and cancels their attack, and a **kick** knocks them back and cancels it too. Every kill finishes your combo, like a target kill.
+- **Your health:** a few hits take you down. A red flash and an arrow show where a hit came from, and a health bar appears bottom left while you're hurt. Health comes back after a few seconds without damage. Going down puts you back at the arena entrance and loses the combo.
+
+All enemy logic ticks in physics from game state and a seeded random number generator, so the same input always plays out the same fight. Their numbers are exported on `enemies/raider.gd` and `enemies/mutant.gd`.
+
 ## Sandbox zones
 
 | Key | Zone | What to practice |
@@ -113,6 +124,7 @@ Point values are in `scoring/combo_tracker.gd`.
 | 8 | Kick-off yard | Air kicks off pillars and targets |
 | 9 | Doors and windows | Door kicks, slide-under windows and window smashes |
 | 0 | Shooting range | Static and moving targets, a wall to wallrun-and-shoot from, a platform for air shots |
+| (behind 1) | Enemy arena | Raiders behind low walls and mutants guarding the back; see Enemies above |
 | - | Ramps and loop | A loop after a long run-up, a launch ramp, a tall steep ramp with height markers, a sideways ramp |
 
 ## Levels
@@ -155,6 +167,7 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `player/` | Player controller (`player.gd`), tuning resource, input frame, movement math, third-person body rig |
 | `weapons/` | Test pistol, weapon stats, procedural sounds |
 | `targets/` | Shooting targets |
+| `enemies/` | Raiders, mutants, their bullets, player health and hurt overlay, encounters, the sandbox arena |
 | `levels/` | Sandbox scene, level builder (the layout is built in code), ramp and loop shapes, doors, windows, kick dummies |
 | `scoring/` | Combo tracker (Skate-style combos, score, combo damage) |
 | `ui/` | Debug HUD, combo HUD, pause menu (moves list, settings, controls), tuning panel, hit marker, speed graph |
