@@ -13,7 +13,7 @@ signal state_changed(from: State, to: State)
 signal landed(fall_speed: float)
 signal respawned
 
-enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL, STUN, PRONE, PRONE_SLIDE, SURFACE }
+enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL, STUN, SURFACE }
 
 const RADIUS := 0.38
 const EYE_OFFSET := 0.14
@@ -37,6 +37,9 @@ var _since_floor := 999.0
 var _jumped_since_floor := false
 var _jump_buffer := 999.0
 var _since_crouch_press := 999.0
+## This tick's crouch press came right after another one.
+var _crouch_double := false
+var _crouch_released := true
 var _slide_cooldown := 0.0
 var _slide_flat_time := 0.0
 var _wall_normal := Vector3.ZERO
@@ -45,25 +48,50 @@ var _wallrun_used_normal := Vector3.ZERO
 var _wall_jump_lock := 0.0
 var _climb_used := false
 var _climb_start_speed := 0.0
+## Horizontal speed you hit a climb with, given back by a clean mantle at
+## the top.
+var _climb_entry_speed := 0.0
+var _climb_quality := 0.0
 var _ground_time := 0.0
 ## Seconds between the jump press and touching down (-1 = no early press).
 var _land_press_age := -1.0
 var _wallrun_time_limit := 1.0
 var _wallrun_gravity := 0.3
+## The wallrun's path: its angle up the wall (radians, negative runs down)
+## and your speed along it.
+var _wallrun_angle := 0.0
+var _wallrun_speed := 0.0
+## The player's transform at the previous tick, for smoothing the view
+## between ticks.
+var _prev_origin := Vector3.ZERO
+var _prev_rotation := Quaternion.IDENTITY
 var _kicks_left := 0
 var _kicked_ids: Array[int] = []
 var _pre_move_velocity := Vector3.ZERO
 var _height := 1.8
 var _stand_shape: CapsuleShape3D
 var _crouch_shape: CapsuleShape3D
-var _prone_shape: CapsuleShape3D
 var _crouch_hold := 0.0
-var _diving := false
+## Crouch was already held when you left the ground (a slide hop): it
+## doesn't tuck until you let go and press it again.
+var _crouch_from_ground := false
 # Rotation done in the air since takeoff (radians, unwrapped).
 var _air_yaw := 0.0
 var _air_pitch := 0.0
 ## Side-flip roll (radians, unwrapped, + = to the right).
 var _air_roll := 0.0
+## Side-flip spin: direction (locked once started) and speed (rad/s).
+var _roll_dir := 0.0
+var _roll_rate := 0.0
+## A roll carried off a surface: keeps its rate until you lean.
+var _roll_carry := false
+## Still holding the lean you steered a wallrun with: it won't start a side
+## flip until you let go and lean again.
+var _lean_locked := false
+## View turned by the player since the last tick, and the spin carried on
+## from it in the air (yaw, pitch, rad/s).
+var _look_acc := Vector2.ZERO
+var _spin_vel := Vector2.ZERO
 var _spins_done := 0
 var _flips_done := 0
 var _sideflips_done := 0
@@ -79,15 +107,31 @@ var _spawn := Transform3D.IDENTITY
 # surface, so the view goes upside down with it.
 ## Normal of the surface you're running on.
 var _surface_n := Vector3.UP
-## The body's up, easing toward _surface_n so seams don't jolt the view.
+## The body's up, following _surface_n smoothly so seams don't jolt the view.
 var _surface_up := Vector3.UP
+## How fast the body is turning to follow the surface (rotation vector, rad/s).
+var _body_spin := Vector3.ZERO
 ## Where you're looking, relative to the direction you're running.
 var _surface_look_yaw := 0.0
 var _surface_looped := false
 ## Direction the track under you runs (from its "flow" meta), or zero.
 var _surface_flow := Vector3.ZERO
-## Visual: roll left over when coming off a surface upside down, eased out.
-var _surface_exit_roll := 0.0
+## Flying off a ramp or loop: how far round you are (as a flip), how tilted
+## (as a side flip), and how fast the surface was turning you (yaw, pitch
+## and roll rates), all carried into the air.
+var _exit_air_pitch := 0.0
+var _exit_spin := Vector2.ZERO
+var _exit_air_roll := 0.0
+var _exit_roll_rate := 0.0
+## The current spin carry came from a loop: it keeps its rate (no fade, no
+## halfway rule) until you take over with the view or come round level.
+var _carry_free := false
+## Visual: the difference between the view on the surface and the upright
+## view after leaving it, eased out so leaving never snaps the camera.
+var _view_offset := Quaternion.IDENTITY
+var _view_offset_start := Quaternion.IDENTITY
+var _view_offset_time := 0.0
+var _view_offset_rate := 6.0
 
 # Scripted vault / mantle path (quadratic bezier).
 var _path_from := Vector3.ZERO
@@ -96,15 +140,32 @@ var _path_to := Vector3.ZERO
 var _path_time := 0.3
 var _path_exit_velocity := Vector3.ZERO
 
-# Smooth automatic turn (quick turn).
-var _turn_left := 0.0
-var _turn_rate := 0.0
+# Quick turn: a held lean speeds up turning toward its side (Q left, E
+# right) and carries your speed round. -1 = left, 1 = right, 0 = off.
+var _turn_side := 0.0
+## The last tick rolled you with the mouse.
+var _mouse_rolled := false
+# Mouse roll (Shift held + mouse left/right in the air or on a wall):
+# radians gathered since the last tick, and what this tick uses.
+var _roll_input := 0.0
+var _roll_tick := 0.0
+# Mouse lean (Shift held + turning on your feet): turn gathered since the
+# last tick (radians, + = left), and the lean it gives (-1 left .. 1 right).
+var _mouse_turn := 0.0
+var _mouse_lean := 0.0
+## View yaw turned while quick turning since the last tick (radians).
+var _turn_carry := 0.0
+## Speed into a wall hit this tick (a bonk unless the hit becomes a move).
+var _pending_impact := 0.0
 
 # Visual-only camera state.
 var _bob_phase := 0.0
 var _dip := 0.0
 var _roll := 0.0
 var _air_roll_view := 0.0
+## _air_roll at the start of the tick, so the view can roll smoothly between
+## ticks.
+var _prev_air_roll := 0.0
 var _peek := 0.0
 var _eye_height := 1.66
 # Weapon recoil: a visual view kick on top of the aim, so flips/spins
@@ -112,11 +173,19 @@ var _eye_height := 1.66
 var _kick_pitch := 0.0
 var _kick_yaw := 0.0
 var _kick_recovery := 12.0
+## Recoil springs: the kick punches up over a couple of frames and settles
+## (critically damped), plus a little roll and a field-of-view punch.
+var _kick_vel := Vector2.ZERO
+var _kick_roll := 0.0
+var _kick_roll_vel := 0.0
+var _fov_base := 0.0
+var _fov_punch := 0.0
 
-## Set by the held weapon: 0 = hip, 1 = fully aimed down sights.
+## Look up/down flipped (player setting).
 var invert_y := false
 ## Multiplies look speed while aiming down sights (player setting).
 var ads_sensitivity := 1.0
+## Set by the held weapon: 0 = hip, 1 = fully aimed down sights.
 var aim_zoom := 0.0
 var aim_fov := 62.0
 var weapon: Node
@@ -129,19 +198,18 @@ var weapon: Node
 func _ready() -> void:
 	if tuning == null:
 		tuning = MovementTuning.new()
+	_prev_origin = global_position
+	_prev_rotation = Quaternion(global_basis.orthonormalized())
 	_stand_shape = CapsuleShape3D.new()
 	_stand_shape.radius = RADIUS
 	_stand_shape.height = tuning.stand_height
 	_crouch_shape = CapsuleShape3D.new()
 	_crouch_shape.radius = RADIUS
 	_crouch_shape.height = tuning.crouch_height
-	_prone_shape = CapsuleShape3D.new()
-	_prone_shape.radius = RADIUS
-	_prone_shape.height = tuning.prone_height
 	_set_height(tuning.stand_height)
 	_spawn = global_transform
 	yaw = rotation.y
-	rotation = Vector3(0.0, yaw, 0.0)
+	basis = Basis(Vector3.UP, yaw)
 	floor_max_angle = deg_to_rad(46.0)
 	floor_snap_length = 0.35
 	wall_min_slide_angle = deg_to_rad(5.0)
@@ -162,7 +230,16 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and is_mouse_captured():
 		var m := event as InputEventMouseMotion
 		var sens := tuning.mouse_sensitivity * aim_sensitivity_scale()
-		_look(-m.relative.x * sens, -m.relative.y * sens * (-1.0 if invert_y else 1.0))
+		var d_pitch := -m.relative.y * sens * (-1.0 if invert_y else 1.0)
+		if Input.is_action_pressed("steer") and state in [State.AIR, State.WALLRUN]:
+			# Holding steer (Shift), left and right rolls you instead of turning.
+			roll_look(m.relative.x * sens)
+			_look(0.0, d_pitch)
+		elif Input.is_action_pressed("steer"):
+			# On your feet it leans you into the turn.
+			lean_look(-m.relative.x * sens, d_pitch)
+		else:
+			_look(-m.relative.x * sens, d_pitch)
 	elif event is InputEventMouseButton and event.pressed and not is_mouse_captured():
 		capture_mouse(true)
 	elif event.is_action_pressed("reset"):
@@ -184,14 +261,39 @@ func capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE
 
 
+## How much faster this turn goes: quick_turn_look_scale toward the side of
+## a held lean button, scaled by the mouse lean toward its side, else 1.
+## (Positive yaw turns left.)
+func _quick_turn_scale(d_yaw: float) -> float:
+	if _turn_side != 0.0 and d_yaw * _turn_side < 0.0:
+		return tuning.quick_turn_look_scale
+	if d_yaw * _mouse_lean < 0.0:
+		return lerpf(1.0, tuning.quick_turn_look_scale, absf(_mouse_lean))
+	return 1.0
+
+
 ## Turns the view. In the air the pitch is free, so pulling the view all the
 ## way over is a flip and turning a full circle is a 360. On the ground the
 ## pitch is clamped as usual.
 func _look(d_yaw: float, d_pitch: float) -> void:
 	if state == State.SURFACE:
+		d_yaw *= _quick_turn_scale(d_yaw)
 		_surface_look_yaw = wrapf(_surface_look_yaw + d_yaw, -PI, PI)
 		pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
 		return
+	if state == State.AIR:
+		# Aim follows the view however you're turned: tilted by a side flip,
+		# the view moves with the tilted screen, and upside down (past
+		# vertical in a flip) turning left and right swap round.
+		var r := _air_roll
+		var dx := d_yaw * cos(r) - d_pitch * sin(r)
+		var dy := d_yaw * sin(r) + d_pitch * cos(r)
+		d_yaw = -dx if cos(pitch) < 0.0 else dx
+		d_pitch = dy
+	var scale := _quick_turn_scale(d_yaw)
+	if scale > 1.0:
+		d_yaw *= scale
+		_turn_carry += d_yaw
 	yaw = wrapf(yaw + d_yaw, -PI, PI)
 	if state == State.AIR:
 		if absf(wrapf(pitch, -PI, PI)) > deg_to_rad(75.0):
@@ -199,6 +301,7 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		pitch += d_pitch
 		_air_yaw += d_yaw
 		_air_pitch += d_pitch
+		_look_acc += Vector2(d_yaw, d_pitch)
 	else:
 		var raw := pitch + d_pitch
 		if raw < deg_to_rad(-89.0) and d_pitch < 0.0:
@@ -206,16 +309,39 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		pitch = clampf(raw, deg_to_rad(-89.0), deg_to_rad(89.0))
 
 
+## Mouse lean (Shift held on your feet): turns the view like _look, and
+## the turn's speed leans you into it, turning harder the more you lean.
+func lean_look(d_yaw: float, d_pitch: float) -> void:
+	_mouse_turn += d_yaw
+	_look(d_yaw, d_pitch)
+
+
+## Mouse roll: + rolls right. In the air it's a side flip you steer
+## directly; on a wall it rolls your path round (like leaning). Elsewhere
+## it does nothing.
+func roll_look(d: float) -> void:
+	d *= tuning.mouse_roll_scale
+	_roll_input += d
+	if state == State.AIR:
+		# Straight away, like turning and pitching, so it's as smooth as the
+		# mouse; the tick only reads how fast you're rolling.
+		_air_roll += d
+		_prev_air_roll += d
+
+
 ## Point the view somewhere (used by spawns and tests).
 func set_view(new_yaw: float, new_pitch := 0.0) -> void:
 	yaw = new_yaw
 	pitch = new_pitch
-	rotation = Vector3(0.0, yaw, 0.0)
+	basis = Basis(Vector3.UP, yaw)
 
 
 # ---------------------------------------------------------------- tick
 
 func _physics_process(delta: float) -> void:
+	_prev_origin = global_position
+	_prev_rotation = Quaternion(global_basis.orthonormalized())
+	_prev_air_roll = _air_roll
 	var f: InputFrame
 	if scripted_input != null:
 		f = scripted_input
@@ -229,12 +355,20 @@ func _physics_process(delta: float) -> void:
 func simulate(f: InputFrame, delta: float) -> void:
 	state_time += delta
 	_update_timers(f, delta)
-	if f.turn_pressed:
-		_quick_turn()
-	_apply_auto_turn(delta)
+	_roll_tick = _roll_input if state in [State.AIR, State.WALLRUN] else 0.0
+	_roll_input = 0.0
+	var feet := state not in [State.AIR, State.WALLRUN]
+	var lean_to := clampf(-_mouse_turn / delta / deg_to_rad(tuning.mouse_lean_full_rate), -1.0, 1.0) if feet else 0.0
+	_mouse_turn = 0.0
+	_mouse_lean = move_toward(_mouse_lean, lean_to, tuning.lean_speed * delta)
+	# On a wall, lean angles your run instead.
+	_turn_side = signf(f.lean) if absf(f.lean) > 0.3 and state != State.WALLRUN else 0.0
+	_carry_turn()
 	if state != State.SURFACE:
-		rotation = Vector3(0.0, yaw, 0.0)
-	lean = move_toward(lean, clampf(f.lean, -1.0, 1.0), tuning.lean_speed * delta)
+		# Set the whole basis, not `rotation`: that keeps the old scale, and
+		# float error shrinks it a little every tick.
+		basis = Basis(Vector3.UP, yaw)
+	lean = move_toward(lean, clampf(f.lean + _mouse_lean, -1.0, 1.0), tuning.lean_speed * delta)
 	var wish := wish_direction(f)
 	if _ground_flick >= deg_to_rad(tuning.ground_roll_flick) and state in [State.GROUND, State.CROUCH, State.SLIDE] \
 			and horizontal_speed() > 1.0 and _can_stand():
@@ -242,6 +376,10 @@ func simulate(f: InputFrame, delta: float) -> void:
 		pitch = 0.0
 		_start_roll(1.0, &"ground_roll", deg_to_rad(-89.0), MovementMath.horizontal(velocity), 0.0)
 	_ground_flick = maxf(_ground_flick - tuning.ground_roll_flick_decay * delta, 0.0)
+	if _crouch_double and state in [State.GROUND, State.CROUCH, State.SLIDE] and horizontal_speed() > 2.0:
+		# Double-tap crouch while running: a forward roll.
+		_since_crouch_press = 999.0
+		_start_roll(1.0, &"ground_roll", 0.0, MovementMath.horizontal(velocity), 0.0)
 
 	match state:
 		State.GROUND: _tick_ground(f, wish, delta)
@@ -253,10 +391,9 @@ func simulate(f: InputFrame, delta: float) -> void:
 		State.WALLCLIMB: _tick_wallclimb(f, wish, delta)
 		State.ROLL: _tick_roll(f, wish, delta)
 		State.STUN: _tick_stun(f, wish, delta)
-		State.PRONE: _tick_prone(f, wish, delta)
-		State.PRONE_SLIDE: _tick_prone_slide(f, wish, delta)
 		State.SURFACE: _tick_surface(f, delta)
 
+	_resolve_wall_impact()
 	_update_momentum(delta)
 	if global_position.y < -40.0:
 		respawn()
@@ -264,12 +401,15 @@ func simulate(f: InputFrame, delta: float) -> void:
 
 func _update_timers(f: InputFrame, delta: float) -> void:
 	_jump_buffer = 0.0 if f.jump_pressed else _jump_buffer + delta
+	_crouch_double = f.crouch_pressed and _crouch_released and _since_crouch_press <= tuning.double_tap_window
+	_crouch_released = not f.crouch_held
 	_since_crouch_press = 0.0 if f.crouch_pressed else _since_crouch_press + delta
 	_slide_cooldown = maxf(_slide_cooldown - delta, 0.0)
 	_wall_jump_lock = maxf(_wall_jump_lock - delta, 0.0)
 	_since_wall += delta
 	_crouch_hold = _crouch_hold + delta if f.crouch_held else 0.0
-	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.PRONE, State.PRONE_SLIDE, State.SURFACE]:
+	_crouch_from_ground = _crouch_from_ground and f.crouch_held
+	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.SURFACE]:
 		_since_floor = 0.0
 		_ground_time += delta
 	else:
@@ -281,6 +421,12 @@ func wish_direction(f: InputFrame) -> Vector3:
 	var right := Vector3(-fwd.z, 0.0, fwd.x)
 	var w := right * f.move.x + fwd * f.move.y
 	return w.limit_length(1.0)
+
+
+## Where you're looking, from yaw and pitch alone (the camera adds recoil
+## and easing on top, which the simulation never reads).
+func look_direction() -> Vector3:
+	return Basis.from_euler(Vector3(pitch, yaw, 0.0)) * Vector3.FORWARD
 
 
 ## Horizontal look direction.
@@ -305,10 +451,40 @@ func _change_state(to: State) -> void:
 		_spins_done = 0
 		_flips_done = 0
 		_sideflips_done = 0
+		_roll_dir = 0.0
+		_roll_rate = 0.0
+		_look_acc = Vector2.ZERO
+		_air_pitch = _exit_air_pitch
+		_spin_vel = _exit_spin
+		_carry_free = _exit_spin != Vector2.ZERO
+		_air_roll = _exit_air_roll
+		_roll_dir = signf(_exit_roll_rate)
+		_roll_rate = absf(_exit_roll_rate)
+		_roll_carry = _exit_roll_rate != 0.0
+		_lean_locked = from == State.WALLRUN and absf(lean) > 0.3
+		_mouse_rolled = false
+		_prev_air_roll = _air_roll
+		_exit_air_pitch = 0.0
+		_exit_spin = Vector2.ZERO
+		_exit_air_roll = 0.0
+		_exit_roll_rate = 0.0
+		# A mouse roll taken on a wall was for the wall, not a side flip.
+		_roll_tick = 0.0
+		_crouch_from_ground = _crouch_hold > 0.0 and from in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.SURFACE]
 	elif from == State.AIR:
+		_spin_vel = Vector2.ZERO
+		_carry_free = false
+		_roll_carry = false
 		_settle_pitch()
-		# A dive ends when you touch anything (landing reads it before this).
-		_diving = false
+		# Everything that read the air rotation (landing, surfaces) has; a
+		# flip doesn't carry onto a wall, a climb or the ground.
+		_air_yaw = 0.0
+		_air_pitch = 0.0
+		_air_roll = 0.0
+		_prev_air_roll = 0.0
+		_spins_done = 0
+		_flips_done = 0
+		_sideflips_done = 0
 	state_changed.emit(from, to)
 
 
@@ -338,15 +514,105 @@ func _landing_tucked(fall: float) -> bool:
 	return fall >= tuning.flip_roll_min_fall or _air_pitch <= deg_to_rad(-90.0)
 
 
-## Side flips: hold lean in the air to roll. Let go near level and you
-## settle upright; let go halfway and you land tipped (a crash).
+## Side flips: lean in the air to start rolling that way. The direction is
+## then set until you land; what you control is the speed, like curling up
+## or opening out: hold lean (or crouch) to tuck and spin fast, let go to
+## open up and slow down. Opened up near level you settle upright; land
+## on your side and you shoulder-roll (on your side and mid-flip, you crash).
 func _tick_air_roll(f: InputFrame, delta: float) -> void:
-	if absf(f.lean) > 0.3:
-		_air_roll += signf(f.lean) * deg_to_rad(tuning.side_flip_speed) * delta
+	if _mouse_roll(delta):
 		return
+	if _lean_locked:
+		if absf(f.lean) > 0.3:
+			return
+		_lean_locked = false
+	if _roll_carry:
+		# Rolling off a surface: it turns at its own rate until you lean,
+		# then it's an ordinary side flip in that direction.
+		if absf(f.lean) <= 0.3:
+			_air_roll += _roll_dir * _roll_rate * delta
+			return
+		_roll_carry = false
+	if _roll_dir == 0.0:
+		if absf(f.lean) <= 0.3:
+			return
+		_roll_dir = signf(f.lean)
+	var tucked := absf(f.lean) > 0.3 or f.crouch_held
+	var target := deg_to_rad(tuning.side_flip_speed) * (1.0 if tucked else tuning.spin_open_share)
+	_roll_rate = move_toward(_roll_rate, target, deg_to_rad(tuning.spin_accel) * delta)
 	var level := roundf(_air_roll / TAU) * TAU
-	if absf(_air_roll - level) <= deg_to_rad(tuning.side_settle_degrees):
-		_air_roll = move_toward(_air_roll, level, deg_to_rad(tuning.side_flip_speed) * 0.5 * delta)
+	if not tucked and absf(_air_roll - level) <= deg_to_rad(tuning.side_settle_degrees):
+		_air_roll = move_toward(_air_roll, level, maxf(_roll_rate, deg_to_rad(tuning.side_flip_speed) * 0.5) * delta)
+		if is_equal_approx(_air_roll, level):
+			_roll_rate = 0.0
+		return
+	_air_roll += _roll_dir * _roll_rate * delta
+
+
+## Rolling with the mouse (Shift held) turns you directly, either way.
+## Let go mid-spin and a fast roll carries on like an opened-up side flip
+## (settling near level); a slow one just stops where it is.
+func _mouse_roll(delta: float) -> bool:
+	if _roll_tick != 0.0:
+		_roll_dir = signf(_roll_tick)
+		_roll_rate = minf(absf(_roll_tick) / delta, deg_to_rad(tuning.side_flip_speed))
+		_roll_carry = false
+		_lean_locked = false
+		_mouse_rolled = true
+		return true
+	if not _mouse_rolled:
+		return false
+	_mouse_rolled = false
+	if _roll_rate < deg_to_rad(tuning.spin_carry_min):
+		_roll_dir = 0.0
+		_roll_rate = 0.0
+	return false
+
+
+## Would `step` take `total` round past the next whole turn?
+static func _comes_round(total: float, step: float) -> bool:
+	if step == 0.0 or signf(step) != signf(total):
+		return false
+	return fmod(absf(total), TAU) + absf(step) >= TAU
+
+
+## Flips and turns have momentum: past halfway round, let go of the view
+## and the spin carries on, fading out (tucking with crouch keeps it going)
+## and stopping when you come round level. Slow aiming never carries on.
+func _tick_spin_carry(f: InputFrame, delta: float) -> void:
+	var turned := _look_acc
+	_look_acc = Vector2.ZERO
+	if turned.length() > 0.0001:
+		var rate := turned / delta
+		_spin_vel = _spin_vel.lerp(rate, 0.5) if _spin_vel.dot(rate) > 0.0 else rate
+		_carry_free = false
+		return
+	if not _carry_free:
+		if _spin_vel.length() < deg_to_rad(tuning.spin_carry_min):
+			_spin_vel = Vector2.ZERO
+			return
+		# Only a flip or spin past halfway round carries on, so looking
+		# around (aiming, tucking for a landing, overshooting a finished
+		# flip) never runs away from you.
+		if fmod(absf(_air_pitch), TAU) < PI:
+			_spin_vel.y = 0.0
+		if fmod(absf(_air_yaw), TAU) < PI:
+			_spin_vel.x = 0.0
+	var step := _spin_vel * delta
+	# A flip or spin that carries round to level stops there, so letting go
+	# just before you come round lands you straight.
+	if _comes_round(_air_pitch, step.y):
+		step.y = 0.0
+		_spin_vel.y = 0.0
+	if _comes_round(_air_yaw, step.x):
+		step.x = 0.0
+		_spin_vel.x = 0.0
+	yaw = wrapf(yaw + step.x, -PI, PI)
+	pitch += step.y
+	_air_yaw += step.x
+	_air_pitch += step.y
+	if not f.crouch_held and not _carry_free:
+		_spin_vel *= exp(-delta / maxf(tuning.spin_carry_time, 0.01))
 
 
 func _check_air_rotation() -> void:
@@ -385,7 +651,7 @@ func _move() -> void:
 		_check_wall_impact()
 
 
-## Running, sliding or diving into a window fast enough goes straight through.
+## Running or sliding into a window fast enough goes straight through.
 func _smash_breakables() -> void:
 	if _pre_move_velocity.length() < tuning.smash_speed:
 		return
@@ -398,16 +664,26 @@ func _smash_breakables() -> void:
 				return
 
 
+## Notes a hard hit on a wall. It only counts as a bonk at the end of the
+## tick, if the hit didn't turn into a wallrun, climb or vault.
 func _check_wall_impact() -> void:
 	if state not in [State.GROUND, State.AIR] or not _runnable_contact().is_empty():
 		return
 	var n := MovementMath.horizontal(_wall_normal).normalized()
 	var into := -MovementMath.horizontal(_pre_move_velocity).dot(n)
 	if into > tuning.wall_impact_speed:
-		momentum *= 1.0 - tuning.wall_impact_loss
-		var h := MovementMath.horizontal(velocity) * (1.0 - tuning.wall_impact_loss * 0.5)
-		velocity = Vector3(h.x, velocity.y, h.z)
-		trick.emit(&"wall_impact", {"speed": into})
+		_pending_impact = maxf(_pending_impact, into)
+
+
+func _resolve_wall_impact() -> void:
+	var into := _pending_impact
+	_pending_impact = 0.0
+	if into <= 0.0 or state not in [State.GROUND, State.AIR]:
+		return
+	momentum *= 1.0 - tuning.wall_impact_loss
+	var h := MovementMath.horizontal(velocity) * (1.0 - tuning.wall_impact_loss * 0.5)
+	velocity = Vector3(h.x, velocity.y, h.z)
+	trick.emit(&"wall_impact", {"speed": into})
 
 
 func _update_momentum(delta: float) -> void:
@@ -422,7 +698,7 @@ func _update_momentum(delta: float) -> void:
 # ---------------------------------------------------------------- ground
 
 func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
-	# Arrived on the ground short (crouched, prone, diving) under something
+	# Arrived on the ground short (crouched) under something
 	# low: stay crouched instead of standing up into it.
 	if _height < tuning.stand_height - 0.01 and not _can_stand():
 		_change_state(State.CROUCH)
@@ -442,10 +718,6 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 	if f.kick_pressed:
 		_ground_kick()
 	var speed := horizontal_speed()
-	if f.prone_pressed:
-		_start_dive()
-		_tick_air(f, wish, delta)
-		return
 	if f.crouch_held and speed >= tuning.slide_min_speed and (f.crouch_pressed or _since_crouch_press < 0.2):
 		_start_slide()
 		_tick_slide(f, wish, delta)
@@ -481,10 +753,6 @@ func _tick_crouch(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.GROUND)
 		_tick_ground(f, wish, delta)
 		return
-	if f.prone_pressed:
-		_start_dive()
-		_tick_air(f, wish, delta)
-		return
 	if f.kick_pressed:
 		_ground_kick()
 	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.stop_speed, delta)
@@ -512,7 +780,8 @@ func _hop() -> void:
 
 
 func _jump() -> void:
-	velocity.y = tuning.jump_velocity
+	# A late (coyote) jump off a ramp lip adds to the climb you flew off with.
+	velocity.y = tuning.jump_velocity + (maxf(velocity.y, 0.0) if state == State.AIR else 0.0)
 	_jump_buffer = 999.0
 	_jumped_since_floor = true
 	_change_state(State.AIR)
@@ -521,13 +790,12 @@ func _jump() -> void:
 # ---------------------------------------------------------------- air
 
 func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
-	if _diving:
-		_set_height(tuning.prone_height)
-	elif f.crouch_held:
+	if f.crouch_held:
 		_set_height(tuning.crouch_height)
 	elif _can_stand():
 		_set_height(tuning.stand_height)
 	_tick_air_roll(f, delta)
+	_tick_spin_carry(f, delta)
 	_check_air_rotation()
 
 	# Coyote jump: just ran off a ledge.
@@ -565,27 +833,38 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 		return
 
 
-func _land(f: InputFrame) -> void:
-	var fall := -_pre_move_velocity.y
+## Feet back on something you can run on (ground, a ramp, a loop): kicks,
+## walls and climbs are fresh, and a late jump off the next edge works.
+func _touch_ground() -> void:
 	_kicks_left = tuning.kicks_per_air_time
 	_kicked_ids.clear()
 	_wallrun_used_normal = Vector3.ZERO
 	_climb_used = false
 	_jumped_since_floor = false
+
+
+func _land(f: InputFrame) -> void:
+	var fall := -_pre_move_velocity.y
+	_touch_ground()
 	_ground_time = 0.0
 	_land_press_age = _jump_buffer if _jump_buffer <= tuning.jump_buffer else -1.0
 	_dip = minf(fall * tuning.landing_dip, 0.4)
 	landed.emit(fall)
 	var crouch_age := _since_crouch_press
 	var tucked := _landing_tucked(fall) and not _landing_tipped()
+	if _tuck_roll(f, fall, crouch_age):
+		return
+	if _landing_tipped() and not _landing_crashed():
+		# Down on your side partway round a side flip: a shoulder roll that
+		# keeps you moving. The further off upright, the more speed it costs.
+		var off := absf(rad_to_deg(wrapf(_air_roll, -PI, PI)))
+		var flipped := _sideflips_done > 0
+		_air_roll = 0.0
+		_start_roll(timing_quality(off, 25.0, 160.0), &"flip_roll" if flipped else &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
+		return
 	if _landing_tipped() or (_landing_crashed() and not tucked):
-		_diving = false
 		trick.emit(&"crash", {"speed": horizontal_speed()})
 		_start_stun()
-		return
-	if _diving:
-		_diving = false
-		_change_state(State.PRONE_SLIDE)
 		return
 	if tucked:
 		var p := wrapf(pitch, -PI, PI)
@@ -615,6 +894,30 @@ func _land(f: InputFrame) -> void:
 	_change_state(State.CROUCH if f.crouch_held else State.GROUND)
 
 
+## Crouch held in the air is a tuck: you land in a roll whatever angle
+## you're at. A crouch pressed just before landing is a slide landing
+## instead (unless you'd otherwise crash or the drop is hard).
+func _tuck_roll(f: InputFrame, fall: float, crouch_age: float) -> bool:
+	if not f.crouch_held or not is_tucked() or fall < tuning.tuck_roll_min_fall:
+		return false
+	var bad_angle := _landing_tipped() or _landing_crashed()
+	if not bad_angle and crouch_age <= tuning.slide_land_window and fall < tuning.hard_landing_speed:
+		return false
+	var p := wrapf(pitch, -PI, PI)
+	var off := maxf(absf(rad_to_deg(wrapf(_air_roll, -PI, PI))), maxf(absf(rad_to_deg(p)) - 60.0, 0.0))
+	var q := timing_quality(off, 25.0, 160.0)
+	var flipped := _flips_done > 0 or _sideflips_done > 0
+	_air_roll = 0.0
+	pitch = 0.0
+	_start_roll(q, &"flip_roll" if flipped else &"landing_roll", p if p < 0.0 else 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
+	return true
+
+
+## Tucked in the air (crouch held): you'll land in a roll.
+func is_tucked() -> bool:
+	return state == State.AIR and _crouch_hold >= tuning.tuck_hold_time and not _crouch_from_ground
+
+
 # ---------------------------------------------------------------- slide
 
 func _start_slide(quality := -1.0) -> void:
@@ -634,10 +937,6 @@ func _tick_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 	if _jump_buffer <= tuning.jump_buffer:
 		_jump()
 		_trick(&"slide_jump")
-		_tick_air(f, wish, delta)
-		return
-	if f.prone_pressed:
-		_start_dive()
 		_tick_air(f, wish, delta)
 		return
 	# Friction only ramps up while the slide isn't going downhill, so flat
@@ -720,83 +1019,12 @@ func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
 		_change_state(State.GROUND if is_on_floor() else State.AIR)
 
 
-# ---------------------------------------------------------------- prone / dive
-
-## Only happens when a dive slide stops under something too low to get up
-## in. You get up by yourself as soon as there's room; until then you can
-## shuffle out slowly so you're never stuck. There's no crawling otherwise.
-func _tick_prone(f: InputFrame, wish: Vector3, delta: float) -> void:
-	_set_height(tuning.prone_height)
-	if _get_up_from_prone(f):
-		return
-	# Low stop speed so friction doesn't swamp the slow shuffle.
-	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.prone_speed * 0.5, delta)
-	velocity = MovementMath.accelerate(velocity, wish.normalized(), tuning.prone_speed * wish.length(), tuning.ground_accel, delta)
-	velocity.y -= tuning.gravity * delta
-	_move()
-	if not is_on_floor():
-		_change_state(State.AIR)
-
-
-## Up to crouch (and standing, unless crouch is held) if there's room.
-func _get_up_from_prone(f: InputFrame) -> bool:
-	if not _shape_fits(_crouch_shape, global_position):
-		return false
-	_set_height(tuning.crouch_height)
-	_crouch_hold = -999.0
-	_jump_buffer = 999.0  # the jump that got you up isn't also a jump
-	_change_state(State.CROUCH)
-	if not f.crouch_held and _can_stand():
-		_set_height(tuning.stand_height)
-		_change_state(State.GROUND)
-	return true
-
-
-## Dolphin dive (prone jump): a low forward leap that lands on your belly.
-func _start_dive() -> void:
-	var h := MovementMath.horizontal(velocity)
-	var dir := h.normalized() if h.length() > 0.5 else forward()
-	h += dir * tuning.dive_boost
-	velocity = Vector3(h.x, tuning.dive_up, h.z)
-	_diving = true
-	_jumped_since_floor = true
-	_jump_buffer = 999.0
-	_set_height(tuning.prone_height)
-	_change_state(State.AIR)
-	_trick(&"dolphin_dive")
-
-
-func _tick_prone_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
-	_set_height(tuning.prone_height)
-	# Tap prone to dive and pop up into a slide; hold it to stay on your belly
-	# (under low gaps). You get up by yourself once the slide runs out.
-	if (f.jump_pressed or not f.prone_held) and _shape_fits(_crouch_shape, global_position):
-		_set_height(tuning.crouch_height)
-		_slide_flat_time = 0.0
-		if horizontal_speed() >= tuning.slide_min_speed:
-			_change_state(State.SLIDE)
-		else:
-			_change_state(State.CROUCH)
-		return
-	velocity = MovementMath.apply_friction(velocity, tuning.prone_slide_friction, 0.0, delta)
-	if is_on_floor():
-		var n := get_floor_normal()
-		velocity += (Vector3.DOWN - n * Vector3.DOWN.dot(n)) * tuning.gravity * tuning.slide_slope_gain * delta
-	velocity.y -= tuning.gravity * delta
-	_move()
-	if not is_on_floor():
-		_change_state(State.AIR)
-	elif horizontal_speed() < tuning.prone_speed:
-		_change_state(State.PRONE)
-		_get_up_from_prone(f)
-
-
 # ---------------------------------------------------------------- kicks (doors, windows)
 
 ## Front kick on the ground: opens doors, breaks windows, shoves targets.
 func _ground_kick() -> void:
 	var eye := global_position + Vector3.UP * (_height - EYE_OFFSET)
-	var look := -camera.global_transform.basis.z
+	var look := look_direction()
 	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * (tuning.kick_range + 0.3), 1 | 4)
 	q.exclude = [get_rid()]
 	var hit := get_world_3d().direct_space_state.intersect_ray(q)
@@ -861,9 +1089,13 @@ func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 	_wallrun_time_limit = lerpf(tuning.wallrun_min_time, tuning.wallrun_max_time, quality)
 	_wallrun_gravity = lerpf(tuning.wallrun_sloppy_gravity, tuning.wallrun_gravity_scale, quality)
 	var t := MovementMath.wall_tangent(n, _pre_move_velocity)
-	var v := t * maxf(speed, tuning.wallrun_min_speed)
-	v.y = maxf(velocity.y, tuning.wallrun_entry_lift)
-	velocity = v
+	# Your path along the wall is the angle you came in at: rising steeply,
+	# you run up at a steep angle; coming down, you run down.
+	var h := maxf(speed, tuning.wallrun_min_speed)
+	var vy := velocity.y
+	_wallrun_angle = clampf(atan2(vy, h), -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
+	_wallrun_speed = Vector2(h, vy).length()
+	velocity = (t * cos(_wallrun_angle) + Vector3.UP * sin(_wallrun_angle)) * _wallrun_speed
 	_change_state(State.WALLRUN)
 	_trick(&"wallrun", {"quality": quality})
 
@@ -871,7 +1103,9 @@ func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_set_height(tuning.stand_height if _can_stand() else tuning.crouch_height)
 	if _jump_buffer <= tuning.jump_buffer:
-		_wall_jump(wish)
+		# The steeper you're running up the wall, the harder you kick off.
+		var steep := clampf(_wallrun_angle / maxf(deg_to_rad(tuning.wallrun_max_up_angle), 0.001), 0.0, 1.0)
+		_wall_jump(wish, &"wall_jump", 1.0 + tuning.wallrun_steep_kick * steep)
 		_tick_air(f, wish, delta)
 		return
 	if f.kick_pressed and _try_kick_off():
@@ -891,7 +1125,21 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_wall_normal = hit.normal
 	_since_wall = 0.0
 	var t := MovementMath.wall_tangent(_wall_normal, velocity)
-	var speed := MovementMath.horizontal_speed(velocity)
+	var a := _wallrun_angle
+	var speed := _wallrun_speed
+	# Gravity bends your path down the wall; running up it costs speed,
+	# running down gains it.
+	var g := tuning.gravity * _wallrun_gravity
+	speed -= tuning.gravity * (tuning.wallrun_climb_cost if a > 0.0 else _wallrun_gravity) * sin(a) * delta
+	# Gravity always bends the path down a little (nothing holds you up).
+	# Leaning rolls your path round on the wall at a steady rate: toward
+	# the wall turns it up, away turns it down.
+	a -= g * cos(a) / maxf(speed, 1.0) * delta
+	a += _lean_toward_wall(f.lean) * deg_to_rad(tuning.wallrun_angle_rate) * delta
+	# Rolling with the mouse (Shift held) turns the path the same way, by
+	# as much as you move it.
+	a += _roll_tick * _wall_side()
+	a = clampf(a, -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	# Hold any direction to keep running (and build up to wallrun speed);
 	# let go and the run bleeds speed. Where you look doesn't matter.
 	if f.move.length() > 0.3:
@@ -899,19 +1147,42 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 			speed = minf(speed + tuning.wallrun_accel * delta, tuning.wallrun_speed)
 	else:
 		speed = maxf(speed - tuning.wallrun_misalign_drag * delta, 0.0)
-	var vy := velocity.y - tuning.gravity * _wallrun_gravity * delta
-	velocity = t * speed - MovementMath.horizontal(_wall_normal).normalized() * 1.5
-	velocity.y = vy
+	_wallrun_angle = a
+	_wallrun_speed = speed
+	velocity = (t * cos(a) + Vector3.UP * sin(a)) * speed - MovementMath.horizontal(_wall_normal).normalized() * 1.5
 	_move()
 	if is_on_floor():
 		_land(f)
-	elif MovementMath.horizontal_speed(velocity) < tuning.wallrun_min_speed * 0.5:
+	elif speed < tuning.wallrun_min_speed * 0.5:
 		_change_state(State.AIR)
 
 
-func _wall_jump(wish: Vector3, trick_name := &"wall_jump") -> void:
+## How much a lean points toward the wall you're running on (1 = all the
+## way toward it, -1 = away). Left and right are as you see them.
+func _lean_toward_wall(lean: float) -> float:
+	if absf(lean) < 0.05:
+		return 0.0
+	return lean * _wall_side()
+
+
+## Which side of you the wall is on: 1 = right, -1 = left (as you see it,
+## or by where you run when looking straight at or away from it).
+func _wall_side() -> float:
+	var right := forward().cross(Vector3.UP)
+	right.y = 0.0
+	var side := right.normalized().dot(MovementMath.horizontal(_wall_normal).normalized())
+	if absf(side) < 0.2:
+		# Looking straight at (or away from) the wall: go by where you run.
+		right = MovementMath.horizontal(velocity).cross(Vector3.UP).normalized()
+		side = right.dot(MovementMath.horizontal(_wall_normal).normalized())
+	# The wall normal points away from the wall, so a wall on your right
+	# has it pointing left.
+	return -signf(side)
+
+
+func _wall_jump(wish: Vector3, trick_name := &"wall_jump", power := 1.0) -> void:
 	var boost_dir := wish.normalized() if wish.length() > 0.1 else forward()
-	velocity = MovementMath.wall_jump_velocity(velocity, _wall_normal, tuning.wall_jump_push, tuning.wall_jump_up, boost_dir, tuning.wall_jump_boost)
+	velocity = MovementMath.wall_jump_velocity(velocity, _wall_normal, tuning.wall_jump_push * power, tuning.wall_jump_up * lerpf(1.0, power, 0.5), boost_dir, tuning.wall_jump_boost)
 	_jump_buffer = 999.0
 	_wall_jump_lock = 0.2
 	_since_wall = 999.0
@@ -944,6 +1215,8 @@ func _try_wall_climb(f: InputFrame, from_ground: bool) -> bool:
 	var q_speed := clampf(MovementMath.horizontal(velocity).length() / tuning.top_speed, 0.0, 1.0)
 	var climb_q := 0.5 * q_face + 0.5 * q_speed
 	_climb_start_speed = tuning.wall_climb_speed * lerpf(0.85, 1.15, climb_q)
+	_climb_entry_speed = MovementMath.horizontal(velocity).length()
+	_climb_quality = climb_q
 	velocity = Vector3(0.0, _climb_start_speed, 0.0)
 	_change_state(State.WALLCLIMB)
 	_trick(&"wall_climb", {"quality": climb_q})
@@ -1026,6 +1299,9 @@ func surface_need_speed(n: Vector3) -> float:
 ## Running (or sliding, or landing fast) onto a steep runnable surface
 ## sticks you to it.
 func _try_enter_surface() -> bool:
+	# Coming down mid-flip or on your side you can't run it: you hit it.
+	if state == State.AIR and (_landing_crashed() or _landing_tipped()):
+		return false
 	var c := _runnable_contact()
 	if c.is_empty():
 		return false
@@ -1047,13 +1323,28 @@ func _try_enter_surface() -> bool:
 	var h := MovementMath.horizontal(velocity)
 	if h.length() > 0.2:
 		travel_yaw = atan2(-h.x, -h.z)
+	var view_before := Basis.from_euler(Vector3(pitch, yaw, -_air_roll if state == State.AIR else 0.0))
+	if state != State.GROUND:
+		_ground_time = 0.0
+	_touch_ground()
 	_change_state(State.SURFACE)
 	_surface_n = n
 	_surface_up = Vector3.UP
+	_body_spin = Vector3.ZERO
 	_surface_look_yaw = angle_difference(travel_yaw, yaw)
+	basis = Basis(Vector3.UP, travel_yaw)  # start upright, facing the run
 	_surface_looped = false
 	_surface_flow = _flow_of(c.collider)
-	_orient_to_surface()
+	_orient_to_surface(0.0)
+	# Landing partway round a flip settles the view; ease into it rather
+	# than snapping.
+	var view_after := global_basis * Basis.from_euler(Vector3(pitch, _surface_look_yaw, 0.0))
+	var offset := (Quaternion(view_before.orthonormalized()) * Quaternion(view_after.orthonormalized()).inverse()).normalized()
+	if offset.get_angle() > 0.01:
+		_view_offset_start = offset
+		_view_offset = offset
+		_view_offset_time = 0.0
+		_view_offset_rate = 10.0
 	_trick(&"ramp_run")
 	return true
 
@@ -1071,16 +1362,39 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 	# down; holding forward keeps running, up to your top speed.
 	var v := velocity - n * velocity.dot(n)
 	var down := Vector3.DOWN - n * Vector3.DOWN.dot(n)
-	v += down * tuning.gravity * tuning.surface_gravity_scale * delta
+	var g := down * tuning.gravity * tuning.surface_gravity_scale * delta
+	var heading := v.normalized() if v.length() > 0.01 else -global_basis.z
+	# The part of gravity along your path slows or speeds you; the part
+	# across it (running sideways along a slope) pulls you down the slope
+	# more gently, like a wallrun on a slope.
+	# Running up or round loops and ramps (tracks that run up the slope)
+	# keeps full gravity so you come round them. Running across any slope,
+	# a ramp's included, holds your line like a sideways ramp.
+	var track := _surface_flow.length() > 0.1 and not _is_bank(n, _surface_flow) \
+			and not _runs_across(n, heading)
+	var g_along := heading * g.dot(heading)
+	v += g_along + (g - g_along) * (1.0 if track else tuning.surface_cross_gravity)
 	var speed := v.length()
 	var dir := v / speed if speed > 0.01 else -global_basis.z
-	dir = dir.rotated(n, -f.move.x * deg_to_rad(tuning.surface_steer) * delta)
-	# Tracks (loops) gently steer you along themselves, either way round.
+	# Steer with the stick or keys, and toward where you look.
+	var steer := deg_to_rad(tuning.surface_steer) * delta
+	dir = dir.rotated(n, -f.move.x * steer)
+	# Looking off to one side turns your path toward it; the view stays
+	# where you put it while the path (and body) catches up. Not on loops,
+	# where the track already guides you and you're free to look around.
+	if not track and absf(_surface_look_yaw) < deg_to_rad(100.0):
+		var turn := clampf(_surface_look_yaw, -steer, steer)
+		dir = dir.rotated(n, turn)
+		_surface_look_yaw -= turn
+	# Tracks gently steer you along themselves, either way round: loops
+	# all the way, sideways ramps only where they're steep enough to fall
+	# off, so you can still steer up and down them.
 	var flow := _surface_flow - n * _surface_flow.dot(n)
-	if flow.length() > 0.1:
+	if flow.length() > 0.1 and (track or n.y < 0.2):
 		flow = flow.normalized() * signf(dir.dot(flow))
+		var assist := tuning.surface_flow_assist * (1.0 - clampf(absf(f.move.x), 0.0, 1.0))
 		if dir.dot(flow) > 0.5:
-			dir = dir.slerp(flow, 1.0 - exp(-tuning.surface_flow_assist * delta)).normalized()
+			dir = dir.slerp(flow, 1.0 - exp(-assist * delta)).normalized()
 	if f.move.y > 0.3:
 		speed = minf(speed + tuning.surface_accel * delta, maxf(speed, tuning.top_speed))
 	elif f.move.y < -0.3:
@@ -1098,10 +1412,9 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 	elif n.y > 0.7 and _surface_looped:
 		_surface_looped = false
 		_trick(&"loop")
-	_surface_up = _surface_up.slerp(n, 1.0 - exp(-tuning.surface_align_rate * delta)).normalized()
 	velocity = dir * speed - n * tuning.surface_stick
 	up_direction = n
-	_orient_to_surface()
+	_orient_to_surface(delta)
 	_move()
 	var floor_hit := _floor_contact()
 	if floor_hit.is_empty():
@@ -1118,8 +1431,9 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 		return
 	if nn.y > tuning.surface_exit_flatness or (not runnable and nn.y >= cos(floor_max_angle)):
 		var keep := velocity - Vector3.UP * velocity.dot(Vector3.UP)
-		_leave_surface()
+		_leave_surface(true)
 		velocity = keep.normalized() * speed if keep.length() > 0.01 else Vector3.ZERO
+		_touch_ground()
 		_change_state(State.GROUND)
 		return
 	_surface_n = nn
@@ -1127,6 +1441,24 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 	# Keep the speed through the seams between surface pieces.
 	var t := velocity - nn * velocity.dot(nn)
 	velocity = t.normalized() * speed if t.length() > 0.01 else velocity
+
+
+## Is `dir` running across the slope (more sideways than up or down it)?
+static func _runs_across(n: Vector3, dir: Vector3) -> bool:
+	var down := Vector3.DOWN - n * Vector3.DOWN.dot(n)
+	var along := dir - n * dir.dot(n)
+	if down.length() < 0.3 or along.length() < 0.1:
+		return false
+	return absf(along.normalized().dot(down.normalized())) < 0.5
+
+
+## A sideways ramp: its track runs across the slope rather than up it.
+static func _is_bank(n: Vector3, flow: Vector3) -> bool:
+	var down := Vector3.DOWN - n * Vector3.DOWN.dot(n)
+	var along := flow - n * flow.dot(n)
+	if down.length() < 0.3 or along.length() < 0.1:
+		return false
+	return absf(along.normalized().dot(down.normalized())) < 0.5
 
 
 ## The floor touched in the last move (relative to up_direction), as
@@ -1143,36 +1475,91 @@ func _floor_contact() -> Dictionary:
 	return {"normal": get_floor_normal(), "runnable": false, "flow": Vector3.ZERO}
 
 
-## Turns the body so its up matches the surface and it faces where it's going.
-func _orient_to_surface() -> void:
-	var u := _surface_up
-	var fwd := velocity - u * velocity.dot(u)
+## Turns the body so its up matches the surface and it faces where it's
+## going. The track is built from flat pieces, so the turn follows a
+## critically damped spring: the pieces' small steps blend into one smooth
+## roll instead of a jolt at every seam.
+func _orient_to_surface(delta: float) -> void:
+	var n := _surface_n
+	var fwd := velocity - n * velocity.dot(n)
 	if fwd.length() < 0.05:
-		fwd = -global_basis.z - u * (-global_basis.z).dot(u)
+		fwd = -global_basis.z - n * (-global_basis.z).dot(n)
 	fwd = fwd.normalized()
-	global_basis = Basis(fwd.cross(u), u, -fwd).orthonormalized()
+	var target := Quaternion(Basis(fwd.cross(n), n, -fwd).orthonormalized())
+	var q := Quaternion(global_basis.orthonormalized())
+	var diff := (target * q.inverse()).normalized()
+	if diff.w < 0.0:
+		diff = -diff
+	var err := diff.get_axis() * diff.get_angle() if diff.get_angle() > 0.00001 else Vector3.ZERO
+	var w := tuning.surface_align_rate
+	_body_spin += (err * w * w - _body_spin * 2.0 * w) * delta
+	var turn := _body_spin.length() * delta
+	if turn > 0.000001:
+		q = (Quaternion(_body_spin.normalized(), turn) * q).normalized()
+	global_basis = Basis(q)
+	_surface_up = global_basis.y
 
 
-## Back to upright: works out the world yaw/pitch you were looking along and
-## eases out any leftover roll (coming off a loop upside down).
-func _leave_surface() -> void:
-	var view := global_basis * Basis.from_euler(Vector3(pitch, _surface_look_yaw, 0.0))
-	var fwd := -view.z
-	var h := Vector2(fwd.x, fwd.z)
-	if h.length() < 0.05:
-		var body_fwd := -global_basis.z
-		h = Vector2(body_fwd.x, body_fwd.z)
-	yaw = atan2(-h.x, -h.y)
-	pitch = clampf(asin(clampf(fwd.y, -1.0, 1.0)), deg_to_rad(-89.0), deg_to_rad(89.0))
-	var upright := Basis.from_euler(Vector3(pitch, yaw, 0.0))
-	_surface_exit_roll = upright.y.signed_angle_to(view.y, -upright.z)
+## Back to upright. Flying off (a bail, a jump, a ramp's lip) you keep
+## looking exactly where you were, tilt and all, and keep turning the way
+## the surface was turning you, like any body flying free. Running
+## off onto the ground you keep your view relative to your body (so the
+## body's tilt at the bottom of a loop doesn't leave you staring at the
+## floor), and the tilt eases out.
+func _leave_surface(onto_ground := false) -> void:
+	var view := (global_basis * Basis.from_euler(Vector3(pitch, _surface_look_yaw, 0.0))).orthonormalized()
+	var spin := _body_spin
+	var look_pitch := pitch
+	if onto_ground:
+		# Relative to where you're running (the body can lag a little
+		# behind it through the bottom of a loop).
+		var bh := Vector2(velocity.x, velocity.z)
+		if bh.length() < 0.05:
+			var body_fwd := -global_basis.z
+			bh = Vector2(body_fwd.x, body_fwd.z)
+		yaw = wrapf(atan2(-bh.x, -bh.y) + _surface_look_yaw, -PI, PI)
+		pitch = clampf(pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
+	else:
+		var fwd := -view.z
+		var h := Vector2(fwd.x, fwd.z)
+		if h.length() < 0.05:
+			var body_up := global_basis.y
+			h = Vector2(body_up.x, body_up.z) * signf(-fwd.y)
+		if h.length() > 0.0001:
+			yaw = atan2(-h.x, -h.y)
+		pitch = clampf(asin(clampf(fwd.y, -1.0, 1.0)), deg_to_rad(-89.0), deg_to_rad(89.0))
+		var flip_rate := spin.dot(Basis(Vector3.UP, yaw).x)
+		if view.y.y < 0.0:
+			# Head below your feet (off a loop past upside down, or tipped
+			# back off a steep ramp): you're partway through a flip, so
+			# count it as one instead of rolling the view upright.
+			yaw = wrapf(yaw + PI, -PI, PI)
+			flip_rate = spin.dot(Basis(Vector3.UP, yaw).x)
+			pitch = (PI if flip_rate >= 0.0 else -PI) - pitch
+			_exit_air_pitch = pitch - look_pitch
+		# Whatever tilt is left is a side-flip angle, kept as it is.
+		var tilt := (Basis.from_euler(Vector3(pitch, yaw, 0.0)).inverse() * view).get_euler().z
+		_exit_air_roll = -tilt
+		# Keep turning as the surface turned you: flip, spin and roll.
+		var roll_rate := spin.dot(fwd)
+		_exit_spin = Vector2(spin.y, flip_rate)
+		var spin_min := deg_to_rad(tuning.surface_exit_spin_min)
+		if _exit_spin.length() < spin_min:
+			_exit_spin = Vector2.ZERO
+		_exit_roll_rate = roll_rate if absf(roll_rate) >= spin_min else 0.0
+	var upright := Basis.from_euler(Vector3(pitch, yaw, -_exit_air_roll))
+	_view_offset_start = (Quaternion(view) * Quaternion(upright).inverse()).normalized()
+	_view_offset = _view_offset_start
+	_view_offset_time = 0.0
+	_view_offset_rate = 10.0 if onto_ground else 6.0
 	up_direction = Vector3.UP
 	_surface_up = Vector3.UP
+	_body_spin = Vector3.ZERO
 	_surface_look_yaw = 0.0
 	# Turn upright around the middle of the body, not the feet, so coming
 	# off upside down doesn't swing your head through the track.
 	var center := global_position + global_basis.y * (_height * 0.5)
-	rotation = Vector3(0.0, yaw, 0.0)
+	basis = Basis(Vector3.UP, yaw)
 	global_position = center - Vector3.UP * (_height * 0.5)
 
 
@@ -1265,13 +1652,15 @@ func probe_obstacle(grounded: bool) -> Dictionary:
 	if depth > 0.0 and height <= tuning.vault_max_height + (0.0 if grounded else 0.25):
 		var land: Vector3 = face.position - n * (depth + RADIUS + 0.35)
 		land.y = maxf(far_floor_y, feet.y - 3.0) + 0.02
-		if _shape_fits(_stand_shape, land):
+		if _shape_fits(_stand_shape, land) and _path_clear(top_y, land):
 			return {"kind": &"vault", "height": height, "top": top_y, "face_normal": n, "land": land,
 				"face_dist": _face_distance(face.position), "reach": height / max_h, "grounded": grounded}
 
 	# Mantle: stand on top, a little way in from the edge.
 	var stand_on: Vector3 = face.position - n * (RADIUS + 0.2)
 	stand_on.y = top_y + 0.03
+	if not _path_clear(top_y, stand_on):
+		return {}
 	if _shape_fits(_stand_shape, stand_on):
 		return {"kind": &"mantle", "height": height, "top": top_y, "face_normal": n, "land": stand_on,
 			"face_dist": _face_distance(face.position), "reach": height / max_h, "grounded": grounded}
@@ -1279,6 +1668,24 @@ func probe_obstacle(grounded: bool) -> Dictionary:
 		return {"kind": &"mantle", "height": height, "top": top_y, "face_normal": n, "land": stand_on, "crouch": true,
 			"face_dist": _face_distance(face.position), "reach": height / max_h, "grounded": grounded}
 	return {}
+
+
+## Is there room to pass over the top, from where you are to `to`? The top
+## ray can miss a thin piece (a pane of glass on a sill, a railing beside a
+## ramp) and find a lower top behind it; this sweeps a slim body just above
+## the top so you never vault or mantle through it.
+func _path_clear(top_y: float, to: Vector3) -> bool:
+	var probe := CapsuleShape3D.new()
+	probe.radius = 0.25
+	probe.height = 0.9
+	var from := Vector3(global_position.x, top_y + 0.1 + probe.height * 0.5, global_position.z)
+	var q := PhysicsShapeQueryParameters3D.new()
+	q.shape = probe
+	q.transform = Transform3D(Basis.IDENTITY, from)
+	q.motion = Vector3(to.x, from.y, to.z) - from
+	q.collision_mask = 1
+	q.exclude = [get_rid()]
+	return get_world_3d().direct_space_state.cast_motion(q)[0] >= 1.0
 
 
 func _face_distance(p: Vector3) -> float:
@@ -1299,7 +1706,8 @@ func _start_vault(info: Dictionary) -> void:
 	var mid := (_path_from + _path_to) * 0.5
 	_path_ctrl = Vector3(mid.x, info.top + 0.55 + (info.top - mid.y) * 0.3, mid.z)
 	_path_time = tuning.vault_time * lerpf(1.35, 0.85, q)
-	_path_exit_velocity = dir * speed * (1.0 + lerpf(-0.1, tuning.vault_speed_bonus, q))
+	_path_exit_velocity = dir * speed * (1.0 + lerpf(-0.03, tuning.vault_speed_bonus, q))
+	momentum = minf(momentum + tuning.clean_move_momentum * q, 1.0)
 	_jump_buffer = 999.0
 	_change_state(State.VAULT)
 	_trick(&"vault", {"height": info.height, "quality": q})
@@ -1310,7 +1718,16 @@ func _start_mantle(info: Dictionary) -> void:
 	# low on your body (not at the fingertips) is fast and keeps speed.
 	var q := _distance_quality(info) if info.grounded else 1.0 - clampf((info.reach - 0.45) / 0.55, 0.0, 1.0)
 	var dir: Vector3 = -info.face_normal
-	var keep := maxf(horizontal_speed() * minf(tuning.mantle_speed_keep * lerpf(0.6, 1.3, q), 1.0), tuning.mantle_min_exit_speed)
+	# A clean mantle keeps all your speed; a sloppy one loses some. Off a
+	# climb, it's the speed you ran into the wall with, kept as well as you
+	# hit the climb.
+	var speed := maxf(horizontal_speed(), MovementMath.horizontal(_pre_move_velocity).length())
+	if state == State.WALLCLIMB:
+		speed = _climb_entry_speed
+		q = _climb_quality
+	var share := lerpf(tuning.mantle_speed_keep, 1.0, smoothstep(0.0, tuning.mantle_clean_quality, q))
+	var keep := maxf(speed * share, tuning.mantle_min_exit_speed)
+	momentum = minf(momentum + tuning.clean_move_momentum * q, 1.0)
 	_path_from = global_position
 	_path_to = info.land
 	_path_ctrl = Vector3(_path_from.x, info.top + 0.35, _path_from.z)
@@ -1338,6 +1755,8 @@ func _tick_scripted(_delta: float) -> void:
 		_change_state(State.AIR)
 		_move()
 		if is_on_floor():
+			_touch_ground()
+			_ground_time = 0.0
 			_change_state(State.CROUCH if not _can_stand() else State.GROUND)
 
 
@@ -1348,7 +1767,7 @@ func _try_kick_off() -> bool:
 		return false
 	var space := get_world_3d().direct_space_state
 	var eye := global_position + Vector3.UP * (_height - EYE_OFFSET)
-	var look := -camera.global_transform.basis.z if is_inside_tree() else forward()
+	var look := look_direction()
 	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * tuning.kick_range, 1 | 4)
 	q.exclude = [get_rid()]
 	var hit := space.intersect_ray(q)
@@ -1371,7 +1790,7 @@ func _try_kick_off() -> bool:
 		return false
 	if collider and collider.is_in_group("breakable"):
 		# Doors and windows give way: no surface to push off.
-		collider.on_kicked(self, -camera.global_transform.basis.z)
+		collider.on_kicked(self, look)
 		_kicks_left -= 1
 		_trick(&"door_kick" if collider.is_in_group("doors") else &"window_kick")
 		return true
@@ -1379,7 +1798,10 @@ func _try_kick_off() -> bool:
 	# Kicking while moving into the surface turns that speed into push.
 	var into := maxf(-MovementMath.horizontal(velocity).dot(MovementMath.horizontal(n).normalized()), 0.0)
 	var kick_q := clampf(into / tuning.top_speed, 0.0, 1.0)
-	velocity = MovementMath.kick_velocity(velocity, n, tuning.kick_push + into * tuning.kick_reflect, tuning.kick_up, tuning.kick_keep_tangent)
+	# A strong kick keeps all your speed along the surface; a weak one
+	# scrubs a little.
+	var keep := lerpf(tuning.kick_keep_tangent, 1.0, kick_q)
+	velocity = MovementMath.kick_velocity(velocity, n, tuning.kick_push + into * tuning.kick_reflect, tuning.kick_up, keep)
 	_kicks_left -= 1
 	_kicked_ids.append(cid)
 	_since_wall = 999.0
@@ -1400,10 +1822,8 @@ func _set_height(h: float) -> void:
 	_height = h
 	if h >= tuning.stand_height - 0.01:
 		collision.shape = _stand_shape
-	elif h >= tuning.crouch_height - 0.01:
-		collision.shape = _crouch_shape
 	else:
-		collision.shape = _prone_shape
+		collision.shape = _crouch_shape
 	(collision.shape as CapsuleShape3D).height = h
 	collision.position = Vector3(0.0, h * 0.5, 0.0)
 
@@ -1426,35 +1846,65 @@ func _can_stand() -> bool:
 	return _shape_fits(_stand_shape, global_position)
 
 
-# ---------------------------------------------------------------- auto turn
+# ---------------------------------------------------------------- quick turn
 
-func _start_auto_turn(target_yaw: float, duration: float) -> void:
-	_turn_left = duration
-	_turn_rate = angle_difference(yaw, target_yaw) / duration
-
-
-## Quick 180. On a wall it turns you to face away from it, ready to jump off.
-## Doesn't count toward 360s (only turning with the mouse or stick does).
-func _quick_turn() -> void:
-	if _turn_left > 0.0:
+## Quick turn: while a lean button is held the view turns faster and your
+## speed swings round with it, so a hard turn doesn't cost you speed.
+func _carry_turn() -> void:
+	var turned := _turn_carry
+	_turn_carry = 0.0
+	if is_zero_approx(turned):
 		return
-	var target := yaw + PI
-	if state in [State.WALLRUN, State.WALLCLIMB]:
-		var n := MovementMath.horizontal(_wall_normal).normalized()
-		target = atan2(-n.x, -n.z)
-	_start_auto_turn(target, tuning.quick_turn_time)
-	_trick_feedback(&"quick_turn")
-
-
-func _apply_auto_turn(delta: float) -> void:
-	if _turn_left <= 0.0:
+	var share := 0.0
+	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL]:
+		share = 1.0
+	elif state == State.AIR:
+		share = tuning.quick_turn_air_carry
+	if share <= 0.0:
 		return
-	var step := minf(delta, _turn_left)
+	var h := MovementMath.horizontal(velocity).rotated(Vector3.UP, turned * share)
+	velocity = Vector3(h.x, velocity.y, h.z)
+
+
+## How far the view can lean sideways (`want`, + right) without poking into
+## a wall: stops short of anything in the way.
+func _peek_room(want: float) -> float:
+	if absf(want) < 0.001 or not is_inside_tree():
+		return want
+	const MARGIN := 0.18
+	var from := head.global_position
+	var side := head.global_basis.x * signf(want)
+	var q := PhysicsRayQueryParameters3D.create(from, from + side * (absf(want) + MARGIN), 1)
+	q.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	if hit.is_empty():
+		return want
+	return signf(want) * maxf(from.distance_to(hit.position) - MARGIN, 0.0)
+
+
+## Where the player is drawn this frame: between the last two ticks, facing
+## where you look right now. Ticks come at a fixed rate, frames whenever the
+## screen is ready (and far less often than frames in slow motion), so this
+## keeps the view and body gliding instead of stepping from tick to tick.
+func visual_transform() -> Transform3D:
+	if not is_physics_processing():
+		return global_transform
+	var t := Engine.get_physics_interpolation_fraction()
+	var pos := _prev_origin.lerp(global_position, t)
 	if state == State.SURFACE:
-		_surface_look_yaw = wrapf(_surface_look_yaw + _turn_rate * step, -PI, PI)
-	else:
-		yaw = wrapf(yaw + _turn_rate * step, -PI, PI)
-	_turn_left -= step
+		return Transform3D(Basis(_prev_rotation.slerp(Quaternion(global_basis.orthonormalized()), t)), pos)
+	return Transform3D(Basis(Vector3.UP, yaw), pos)
+
+
+## The wallrun's path angle up the wall in radians (negative runs down it).
+## Only meaningful while wallrunning.
+func wallrun_angle() -> float:
+	return _wallrun_angle
+
+
+## Speed along the wallrun's path (m/s). Only meaningful while wallrunning.
+func wallrun_speed() -> float:
+	return _wallrun_speed
 
 
 # ---------------------------------------------------------------- respawn
@@ -1470,6 +1920,8 @@ func respawn(t: Variant = null) -> void:
 		_leave_surface()
 	global_position = _spawn.origin
 	set_view(_spawn.basis.get_euler().y, 0.0)
+	_prev_origin = global_position
+	_prev_rotation = Quaternion(global_basis.orthonormalized())
 	velocity = Vector3.ZERO
 	momentum = 0.0
 	_set_height(tuning.stand_height)
@@ -1477,10 +1929,13 @@ func respawn(t: Variant = null) -> void:
 	_kicked_ids.clear()
 	_wallrun_used_normal = Vector3.ZERO
 	_climb_used = false
-	_diving = false
 	_since_floor = 999.0
 	_change_state(State.AIR)
 	pitch = 0.0
+	_kick_vel = Vector2.ZERO
+	_kick_roll = 0.0
+	_kick_roll_vel = 0.0
+	_fov_punch = 0.0
 	_kick_pitch = 0.0
 	_kick_yaw = 0.0
 	_air_yaw = 0.0
@@ -1489,10 +1944,26 @@ func respawn(t: Variant = null) -> void:
 	_spins_done = 0
 	_flips_done = 0
 	_sideflips_done = 0
+	_roll_dir = 0.0
+	_roll_rate = 0.0
+	_roll_carry = false
+	_spin_vel = Vector2.ZERO
+	_look_acc = Vector2.ZERO
+	_pending_impact = 0.0
 	_ground_flick = 0.0
 	lean = 0.0
-	_turn_left = 0.0
+	_turn_carry = 0.0
+	_roll_input = 0.0
+	_roll_tick = 0.0
+	_mouse_rolled = false
+	_mouse_turn = 0.0
+	_mouse_lean = 0.0
+	_prev_air_roll = 0.0
 	_jump_buffer = 999.0
+	_since_wall = 999.0
+	_wall_jump_lock = 0.0
+	_view_offset = Quaternion.IDENTITY
+	_view_offset_start = Quaternion.IDENTITY
 	state_time = 0.0
 	respawned.emit()
 
@@ -1503,15 +1974,25 @@ func _process(delta: float) -> void:
 	if use_device_input:
 		var stick := InputSetup.look_stick()
 		if stick.length() > 0.15:
-			var pad := tuning.gamepad_look_speed * aim_sensitivity_scale() * delta
+			# Real time, so looking around isn't slowed down in slow motion.
+			var pad := tuning.gamepad_look_speed * aim_sensitivity_scale() * delta / maxf(Engine.time_scale, 0.01)
 			var pitch_scale := 0.7
 			if state == State.AIR:
 				pad *= tuning.gamepad_air_spin
 				pitch_scale = 1.0
+			if weapon and weapon.has_method("look_slowdown"):
+				pad *= weapon.look_slowdown()
 			_look(-stick.x * pad, -stick.y * pad * pitch_scale * (-1.0 if invert_y else 1.0))
-	var settle := exp(-_kick_recovery * delta)
-	_kick_pitch *= settle
-	_kick_yaw *= settle
+	var w := _kick_omega()
+	var ks := _spring(Vector2(_kick_pitch, _kick_yaw), _kick_vel, w, delta)
+	var kick: Vector2 = ks[0]
+	_kick_vel = ks[1]
+	_kick_pitch = minf(kick.x, deg_to_rad(8.0))
+	_kick_yaw = clampf(kick.y, deg_to_rad(-3.0), deg_to_rad(3.0))
+	var r := _spring(_kick_roll, _kick_roll_vel, w, delta)
+	_kick_roll = r[0]
+	_kick_roll_vel = r[1]
+	_fov_punch *= exp(-14.0 * delta)
 	head.rotation = Vector3(pitch + _kick_pitch + roll_spin(), _surface_look_yaw if state == State.SURFACE else 0.0, 0.0)
 
 	var speed := horizontal_speed()
@@ -1534,28 +2015,61 @@ func _process(delta: float) -> void:
 	elif state == State.SLIDE:
 		target_roll = deg_to_rad(-2.5)
 	# Lean peeks on the ground; in the air it's a side flip instead.
-	_peek = lerpf(_peek, 0.0 if state == State.AIR else lean, 1.0 - exp(-14.0 * delta))
+	# (On a wall, lean angles the run instead.)
+	var peek_share := lerpf(1.0, tuning.lean_peek_running_share, clampf(horizontal_speed() / tuning.run_speed, 0.0, 1.0))
+	_peek = lerpf(_peek, 0.0 if state in [State.AIR, State.WALLRUN] else lean * peek_share, 1.0 - exp(-14.0 * delta))
 	target_roll -= _peek * deg_to_rad(tuning.lean_tilt_degrees)
 	_roll = lerpf(_roll, target_roll, 1.0 - exp(-10.0 * delta))
 	if state == State.AIR:
-		_air_roll_view = wrapf(_air_roll, -PI, PI)
+		var frac := Engine.get_physics_interpolation_fraction() if is_physics_processing() else 1.0
+		_air_roll_view = wrapf(lerpf(_prev_air_roll, _air_roll, frac), -PI, PI)
 	else:
 		_air_roll_view = lerp_angle(_air_roll_view, 0.0, 1.0 - exp(-12.0 * delta))
-	_surface_exit_roll = lerp_angle(_surface_exit_roll, 0.0, 1.0 - exp(-6.0 * delta))
-	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view + _surface_exit_roll)
-	camera.position = Vector3(_peek * tuning.lean_offset, 0.0, 0.0)
+	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view + _kick_roll)
+	# Smooth the view between ticks.
+	head.global_transform = visual_transform() * head.transform
+	if not _view_offset.is_equal_approx(Quaternion.IDENTITY):
+		# Eases out from a standstill (critically damped), so the view starts
+		# moving gently instead of jumping.
+		_view_offset_time += delta
+		var wt := _view_offset_rate * _view_offset_time
+		var k := (1.0 + wt) * exp(-wt)
+		_view_offset = Quaternion.IDENTITY if k < 0.001 else Quaternion.IDENTITY.slerp(_view_offset_start, k)
+		head.global_basis = Basis(_view_offset) * head.global_basis
+	camera.position = Vector3(_peek_room(_peek * tuning.lean_offset), 0.0, 0.0)
 
 	var over := clampf((speed - tuning.run_speed) / maxf(tuning.top_speed + 4.0 - tuning.run_speed, 0.1), 0.0, 1.0)
 	var target_fov := lerpf(tuning.base_fov + tuning.speed_fov_bonus * over, aim_fov, aim_zoom)
-	camera.fov = lerpf(camera.fov, target_fov, 1.0 - exp(-(6.0 + 20.0 * aim_zoom) * delta))
+	if _fov_base <= 0.0:
+		_fov_base = camera.fov
+	_fov_base = lerpf(_fov_base, target_fov, 1.0 - exp(-(6.0 + 20.0 * aim_zoom) * delta))
+	camera.fov = _fov_base + _fov_punch * (1.0 - aim_zoom * 0.7)
 
 
 ## Recoil: kicks the view up (and a little sideways), settling back at
 ## `recovery` per second. Purely visual on top of the aim direction.
-func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float) -> void:
-	_kick_pitch = minf(_kick_pitch + pitch_amount, deg_to_rad(8.0))
-	_kick_yaw = clampf(_kick_yaw + yaw_amount, deg_to_rad(-3.0), deg_to_rad(3.0))
+## Recoil: the view punches up by about pitch_amount (and yaw_amount, roll)
+## over a couple of frames, then settles. Presentation only: the real pitch
+## and yaw never change, so aim and flips stay clean. fov_punch widens the
+## view for a moment (degrees).
+func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float, roll_amount := 0.0, fov_punch := 0.0) -> void:
 	_kick_recovery = recovery
+	# A critically damped spring started with this speed peaks at `amount`.
+	var w := _kick_omega()
+	_kick_vel += Vector2(pitch_amount, yaw_amount) * w * exp(1.0)
+	_kick_roll_vel += roll_amount * w * exp(1.0)
+	_fov_punch += fov_punch
+
+
+func _kick_omega() -> float:
+	return maxf(_kick_recovery * 2.0, 1.0)
+
+
+## Advances a critically damped spring (toward 0) exactly, at any frame time.
+static func _spring(x: Variant, v: Variant, w: float, dt: float) -> Array:
+	var e := exp(-w * dt)
+	var c: Variant = v + x * w
+	return [(x + c * dt) * e, (v - c * w * dt) * e]
 
 
 ## The roll's forward camera turn (radians, added to the view pitch).
@@ -1587,10 +2101,6 @@ func vault_progress() -> float:
 	return clampf(state_time / _path_time, 0.0, 1.0)
 
 
-func is_diving() -> bool:
-	return _diving
-
-
 ## Seconds since last on the ground (wallruns and climbs count as off it).
 func time_off_ground() -> float:
 	return _since_floor
@@ -1616,18 +2126,12 @@ func shot_tags() -> Array[StringName]:
 			tags.append(&"wallrun")
 		State.SLIDE:
 			tags.append(&"sliding")
-		State.PRONE_SLIDE:
-			tags.append(&"diving")
-		State.PRONE:
-			tags.append(&"prone")
 		State.WALLCLIMB:
 			tags.append(&"climbing")
 		State.VAULT, State.MANTLE:
 			tags.append(&"vaulting")
 		State.SURFACE:
 			tags.append(&"surface")
-	if _diving and state == State.AIR:
-		tags.append(&"diving")
 	if state == State.AIR:
 		if absf(_air_pitch) > deg_to_rad(90.0):
 			tags.append(&"flipping")

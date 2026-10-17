@@ -17,15 +17,15 @@ const REBINDABLE := [
 	["move_right", "Move right"],
 	["jump", "Jump / vault / climb"],
 	["crouch", "Crouch / slide / roll"],
-	["prone", "Dive"],
 	["kick", "Kick"],
-	["quick_turn", "Quick turn"],
-	["lean_left", "Lean left / side flip"],
-	["lean_right", "Lean right / side flip"],
+	["steer", "Steer with the mouse (hold)"],
+	["lean_left", "Lean left / quick turn / side flip"],
+	["lean_right", "Lean right / quick turn / side flip"],
 	["fire", "Fire"],
 	["aim", "Aim down sights"],
 	["reload", "Reload"],
 	["fire_mode", "Semi / full auto"],
+	["slow_mo", "Slow motion"],
 	["reset", "Respawn"],
 ]
 
@@ -37,11 +37,21 @@ var mouse_sensitivity := 1.0
 var ads_sensitivity := 1.0
 var gamepad_look_speed := 3.2
 var invert_y := false
+## The third-person camera turns with flips and rolls (ChaseCamera reads it).
+var camera_follow_flips := false
+## Aim help, 0 (off) to 1: shots bend onto nearby heads and bodies, and
+## controller look slows over targets.
+var aim_assist := 0.5
 var fov := 85.0
 var volume := 0.8
+## Music and sound-effect levels, 0..1 (GameAudio's buses, under the main volume).
+var music_volume := 0.7
+var sfx_volume := 1.0
 ## action -> {"kbm": event dict or null, "pad": event dict or null}.
 ## Only actions the player changed are stored; the rest use the defaults.
 var custom_bindings := {}
+## Saved binding names from older versions -> the action they are now.
+const RENAMED_ACTIONS := {"boost": "steer"}
 ## Where settings are saved (tests point this somewhere else).
 var save_path := PATH
 
@@ -58,8 +68,20 @@ func apply_to(p: Player) -> void:
 	p.tuning.base_fov = fov
 	p.invert_y = invert_y
 	p.ads_sensitivity = ads_sensitivity
+	if p.weapon is Pistol:
+		(p.weapon as Pistol).aim_assist = aim_assist
 	var bus := AudioServer.get_bus_index("Master")
 	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(volume, 0.0001)))
+	apply_audio()
+
+
+## Music and SFX levels to GameAudio. Looked up by path so this works (and
+## parses) whether or not the audio autoload is there.
+func apply_audio() -> void:
+	var audio := get_node_or_null("/root/GameAudio")
+	if audio and audio.has_method("set_music_volume"):
+		audio.set_music_volume(music_volume)
+		audio.set_sfx_volume(sfx_volume)
 
 
 func reset_values() -> void:
@@ -67,8 +89,12 @@ func reset_values() -> void:
 	ads_sensitivity = 1.0
 	gamepad_look_speed = 3.2
 	invert_y = false
+	camera_follow_flips = false
+	aim_assist = 0.5
 	fov = 85.0
 	volume = 0.8
+	music_volume = 0.7
+	sfx_volume = 1.0
 	changed.emit()
 
 
@@ -288,8 +314,12 @@ func save_settings(path := "") -> void:
 	cfg.set_value("look", "ads_sensitivity", ads_sensitivity)
 	cfg.set_value("look", "gamepad_look_speed", gamepad_look_speed)
 	cfg.set_value("look", "invert_y", invert_y)
+	cfg.set_value("look", "camera_follow_flips", camera_follow_flips)
+	cfg.set_value("look", "aim_assist", aim_assist)
 	cfg.set_value("look", "fov", fov)
 	cfg.set_value("audio", "volume", volume)
+	cfg.set_value("audio", "music_volume", music_volume)
+	cfg.set_value("audio", "sfx_volume", sfx_volume)
 	for action: String in custom_bindings:
 		cfg.set_value("bindings", action, custom_bindings[action])
 	cfg.save(path)
@@ -304,15 +334,43 @@ func load_settings(path := "") -> void:
 	ads_sensitivity = cfg.get_value("look", "ads_sensitivity", ads_sensitivity)
 	gamepad_look_speed = cfg.get_value("look", "gamepad_look_speed", gamepad_look_speed)
 	invert_y = cfg.get_value("look", "invert_y", invert_y)
+	camera_follow_flips = cfg.get_value("look", "camera_follow_flips", camera_follow_flips)
+	aim_assist = cfg.get_value("look", "aim_assist", aim_assist)
 	fov = cfg.get_value("look", "fov", fov)
 	volume = cfg.get_value("audio", "volume", volume)
+	music_volume = cfg.get_value("audio", "music_volume", music_volume)
+	sfx_volume = cfg.get_value("audio", "sfx_volume", sfx_volume)
 	custom_bindings.clear()
 	if cfg.has_section("bindings"):
-		for action in cfg.get_section_keys("bindings"):
+		for saved in cfg.get_section_keys("bindings"):
+			# Shift's action was renamed from boost (the boost was removed).
+			var action: String = RENAMED_ACTIONS.get(saved, saved)
 			if not InputMap.has_action(action):
 				continue
-			var slots: Dictionary = cfg.get_value("bindings", action, {})
+			var slots: Dictionary = cfg.get_value("bindings", saved, {})
 			custom_bindings[action] = slots
 			_set_slot(action, false, decode_event(slots.get("kbm")))
 			_set_slot(action, true, decode_event(slots.get("pad")))
+		_free_taken_defaults()
 	changed.emit()
+
+
+## After loading custom bindings: an action still on its default loses any
+## input a custom binding took, so one input never does two things (a save
+## from before an action existed can't know to take it away).
+func _free_taken_defaults() -> void:
+	for pair: Array in REBINDABLE:
+		var other: String = pair[0]
+		if custom_bindings.has(other):
+			continue
+		for existing in InputMap.action_get_events(other):
+			if _taken_by_custom(existing):
+				InputMap.action_erase_event(other, existing)
+
+
+func _taken_by_custom(ev: InputEvent) -> bool:
+	for action: String in custom_bindings:
+		for mine in InputMap.action_get_events(action):
+			if _same_input(ev, mine):
+				return true
+	return false

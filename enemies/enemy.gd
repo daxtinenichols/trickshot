@@ -1,0 +1,446 @@
+class_name Enemy
+extends CharacterBody3D
+## Base for enemies: health, hit zones, kicks, staggers, death and the
+## placeholder body. Raider and Mutant add the behaviour.
+##
+## All behaviour ticks in physics with the fixed tick, from game state only
+## (positions, velocities, timers and a seeded RNG), never from the camera
+## or anything rendered, so a run plays out the same every time.
+##
+## The node origin is at the feet. Faces -Z at yaw 0, like the player.
+## Placeholder look: red body, yellow head (the sandbox's "yellow head =
+## headshot" color language). Real models come later and only need to read
+## the state, like the runner body does for the player.
+
+signal damaged(info: Dictionary)
+signal killed(info: Dictionary)
+
+## Movement collision layer: enemies bump into the world and each other,
+## but the player runs through them (the player only collides with layer 1).
+const BODY_LAYER := 8
+const GRAVITY := 22.0
+const HEALTH_BAR_SHADER := preload("res://enemies/health_bar.gdshader")
+
+@export var max_health := 100.0
+## Turn speed when facing the player (degrees per second).
+@export var turn_rate := 360.0
+## How long a kick knocks it off balance (s), and how hard it shoves.
+@export var kick_stagger := 0.6
+@export var kick_shove := 6.0
+## A headshot that doesn't kill makes it flinch for this long (s),
+## interrupting whatever it was doing.
+@export var headshot_flinch := 0.45
+## Seconds it waits after its encounter starts before joining in.
+@export var wake_delay := 0.0
+## Seconds a body stays down after a kill.
+@export var corpse_time := 3.0
+
+var player: Player
+var player_health: PlayerHealth
+## The EnemyEncounter that owns it (null when used on its own, e.g. tests).
+var encounter: Node
+## Inactive enemies stand still until their encounter starts.
+var active := false
+var health := 100.0
+var is_dead := false
+var yaw := 0.0
+var hits_taken := 0
+## 0..1, how ready an attack is (drives the glow).
+var telegraph := 0.0
+## How far it is ducking down (0 standing .. 1 fully ducked).
+var duck := 0.0
+var seed_value := 1
+
+var _rng := RandomNumberGenerator.new()
+var _home := Transform3D.IDENTITY
+var _stagger := 0.0
+var _dead_time := 0.0
+var _wake_left := 0.0
+var _hit_root: Node3D
+var _hitboxes: Array[EnemyHitbox] = []
+var _visual: Node3D
+var _pose: Node3D
+var _materials: Array[StandardMaterial3D] = []
+var _bar: MeshInstance3D
+var _bar_mat: ShaderMaterial
+var _bar_show := 0.0
+var _flash := 0.0
+var _prev_xform := Transform3D.IDENTITY
+var _killed_by: Dictionary = {}
+
+
+func _ready() -> void:
+	add_to_group("enemies")
+	collision_layer = BODY_LAYER
+	collision_mask = 1 | BODY_LAYER
+	floor_max_angle = deg_to_rad(46.0)
+	health = max_health
+	yaw = rotation.y
+	_home = global_transform if is_inside_tree() else transform
+	_rng.seed = seed_value
+	var shape := CollisionShape3D.new()
+	var cap := CapsuleShape3D.new()
+	cap.radius = _body_radius()
+	cap.height = _body_height()
+	shape.shape = cap
+	shape.position.y = cap.height * 0.5
+	add_child(shape)
+	_hit_root = Node3D.new()
+	add_child(_hit_root)
+	_visual = Node3D.new()
+	_visual.top_level = true
+	add_child(_visual)
+	_pose = Node3D.new()
+	_visual.add_child(_pose)
+	_build()
+	_build_health_bar()
+	_prev_xform = global_transform
+	_visual.global_transform = global_transform
+
+
+# ---------------------------------------------------------------- overrides
+
+func _body_radius() -> float:
+	return 0.4
+
+
+func _body_height() -> float:
+	return 1.8
+
+
+## Build hit zones (with _hitbox) and the placeholder look.
+func _build() -> void:
+	pass
+
+
+## Where the health bar floats (local, standing).
+func _bar_height() -> float:
+	return 2.15
+
+
+## One tick of behaviour while alive, active and not staggered.
+func _think(_delta: float) -> void:
+	pass
+
+
+## Called when the enemy is reset to its spawn (encounter restart).
+func _on_reset() -> void:
+	pass
+
+
+## Called when an attack should stop (stagger, flinch, death).
+func _interrupt() -> void:
+	pass
+
+
+# ---------------------------------------------------------------- public
+
+func activate(p: Player) -> void:
+	player = p
+	player_health = PlayerHealth.of(p)
+	active = true
+	_wake_left = wake_delay
+
+
+func deactivate() -> void:
+	active = false
+
+
+## Back to its spawn point with full health, standing idle.
+func reset_to_home() -> void:
+	global_transform = _home
+	yaw = _home.basis.get_euler().y
+	rotation = Vector3(0, yaw, 0)
+	velocity = Vector3.ZERO
+	health = max_health
+	is_dead = false
+	active = false
+	hits_taken = 0
+	telegraph = 0.0
+	duck = 0.0
+	_stagger = 0.0
+	_dead_time = 0.0
+	_bar_show = 0.0
+	_rng.seed = seed_value
+	_set_alive_collision(true)
+	visible = true
+	if _pose:
+		_pose.transform = Transform3D.IDENTITY
+	_prev_xform = global_transform
+	_on_reset()
+
+
+func set_home(t: Transform3D) -> void:
+	_home = t
+
+
+func is_staggered() -> bool:
+	return _stagger > 0.0
+
+
+func eye_position() -> Vector3:
+	return global_position + Vector3.UP * (_head_height() * (1.0 - 0.38 * duck))
+
+
+func head_position() -> Vector3:
+	return _hit_root.global_position + Vector3.UP * _head_height() if _hit_root else global_position + Vector3.UP * _head_height()
+
+
+func _head_height() -> float:
+	return 1.62
+
+
+func distance_to_player() -> float:
+	return global_position.distance_to(player.global_position) if player else INF
+
+
+## Clear line from `from` to the player's chest (world geometry only).
+func can_see_player(from := Vector3.INF) -> bool:
+	if player == null or not is_inside_tree():
+		return false
+	var eye := eye_position() if from == Vector3.INF else from
+	var q := PhysicsRayQueryParameters3D.create(eye, EnemyMath.player_chest(player), 1)
+	return get_world_3d().direct_space_state.intersect_ray(q).is_empty()
+
+
+func hurt_player(amount: float, kind: StringName) -> void:
+	if player_health:
+		player_health.take_damage(amount, global_position + Vector3.UP * 1.2, kind)
+	if encounter and encounter.has_method("on_player_hurt"):
+		encounter.on_player_hurt(self, amount, kind)
+
+
+## Called by weapons. Returns true if this hit killed it.
+func take_hit(info: Dictionary) -> bool:
+	if is_dead:
+		return false
+	hits_taken += 1
+	health -= float(info.get("damage", 0.0))
+	_flash = 1.0
+	_bar_show = 3.0
+	damaged.emit(info)
+	_damage_number(info)
+	if health <= 0.0:
+		_die(info)
+		return true
+	if info.get("zone", &"body") == &"head":
+		_stagger = maxf(_stagger, headshot_flinch)
+		_interrupt()
+	return false
+
+
+func on_kicked(_by: Node, dir := Vector3.ZERO) -> void:
+	if is_dead:
+		return
+	var d := EnemyMath.horizontal(dir)
+	if d.length_squared() < 0.01 and player:
+		d = EnemyMath.horizontal(global_position - player.global_position)
+	d = d.normalized()
+	velocity = d * kick_shove + Vector3.UP * 3.0
+	_stagger = maxf(_stagger, kick_stagger)
+	_flash = 1.0
+	_interrupt()
+
+
+# ---------------------------------------------------------------- tick
+
+func _physics_process(delta: float) -> void:
+	_prev_xform = global_transform
+	tick(delta)
+
+
+func tick(delta: float) -> void:
+	if is_dead:
+		_dead_time += delta
+		if _dead_time >= corpse_time:
+			visible = false
+		return
+	if not is_on_floor():
+		velocity.y -= GRAVITY * delta
+	if _stagger > 0.0:
+		_stagger -= delta
+		telegraph = 0.0
+		# Knocked back: friction until it stops.
+		var h := EnemyMath.horizontal(velocity)
+		h = h.move_toward(Vector3.ZERO, 14.0 * delta)
+		velocity = Vector3(h.x, velocity.y, h.z)
+		move_and_slide()
+		return
+	if _wake_left > 0.0:
+		_wake_left -= delta
+	if not active or player == null or _wake_left > 0.0:
+		var h := EnemyMath.horizontal(velocity).move_toward(Vector3.ZERO, 20.0 * delta)
+		velocity = Vector3(h.x, velocity.y, h.z)
+		move_and_slide()
+		return
+	_think(delta)
+
+
+## Turns toward a world point at turn_rate.
+func face_toward(point: Vector3, delta: float, rate_scale := 1.0) -> void:
+	var d := EnemyMath.horizontal(point - global_position)
+	if d.length_squared() < 1e-4:
+		return
+	yaw = EnemyMath.turn_yaw(yaw, EnemyMath.yaw_of(d), deg_to_rad(turn_rate * rate_scale) * delta)
+	rotation = Vector3(0, yaw, 0)
+
+
+func forward() -> Vector3:
+	return Vector3(-sin(yaw), 0, -cos(yaw))
+
+
+## Walks toward a horizontal velocity with the given acceleration.
+func steer(want: Vector3, accel: float, delta: float) -> void:
+	var h := EnemyMath.horizontal(velocity).move_toward(EnemyMath.horizontal(want), accel * delta)
+	velocity = Vector3(h.x, velocity.y, h.z)
+
+
+func _die(info: Dictionary) -> void:
+	is_dead = true
+	_dead_time = 0.0
+	telegraph = 0.0
+	velocity = Vector3.ZERO
+	_killed_by = info
+	_interrupt()
+	_set_alive_collision(false)
+	killed.emit(info)
+	if encounter and encounter.has_method("on_enemy_killed"):
+		encounter.on_enemy_killed(self)
+
+
+func _set_alive_collision(on: bool) -> void:
+	collision_layer = BODY_LAYER if on else 0
+	collision_mask = (1 | BODY_LAYER) if on else 0
+	for b in _hitboxes:
+		b.set_enabled(on)
+
+
+# ---------------------------------------------------------------- building helpers
+
+func _hitbox(zone: StringName, shape: Shape3D, pos: Vector3, parent: Node3D = null) -> EnemyHitbox:
+	var body := EnemyHitbox.new(self, zone)
+	var cs := CollisionShape3D.new()
+	cs.shape = shape
+	body.add_child(cs)
+	body.position = pos
+	(parent if parent else _hit_root).add_child(body)
+	_hitboxes.append(body)
+	return body
+
+
+static func box_shape(size: Vector3) -> BoxShape3D:
+	var b := BoxShape3D.new()
+	b.size = size
+	return b
+
+
+static func sphere_shape(r: float) -> SphereShape3D:
+	var s := SphereShape3D.new()
+	s.radius = r
+	return s
+
+
+func _material(c: Color) -> StandardMaterial3D:
+	var m := StandardMaterial3D.new()
+	m.albedo_color = c
+	m.roughness = 0.7
+	m.emission_enabled = true
+	m.emission = Color.BLACK
+	_materials.append(m)
+	return m
+
+
+func _mesh_box(size: Vector3, pos: Vector3, mat: Material, parent: Node3D = null) -> MeshInstance3D:
+	var m := MeshInstance3D.new()
+	var b := BoxMesh.new()
+	b.size = size
+	m.mesh = b
+	m.position = pos
+	m.material_override = mat
+	(parent if parent else _pose).add_child(m)
+	return m
+
+
+func _mesh_sphere(r: float, pos: Vector3, mat: Material, parent: Node3D = null) -> MeshInstance3D:
+	var m := MeshInstance3D.new()
+	var s := SphereMesh.new()
+	s.radius = r
+	s.height = r * 2.0
+	m.mesh = s
+	m.position = pos
+	m.material_override = mat
+	(parent if parent else _pose).add_child(m)
+	return m
+
+
+func _build_health_bar() -> void:
+	_bar = MeshInstance3D.new()
+	var q := QuadMesh.new()
+	q.size = Vector2(0.8, 0.08)
+	_bar.mesh = q
+	_bar_mat = ShaderMaterial.new()
+	_bar_mat.shader = HEALTH_BAR_SHADER
+	_bar.material_override = _bar_mat
+	_bar.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	_bar.position = Vector3(0, _bar_height(), 0)
+	_bar.visible = false
+	_visual.add_child(_bar)
+
+
+# ---------------------------------------------------------------- presentation
+
+## Draws the body where the physics body is, smoothed between ticks.
+func _process(delta: float) -> void:
+	if _visual == null:
+		return
+	var t := Engine.get_physics_interpolation_fraction() if is_physics_processing() else 1.0
+	var a := _prev_xform
+	var b := global_transform
+	_visual.global_transform = Transform3D(Basis(a.basis.get_rotation_quaternion().slerp(b.basis.get_rotation_quaternion(), t)), a.origin.lerp(b.origin, t))
+	_flash = move_toward(_flash, 0.0, delta * 6.0)
+	var glow := _telegraph_color() * telegraph
+	for m in _materials:
+		m.emission = Color(1, 1, 1) * _flash + glow
+	_bar_show = maxf(_bar_show - delta, 0.0)
+	_bar.visible = not is_dead and _bar_show > 0.0 and health < max_health
+	if _bar.visible:
+		_bar_mat.set_shader_parameter("fill", clampf(health / max_health, 0.0, 1.0))
+		_bar_mat.set_shader_parameter("alpha", clampf(_bar_show, 0.0, 1.0))
+		_bar.position.y = _bar_height() * (1.0 - 0.3 * duck)
+	_animate(delta)
+	if is_dead:
+		_pose.rotation.x = lerpf(_pose.rotation.x, -PI * 0.5, 1.0 - exp(-10.0 * delta))
+		_pose.position.y = lerpf(_pose.position.y, 0.25, 1.0 - exp(-10.0 * delta))
+
+
+func _telegraph_color() -> Color:
+	return Color(1.0, 0.25, 0.1)
+
+
+## Placeholder pose from the state (ducking, lunging...). Looks only.
+func _animate(_delta: float) -> void:
+	pass
+
+
+func _damage_number(info: Dictionary) -> void:
+	if not is_inside_tree():
+		return
+	var head: bool = info.get("zone", &"body") == &"head"
+	var l := Label3D.new()
+	l.text = "%d" % roundi(float(info.get("damage", 0.0)))
+	l.font_size = 72 if head else 48
+	l.outline_size = 14
+	l.modulate = Color(1.0, 0.85, 0.2) if head else Color(1, 1, 1)
+	l.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	l.no_depth_test = true
+	l.top_level = true
+	add_child(l)
+	var at: Vector3 = info.get("position", global_position + Vector3.UP * 1.5)
+	# Spread from the hit count, not a random number, so nothing random
+	# happens outside the seeded simulation.
+	l.global_position = at + Vector3(0.12 * sin(hits_taken * 2.4), 0.25, 0)
+	var tw := l.create_tween()
+	tw.set_parallel(true)
+	tw.tween_property(l, "global_position:y", l.global_position.y + 0.7, 0.6)
+	tw.tween_property(l, "modulate:a", 0.0, 0.6).set_delay(0.2)
+	tw.chain().tween_callback(l.queue_free)

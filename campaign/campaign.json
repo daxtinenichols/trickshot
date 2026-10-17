@@ -1,0 +1,63 @@
+{
+ "title": "Dead Air",
+ "acts": [
+  {
+   "title": "Act 1: The Edge",
+   "missions": [
+    {"id": "m00_dawn_run", "number": 0, "title": "Dawn Run", "place": "Dock rooftops",
+     "beat": "A routine delivery. Parker gets back to find the camp raided and Echo gone. The Host's voice cuts into every radio: the hunt is on.",
+     "moves": "Sprint, jump, vault, slide, roll", "enemies": "None. Raiders seen at a distance only.",
+     "file": "res://campaign/missions/m00_dawn_run.json"},
+    {"id": "m01_the_yard", "number": 1, "title": "The Yard", "place": "Couriers' training yard",
+     "beat": "Mags hands Parker an old scrap pistol and runs him through the yard one last time.",
+     "moves": "Flips, 360s, lean and side flip; combos", "enemies": "Static targets; semi-auto; headshots",
+     "file": "res://campaign/missions/m01_the_yard.json"},
+    {"id": "m02_on_air", "number": 2, "title": "On Air", "place": "Warehouse roofs",
+     "beat": "First ambush. The Host names Parker on air and starts calling the run.",
+     "moves": "Wallrun, wall hop", "enemies": "Gunners; slow-mo as an adrenaline burst",
+     "file": "res://campaign/missions/m02_on_air.json"},
+    {"id": "m03_glass_district", "number": 3, "title": "Glass District", "place": "Office towers",
+     "beat": "Through a Static toll tower, floor by floor.",
+     "moves": "Climb, kick doors and windows", "enemies": "Spotters; full-auto mode"},
+    {"id": "m04_silt_line", "number": 4, "title": "Silt Line", "place": "Ground level",
+     "beat": "The Host blows a bridge and drops Parker into the Silt. Climb back up through the Hollows before the dust gets to you.",
+     "moves": "Quick turn, ground roll", "enemies": "Crawlers. Lesson: never stop."}
+   ]
+  },
+  {
+   "title": "Act 2: Meridian Mall",
+   "missions": [
+    {"id": "m05_atrium", "number": 5, "title": "Atrium", "place": "Mall atrium and food court",
+     "beat": "The only way across the city's center. The Static uses it as a Hollow arena for the show.",
+     "moves": "Wallrun chains across the atrium", "enemies": "Leapers; raiders and Hollows together"},
+    {"id": "m06_parking_spiral", "number": 6, "title": "Parking Spiral", "place": "Multi-storey car park and ramps",
+     "beat": "Parker hears Echo's first coded message hidden in the broadcast: she is alive and fighting back.",
+     "moves": "Steep ramps, running loops", "enemies": "Bruisers (flank or headshot)"},
+    {"id": "m07_anchor_store", "number": 7, "title": "Anchor Store", "place": "Department store and roof",
+     "beat": "Parker hunts Juno through the store to a duel on the roof.",
+     "moves": "Everything so far, at speed", "enemies": "Hunters; Juno boss"}
+   ]
+  },
+  {
+   "title": "Act 3: The Signal",
+   "missions": [
+    {"id": "m08_storm_channels", "number": 8, "title": "Storm Channels", "place": "Dry flood channels",
+     "beat": "The city starts rooting for Parker. Listeners leave orange marks and open shortcuts.",
+     "moves": "Banks and half-pipes", "enemies": "Brutes"},
+    {"id": "m09_rail_bridge", "number": 9, "title": "Rail Bridge", "place": "Elevated train line",
+     "beat": "The Host changes the route live, sending everything he has.",
+     "moves": "Long speed run", "enemies": "Mixed squads"},
+    {"id": "m10_the_climb", "number": 10, "title": "The Climb", "place": "Broadcast tower exterior",
+     "beat": "Straight up the tower while the Host counts down.",
+     "moves": "Vertical wallrun chains", "enemies": "All types"},
+    {"id": "m11_dead_air", "number": 11, "title": "Dead Air", "place": "Studio at the top",
+     "beat": "Parker fights through the Host's crew and reaches Echo, but the Host's last trap pins Parker and sets the tower burning.",
+     "moves": "All", "enemies": "The Host's elite crew"},
+    {"id": "m12_signal_out", "number": 12, "title": "Signal Out", "place": "Down the burning tower and across the roofs",
+     "beat": "You play Echo, and for the first time you are the one being chased. She runs to draw the Host away from Parker; he hunts her himself, calling it live. Slow down and he catches her.",
+     "moves": "All, as Echo; pure speed", "enemies": "The Host as a pursuing boss",
+     "file": "res://campaign/missions/m12_signal_out.json", "unlocks": "echo"}
+   ]
+  }
+ ]
+}

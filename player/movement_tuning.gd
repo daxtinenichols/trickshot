@@ -55,15 +55,6 @@ extends Resource
 ## Friction grows by this much per second of sliding, so flat slides end.
 @export_range(0.0, 10.0, 0.05) var slide_friction_ramp := 1.0
 
-@export_group("Prone and dive")
-@export_range(0.76, 1.5, 0.01) var prone_height := 0.8
-## Below this a dive slide ends and you get up.
-@export_range(0.0, 5.0, 0.1) var prone_speed := 1.4
-## Dolphin dive: upward speed and forward boost.
-@export_range(0.0, 10.0, 0.1) var dive_up := 3.6
-@export_range(0.0, 10.0, 0.1) var dive_boost := 1.5
-@export_range(0.0, 20.0, 0.1) var prone_slide_friction := 1.6
-
 @export_group("Vault and mantle")
 ## Highest obstacle (above feet) you vault over or step onto without jumping.
 @export_range(0.2, 2.0, 0.05) var vault_max_height := 1.25
@@ -71,12 +62,18 @@ extends Resource
 ## Thickest obstacle that counts as vaultable; thicker ones are mantled onto.
 @export_range(0.2, 3.0, 0.05) var vault_max_depth := 1.4
 @export_range(0.05, 1.0, 0.01) var vault_time := 0.28
-@export_range(0.0, 0.5, 0.01) var vault_speed_bonus := 0.12
+## Speed gained by a clean vault (0.15 = 15%). A sloppy one still keeps
+## nearly all of it, so vaulting beats jumping over.
+@export_range(0.0, 0.5, 0.01) var vault_speed_bonus := 0.15
+## Extra momentum (raising your top speed) from a clean vault or mantle.
+@export_range(0.0, 1.0, 0.01) var clean_move_momentum := 0.15
 ## How far above your feet you can catch a ledge while airborne.
 @export_range(0.2, 3.0, 0.05) var mantle_air_reach := 1.55
 @export_range(0.05, 1.0, 0.01) var mantle_time := 0.32
-## Fraction of horizontal speed kept after a mantle.
-@export_range(0.0, 1.0, 0.01) var mantle_speed_keep := 0.7
+## Fraction of horizontal speed kept after a sloppy mantle. A clean one
+## (quality at or above mantle_clean_quality) keeps all of it.
+@export_range(0.0, 1.0, 0.01) var mantle_speed_keep := 0.55
+@export_range(0.05, 1.0, 0.01) var mantle_clean_quality := 0.7
 @export_range(0.0, 10.0, 0.1) var mantle_min_exit_speed := 3.5
 
 @export_group("Wallrun")
@@ -84,8 +81,6 @@ extends Resource
 @export_range(0.0, 5.0, 0.05) var wallrun_max_time := 1.6
 ## Gravity multiplier while wallrunning.
 @export_range(0.0, 1.0, 0.01) var wallrun_gravity_scale := 0.15
-## Upward speed given when a wallrun starts.
-@export_range(0.0, 10.0, 0.1) var wallrun_entry_lift := 2.6
 ## Speed the wallrun accelerates toward along the wall.
 @export_range(0.0, 20.0, 0.1) var wallrun_speed := 8.5
 @export_range(0.0, 30.0, 0.1) var wallrun_accel := 6.0
@@ -102,14 +97,23 @@ extends Resource
 @export_range(0.0, 20.0, 0.1) var surface_min_speed := 3.0
 ## Speed needed to stay on upside down (the top of a loop).
 @export_range(0.0, 30.0, 0.1) var surface_inverted_speed := 6.0
-## Steering on a surface (degrees per second at full left/right).
-@export_range(0.0, 360.0, 1.0) var surface_steer := 70.0
+## How fast you can turn while running on a ramp, loop or bank (degrees/s),
+## toward where you look or with the stick.
+@export_range(0.0, 360.0, 1.0) var surface_steer := 110.0
+## Share of gravity that pulls your path down a slope when you run across
+## it (banks). Lower holds your line like a wallrun.
+@export_range(0.0, 1.0, 0.01) var surface_cross_gravity := 0.35
 ## Push into the surface (m/s) that keeps your feet on it.
 @export_range(0.0, 10.0, 0.1) var surface_stick := 2.0
 ## How strongly a track (loop) steers you along itself.
+## (Steering with the stick overrides it, so you can run off the side.)
 @export_range(0.0, 20.0, 0.1) var surface_flow_assist := 5.0
-## How quickly your body (and view) turns to match the surface.
-@export_range(1.0, 60.0, 0.5) var surface_align_rate := 18.0
+## Flying off a surface turning slower than this (degrees/s) doesn't carry
+## the turn into the air.
+@export_range(0.0, 360.0, 1.0) var surface_exit_spin_min := 15.0
+## How quickly your body (and view) turns to match the surface. Lower is
+## smoother over the seams between track pieces, higher hugs the track.
+@export_range(1.0, 60.0, 0.5) var surface_align_rate := 12.0
 ## Runnable slopes flatter than this (normal y) are just ground.
 @export_range(0.5, 1.0, 0.005) var surface_enter_flatness := 0.95
 @export_range(0.5, 1.0, 0.005) var surface_exit_flatness := 0.97
@@ -139,12 +143,19 @@ extends Resource
 ## Fraction of horizontal speed kept after a hard landing.
 @export_range(0.0, 1.0, 0.01) var hard_landing_keep := 0.35
 @export_range(0.0, 2.0, 0.01) var hard_landing_stun := 0.35
+## Two crouch presses this close together (seconds) while running: a roll.
+@export_range(0.1, 0.6, 0.01) var double_tap_window := 0.3
+## Crouch held this long in the air is a tuck: you land in a roll from any
+## angle, as long as the fall is at least tuck_roll_min_fall (m/s).
+@export_range(0.0, 1.0, 0.01) var tuck_hold_time := 0.2
+@export_range(0.0, 20.0, 0.1) var tuck_roll_min_fall := 4.0
 
 @export_group("Kick-off")
 @export_range(0.5, 4.0, 0.05) var kick_range := 1.7
 @export_range(0.0, 20.0, 0.1) var kick_push := 7.5
 @export_range(0.0, 20.0, 0.1) var kick_up := 6.5
-## Fraction of speed along the surface kept through a kick-off.
+## Fraction of speed along the surface kept through a weak kick-off; a
+## strong one (kicking hard into the surface) keeps all of it.
 @export_range(0.0, 1.0, 0.01) var kick_keep_tangent := 0.9
 @export_range(0, 6, 1) var kicks_per_air_time := 2
 @export_range(0.0, 50.0, 0.5) var kick_target_impulse := 14.0
@@ -170,6 +181,17 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var wallrun_sloppy_gravity := 0.5
 ## Speed lost per second while wallrunning with no direction held.
 @export_range(0.0, 20.0, 0.1) var wallrun_misalign_drag := 5.0
+## How fast leaning rolls your wallrun's path round, degrees per second:
+## toward the wall turns it up, away turns it down.
+@export_range(0.0, 360.0, 1.0) var wallrun_angle_rate := 80.0
+## Steepest angle you can run up a wall (from a steep entry), and down it.
+@export_range(0.0, 85.0, 1.0) var wallrun_max_up_angle := 55.0
+@export_range(0.0, 85.0, 1.0) var wallrun_max_down_angle := 45.0
+## Share of gravity that slows you while running up a wall (the steeper,
+## the more it costs).
+@export_range(0.0, 1.0, 0.01) var wallrun_climb_cost := 0.6
+## Extra kick-off power when jumping off at the steepest angle (0.5 = 50%).
+@export_range(0.0, 2.0, 0.05) var wallrun_steep_kick := 0.5
 ## Ideal distance from a wall when you jump to vault it (from body edge).
 @export_range(0.0, 2.0, 0.05) var vault_ideal_distance := 0.35
 ## Fraction of speed into a wall that a kick-off turns into push.
@@ -191,16 +213,42 @@ extends Resource
 ## How fast that pull fades (radians per second), so it has to be a flick.
 @export_range(0.0, 20.0, 0.1) var ground_roll_flick_decay := 3.0
 ## Side flip roll speed while lean is held in the air (degrees per second).
-@export_range(90.0, 1440.0, 10.0) var side_flip_speed := 540.0
+@export_range(90.0, 1440.0, 10.0) var side_flip_speed := 480.0
 ## Let go of lean within this many degrees of level and you settle upright.
 @export_range(0.0, 90.0, 1.0) var side_settle_degrees := 40.0
-## Landing rolled over further than this (degrees) is a crash.
+## Landing rolled over further than this (degrees) is a shoulder roll (a
+## crash if you're also flipped over), and you can't run onto a ramp.
 @export_range(10.0, 120.0, 1.0) var side_crash_degrees := 50.0
-## Seconds for the quick 180 turn.
-@export_range(0.05, 0.6, 0.01) var quick_turn_time := 0.18
+## Side flips keep their direction once started. Tucked (lean or crouch
+## held) you spin at side_flip_speed; opened up, at this share of it.
+@export_range(0.0, 1.0, 0.01) var spin_open_share := 0.35
+## How fast the side-flip spin speeds up or slows down (degrees/s per s).
+@export_range(100.0, 5000.0, 10.0) var spin_accel := 2400.0
+## Flips and turns carry on after you stop moving the view, if you were
+## turning faster than spin_carry_min (degrees/s). The spin fades over
+## about spin_carry_time seconds; tucking (crouch) keeps it going.
+@export_range(0.0, 2000.0, 10.0) var spin_carry_min := 270.0
+@export_range(0.0, 2.0, 0.01) var spin_carry_time := 0.3
+
+@export_group("Quick turn and mouse steering")
+## Holding a lean button turns the view this many times faster toward that
+## side (Q left, E right); turning the other way is normal speed.
+@export_range(1.0, 5.0, 0.1) var quick_turn_look_scale := 2.5
+## Holding steer (Shift) in the air or on a wall, moving the mouse left and
+## right rolls you instead of turning: a side flip in the air, rolling your
+## path round on a wall. This scales how far (1 = as far as it would turn).
+@export_range(0.1, 4.0, 0.05) var mouse_roll_scale := 1.0
+## Holding steer (Shift) on your feet, turning the mouse leans you that way: the
+## faster you turn, the more you lean (full lean at this many degrees per
+## second), and the more you lean, the harder the turn (up to
+## quick_turn_look_scale), with your speed swinging round like a quick turn.
+@export_range(60.0, 1440.0, 10.0) var mouse_lean_full_rate := 400.0
+## While quick turning, your speed turns with your view: all of it on the
+## ground, this share of it in the air.
+@export_range(0.0, 1.0, 0.01) var quick_turn_air_carry := 0.35
 
 @export_group("Breakables")
-## Speed at which running, sliding or diving into a window smashes it.
+## Speed at which running or sliding into a window smashes it.
 @export_range(0.0, 20.0, 0.1) var smash_speed := 5.0
 
 @export_group("Context")
@@ -220,6 +268,10 @@ extends Resource
 ## Lean on the ground: how far the camera moves sideways and tilts.
 @export_range(0.0, 1.0, 0.01) var lean_offset := 0.4
 @export_range(0.0, 30.0, 0.5) var lean_tilt_degrees := 12.0
+## Running, the lean is mostly a quick turn, so the view only peeks this
+## share of the way (full peek standing still, easing down to it at run
+## speed).
+@export_range(0.0, 1.0, 0.01) var lean_peek_running_share := 0.15
 ## How fast lean eases in and out (full lean per second).
 @export_range(1.0, 20.0, 0.5) var lean_speed := 7.0
 ## Head bob amplitude in meters at run speed (0 = off).

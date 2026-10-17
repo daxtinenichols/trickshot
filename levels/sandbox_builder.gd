@@ -50,7 +50,11 @@ func build() -> void:
 	spawns.clear()
 	zone_names.clear()
 
-	_box(Vector3(10, -0.5, -40), Vector3(320, 1, 260), Kind.FLOOR)
+	# Floor reaches past the enemies arena (to z 115); ruined buildings close every edge.
+	_box(Vector3(10, -0.5, -27.5), Vector3(320, 1, 285), Kind.FLOOR)
+	for piece in MapPieces.perimeter(Vector3(10, 0, -27.5), Vector2(320, 285)):
+		var t: Transform3D = piece.transform
+		_box_basis(t.origin, piece.size, t.basis, Kind.NEUTRAL).set_meta("look", "FACADE")
 	_zone_run_track(Vector3(0, 0, 0))
 	_zone_vault_lane(Vector3(20, 0, 0))
 	_zone_mantle_steps(Vector3(40, 0, 0))
@@ -170,19 +174,18 @@ func _zone_kick_yard(o: Vector3) -> void:
 
 func _zone_breach(o: Vector3) -> void:
 	_spawn(o + Vector3(0, 0, 5), "9 · DOORS AND WINDOWS")
-	_label("Kick (F) doors open. Run + dive (Z) through windows", o + Vector3(0, 3.2, 1), 0.9)
-	# A wall with a door, a low window to dive through, and a high window.
+	_label("Kick (F) doors open. Slide (Ctrl) through low windows", o + Vector3(0, 3.2, 1), 0.9)
+	# A wall with a door, a low window to slide through, and a high window.
 	var z := -14.0
 	_box(o + Vector3(-6.05, 1.5, z), Vector3(8.0, 3.0, 0.3), Kind.NEUTRAL)   # left of door: x -10.05..-2.05
 	_box(o + Vector3(-1.5, 2.6, z), Vector3(1.1, 0.8, 0.3), Kind.NEUTRAL)    # above door
 	_door(o + Vector3(-2.05, 0, z))
 	_box(o + Vector3(0.975, 1.5, z), Vector3(3.85, 3.0, 0.3), Kind.NEUTRAL)  # between door and window
 	_box(o + Vector3(4.0, 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)     # above low window
-	_window(o + Vector3(4.0, 0.2, z), Vector2(2.2, 1.2))
-	_box(o + Vector3(4.0, 0.1, z), Vector3(2.2, 0.2, 0.3), Kind.NEUTRAL)     # sill
+	_window(o + Vector3(4.0, 0.0, z), Vector2(2.2, 1.4))                    # from the floor: slide under
 	_box(o + Vector3(7.05, 1.5, z), Vector3(3.9, 3.0, 0.3), Kind.NEUTRAL)
 	_label("Door", o + Vector3(-1.5, 3.4, z + 0.3), 0.8)
-	_label("Dive through", o + Vector3(4.0, 3.4, z + 0.3), 0.8)
+	_label("Slide through", o + Vector3(4.0, 3.4, z + 0.3), 0.8)
 	# Second wall: a window to vault and smash through at speed.
 	var z2 := -30.0
 	_box(o + Vector3(-5.1, 1.5, z2), Vector3(10.0, 3.0, 0.3), Kind.NEUTRAL)
@@ -235,6 +238,10 @@ func _zone_ramps(o: Vector3) -> void:
 		var z := right.z - 5.0 * sin(a) - (h - (5.0 - 5.0 * cos(a))) / tan(a)
 		_label("%d m" % roundi(h), Vector3(right.x + 2.6, h, z), 1.0)
 	_label("Steep ramp: how high can you run?", right + Vector3(0, 3.2, 2), 0.8)
+	# Far right: a sideways ramp. Run along it; steer or look up it to climb.
+	var bank := o + Vector3(20, 0, -8)
+	_surface(MapPieces.bank(bank, 70.0, 1.0, 3.0, 65.0, 4.0))
+	_label("Sideways ramp: run along it, steer or look up it to climb", bank + Vector3(-1, 3.2, 2), 0.8)
 
 
 func _surface(pieces: Array[Dictionary]) -> void:

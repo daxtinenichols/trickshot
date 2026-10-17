@@ -37,6 +37,9 @@ func test_variety_sets_multiplier_and_repeats_decay() -> void:
 	# slide 50 + vault 75 + slide 50*0.6 = 155
 	check_near(c.combo_points, 155.0, 0.01, "repeat worth 60% of the last")
 	check(c.combo_total() == 310, "total = points x multiplier (got %d)" % c.combo_total())
+	# The total matches the rounded points shown on screen times the multiplier.
+	c.combo_points = 100.4
+	check(c.combo_total() == 200, "100 shown x2 = 200, not 201 (got %d)" % c.combo_total())
 
 
 func test_speed_and_quality_scale_points() -> void:
@@ -200,6 +203,11 @@ func test_hud_shows_tricks_then_the_kill_card_then_points() -> void:
 	c.on_trick(&"backflip", {})
 	check(hud._pops.get_child_count() == 2, "each trick pops up")
 	check((hud._pops.get_child(1) as Label).text == "+300  BACKFLIP", "pop shows points and name (%s)" % (hud._pops.get_child(1) as Label).text)
+	c.on_trick(&"vault", {"quality": 1.0})
+	check((hud._pops.get_child(2) as Label).text.ends_with("VAULT  PERFECT"), "a graded move shows its grade (%s)" % (hud._pops.get_child(2) as Label).text)
+	var col := hud._combo.get_parent() as Control
+	check(col.anchor_left == 1.0 and col.anchor_top == 0.0, "tricks are called out in the top-right corner")
+	check(hud._combo.get_theme_font_size("font_size") <= 34, "at a medium size")
 	c.on_hit(_kill_hit())
 	check(hud._card.visible, "combo card shows")
 	check(hud._card_title.text == "COMBO KILL", "kill finish is called out (%s)" % hud._card_title.text)

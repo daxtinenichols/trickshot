@@ -11,7 +11,6 @@ extends Node3D
 var menu: PauseMenu
 var combo: ComboTracker
 var combo_hud: ComboHud
-var corner_cam: CornerCam
 
 
 func _ready() -> void:
@@ -27,11 +26,8 @@ func _ready() -> void:
 	combo_hud = ComboHud.new()
 	add_child(combo_hud)
 	combo_hud.setup(combo)
-	corner_cam = CornerCam.new()
-	add_child(corner_cam)
-	corner_cam.setup(player)
 	go_to_zone(0)
-	hud.show_toast("Esc: moves list, settings and controls", 4.0)
+	hud.show_toast("Esc: maps, moves list, settings and controls", 4.0)
 
 
 func go_to_zone(index: int) -> void:
@@ -46,5 +42,3 @@ func _unhandled_input(event: InputEvent) -> void:
 		if InputMap.has_action("zone_%d" % (i + 1)) and event.is_action_pressed("zone_%d" % (i + 1)):
 			go_to_zone(i)
 			return
-	if event.is_action_pressed("debug_slowmo"):
-		Engine.time_scale = 0.3 if is_equal_approx(Engine.time_scale, 1.0) else 1.0

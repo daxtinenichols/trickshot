@@ -44,10 +44,13 @@ func test_default_slots() -> void:
 	check(GameSettings.event_label(GameSettings.slot_event("jump", true)) == "A", "jump is A")
 	check(GameSettings.event_label(GameSettings.slot_event("fire", false)) == "Left mouse", "fire is left mouse")
 	check(GameSettings.event_label(GameSettings.slot_event("fire", true)) == "RT", "fire is RT")
-	check(GameSettings.event_label(GameSettings.slot_event("quick_turn", false)) == "Shift", "quick turn is Shift")
+	check(GameSettings.event_label(GameSettings.slot_event("steer", false)) == "Shift", "steer is Shift")
 	check(GameSettings.event_label(GameSettings.slot_event("lean_left", false)) == "Q", "lean left is Q")
-	check(GameSettings.event_label(GameSettings.slot_event("lean_right", true)) == "D-pad right", "lean right is D-pad right (%s)" % GameSettings.event_label(GameSettings.slot_event("lean_right", true)))
-	check(GameSettings.event_label(GameSettings.slot_event("quick_turn", true)) == "LB", "quick turn is LB")
+	check(GameSettings.slot_event("steer", true) == null, "steer has no controller button (it steers the mouse)")
+	check(GameSettings.event_label(GameSettings.slot_event("lean_left", true)) == "LB", "lean left is LB")
+	check(GameSettings.event_label(GameSettings.slot_event("lean_right", true)) == "RB", "lean right is RB")
+	check(GameSettings.event_label(GameSettings.slot_event("kick", true)) == "R3", "kick is R3")
+	check(GameSettings.event_label(GameSettings.slot_event("fire_mode", true)) == "D-pad left", "fire mode is D-pad left")
 
 
 func test_rebind_replaces_slot_only() -> void:
@@ -67,7 +70,6 @@ func test_rebind_takes_key_from_other_action() -> void:
 func test_rebind_controller_button() -> void:
 	Settings.rebind("kick", _pad(JOY_BUTTON_Y))
 	check(GameSettings.event_label(GameSettings.slot_event("kick", true)) == "Y", "kick on Y")
-	check(GameSettings.slot_event("fire_mode", true) == null, "fire mode lost Y")
 	check(GameSettings.event_label(GameSettings.slot_event("kick", false)) == "F", "keyboard kick untouched")
 
 
@@ -75,6 +77,7 @@ func test_bindings_and_values_survive_save_and_load() -> void:
 	Settings.rebind("crouch", _key(KEY_X))
 	Settings.mouse_sensitivity = 1.7
 	Settings.invert_y = true
+	Settings.camera_follow_flips = true
 	Settings.fov = 100.0
 	Settings.save_settings()
 	# Wipe to defaults, then load from disk.
@@ -85,7 +88,44 @@ func test_bindings_and_values_survive_save_and_load() -> void:
 	check(InputMap.action_has_event("crouch", _key(KEY_X)), "crouch on X after load")
 	check_near(Settings.mouse_sensitivity, 1.7, 0.001, "mouse sensitivity loaded")
 	check(Settings.invert_y, "invert loaded")
+	check(Settings.camera_follow_flips, "camera follow flips loaded")
 	check_near(Settings.fov, 100.0, 0.001, "fov loaded")
+
+
+## Saves from before the boost was removed keep Shift on "boost": it moves to
+## steer, and nothing else keeps a key a custom binding took.
+func test_old_boost_binding_moves_to_steer() -> void:
+	var cfg := ConfigFile.new()
+	cfg.set_value("bindings", "boost", {"kbm": GameSettings.encode_event(_key(KEY_V)), "pad": null})
+	cfg.save(TEST_PATH)
+	Settings.load_settings()
+	check(InputMap.action_has_event("steer", _key(KEY_V)), "the old boost key steers")
+	check(Settings.custom_bindings.has("steer") and not Settings.custom_bindings.has("boost"), "stored under steer")
+
+
+func test_loaded_custom_key_is_freed_from_defaults() -> void:
+	# A save that put Shift on jump, written before steer existed.
+	var cfg := ConfigFile.new()
+	cfg.set_value("bindings", "jump", {"kbm": GameSettings.encode_event(_key(KEY_SHIFT)), "pad": null})
+	cfg.save(TEST_PATH)
+	Settings.load_settings()
+	check(InputMap.action_has_event("jump", _key(KEY_SHIFT)), "Shift jumps")
+	check(not InputMap.action_has_event("steer", _key(KEY_SHIFT)), "and no longer also steers")
+
+
+func test_music_and_sfx_volume_reach_the_audio_and_save() -> void:
+	Settings.music_volume = 0.3
+	Settings.sfx_volume = 0.6
+	Settings.apply_audio()
+	check_near(GameAudio.music_volume, 0.3, 0.001, "music level reaches the audio")
+	check_near(GameAudio.sfx_volume, 0.6, 0.001, "sfx level reaches the audio")
+	Settings.save_settings()
+	Settings.reset_values()
+	Settings.load_settings()
+	check_near(Settings.music_volume, 0.3, 0.001, "music level saved")
+	check_near(Settings.sfx_volume, 0.6, 0.001, "sfx level saved")
+	Settings.reset_values()
+	Settings.apply_audio()
 
 
 func test_reset_bindings() -> void:
@@ -145,10 +185,17 @@ func test_pause_menu_pauses_and_rebinds() -> void:
 
 
 func test_moves_list_names_current_bindings() -> void:
-	var text := MovesGuide.describe("{jump} to jump, {prone} to dive")
-	check(text == "Space / A to jump, Z / D-pad down to dive", "placeholders filled (%s)" % text)
+	var text := MovesGuide.describe("{jump} to jump, {kick} to kick")
+	check(text == "Space / A to jump, F / R3 to kick", "placeholders filled (%s)" % text)
 	Settings.rebind("jump", _key(KEY_J))
 	check(MovesGuide.describe("{jump}").begins_with("J"), "follows rebinding")
+
+
+func test_moves_list_has_no_unknown_placeholders() -> void:
+	for m: Array in MovesGuide.MOVES:
+		for part: String in [m[1], m[2]]:
+			var text := MovesGuide.describe(part)
+			check(not text.contains("{"), "%s: every placeholder is a control (%s)" % [m[0], text])
 
 
 func test_menu_and_debug_inputs_are_reserved() -> void:
@@ -196,6 +243,35 @@ func test_escape_and_start_open_the_menu_for_real() -> void:
 func test_settings_tab_lists_controllers() -> void:
 	check(PauseMenu.pads_text([]).begins_with("Controllers: none detected"), "says when none are found")
 	check(PauseMenu.pads_text(["Xbox 360 Controller (device 0)"] as Array[String]) == "Controllers: Xbox 360 Controller (device 0)", "names the pad")
+	var silent := PauseMenu.pads_detail([0], {0: "#controller_xbox360"}, {})
+	check(silent.contains("Steam Input controller (xbox360) (device 0): no input yet"), "names Steam's stand-in pad and says it's silent")
+	check(silent.contains("Disable Steam Input"), "explains how to turn Steam Input off")
+	var live := PauseMenu.pads_detail([1], {1: "Xbox 360 Controller"}, {1: "A"})
+	check(live.contains("Xbox 360 Controller (device 1): working, last input: A"), "shows the last button pressed")
+	check(not live.contains("Disable Steam Input"), "no Steam hint when the pad works")
+
+
+func test_menu_has_map_buttons() -> void:
+	var level: Node = load("res://levels/sandbox.tscn").instantiate()
+	tree.root.add_child(level)
+	await tree.process_frame
+	var names: Array[String] = []
+	for b in level.menu.find_children("*", "Button", true, false):
+		names.append((b as Button).text)
+	for m in ["Sandbox", "Rooftops", "Combo Park"]:
+		check(m in names, "menu has a %s button" % m)
+	level.queue_free()
+	await tree.process_frame
+
+
+func test_controller_test_records_input() -> void:
+	InputSetup.pad_activity.clear()
+	var a := _pad(JOY_BUTTON_A)
+	a.device = 2
+	Input.parse_input_event(a)
+	await tree.process_frame
+	check(InputSetup.pad_activity.get(2, "") == "A", "a button press on controller 2 is recorded (got %s)" % str(InputSetup.pad_activity))
+	InputSetup.pad_activity.clear()
 
 
 func test_controller_bindings_match_any_device() -> void:

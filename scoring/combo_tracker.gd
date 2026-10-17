@@ -43,7 +43,6 @@ const POINTS := {
 	&"ground_roll": 75,
 	&"flip_roll": 250,
 	&"kick_off": 150,         # 250 when kicking off a target
-	&"dolphin_dive": 100,
 	&"kick": 50,
 	&"door_kick": 100,
 	&"window_kick": 100,
@@ -74,10 +73,10 @@ const BAIL_TRICKS := [&"crash", &"hard_landing", &"wall_impact"]
 ## States where a long move is under way, so the bank clock holds.
 const HOLDING_STATES := [
 	Player.State.SLIDE, Player.State.WALLRUN, Player.State.WALLCLIMB,
-	Player.State.VAULT, Player.State.MANTLE, Player.State.ROLL, Player.State.PRONE_SLIDE,
+	Player.State.VAULT, Player.State.MANTLE, Player.State.ROLL,
 	Player.State.SURFACE,
 ]
-const REST_STATES := [Player.State.GROUND, Player.State.CROUCH, Player.State.PRONE]
+const REST_STATES := [Player.State.GROUND, Player.State.CROUCH]
 
 @export var bank_after := 2.0
 ## Below this speed on the ground for `rest_time`, you've come to rest.
@@ -92,6 +91,8 @@ const REST_STATES := [Player.State.GROUND, Player.State.CROUCH, Player.State.PRO
 @export var long_shot_distance := 40.0
 
 var player: Player
+## How well the last trick added was done (0..1), or -1 if it isn't graded.
+var last_quality := -1.0
 var score := 0
 var best_combo := 0
 ## Current combo: one entry per trick name, in order first done:
@@ -121,8 +122,9 @@ func multiplier() -> int:
 	return entries.size()
 
 
+## The points shown (rounded) times the multiplier, so the card's sum adds up.
 func combo_total() -> int:
-	return roundi(combo_points * multiplier())
+	return roundi(combo_points) * multiplier()
 
 
 ## 1x at run pace or slower, 2x at top speed and above.
@@ -170,7 +172,7 @@ func on_hit(info: Dictionary) -> void:
 		style.append(&"long_shot")
 	if &"wallrun" in tags:
 		style.append(&"wallrun_shot")
-	if &"sliding" in tags or &"diving" in tags:
+	if &"sliding" in tags:
 		style.append(&"slide_shot")
 	if &"flipping" in tags or &"side_flipping" in tags or &"upside_down" in tags:
 		style.append(&"flip_shot")
@@ -202,6 +204,7 @@ func add(trick_name: StringName, base: float, speed: float, quality: float = -1.
 	combo_points += value
 	time_left = bank_after
 	_rest = 0.0
+	last_quality = quality
 	added.emit(trick_name, roundi(value))
 	combo_changed.emit()
 	return idx

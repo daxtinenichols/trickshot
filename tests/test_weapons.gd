@@ -14,6 +14,7 @@ func before_each() -> void:
 
 
 func after_each() -> void:
+	SlowMo.set_speed(1.0)
 	w.queue_free()
 	await tree.process_frame
 
@@ -295,6 +296,22 @@ func test_shooting_a_window_breaks_it() -> void:
 	check(win.is_broken, "shot window shatters")
 
 
+func test_no_bullet_marks_on_breakable_glass_or_doors() -> void:
+	await _setup()
+	var win := BreakableWindow.new()
+	w.add_child(win)
+	win.global_position = Vector3(0, 1.0, -8)
+	await w.step(2)
+	await _shoot(Vector3(0, 1.6, -8))
+	check(win.is_broken, "shot window shatters")
+	check(_gun()._impacts.is_empty(), "no bullet hole left hanging where the glass was")
+	await _settle_gun()
+	w.add_box(Vector3(3, 1.5, -10), Vector3(2, 3, 0.4))
+	await w.step(2)
+	await _shoot(Vector3(3, 1.5, -10))
+	check(_gun()._impacts.size() == 1, "solid walls still get marks")
+
+
 func test_hip_fire_shot_through_crosshair_at_range() -> void:
 	# First-shot accuracy: a 60 m headshot from the hip with no aiming.
 	await _setup()
@@ -302,3 +319,164 @@ func test_hip_fire_shot_through_crosshair_at_range() -> void:
 	await w.step(2)
 	await _shoot(_head(t))
 	check(hits.size() == 1 and hits[0].zone == &"head", "60 m hip-fire headshot lands")
+
+
+func test_recoil_punches_up_then_settles() -> void:
+	var p := await _setup()
+	_aim(Vector3(0, 1.66, -20))
+	await _shoot(Vector3(0, 1.66, -20))
+	var kicks: Array[float] = []
+	for i in 6:
+		await tree.process_frame
+		kicks.append(p.view_kick().x)
+	check(kicks[0] > 0.0 and kicks[2] > kicks[0], "the kick builds over a few frames, not one jump (%s)" % str(kicks))
+	check(kicks.max() < deg_to_rad(_gun().stats.recoil_pitch) * 1.2, "peaks near the recoil amount")
+	check(p.camera.fov > p._fov_base + 0.2, "the view widens for a moment")
+
+
+## Hits are felt through the gun, view and marker; time never stalls,
+## so shooting mid-run never breaks your flow.
+func test_headshots_and_kills_never_slow_time() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	var killed := false
+	for i in 6:
+		await _shoot(_head(t))
+		check(Engine.time_scale == 1.0 and Engine.physics_ticks_per_second == 60, "time keeps running on hit %d" % i)
+		killed = hits.any(func(h: Dictionary) -> bool: return h.killed)
+		if killed:
+			break
+		await _settle_gun()
+	check(hits.size() > 0 and hits[0].zone == &"head", "headshots landed")
+	check(killed, "and a kill")
+
+
+# ------------------------------------------------------------------ aim help
+
+## Shoots once at `point` with aim help at `strength`; returns the hit zone
+## (&"" on a miss).
+func _assisted_shot(point: Vector3, strength: float) -> StringName:
+	for t in tree.get_nodes_in_group("targets"):
+		t.health = t.max_health  # keep it alive through the series
+	_gun().aim_assist = strength
+	var before := hits.size()
+	await _shoot(point)
+	await _settle_gun()
+	return hits[before].zone if hits.size() > before else &""
+
+
+func test_aim_help_bends_near_misses_onto_the_head() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	await w.step(2)
+	var beside := _head(t) + Vector3(0.35, 0, 0)  # just past the head
+	check(await _assisted_shot(beside, 0.0) == &"", "off: a near miss misses")
+	check(await _assisted_shot(beside, 1.0) == &"head", "on: it bends onto the head")
+	var wide := _head(t) + Vector3(1.5, 0, 0)
+	check(await _assisted_shot(wide, 1.0) == &"", "a wide miss still misses")
+	var neck := t.global_position + Vector3(0, 1.35, 0)  # top of the body
+	check(await _assisted_shot(neck, 0.0) == &"body", "off: the top of the body is a body hit")
+	check(await _assisted_shot(neck, 1.0) == &"head", "on: a hit just under the head moves up to it")
+	check(await _assisted_shot(_chest(t), 1.0) == &"body", "a chest shot stays a body shot")
+
+
+func test_aim_help_never_goes_through_walls() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	# A wall covering the target's head from the side the shot passes.
+	w.add_box(Vector3(0, 1.62, -12), Vector3(0.6, 0.6, 0.2))
+	await w.step(2)
+	check(await _assisted_shot(_head(t) + Vector3(0.6, 0, 0), 1.0) != &"head", "no bending onto a head behind cover")
+
+
+func test_aim_help_body_hit_never_jumps_to_another_target() -> void:
+	var p := await _setup()
+	# A chest hit on the edge of a near target, with another target's head
+	# just past that edge, further away and in plain view.
+	var near := _target(Vector3(0, 0, -10))
+	var aim := Vector3(0.22, 1.3, -10)
+	var eye := p.global_position + Vector3(0, p.head.position.y, 0)
+	var far_head := eye + (aim - eye).normalized() * 30.0 + Vector3(0.3, 0, 0)
+	var far := _target(far_head - Vector3(0, ShootingTarget.HEAD_HEIGHT, 0))
+	await w.step(2)
+	_gun().aim_assist = 1.0
+	var before := hits.size()
+	await _shoot(aim)
+	check(hits.size() == before + 1, "the shot hit something")
+	if hits.size() > before:
+		check(hits[before].target == near and hits[before].zone == &"body", "it stays a body hit on the target that was shot (got %s)" % hits[before].zone)
+	check(far.health == far.max_health, "the far target is untouched")
+
+
+func test_aim_help_does_not_slow_look_over_hidden_targets() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	w.add_box(Vector3(0, 1.5, -10), Vector3(3, 3, 0.3))  # a wall in front of it
+	await w.step(2)
+	_aim(_head(t))
+	await w.step(1)
+	_aim(_head(t))
+	_gun().aim_assist = 1.0
+	check(_gun().look_slowdown() == 1.0, "full speed when the target is behind a wall (%.2f)" % _gun().look_slowdown())
+
+
+func test_aim_help_slows_controller_look_over_targets() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	await w.step(2)
+	_aim(_head(t))
+	await w.step(1)
+	_aim(_head(t))
+	_gun().aim_assist = 1.0
+	check(_gun().look_slowdown() < 0.6, "slower over a target (%.2f)" % _gun().look_slowdown())
+	_gun().aim_assist = 0.0
+	check(_gun().look_slowdown() == 1.0, "off: full speed")
+	_gun().aim_assist = 1.0
+	_aim(_head(t) + Vector3(5, 0, 0))
+	check(_gun().look_slowdown() == 1.0, "full speed away from targets")
+
+
+func test_aim_help_setting_reaches_the_gun() -> void:
+	await _setup()
+	Settings.aim_assist = 0.2
+	Settings.apply_to(w.player)
+	check_near(_gun().aim_assist, 0.2, 0.001, "setting applied")
+	Settings.reset_values()
+	Settings.apply_to(w.player)
+	check_near(_gun().aim_assist, 0.5, 0.001, "default is light help")
+
+
+func test_hit_marker_pops_on_hits() -> void:
+	var m := HitMarker.new()
+	w.add_child(m)
+	m.show_hit(true, false)
+	check(m.pop_scale() > 1.5 and m.is_showing(), "pops in big on a headshot")
+	for i in 10:
+		await tree.process_frame
+	check(m.pop_scale() < 1.1, "and snaps down")
+
+
+func test_gun_hooks_for_art() -> void:
+	await _setup()
+	var gun := _gun()
+	var shots := []
+	gun.shot.connect(func(muzzle: Vector3, end: Vector3, result: Dictionary) -> void: shots.append([muzzle, end, result]))
+	var t := _target(Vector3(0, 0, -15))
+	await _shoot(_chest(t))
+	check(shots.size() == 1, "shot signal on every shot")
+	if shots.size() == 1:
+		check(shots[0][0].distance_to(gun.muzzle_transform().origin) < 0.2, "from the muzzle")
+		check(not (shots[0][2] as Dictionary).is_empty() and shots[0][1].distance_to(_chest(t)) < 0.5, "to the hit, with its result")
+	check(gun.reload_progress() == -1.0, "not reloading")
+	gun.reload_pressed = true
+	await w.step(1)
+	gun.reload_pressed = false
+	await w.step(30)
+	check_between(gun.reload_progress(), 0.2, 0.8, "partway through a reload")
+	gun.builtin_visuals = false
+	var shown := 0
+	for m in gun.view_model.find_children("*", "MeshInstance3D", true, false):
+		if (m as MeshInstance3D).is_visible_in_tree():
+			shown += 1
+	check(shown == 0, "the test pistol's boxes hide for a real model")
+	check(gun.view_model.visible, "the view model node stays for the real gun")

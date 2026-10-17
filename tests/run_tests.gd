@@ -13,7 +13,14 @@ const SUITES := [
 	"res://tests/test_settings.gd",
 	"res://tests/test_combo.gd",
 	"res://tests/test_surfaces.gd",
-	"res://tests/test_body_rig.gd",
+	"res://tests/test_runner_body.gd",
+	"res://tests/test_art.gd",
+	"res://tests/test_maps.gd",
+	"res://tests/test_slow_motion.gd",
+	"res://tests/test_props.gd",
+	"res://tests/test_enemies.gd",
+	"res://tests/test_audio.gd",
+	"res://tests/test_campaign.gd",
 ]
 
 
