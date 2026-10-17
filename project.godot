@@ -23,6 +23,7 @@ Settings="*res://autoload/settings.gd"
 ArtLook="*res://art/look/art_look.gd"
 Levels="*res://maps/level_switcher.gd"
 SlowMo="*res://autoload/slow_motion.gd"
+GameAudio="*res://audio/game_audio.gd"
 
 [display]
 
