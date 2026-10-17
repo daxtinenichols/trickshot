@@ -87,46 +87,160 @@ func _run_route(route: Array, end_z: float, max_frames := 1800, log := false) ->
 	return false
 
 
+## Like _run_route, but follows a path that turns: steps trigger on the
+## distance run along `path` (s) and lanes are offsets to the right of it.
+## The view turns toward the path ahead like a player's mouse would, at most
+## `turn_rate` radians a tick, only while running or in the air. Starts
+## measuring from the path point nearest the player.
+func _run_path(path: PackedVector3Array, route: Array, end_s: float, max_frames := 1800, log := false, turn_rate := 0.06) -> bool:
+	var cum := PackedFloat32Array([0.0])
+	for i in range(1, path.size()):
+		cum.append(cum[i - 1] + Vector2(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z).length())
+	var seg := 0
+	var best := INF
+	for i in path.size() - 1:
+		var d := _path_point(path, i, player.global_position).distance_to(Vector2(player.global_position.x, player.global_position.z))
+		if d < best:
+			best = d
+			seg = i
+	var next := 0
+	var lane := 0.0
+	var roll_armed := false
+	for i in max_frames:
+		var pos := player.global_position
+		var p2 := Vector2(pos.x, pos.z)
+		# Move on to later segments once they're closer.
+		while seg < path.size() - 2 and _path_point(path, seg + 1, pos).distance_to(p2) <= _path_point(path, seg, pos).distance_to(p2):
+			seg += 1
+		var a := Vector2(path[seg].x, path[seg].z)
+		var b := Vector2(path[seg + 1].x, path[seg + 1].z)
+		var t := (b - a).normalized()
+		var s := cum[seg] + clampf((p2 - a).dot(t), 0.0, (b - a).length())
+		var right := Vector2(-t.y, t.x)
+		var lateral := (p2 - a).dot(right)
+		if log and i % 10 == 0:
+			print("  t%4d s %.1f lat %.2f pos %s state %s speed %.1f" % [i, s, lateral, pos.snapped(Vector3.ONE * 0.01), Player.State.keys()[player.state], player.horizontal_speed()])
+		if s > end_s:
+			return true
+		# Strafe to hold the lane, in the view's frame (the lane a step sets
+		# counts from the next tick, as in _run_route).
+		var v2 := Vector2(player.velocity.x, player.velocity.z)
+		var side := (lane - lateral) * 0.8 - v2.dot(right) * 0.25
+		var f := InputFrame.make(Vector2(clampf(side, -0.6, 0.6), 1.0))
+		while next < route.size() and s > route[next][0]:
+			var step: Array = route[next]
+			lane = step[2]
+			match step[1]:
+				"jump":
+					f.jump_pressed = true
+					f.jump_held = true
+				"crouch":
+					f.crouch_pressed = true
+					f.crouch_held = true
+				"roll":
+					roll_armed = true
+			next += 1
+		# Face the path a few meters ahead.
+		var ahead := _path_tangent(path, cum, s + 3.0 + player.horizontal_speed() * 0.2)
+		var want := atan2(-ahead.x, -ahead.y)
+		var err := wrapf(want - player.yaw, -PI, PI)
+		if absf(err) > 0.001 and player.state in [Player.State.GROUND, Player.State.SLIDE, Player.State.CROUCH]:
+			player._look(clampf(err, -turn_rate, turn_rate), 0.0)
+		if roll_armed and player.state == Player.State.AIR and player.velocity.y < 0.0:
+			var q := PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 1.2, 1)
+			q.exclude = [player.get_rid()]
+			if not player.get_world_3d().direct_space_state.intersect_ray(q).is_empty():
+				f.crouch_pressed = true
+				f.crouch_held = true
+				roll_armed = false
+		if player.state == Player.State.SLIDE or player.state == Player.State.CROUCH:
+			# Keep sliding until 4 m past the last step, like _run_route.
+			f.crouch_held = s < route[next - 1][0] + 4.0 if next > 0 else false
+		if player.state == Player.State.WALLRUN and player.wallrun_angle() < 0.05:
+			f.lean = 1.0 if player._lean_toward_wall(1.0) > 0.0 else -1.0
+		player.scripted_input = f
+		await tree.physics_frame
+	return false
+
+
+## The point of path segment i nearest `pos`, in (x, z).
+func _path_point(path: PackedVector3Array, i: int, pos: Vector3) -> Vector2:
+	var a := Vector2(path[i].x, path[i].z)
+	var b := Vector2(path[i + 1].x, path[i + 1].z)
+	var ab := b - a
+	var t := clampf((Vector2(pos.x, pos.z) - a).dot(ab) / maxf(ab.length_squared(), 0.0001), 0.0, 1.0)
+	return a + ab * t
+
+
+## The path's direction (x, z) at distance s along it.
+func _path_tangent(path: PackedVector3Array, cum: PackedFloat32Array, s: float) -> Vector2:
+	for i in range(1, path.size()):
+		if cum[i] >= s or i == path.size() - 1:
+			return Vector2(path[i].x - path[i - 1].x, path[i].z - path[i - 1].z).normalized()
+	return Vector2(0, -1)
+
+
+## The rooftop course by the low line and the girder, as distances along
+## RooftopCourseBuilder.path(): s = -z on leg 1, then 361.7 - x on leg 2
+## (local z = world x) and 183 - z on leg 3. Lanes are meters right of the
+## racing line.
 const COURSE_ROUTE := [
-	[-12.6, "jump", 0.0],     # hurdle at -14
-	[-19.6, "jump", 0.0],     # hurdle at -21
-	[-26.5, "crouch", 0.0],   # slide bar at -31
-	[-38.8, "jump", 0.0],     # gap to R2
-	[-42.0, "", 3.3],         # line up with the window
-	[-55.0, "crouch", 3.3],   # window at -58: slide through
-	[-62.0, "", 5.4],         # toward the wall
-	[-71.3, "jump", 7.0],     # gap: into the wallrun wall
-	[-86.0, "", 0.3],
-	[-90.6, "jump", 0.3],     # hurdle at -92
-	[-102.2, "jump", 0.3],    # climb face at -104
-	[-110.5, "crouch", 0.3],  # window at -114: slide through
-	[-122.0, "roll", 0.3],    # drop to R5
-	[-130.0, "", 1.5],
-	[-140.6, "jump", 1.5],    # hurdles at -142, -152, -162
-	[-150.6, "jump", 1.5],
-	[-160.6, "jump", 1.5],
-	[-171.3, "jump", 1.5],    # gap to R6
-	[-180.0, "", 0.0],
-	[-198.6, "jump", 0.0],    # hurdles at -200, -215
-	[-213.6, "jump", 0.0],
-	[-223.5, "crouch", 0.0],  # slide bar at -228
-	[-238.8, "jump", 0.0],    # gap to R7
-	[-260.6, "jump", 0.0],    # vault row at -262
-	[-298.2, "jump", 0.3],    # climb face at -300
-	[-311.5, "crouch", 0.3],  # window at -315: slide through
-	[-320.0, "", 0.3],        # line up with the girder
-	[-396.6, "jump", 0.0],    # hurdles at -398, -410
-	[-408.6, "jump", 0.0],
-	[-418.0, "", -5.4],       # toward the left wall
-	[-429.3, "jump", -7.0],   # gap: into the wallrun wall
-	[-444.0, "", 0.3],
-	[-499.0, "crouch", 0.3],  # slide down the ramp
-	[-516.0, "", 0.0],
-	[-528.6, "jump", 0.0],    # hurdles at -530, -548, -562
-	[-546.6, "jump", 0.0],
-	[-560.6, "jump", 0.0],
-	[-579.3, "jump", 1.5],    # last gap
+	[12.6, "jump", 0.0],     # hurdle at -14
+	[19.6, "jump", 0.0],     # hurdle at -21
+	[26.5, "crouch", 0.0],   # slide bar at -31
+	[38.8, "jump", 0.0],     # gap to R2
+	[42.0, "", 3.3],         # line up with the window
+	[55.0, "crouch", 3.3],   # window at -58: slide through
+	[62.0, "", 5.4],         # toward the wall
+	[71.3, "jump", 7.0],     # gap: into the wallrun wall
+	[86.0, "", 0.3],
+	[90.6, "jump", 0.3],     # hurdle at -92
+	[102.2, "jump", 0.3],    # climb face at -104
+	[110.5, "crouch", 0.3],  # window at -114: slide through
+	[122.0, "roll", 0.3],    # drop to R5
+	[130.0, "", 1.5],
+	[140.6, "jump", 1.5],    # hurdles at -142, -152, -162
+	[150.6, "jump", 1.5],
+	[160.6, "jump", 1.5],
+	[171.3, "jump", 1.5],    # gap to R6
+	[180.0, "", 0.0],
+	[198.6, "jump", 0.0],    # hurdles at -200, -215
+	[213.6, "jump", 0.0],
+	[223.5, "crouch", 0.0],  # slide bar at -228
+	[238.8, "jump", 0.0],    # gap to R7
+	[260.6, "jump", 0.0],    # vault row at -262
+	[298.2, "jump", 0.3],    # climb face at -300
+	[311.5, "crouch", 0.3],  # window at -315: slide through
+	[320.0, "", 0.0],
+	[328.6, "jump", 0.0],    # hurdle at -330, then the first corner
+	[386.3, "jump", 0.0],    # leg 2: hurdle at x -26
+	[390.0, "", -10.0],      # the low line
+	[426.3, "jump", -10.0],  # hurdles at x -66, -78
+	[438.3, "jump", -10.0],
+	[450.5, "jump", -10.0],  # gap down to the low roofs
+	[452.0, "roll", -10.0],
+	[475.2, "crouch", -10.0],# pipe at x -118
+	[492.3, "jump", -10.0],  # hurdles at x -132, -144
+	[504.3, "jump", -10.0],
+	[519.9, "jump", -10.0],  # climb face at x -160
+	[526.0, "", 0.0],        # the second corner
+	[606.6, "jump", 0.0],    # leg 3: hurdles at -425, -440
+	[621.6, "jump", 0.0],
+	[651.4, "jump", 0.0],    # mantle up at -470
+	[671.4, "jump", 0.0],    # mantle up at -490
+	[693.6, "jump", 0.0],    # hurdle at -512
+	[715.0, "", 5.0],        # the girder on the right
+	[757.0, "", 0.0],
+	[773.6, "jump", 0.0],    # hurdle at -592
+	[798.0, "crouch", 0.0],  # slide down the ramp at -616
+	[825.0, "", -4.0],
+	[837.4, "jump", -4.0],   # hurdles at -656, -674, -688
+	[855.4, "jump", -4.0],
+	[869.4, "jump", -4.0],
+	[882.3, "jump", 1.5],    # last gap, past the pillar
 ]
+## Distance along the path to the finish line (z -740 on leg 3).
+const COURSE_FINISH_S := 924.0
 
 
 # ---------------------------------------------------------------- rooftops
@@ -141,9 +255,10 @@ func test_rooftops_spawns_are_standable() -> void:
 		await _step(40)
 		check(player.state == Player.State.GROUND, "spawn %d: standing (%s)" % [i + 1, Player.State.keys()[player.state]])
 		check_near(player.global_position.y, b.spawns[i].origin.y, 0.06, "spawn %d: on the roof" % (i + 1))
-		var z0 := player.global_position.z
+		var p0 := player.global_position
 		await _step(30, TestWorld.forward_input())
-		check(z0 - player.global_position.z > 2.0, "spawn %d: free to run forward" % (i + 1))
+		var fwd := -b.spawns[i].basis.z
+		check((player.global_position - p0).dot(fwd) > 2.0, "spawn %d: free to run forward" % (i + 1))
 
 
 func test_rooftops_full_run() -> void:
@@ -151,13 +266,35 @@ func test_rooftops_full_run() -> void:
 	var timer: CourseTimer = level.timer
 	await _step(10)
 	check(timer.phase == CourseTimer.Phase.READY, "waits at the start")
-	var done := await _run_route(COURSE_ROUTE, RooftopCourseBuilder.FINISH_Z - 1.0, 7200)
+	var done := await _run_path(RooftopCourseBuilder.path(), COURSE_ROUTE, COURSE_FINISH_S, 9000, OS.has_environment("BOT_LOG"))
 	check(done, "a scripted run reaches the finish (stopped at %s)" % player.global_position)
 	check(timer.falls == 0, "without falling (%d falls)" % timer.falls)
 	check(timer.phase == CourseTimer.Phase.FINISHED, "timer finished")
 	check(timer.checkpoint == RooftopCourseBuilder.CHECKPOINTS.size(), "passed every checkpoint")
 	check(timer.best_ticks == timer.ticks and timer.ticks > 0, "set a best time")
-	check_between(timer.seconds(), 40.0, 120.0, "plausible time (%.2f s)" % timer.seconds())
+	check_between(timer.seconds(), 60.0, 180.0, "plausible time (%.2f s)" % timer.seconds())
+
+
+## Leg 2's other way: up the slab onto the high line, wallrun its gap and
+## drop to the second corner.
+func test_rooftops_high_line() -> void:
+	await _load(ROOFTOPS)
+	level.go_to_zone(6)
+	await _step(10)
+	var route := [
+		[386.3, "jump", 0.0],    # hurdle at x -26
+		[390.0, "", 8.0],        # the high line
+		[436.3, "jump", 8.0],    # hurdle on the high roof at x -76
+		[450.0, "", 13.4],       # toward the wall
+		[461.0, "jump", 15.0],   # gap: into the wallrun wall
+		[476.0, "", 8.0],
+		[485.2, "crouch", 8.0],  # slide bar at x -128
+		[520.0, "roll", 8.0],    # drop to the corner
+	]
+	var done := await _run_path(RooftopCourseBuilder.path(), route, 530.0, 1500, OS.has_environment("BOT_LOG"))
+	check(done, "runs the high line to the corner (stopped at %s)" % player.global_position)
+	check(level.timer.falls == 0, "without falling")
+	check_near(player.global_position.y, 7.0, 0.2, "on the corner roof (%s)" % player.global_position)
 
 
 func test_rooftops_fall_returns_to_checkpoint() -> void:
@@ -231,9 +368,10 @@ func test_park_spawns_are_standable() -> void:
 		await _step(40)
 		check(player.state == Player.State.GROUND, "spawn %d: standing (%s)" % [i + 1, Player.State.keys()[player.state]])
 		check_near(player.global_position.y, 0.0, 0.06, "spawn %d: on the floor" % (i + 1))
-		var z0 := player.global_position.z
+		var p0 := player.global_position
 		await _step(30, TestWorld.forward_input())
-		check(z0 - player.global_position.z > 2.0, "spawn %d: free to run forward" % (i + 1))
+		var fwd := -b.spawns[i].basis.z
+		check((player.global_position - p0).dot(fwd) > 2.0, "spawn %d: free to run forward" % (i + 1))
 
 
 func test_park_tower_mantle_and_climb() -> void:
@@ -367,9 +505,10 @@ func test_mall_spawns_are_standable() -> void:
 		await _step(40)
 		check(player.state == Player.State.GROUND, "spawn %d: standing (%s)" % [i + 1, Player.State.keys()[player.state]])
 		check_near(player.global_position.y, b.spawns[i].origin.y, 0.06, "spawn %d: on its floor" % (i + 1))
-		var z0 := player.global_position.z
+		var p0 := player.global_position
 		await _step(30, TestWorld.forward_input())
-		check(z0 - player.global_position.z > 2.0, "spawn %d: free to run forward" % (i + 1))
+		var fwd := -b.spawns[i].basis.z
+		check((player.global_position - p0).dot(fwd) > 2.0, "spawn %d: free to run forward" % (i + 1))
 
 
 ## Running straight up the west escalator ends on the upper floor.

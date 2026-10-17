@@ -23,6 +23,9 @@ const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
 ## (environment, runner) down with it.
 const WASTELAND_SHADER_PATH := "res://art/shaders/wasteland.gdshader"
 const GUN_LOOK_PATH := "res://art/weapons/gun_look.gd"
+const DRESSER_PATH := "res://art/look/obstacle_dresser.gd"
+## Gameplay kinds dressed as part of the city (see obstacle_dresser.gd).
+const DRESSED_KINDS := ["PARKOUR", "WALLRUN", "SLIDE"]
 const OUTLINE_SHADER := preload("res://art/shaders/outline_post.gdshader")
 const SpeedLines := preload("res://art/fx/speed_lines.gd")
 const ChaseCamera := preload("res://art/look/chase_camera.gd")
@@ -37,27 +40,33 @@ const PALETTE := {
 	"WALLRUN": Color(0.22, 0.45, 0.76),
 	"PARKOUR": Color(0.86, 0.60, 0.14),
 	"SLIDE": Color(0.25, 0.60, 0.45),
-	"SURFACE": Color(0.55, 0.37, 0.74),
+	"SURFACE": Color(0.60, 0.57, 0.52),
 	"FACADE": Color(0.54, 0.50, 0.45),
 	"TILE": Color(0.66, 0.62, 0.55),
 	"RUST": Color(0.44, 0.38, 0.32),
 	"SIGN": Color(0.62, 0.30, 0.24),
+	"BRICK": Color(0.56, 0.33, 0.25),
+	"CORRUGATED": Color(0.40, 0.47, 0.48),
+	"WOOD": Color(0.56, 0.42, 0.29),
 }
 
 ## Which wasteland.gdshader surface each kind uses, and its texture scale in
 ## meters. Painted kinds wear through to rust (metal) or concrete.
-enum Surface { PLAIN, CONCRETE, RUST, ASPHALT, PAINTED_METAL, PAINTED_CONCRETE, FACADE, TILE }
+enum Surface { PLAIN, CONCRETE, RUST, ASPHALT, PAINTED_METAL, PAINTED_CONCRETE, FACADE, TILE, BRICK, CORRUGATED, WOOD }
 const SURFACES := {
 	"FLOOR": [Surface.ASPHALT, 1.0],
 	"NEUTRAL": [Surface.CONCRETE, 1.0],
 	"WALLRUN": [Surface.PAINTED_METAL, 1.0],
 	"PARKOUR": [Surface.PAINTED_CONCRETE, 0.8],
 	"SLIDE": [Surface.PAINTED_METAL, 0.8],
-	"SURFACE": [Surface.PAINTED_METAL, 1.2],
+	"SURFACE": [Surface.PAINTED_CONCRETE, 1.2],
 	"FACADE": [Surface.FACADE, 1.0],
 	"TILE": [Surface.TILE, 1.0],
 	"RUST": [Surface.RUST, 1.0],
 	"SIGN": [Surface.PAINTED_METAL, 0.7],
+	"BRICK": [Surface.BRICK, 1.0],
+	"CORRUGATED": [Surface.CORRUGATED, 1.0],
+	"WOOD": [Surface.WOOD, 1.0],
 }
 
 ## Ambient (shadow) color and strength: warm gray, like light bounced off dust.
@@ -79,6 +88,10 @@ var _missing := {}
 var _swapped: Array = []  # [GeometryInstance3D, original material]
 var _env_backup := {}
 var _attached: Array = []  # nodes this look added, removed when turned off
+var _hidden: Array = []  # graybox meshes a dress replaced, shown again when off
+## Dress obstacles as the city (concrete, brick, crates, hoardings). Off
+## keeps the color-coded blocks under the weathered look.
+var dress_obstacles := true
 
 
 ## Function keys away from F5-F8, which the Godot editor uses to run, pause
@@ -195,6 +208,21 @@ func _restyle_geometry(g: GeometryInstance3D) -> void:
 	else:
 		# Custom colored marks (start/finish lines...): worn paint on concrete.
 		g.material_override = wasteland_material("", base)
+	if dress_obstacles and body is StaticBody3D and g is MeshInstance3D and DRESSED_KINDS.has(kind) \
+			and not body.has_meta("look") and not body.has_node("Dress"):
+		_dress(body, g)
+
+
+## Dresses a gameplay obstacle as part of the city. Visual only.
+func _dress(body: Node3D, core: MeshInstance3D) -> void:
+	var dresser := _optional(DRESSER_PATH) as Script
+	if dresser == null:
+		return
+	var node: Node = dresser.dress(body, core, self)
+	if node != null:
+		_attached.append(node)
+		if not core.visible:
+			_hidden.append(core)
 
 
 func _kind_for(g: Node, base: Color) -> String:
@@ -356,6 +384,10 @@ func _remove_all() -> void:
 		if is_instance_valid(pair[0]):
 			pair[0].material_override = pair[1]
 	_swapped.clear()
+	for g in _hidden:
+		if is_instance_valid(g):
+			g.visible = true
+	_hidden.clear()
 	for res in _env_backup:
 		if is_instance_valid(res):
 			for prop: String in _env_backup[res]:
@@ -366,5 +398,7 @@ func _remove_all() -> void:
 			var p: Node = n.get_parent()
 			if p is Player:
 				p.remove_meta("art_look")
+			if p != null:
+				p.remove_child(n)  # gone now, so turning the look back on can redo it
 			n.queue_free()
 	_attached.clear()
