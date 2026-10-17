@@ -18,27 +18,37 @@ Conventions:
     the toon shader uses as the base color, so a palette change is one edit.
 """
 
+import math
 import os
 import sys
 
 import bpy  # must come before bmesh when run as a module
 import bmesh
-from mathutils import Vector
+from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 OUT = os.path.normpath(os.path.join(HERE, "..", "characters", "runner", "runner.glb"))
 
 # Palette (linear-ish sRGB values, shaded by the toon shader in game).
+# Wasteland outfit: olive field jacket and charcoal cargo pants, worn boots,
+# goggles up on the forehead and a dusty scarf. The orange accent stays, so
+# the runner still pops against the tan city.
 PALETTE = {
-    "skin": (0.86, 0.64, 0.50),
+    "skin": (0.80, 0.58, 0.44),
     "hair": (0.10, 0.09, 0.10),
-    "top": (0.93, 0.93, 0.95),
+    "top": (0.36, 0.39, 0.30),
     "accent": (0.96, 0.33, 0.16),
-    "pants": (0.17, 0.19, 0.24),
-    "glove": (0.12, 0.12, 0.14),
-    "shoe": (0.96, 0.96, 0.96),
+    "pants": (0.20, 0.19, 0.18),
+    "glove": (0.24, 0.17, 0.12),
+    "shoe": (0.46, 0.38, 0.30),
     "sole": (0.96, 0.33, 0.16),
+    "goggle_band": (0.14, 0.13, 0.12),
+    "lens": (0.95, 0.62, 0.20),
+    "scarf": (0.70, 0.58, 0.44),
 }
+# Head-rigid parts (hair, goggles, scarf) are tagged with a "part" attribute;
+# PARTS maps the tag to its palette entry. 0 = skinned body.
+PARTS = {1: "hair", 2: "goggle_band", 3: "lens", 4: "scarf"}
 
 # Skeleton: name -> (head, tail, parent). Left side only; right is mirrored.
 CENTER_BONES = [
@@ -214,6 +224,59 @@ def build_hair():
     return parts
 
 
+def _ring(name, center, rx, ry, minor, tilt=0.0, segments=24):
+    """A torus around the head/neck, elliptical, tilted about X (radians)."""
+    mesh = bpy.data.meshes.new(name)
+    bm = bmesh.new()
+    # A square tube swept around an ellipse: chunky facets read well in cel.
+    verts = []
+    for i in range(segments):
+        a = 2.0 * math.pi * i / segments
+        ca, sa = math.cos(a), math.sin(a)
+        for dx, dz in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+            r = 1.0 + dx * minor / max(rx, ry)
+            p = Vector((ca * rx * r, sa * ry * r, dz * minor))
+            p = Matrix.Rotation(tilt, 3, "X") @ p
+            verts.append(bm.verts.new(p + Vector(center)))
+    for i in range(segments):
+        j = (i + 1) % segments
+        for k in range(4):
+            k2 = (k + 1) % 4
+            bm.faces.new((verts[i * 4 + k], verts[j * 4 + k], verts[j * 4 + k2], verts[i * 4 + k2]))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    return obj
+
+
+def _lens(name, center, radius, depth):
+    bm = bmesh.new()
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=12, radius1=radius, radius2=radius * 0.9, depth=depth,
+                          matrix=Matrix.Translation(Vector(center)) @ Matrix.Rotation(math.pi / 2, 4, "X"))
+    mesh = bpy.data.meshes.new(name)
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    return obj
+
+
+def build_gear():
+    """Goggles pushed up on the forehead and a scarf around the neck, all
+    rigid with the head. Returns (object, part tag) pairs."""
+    gear = []
+    # Strap around the head just above the brow, tipped down at the front.
+    gear.append((_ring("GoggleBand", (0, -0.006, 1.705), 0.101, 0.114, 0.011, tilt=-0.18), 2))
+    for x in (-0.034, 0.034):
+        gear.append((_lens("Lens", (x, -0.118, 1.712), 0.024, 0.022), 3))
+    # Scarf: a thick loop around the neck plus a knot at the front.
+    gear.append((_ring("Scarf", (0, -0.004, 1.49), 0.07, 0.068, 0.03, tilt=0.12), 4))
+    gear.append((_lens("ScarfKnot", (0.02, -0.08, 1.46), 0.032, 0.04), 4))
+    return gear
+
+
 def apply_modifiers(obj):
     bpy.context.view_layer.objects.active = obj
     for o in bpy.context.selected_objects:
@@ -271,14 +334,14 @@ def paint_and_skin(body, arm):
     mesh = body.data
     groups = {g.index: g.name for g in body.vertex_groups}
     color_attr = mesh.color_attributes.new("Col", "FLOAT_COLOR", "POINT")
-    hair_ids = set(mesh.attributes["is_hair"].data[i].value and i or -1 for i in range(len(mesh.vertices)))
-    hair_ids.discard(-1)
+    part = mesh.attributes["part"].data
+    hair_ids = set(i for i in range(len(mesh.vertices)) if part[i].value > 0)
     for v in mesh.vertices:
         best, weight = "Hips", -1.0
         for g in v.groups:
             if g.weight > weight:
                 best, weight = groups[g.group], g.weight
-        region = "hair" if v.index in hair_ids else region_for(v.co, best)
+        region = PARTS[part[v.index].value] if v.index in hair_ids else region_for(v.co, best)
         c = PALETTE[region]
         color_attr.data[v.index].color = (c[0], c[1], c[2], 1.0)
     mesh.color_attributes.active_color = color_attr
@@ -293,7 +356,7 @@ def paint_and_skin(body, arm):
 
 
 def tag(obj, value):
-    attr = obj.data.attributes.new("is_hair", "BOOLEAN", "POINT")
+    attr = obj.data.attributes.new("part", "INT", "POINT")
     for d in attr.data:
         d.value = value
 
@@ -317,11 +380,14 @@ def main():
     body = build_body()
     head = build_head()
     hair = build_hair()
-    tag(body, False)
-    tag(head, False)
+    tag(body, 0)
+    tag(head, 0)
     for h in hair:
-        tag(h, True)
-    body = join([body, head] + hair, "RunnerMesh")
+        tag(h, 1)
+    gear = build_gear()
+    for g, t in gear:
+        tag(g, t)
+    body = join([body, head] + hair + [g for g, _ in gear], "RunnerMesh")
     # Merge the doubled verts that the skin modifier leaves at branch joins.
     bpy.context.view_layer.objects.active = body
     bpy.ops.object.mode_set(mode="EDIT")
@@ -330,7 +396,7 @@ def main():
     bpy.ops.mesh.normals_make_consistent(inside=False)
     bpy.ops.object.mode_set(mode="OBJECT")
     paint_and_skin(body, arm)
-    body.data.attributes.remove(body.data.attributes["is_hair"])
+    body.data.attributes.remove(body.data.attributes["part"])
     build_material(body)
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
