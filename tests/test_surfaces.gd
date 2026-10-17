@@ -279,3 +279,74 @@ func test_coyote_jump_after_running_a_loop() -> void:
 	await w.step(3, _fwd())
 	await w.press(InputFrame.make(Vector2(0, 1), true))
 	check(p.velocity.y > 5.0, "late jump off the ledge works (vy %.1f)" % p.velocity.y)
+
+
+# ------------------------------------------------------------------ sliding on ramps
+
+## A runnable ramp `angle` degrees steep, 40 m long, starting at z = -20
+## and rising toward -Z (or falling, from a deck at its top).
+func _runnable_ramp(angle: float, uphill: bool) -> float:
+	var a := deg_to_rad(angle)
+	var rise := sin(a) * 40.0
+	var rot := angle if uphill else -angle
+	var n := Basis.from_euler(Vector3(deg_to_rad(rot), 0, 0)).y
+	var mid := Vector3(0, rise * 0.5, -20.0 - cos(a) * 20.0)
+	w.add_box(mid - n * 0.5, Vector3(10, 1, 40), rot).add_to_group("runnable")
+	if not uphill:
+		w.add_box(Vector3(0, rise - 0.5, 0), Vector3(10, 1, 40))
+	return rise
+
+
+func _slide_input(fresh := false) -> InputFrame:
+	var f := InputFrame.make(Vector2(0, 1), false, true)
+	f.crouch_pressed = fresh
+	return f
+
+
+func test_slide_carries_up_a_steep_ramp_and_back_down() -> void:
+	w.add_floor()
+	_runnable_ramp(25.0, true)
+	var p := await _settle(Vector3(0, 0.05, 15))
+	await w.step_until(func() -> bool: return p.global_position.z < -18.0, 300, _fwd())
+	await w.press(_slide_input(true))
+	check(p.state == Player.State.SLIDE, "sliding on the flat")
+	var on_ramp := await w.step_until(func() -> bool: return p.state == Player.State.SURFACE, 90, _slide_input())
+	check(on_ramp, "slid onto the ramp")
+	check(p.is_sliding(), "still sliding on the ramp, not running")
+	w.states_seen.clear()
+	var top := [0.0]
+	var back := await w.step_until(func() -> bool:
+		top[0] = maxf(top[0], p.global_position.y)
+		return p.state == Player.State.SLIDE, 400, _slide_input())
+	check(top[0] > 2.0, "the slide carried you up the ramp (%.2f m)" % top[0])
+	check(back, "slid back down onto the flat still sliding (%s)" % Player.State.keys()[p.state])
+	check(not (Player.State.GROUND in w.states_seen), "never stood up to run")
+
+
+func test_crouch_on_a_ramp_slides_down_it_gaining_speed() -> void:
+	w.add_floor()
+	var rise := _runnable_ramp(25.0, false)
+	var p := await _settle(Vector3(0, rise + 0.05, 15))
+	await w.step_until(func() -> bool: return p.global_position.z < -24.0, 400, _fwd())
+	await w.press(_slide_input(true))
+	check(p.is_sliding(), "crouch slides on the ramp (%s)" % Player.State.keys()[p.state])
+	var start := p.velocity.length()
+	await w.step(30, _slide_input())
+	check(p.is_sliding(), "still sliding")
+	check(p.velocity.length() > start + 2.0, "downhill slide gains speed (%.2f -> %.2f)" % [start, p.velocity.length()])
+	var flat := await w.step_until(func() -> bool: return p.global_position.y < 0.2, 300, _slide_input())
+	check(flat and p.state == Player.State.SLIDE, "carries on sliding at the bottom (%s)" % Player.State.keys()[p.state])
+
+
+func test_letting_go_of_crouch_on_a_ramp_runs_again() -> void:
+	w.add_floor()
+	_runnable_ramp(25.0, true)
+	var p := await _settle(Vector3(0, 0.05, 15))
+	await w.step_until(func() -> bool: return p.state == Player.State.SURFACE, 400, _fwd())
+	check(not p.is_sliding(), "running up the ramp")
+	await w.press(_slide_input(true), 10)
+	check(p.is_sliding(), "crouch slides")
+	var sliding_speed := p.velocity.length()
+	await w.step(30, _fwd())
+	check(p.state == Player.State.SURFACE and not p.is_sliding(), "back to running")
+	check(p.velocity.length() > sliding_speed, "running keeps you going up")

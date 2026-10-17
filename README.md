@@ -51,7 +51,7 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 | Hop / bunny hop | Jump as you land | Jumping within ~2 frames of landing keeps all your speed and adds a little, with no cap, so perfect chains keep getting faster; early jumps bleed it |
 | Hurdle / vault | Press jump at a waist-high (yellow) wall, on the ground or in the air. Never automatic: you can always just jump over | A vault never slows you: you cross at your running speed. Taking off at the right distance gives a cleaner vault that adds speed and momentum |
 | Mantle | Jump into a ledge up to ~1.5 m above your reach | You keep moving forward as you pull up, and come out at your running speed. A clean grab adds a little, even at the top of a wall climb; a sloppy one loses a little |
-| Slide | Crouch while sprinting | Faster entry slides further; slopes add speed |
+| Slide | Crouch while sprinting | Faster entry slides further. Slopes and ramps (purple ones, quarter pipes and loops too) speed you up going down; going up, gravity trades your speed for height and you slide back down. Let go of crouch on a ramp to run again |
 | Slide landing | Press crouch just before you land from a fall | Turns some of your fall into forward speed |
 | Wallrun | Jump into a blue wall at an angle, holding a direction | You keep the angle you hit the wall at, and gravity keeps bending your path down: nothing holds you up. Shallow angle + speed = a longer run. Lean (Q or E) to roll your path round on the wall like a roll: toward the wall turns it up, away turns it down. Running up the wall costs speed. Look and aim anywhere while running; crouch drops off |
 | Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; the steeper you're running up it, the harder. Chain wall to wall |
@@ -148,7 +148,7 @@ Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbo
 - **4 Silt Line** (the Silt, 530 m): the bridge is gone; run through the crawlers without stopping, climb onto the overpass and run it to Meridian Mall.
 - **12 Signal Out** (the burning tower): you play Echo and the Host chases you. He follows your exact path, never drops more than about 22 m behind, and catches you if you slow down; Parker coaches you on the radio. Beating it unlocks Echo as a runner for every mission.
 
-Mags, the Host, Echo and Parker talk over the radio (subtitles low in the middle) while you run; nothing stops the game. The clock starts when you leave the start, the objective shows under it, falling sends you to the last checkpoint, and lost broadcast tapes hide on the harder routes. Number keys jump to checkpoints as practice runs. Missions are data files; how to write one is in [docs/missions.md](docs/missions.md).
+Mags, the Host, Echo and Parker talk over the radio while you run, in spoken voices through a radio filter with subtitles low in the middle (Echo's coded messages break up with static, and raiders shout their taunts when they tag you); nothing stops the game. The clock starts when you leave the start, the objective shows under it, falling sends you to the last checkpoint, and lost broadcast tapes hide on the harder routes. Number keys jump to checkpoints as practice runs. Missions are data files; how to write one is in [docs/missions.md](docs/missions.md).
 
 Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide, purple is runnable ramps and loops, and red is targets (yellow heads are headshots).
 
@@ -203,6 +203,7 @@ Everything you hear is synthesised in code, so there are no audio files to licen
 - **World:** glass shattering and doors slamming, however they break or open.
 - **Music:** an 8-bar wasteland loop. With no combo it plays "on air" through the warlord's radio, filtered with a crackle under it. A combo opens it to full sound with drums and bass; 3 tricks add percussion, 5 add the lead. Combo milestones (3, 5, 8 tricks) get a radio jingle, banking rings out and a bail stings.
 - **Slow-mo** muffles and deepens everything while it's on.
+- **Voices:** every radio line and raider taunt is spoken. The clips are generated offline with Kokoro, an Apache-2.0 speech model, one voice per character (`audio/voices/cast.json`), by `python3 audio/tools/make_voices.py`; rerun it after adding lines. A recorded take saved as `audio/voices/recorded/<who>/<file>` (names in `audio/voices/script.csv`) replaces the synthetic one.
 
 The first launch builds the sounds in the background (the music fades in a few seconds later) and caches them in `user://audio_cache.bin`; later launches load the cache. To audition every sound as WAV files:
 
