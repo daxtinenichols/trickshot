@@ -30,9 +30,6 @@ window/vsync/vsync_mode=0
 
 [layer_names]
 
-3d_render/layer_10="own_body"
-3d_render/layer_11="first_person_only"
-
 3d_physics/layer_1="world"
 3d_physics/layer_2="player"
 3d_physics/layer_3="kickable"

@@ -43,9 +43,10 @@ say so, since the script would overwrite those edits.
 - Skeleton uses **Godot's humanoid bone names** (`Hips`, `Spine`, `Chest`,
   `LeftUpperArm`...), T-pose rest. Any humanoid animation (mocap, CC0 packs,
   hand-keyed clips) retargets onto it in Godot with no renaming.
-- Shown on render layer 10 (`own_body`). The first-person camera leaves that
-  layer out; third-person cameras include it. The body still casts its
-  shadow in first person.
+- Shown on render layer 2. The first-person camera leaves that layer out;
+  the corner camera (F5) and the chase camera (F7) include it. The body
+  still casts its shadow in first person. The view-model pistol is on its
+  own layer (`Pistol.VIEW_LAYER`), which only the first-person camera sees.
 
 ## Animation: pose blending driven by state
 
@@ -61,10 +62,17 @@ mid-way. This is what makes the move set blend seamlessly by construction:
   hips, hands) is kept on the floor. Crouch, slide, roll and prone heights
   fall out of the poses with no per-move tuning.
 - **Aim**: chest, neck and head turn toward where the player looks.
-- **Whole-body rotation**: flips follow the player's actual air rotation,
-  rolls spin over the roll's duration, prone and dives lie the body down.
-- **Leans**: into turns while running, away from the wall on wallruns.
+- **Whole-body rotation**: flips and side flips follow the player's actual
+  air rotation, rolls spin over the roll's duration, prone and dives lie the
+  body down.
+- **Leans**: into turns while running, with the lean input, and away from
+  the wall on wallruns (feet on the wall).
+- **Aiming** down sights brings the gun arm up along the view.
+- **Ramps and loops**: the body works in the player's own frame, which tilts
+  on surfaces, so it runs upside down through loops with the player.
 - **Kicks** play as a short overlay pose on the `trick` signal.
+- States added later fall back to run/idle or air poses until they get
+  their own.
 
 Poses are plain joint angles in degrees (see the header of `runner_poses.gd`
 for the sign conventions), so tweaking one is a one-line change. Check them
@@ -74,11 +82,12 @@ Later, the same system can blend in authored or mocap clips per state where a
 pose is not enough (the rig's humanoid names make that a drop-in), and add
 foot IK for slopes and stairs.
 
-### Hooks wanted from gameplay
+### What it reads from the player
 
-The body reads two private player fields today: `_wall_normal` (which side
-the wall is on) and `_path_time` (vault/mantle progress). A small public,
-read-only accessor for each on `Player` would make this robust.
+Public, read-only: `state`, `state_time`, `velocity`, `pitch`, `lean`,
+`aim_zoom`, `air_rotation()`, `air_roll()`, `roll_progress()`,
+`vault_progress()`, `wall_normal()`, `is_diving()`, the player's own basis,
+and the `landed` / `trick` / `respawned` signals.
 
 ## The look
 
@@ -100,8 +109,8 @@ read-only accessor for each on `Player` would make this robust.
 code-built sandbox it swaps the graybox materials; real maps use
 `ArtLook.world_material(color)` directly.
 
-In game: **F6** toggles the art look (compare with graybox), **F7** toggles a
-full-screen chase camera to watch the runner animate.
+In game: **F5** toggles the corner camera, **F6** toggles the art look
+(compare with graybox), **F7** toggles a full-screen chase camera.
 
 ## Maps (proposal)
 

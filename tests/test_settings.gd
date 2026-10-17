@@ -44,7 +44,9 @@ func test_default_slots() -> void:
 	check(GameSettings.event_label(GameSettings.slot_event("jump", true)) == "A", "jump is A")
 	check(GameSettings.event_label(GameSettings.slot_event("fire", false)) == "Left mouse", "fire is left mouse")
 	check(GameSettings.event_label(GameSettings.slot_event("fire", true)) == "RT", "fire is RT")
-	check(GameSettings.event_label(GameSettings.slot_event("quick_turn", false)) == "Q", "quick turn is Q")
+	check(GameSettings.event_label(GameSettings.slot_event("quick_turn", false)) == "Shift", "quick turn is Shift")
+	check(GameSettings.event_label(GameSettings.slot_event("lean_left", false)) == "Q", "lean left is Q")
+	check(GameSettings.event_label(GameSettings.slot_event("lean_right", true)) == "D-pad right", "lean right is D-pad right (%s)" % GameSettings.event_label(GameSettings.slot_event("lean_right", true)))
 	check(GameSettings.event_label(GameSettings.slot_event("quick_turn", true)) == "LB", "quick turn is LB")
 
 
@@ -161,3 +163,46 @@ func test_menu_and_debug_inputs_are_reserved() -> void:
 	m4.button_index = MOUSE_BUTTON_XBUTTON1
 	m4.pressed = true
 	check(GameSettings.is_bindable(m4, false), "mouse 4 is fine")
+
+
+func test_escape_and_start_open_the_menu_for_real() -> void:
+	var level: Node3D = SANDBOX.instantiate()
+	tree.root.add_child(level)
+	var player: Player = level.get_node("Player")
+	player.use_device_input = false
+	await tree.process_frame
+	var menu: PauseMenu = level.menu
+	var esc := _key(KEY_ESCAPE)
+	tree.root.push_input(esc)
+	await tree.process_frame
+	check(menu.is_open and tree.paused, "Esc opens the pause menu")
+	var up := _key(KEY_ESCAPE)
+	up.pressed = false
+	tree.root.push_input(up)
+	tree.root.push_input(_key(KEY_ESCAPE))
+	await tree.process_frame
+	check(not menu.is_open and not tree.paused, "Esc again closes it")
+	# A controller that isn't device 0 (wireless receivers, Steam Input).
+	var start := _pad(JOY_BUTTON_START)
+	start.device = 3
+	tree.root.push_input(start)
+	await tree.process_frame
+	check(menu.is_open, "Start on any controller opens it")
+	menu.close()
+	level.queue_free()
+	await tree.process_frame
+
+
+func test_settings_tab_lists_controllers() -> void:
+	check(PauseMenu.pads_text([]).begins_with("Controllers: none detected"), "says when none are found")
+	check(PauseMenu.pads_text(["Xbox 360 Controller (device 0)"] as Array[String]) == "Controllers: Xbox 360 Controller (device 0)", "names the pad")
+
+
+func test_controller_bindings_match_any_device() -> void:
+	for action: String in ["jump", "pause", "lean_left"]:
+		for e in InputMap.action_get_events(action):
+			if e is InputEventJoypadButton or e is InputEventJoypadMotion:
+				check(e.device == InputSetup.ALL_DEVICES, "%s pad binding works on every controller" % action)
+	var a := _pad(JOY_BUTTON_A)
+	a.device = 2
+	check(InputMap.event_is_action(a, "jump"), "A on controller 2 jumps")

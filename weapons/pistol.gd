@@ -14,6 +14,9 @@ signal reloaded
 signal mode_changed(full_auto: bool)
 
 const HITBOX_MASK := 1 | 4
+## Render layer bit for the first-person gun model (layer 3), so other
+## cameras (the corner cam) can leave it out.
+const VIEW_LAYER := 4
 
 @export var stats: WeaponStats
 
@@ -246,6 +249,7 @@ func _part(size: Vector3, pos: Vector3, mat: Material) -> void:
 	m.position = pos
 	m.material_override = mat
 	m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	m.layers = VIEW_LAYER
 	_model.add_child(m)
 
 

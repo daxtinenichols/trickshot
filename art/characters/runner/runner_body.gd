@@ -1,3 +1,4 @@
+class_name RunnerBody
 extends Node3D
 ## The runner's body, animated from the player's state every frame.
 ##
@@ -10,15 +11,21 @@ extends Node3D
 ##   * the lowest contact point is kept on the ground, which gives crouches,
 ##     slides, rolls and landings the right height for free;
 ##   * the upper body and head turn toward where the player aims;
-##   * flips, spins and rolls rotate the whole body around its center.
+##   * flips, side flips, spins and rolls rotate the whole body around its
+##     center, and the gun arm comes up when aiming.
+##
+## Everything is in the player's own frame, so the body tilts with it on
+## ramps and loops (SURFACE).
 ##
 ## Read-only: it never writes to the player, so it can't affect gameplay or
-## determinism. Shown on ArtLook.BODY_LAYER (third-person cameras only).
+## determinism. Shown on LAYER, which only third-person cameras render.
 
 const MODEL := preload("res://art/characters/runner/runner.glb")
 const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
 const MotionTrails := preload("res://art/fx/motion_trails.gd")
-const BODY_LAYER := 1 << 9
+## Render layer 2: the first-person camera skips it, third-person cameras
+## (corner cam, chase cam) see it.
+const LAYER := 2
 
 ## Bones whose x angle is mirrored so that + always means "tip forward"
 ## (they hang down in the reference pose).
@@ -34,7 +41,8 @@ const CONTACTS := {
 }
 ## States where the body stands, crouches or lies on the floor.
 const GROUNDED_STATES := [Player.State.GROUND, Player.State.CROUCH, Player.State.SLIDE,
-	Player.State.ROLL, Player.State.STUN, Player.State.PRONE, Player.State.PRONE_SLIDE]
+	Player.State.ROLL, Player.State.STUN, Player.State.PRONE, Player.State.PRONE_SLIDE,
+	Player.State.SURFACE]
 ## How fast each pose eases in/out (1/s). Higher = snappier.
 const BLEND_RATE := {
 	"idle": 6.0, "run": 10.0, "crouch": 12.0, "slide": 12.0, "rise": 9.0, "fall": 6.0,
@@ -57,8 +65,8 @@ var _hips_rest := Vector3.ZERO
 var _weights := {}
 var _phase := 0.0
 var _climb_phase := 0.0
-var _heading := 0.0
-var _prev_view_yaw := 0.0
+## Facing, in the player's frame (PI = where the player looks).
+var _heading := PI
 var _turn_lean := 0.0
 var _wall_side := 1.0
 var _tuck := 0.0
@@ -84,7 +92,7 @@ func _ready() -> void:
 	mat.set_shader_parameter("rim_strength", 0.5)
 	for mi: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 		mi.material_override = mat
-		mi.layers = BODY_LAYER
+		mi.layers = LAYER
 	_build_reference()
 	for k: String in BLEND_RATE:
 		_weights[k] = 0.0
@@ -93,11 +101,10 @@ func _ready() -> void:
 
 func setup(p: Player) -> void:
 	player = p
-	_heading = p.yaw + PI
-	_prev_view_yaw = p.yaw
+	_heading = PI
 	p.landed.connect(_on_landed)
 	p.trick.connect(_on_trick)
-	p.respawned.connect(func() -> void: _heading = player.yaw + PI)
+	p.respawned.connect(func() -> void: _heading = PI)
 	trails = MotionTrails.new()
 	add_child(trails)
 	trails.setup(p, self)
@@ -166,8 +173,8 @@ func _process(delta: float) -> void:
 ## Which poses the player's current state calls for (weights 0..1).
 func _targets(delta: float) -> Dictionary:
 	var t := {}
-	var speed := player.horizontal_speed()
-	var vel := player.velocity
+	var vel := _local_velocity()
+	var speed := Vector2(vel.x, vel.z).length()
 	_land_crouch = maxf(_land_crouch - delta * 2.4, 0.0)
 	_kick_time += delta
 	var air := player.air_rotation()
@@ -180,7 +187,7 @@ func _targets(delta: float) -> Dictionary:
 	_phase = fposmod(_phase + speed * delta / cycle_len * _run_direction(), 1.0)
 
 	match player.state:
-		Player.State.GROUND:
+		Player.State.GROUND, Player.State.SURFACE:
 			var moving := clampf(speed / 2.0, 0.0, 1.0)
 			t["run"] = moving
 			t["idle"] = 1.0 - moving
@@ -190,18 +197,14 @@ func _targets(delta: float) -> Dictionary:
 		Player.State.SLIDE:
 			t["slide"] = 1.0
 		Player.State.AIR:
-			if player.get("_diving"):
+			if player.is_diving():
 				t["dive"] = 1.0
 			else:
-				var rise := clampf(vel.y / 5.0 + 0.4, 0.0, 1.0)
-				var tuck := maxf(_tuck, clampf(absf(air.x) / PI, 0.0, 0.6) * 0.5)
-				t["tuck"] = tuck
-				t["rise"] = rise * (1.0 - tuck)
-				t["fall"] = (1.0 - rise) * (1.0 - tuck)
+				_air_targets(t, vel, air)
 		Player.State.VAULT:
 			t["vault"] = 1.0
 		Player.State.MANTLE:
-			var k := _path_progress()
+			var k := player.vault_progress()
 			t["mantle_hang"] = 1.0 - smoothstep(0.2, 0.7, k)
 			t["mantle_push"] = smoothstep(0.2, 0.7, k)
 		Player.State.WALLRUN:
@@ -217,6 +220,13 @@ func _targets(delta: float) -> Dictionary:
 			t["prone"] = 1.0
 		Player.State.PRONE_SLIDE:
 			t["dive"] = 1.0
+		_:
+			# A state added later: stand or fall until it gets its own pose.
+			if player.is_on_floor():
+				t["run"] = clampf(speed / 2.0, 0.0, 1.0)
+				t["idle"] = 1.0 - t["run"]
+			else:
+				_air_targets(t, vel, air)
 	if _land_crouch > 0.0 and player.state in [Player.State.GROUND, Player.State.CROUCH]:
 		t["crouch"] = maxf(t.get("crouch", 0.0), _land_crouch)
 	if _kick_time < 0.32:
@@ -224,14 +234,25 @@ func _targets(delta: float) -> Dictionary:
 	return t
 
 
+func _air_targets(t: Dictionary, vel: Vector3, air: Vector2) -> void:
+	var rise := clampf(vel.y / 5.0 + 0.4, 0.0, 1.0)
+	var spinning := maxf(absf(air.x) / PI, absf(player.air_roll()) / PI)
+	var tuck := maxf(_tuck, clampf(spinning, 0.0, 0.6) * 0.5)
+	t["tuck"] = tuck
+	t["rise"] = rise * (1.0 - tuck)
+	t["fall"] = (1.0 - rise) * (1.0 - tuck)
+
+
 func _blend() -> Dictionary:
-	var speed := player.horizontal_speed() if player else 0.0
-	var amount := clampf(speed / 9.0, 0.0, 1.15)
-	var wall := _wall_normal()
-	if wall != Vector3.ZERO:
-		var fwd := MovementMath.horizontal(player.velocity).normalized()
+	var vel := _local_velocity()
+	var amount := clampf(Vector2(vel.x, vel.z).length() / 9.0, 0.0, 1.15)
+	var wall := _local(player.wall_normal())
+	if wall != Vector3.ZERO and player.state == Player.State.WALLRUN:
+		# Which side of the body the wall is on, in the body's own frame.
+		var fwd := Vector3(sin(_heading), 0.0, cos(_heading))
 		var right := Vector3(-fwd.z, 0.0, fwd.x)
-		_wall_side = signf(right.dot(-wall)) if absf(right.dot(-wall)) > 0.1 else _wall_side
+		var d := right.dot(-wall)
+		_wall_side = signf(d) if absf(d) > 0.1 else _wall_side
 	var poses := {}
 	for k: String in _weights:
 		if _weights[k] < 0.002:
@@ -253,7 +274,16 @@ func _blend() -> Dictionary:
 			"prone": poses[k] = RunnerPoses.prone()
 			"dive": poses[k] = RunnerPoses.dive()
 			"kick": poses[k] = RunnerPoses.kick()
+	# The kick is an overlay: it takes over the body on top of whatever the
+	# other poses blend to, instead of being averaged in with them.
+	var kick: Variant = poses.get("kick")
+	poses.erase("kick")
 	var out := _weighted(poses)
+	if kick != null:
+		for bone: String in _bones:
+			var base: Quaternion = out.get(bone, Quaternion.IDENTITY)
+			out[bone] = base.slerp(_to_quat(bone, kick.get(bone, Vector3.ZERO)), weight("kick"))
+	_add_lean(out)
 	_add_aim(out)
 	return out
 
@@ -278,17 +308,29 @@ func _weighted(poses: Dictionary) -> Dictionary:
 	return acc
 
 
-## Turns the chest and head toward where the player is looking.
+## Turns the chest and head toward where the player is looking, and brings
+## the gun arm up along the view while aiming down sights.
 func _add_aim(pose: Dictionary) -> void:
-	if player == null:
-		return
-	var view_heading := player.yaw + PI
-	var twist := clampf(wrapf(view_heading - _heading, -PI, PI), deg_to_rad(-70.0), deg_to_rad(70.0))
+	var twist := clampf(wrapf(PI - _heading, -PI, PI), deg_to_rad(-70.0), deg_to_rad(70.0))
 	var look := clampf(player.pitch, deg_to_rad(-50.0), deg_to_rad(50.0)) * (1.0 - _tuck)
-	var aim_weight := 1.0 - weight("prone") - weight("tuck") * 0.7
+	var aim_weight := clampf(1.0 - weight("prone") - weight("tuck") * 0.7, 0.0, 1.0)
 	for part: Array in [["Spine", 0.25, 0.0], ["Chest", 0.35, 0.25], ["Neck", 0.2, 0.35], ["Head", 0.2, 0.4]]:
 		var extra := Quaternion.from_euler(Vector3(-look * part[2], twist * part[1], 0.0) * aim_weight)
 		pose[part[0]] = extra * pose.get(part[0], Quaternion.IDENTITY)
+	var ads := clampf(player.aim_zoom, 0.0, 1.0) * aim_weight
+	if ads > 0.001:
+		# The spine and chest already carry a quarter of the look pitch.
+		var raise := 90.0 + rad_to_deg(look) * 0.75
+		var arm := {"RightUpperArm": Vector3(raise, 0, -6), "RightLowerArm": Vector3(4, 0, 0), "RightHand": Vector3(0, 0, 0)}
+		for bone: String in arm:
+			pose[bone] = (pose.get(bone, Quaternion.IDENTITY) as Quaternion).slerp(_to_quat(bone, arm[bone]), ads)
+
+
+## Leaning (the player's lean input) bends the upper body to the side.
+func _add_lean(pose: Dictionary) -> void:
+	var bend := deg_to_rad(14.0) * player.lean * (1.0 - _tuck)
+	for bone: String in ["Spine", "Chest"]:
+		pose[bone] = Quaternion(Vector3.BACK, bend) * pose.get(bone, Quaternion.IDENTITY)
 
 
 func _to_quat(bone: String, e: Vector3) -> Quaternion:
@@ -312,15 +354,16 @@ func _apply_pose(pose: Dictionary) -> void:
 # ---------------------------------------------------------------- root
 
 func _update_root(delta: float) -> void:
-	var vel := MovementMath.horizontal(player.velocity)
+	var vel := _local_velocity()
+	vel.y = 0.0
 	var speed := vel.length()
-	var target := player.yaw + PI
+	var target := PI
 	var rate := 10.0
 	match player.state:
 		Player.State.AIR:
 			rate = 22.0  # spins: the body turns with the view
 		Player.State.WALLCLIMB:
-			var n := _wall_normal()
+			var n := _local(player.wall_normal())
 			if n != Vector3.ZERO:
 				target = atan2(-n.x, -n.z)
 		_:
@@ -332,26 +375,30 @@ func _update_root(delta: float) -> void:
 	_heading = lerp_angle(_heading, target, 1.0 - exp(-rate * delta))
 	var turn_rate := wrapf(_heading - before, -PI, PI) / maxf(delta, 0.001)
 
-	# Leaning: into turns when running, away from the wall on a wallrun.
+	# Leaning: into turns when running, with the lean input, and away from
+	# the wall on a wallrun (feet on the wall, head out).
 	var lean_target := clampf(-turn_rate * speed * 0.035, -0.45, 0.45) * weight("run")
 	_turn_lean = lerpf(_turn_lean, lean_target, 1.0 - exp(-8.0 * delta))
 	var roll := _turn_lean - deg_to_rad(28.0) * _wall_side * weight("wallrun")
+	roll += deg_to_rad(8.0) * player.lean
 
-	# Whole-body rotation: flips in the air, forward roll, lying down.
+	# Whole-body rotation: flips and side flips in the air, forward roll,
+	# lying down.
 	var air := player.air_rotation()
 	var pitch := 0.0
 	var pivot := Vector3(0, 0.95, 0)
 	var offset := Vector3.ZERO
-	if player.state == Player.State.AIR and not player.get("_diving"):
+	if player.state == Player.State.AIR and not player.is_diving():
 		pitch = wrapf(-air.y, -PI, PI)
+		roll += wrapf(player.air_roll(), -PI, PI)
 	elif player.state == Player.State.ROLL:
-		pitch = wrapf(TAU * clampf(player.state_time / player.tuning.roll_time, 0.0, 1.0), -PI, PI)
+		pitch = wrapf(TAU * player.roll_progress(), -PI, PI)
 		pivot = Vector3(0, 0.5, 0)
 	var lie := weight("prone") + weight("dive") * 0.9
 	pitch += deg_to_rad(88.0) * lie
 	offset += Vector3(0, 0.15, -0.85) * lie
 	_root_pitch = lerp_angle(_root_pitch, pitch, 1.0 - exp(-30.0 * delta))
-	_root_roll = lerpf(_root_roll, roll, 1.0 - exp(-12.0 * delta))
+	_root_roll = lerp_angle(_root_roll, roll, 1.0 - exp(-(30.0 if player.state == Player.State.AIR else 12.0) * delta))
 	_pivot = _pivot.lerp(pivot, 1.0 - exp(-12.0 * delta))
 	var on_ground := 1.0 if player.state in GROUNDED_STATES else 0.0
 	_grounded = lerpf(_grounded, on_ground, 1.0 - exp(-14.0 * delta))
@@ -367,31 +414,32 @@ func _place_root(pitch: float, offset: Vector3, roll: float, delta: float) -> vo
 		var p := local * skeleton.get_bone_global_pose(_bones[bone]).origin
 		lowest = minf(lowest, p.y - CONTACTS[bone])
 	var target := -lowest * _grounded if player else -lowest
-	_ground_offset = target if delta <= 0.0 else lerpf(_ground_offset, target, 1.0 - exp(-40.0 * delta))
+	_ground_offset = target if delta <= 0.0 else lerpf(_ground_offset, target, 1.0 - exp(-60.0 * delta))
 	local.origin.y += _ground_offset
 	model.transform = local
 	if player:
-		global_transform = Transform3D(Basis(Vector3.UP, _heading), player.global_position)
+		var frame := player.global_basis.orthonormalized()
+		global_transform = Transform3D(frame * Basis(Vector3.UP, _heading), player.global_position)
 
 
 # ---------------------------------------------------------------- helpers
 
+## A world direction in the player's frame (which tilts on ramps and loops).
+func _local(v: Vector3) -> Vector3:
+	return player.global_basis.orthonormalized().inverse() * v
+
+
+func _local_velocity() -> Vector3:
+	return _local(player.velocity)
+
+
 ## +1 running forward, -1 backing up (the cycle plays in reverse).
 func _run_direction() -> float:
-	var vel := MovementMath.horizontal(player.velocity)
+	var vel := _local_velocity()
+	vel.y = 0.0
 	if vel.length() < 0.5:
 		return 1.0
-	return -1.0 if vel.normalized().dot(player.forward()) < -0.3 else 1.0
-
-
-func _path_progress() -> float:
-	var total: Variant = player.get("_path_time")
-	return clampf(player.state_time / float(total), 0.0, 1.0) if total else 0.5
-
-
-func _wall_normal() -> Vector3:
-	var n: Variant = player.get("_wall_normal")
-	return n if n is Vector3 else Vector3.ZERO
+	return -1.0 if vel.normalized().z > 0.3 else 1.0
 
 
 func _on_landed(fall_speed: float) -> void:

@@ -16,11 +16,12 @@ const REBINDABLE := [
 	["move_left", "Move left"],
 	["move_right", "Move right"],
 	["jump", "Jump / vault / climb"],
-	["sprint", "Sprint"],
 	["crouch", "Crouch / slide / roll"],
-	["prone", "Prone / dive (hold)"],
+	["prone", "Dive"],
 	["kick", "Kick"],
 	["quick_turn", "Quick turn"],
+	["lean_left", "Lean left / side flip"],
+	["lean_right", "Lean right / side flip"],
 	["fire", "Fire"],
 	["aim", "Aim down sights"],
 	["reload", "Reload"],
@@ -214,10 +215,12 @@ static func _normalize(ev: InputEvent) -> InputEvent:
 		return mb
 	if ev is InputEventJoypadButton:
 		var jb := InputEventJoypadButton.new()
+		jb.device = InputSetup.ALL_DEVICES
 		jb.button_index = (ev as InputEventJoypadButton).button_index
 		return jb
 	if ev is InputEventJoypadMotion:
 		var jm := InputEventJoypadMotion.new()
+		jm.device = InputSetup.ALL_DEVICES
 		jm.axis = (ev as InputEventJoypadMotion).axis
 		jm.axis_value = signf((ev as InputEventJoypadMotion).axis_value)
 		return jm
@@ -264,10 +267,12 @@ static func decode_event(d: Variant) -> InputEvent:
 			return mb
 		"joy_button":
 			var jb := InputEventJoypadButton.new()
+			jb.device = InputSetup.ALL_DEVICES
 			jb.button_index = int(d.button) as JoyButton
 			return jb
 		"joy_axis":
 			var jm := InputEventJoypadMotion.new()
+			jm.device = InputSetup.ALL_DEVICES
 			jm.axis = int(d.axis) as JoyAxis
 			jm.axis_value = float(d.value)
 			return jm

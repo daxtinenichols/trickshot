@@ -6,7 +6,6 @@ extends SceneTree
 ## (--fixed-fps keeps scripted input in step with physics on slow renderers.)
 ## Add `--rendering-method gl_compatibility` where Vulkan isn't available.
 
-const RunnerBody := preload("res://art/characters/runner/runner_body.gd")
 
 const VIEWS := [
 	# [zone index, position offset, yaw, pitch, name]
@@ -174,7 +173,6 @@ func _action() -> void:
 				# set right after it are the ones this tick uses.
 				await physics_frame
 				f.move = Vector2(0, 1)
-				f.sprint_held = true
 				f.jump_pressed = step[1].get("jump", false) and i == 0
 				f.jump_held = step[1].get("jump", false)
 				f.crouch_pressed = step[1].get("crouch", false) and i == 0

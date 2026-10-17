@@ -2,9 +2,10 @@ extends Node
 ## Applies the cel-shaded art look to whatever level is running, without the
 ## level or the player having to know about it. Autoloaded as `ArtLook`.
 ##
-## On (default): toon materials, ink outlines, a styled sky and light, the
-## runner character (seen by third-person cameras), speed-colored motion
-## trails and speed lines. F6 toggles it, to compare with the graybox.
+## On (default): toon materials, ink outlines, a styled sky and light, and
+## speed lines. F6 toggles it, to compare with the graybox. The runner body
+## (built by the corner cam, or here if a level has none) and the F7 chase
+## camera stay either way.
 ##
 ## Visuals only ever read the player's state; nothing here feeds back into
 ## the simulation, so turning the look on or off can never change gameplay.
@@ -17,15 +18,9 @@ signal toggled(on: bool)
 const GRAYBOX_SHADER := preload("res://levels/graybox.gdshader")
 const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
 const OUTLINE_SHADER := preload("res://art/shaders/outline_post.gdshader")
-const RunnerBody := preload("res://art/characters/runner/runner_body.gd")
 const SpeedLines := preload("res://art/fx/speed_lines.gd")
 const ChaseCamera := preload("res://art/look/chase_camera.gd")
 
-## Render layer for the player's own body. The first-person camera leaves it
-## out; third-person cameras (corner cam, chase cam) include it.
-const BODY_LAYER := 1 << 9  # layer 10, "own_body"
-## Only the first-person camera sees this layer (the view-model gun).
-const FP_LAYER := 1 << 10  # layer 11, "first_person_only"
 
 ## Graybox color -> art color. Same color language, richer palette.
 const PALETTE := {
@@ -174,31 +169,37 @@ func _restyle_environment(we: WorldEnvironment) -> void:
 		sky_mat.ground_bottom_color = Color(0.45, 0.50, 0.62)
 
 
-## Adds the runner body, outlines, speed lines and chase camera to a player.
-## Public so tests and tools can attach the look in headless runs.
+## Adds outlines and speed lines to a player, plus the runner body and the
+## chase camera if it has none yet. Public so tests and tools can attach the
+## look in headless runs.
 func attach_to_player(player: Player) -> void:
+	if not player.has_node("RunnerBody"):
+		ensure_body(player)
+	if not player.has_node("ChaseCamera"):
+		var chase: Camera3D = ChaseCamera.new()
+		chase.name = "ChaseCamera"
+		player.add_child(chase)
+		chase.setup(player)
 	if player.has_meta("art_look"):
 		return
 	player.set_meta("art_look", true)
-	var cam: Camera3D = player.camera
-	cam.cull_mask &= ~BODY_LAYER
-	# The view-model gun only belongs in the first-person view.
-	for g: GeometryInstance3D in cam.find_children("*", "GeometryInstance3D", true, false):
-		g.layers = FP_LAYER
-	_add(cam, make_outline_quad())
-
-	var body: Node3D = RunnerBody.new()
-	body.name = "RunnerBody"
-	_add(player, body)
-	body.setup(player)
-
+	_add(player.camera, make_outline_quad())
 	var lines: CanvasLayer = SpeedLines.new()
 	_add(player, lines)
 	lines.setup(player)
 
-	var chase: Camera3D = ChaseCamera.new()
-	_add(player, chase)
-	chase.setup(player)
+
+## The player's runner body, built on first use. The first-person camera is
+## set to skip its layer so you never see your own insides.
+static func ensure_body(player: Player) -> Node3D:
+	var body: Node3D = player.get_node_or_null("RunnerBody")
+	if body == null:
+		body = RunnerBody.new()
+		body.name = "RunnerBody"
+		player.add_child(body)
+		body.setup(player)
+	player.camera.cull_mask &= ~RunnerBody.LAYER
+	return body
 
 
 static func make_outline_quad() -> MeshInstance3D:
@@ -238,9 +239,5 @@ func _remove_all() -> void:
 			var p: Node = n.get_parent()
 			if p is Player:
 				p.remove_meta("art_look")
-				p.camera.cull_mask |= BODY_LAYER
-				for g: GeometryInstance3D in p.camera.find_children("*", "GeometryInstance3D", true, false):
-					if g.layers == FP_LAYER:
-						g.layers = 1
 			n.queue_free()
 	_attached.clear()

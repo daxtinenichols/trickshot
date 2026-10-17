@@ -1,7 +1,10 @@
 class_name ComboHud
 extends CanvasLayer
 ## Score and the running combo: "1,240 x 5", the tricks in it, the time left
-## before it banks, and the shot damage it gives. Flashes on bank and bail.
+## before it banks, and the shot damage it gives. Each trick pops up as you
+## do it ("+300 BACKFLIP"). When a combo ends, a card shows the whole chain
+## (ending in the kill, if a kill finished it), then the points go into the
+## score. Bails flash red.
 
 const SHOT_NAMES := {
 	&"hit": "HIT",
@@ -26,6 +29,20 @@ var _bar: ProgressBar
 var _damage: Label
 var _flash: Label
 var _flash_time := 0.0
+var _pops: VBoxContainer
+var _card: VBoxContainer
+var _card_title: Label
+var _card_chain: Label
+var _card_math: Label
+var _card_total: Label
+var _card_time := 0.0
+## Score shown, counting up to the real one once a card has shown its total.
+var _shown_score := 0.0
+
+const CARD_TIME := 3.2
+## When the card's total appears (and the score starts counting up).
+const CARD_TOTAL_AT := 0.6
+const POP_TIME := 1.1
 
 
 static func trick_label(trick_name: StringName) -> String:
@@ -91,21 +108,116 @@ func _ready() -> void:
 
 	_flash = _make_label(34, Control.PRESET_CENTER, Vector2(-300, -150), 600)
 
+	# Trick pop-ups, stacked just above the running combo.
+	_pops = VBoxContainer.new()
+	_pops.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
+	_pops.position = Vector2(-300, -330)
+	_pops.custom_minimum_size = Vector2(600, 96)
+	_pops.alignment = BoxContainer.ALIGNMENT_END
+	_pops.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(_pops)
+
+	# Combo-finished card, upper middle (clear of the crosshair).
+	_card = VBoxContainer.new()
+	_card.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_card.position = Vector2(-420, 90)
+	_card.custom_minimum_size = Vector2(840, 0)
+	_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_card.visible = false
+	_root.add_child(_card)
+	_card_title = _styled(Label.new(), 40)
+	_card.add_child(_card_title)
+	_card_chain = _styled(Label.new(), 20)
+	_card_chain.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	_card.add_child(_card_chain)
+	_card_math = _styled(Label.new(), 24)
+	_card.add_child(_card_math)
+	_card_total = _styled(Label.new(), 46)
+	_card.add_child(_card_total)
+
 
 func setup(t: ComboTracker) -> void:
 	tracker = t
-	t.banked.connect(func(_pts: int, _mult: int, total: int) -> void:
-		_show_flash("+%s" % with_commas(total), Color(0.45, 1.0, 0.55)))
+	_shown_score = t.score
+	t.added.connect(_on_added)
+	t.finished.connect(show_card)
 	t.bailed.connect(func(lost: int, _reason: StringName) -> void:
 		_show_flash("BAILED  -%s" % with_commas(lost), Color(1.0, 0.35, 0.3)))
+
+
+## Title for a finished combo: a kill finish says so.
+static func card_title(summary: Dictionary) -> String:
+	if summary.reason == &"kill":
+		return "COMBO KILL" if summary.multiplier > 1 else "KILL"
+	return "COMBO" if summary.multiplier > 1 else "NICE"
+
+
+## The chain shown on the card: every trick, in order, "x2" for repeats.
+static func card_chain(entries: Array) -> String:
+	var parts: Array[String] = []
+	for e: Dictionary in entries:
+		var s := trick_label(e.name)
+		if e.count > 1:
+			s += " x%d" % e.count
+		parts.append(s)
+	return "  +  ".join(parts)
+
+
+func show_card(summary: Dictionary) -> void:
+	var kill: bool = summary.reason == &"kill"
+	_card_title.text = card_title(summary)
+	_card_title.add_theme_color_override("font_color", Color(1.0, 0.42, 0.3) if kill else Color(0.45, 1.0, 0.55))
+	_card_chain.text = card_chain(summary.entries)
+	_card_math.text = "%s  x%d" % [with_commas(summary.points), summary.multiplier]
+	_card_total.text = "+%s" % with_commas(summary.total)
+	_card_total.add_theme_color_override("font_color", Color(1.0, 0.86, 0.35))
+	_card_total.visible = false
+	_card_time = CARD_TIME
+	_card.visible = true
+	_card.modulate.a = 1.0
+
+
+func _on_added(trick_name: StringName, points: int) -> void:
+	var l := _styled(Label.new(), 26)
+	l.text = "+%s  %s" % [with_commas(points), trick_label(trick_name)]
+	var shot := SHOT_NAMES.has(trick_name)
+	l.add_theme_color_override("font_color", Color(1.0, 0.6, 0.4) if shot else Color(1.0, 0.93, 0.62))
+	l.set_meta("age", 0.0)
+	l.pivot_offset = Vector2(300, 16)
+	_pops.add_child(l)
+	while _pops.get_child_count() > 3:
+		var old := _pops.get_child(0)
+		_pops.remove_child(old)
+		old.queue_free()
 
 
 func _process(delta: float) -> void:
 	_flash_time -= delta
 	_flash.modulate.a = clampf(_flash_time / 0.4, 0.0, 1.0)
+	for child in _pops.get_children():
+		var l := child as Label
+		var age: float = l.get_meta("age") + delta
+		l.set_meta("age", age)
+		# Pop in big, settle, then fade.
+		l.scale = Vector2.ONE * lerpf(1.35, 1.0, clampf(age / 0.12, 0.0, 1.0))
+		l.modulate.a = clampf((POP_TIME - age) / 0.3, 0.0, 1.0)
+		if age > POP_TIME:
+			l.queue_free()
+	if _card.visible:
+		_card_time -= delta
+		_card_total.visible = CARD_TIME - _card_time >= CARD_TOTAL_AT
+		_card.modulate.a = clampf(_card_time / 0.5, 0.0, 1.0)
+		if _card_time <= 0.0:
+			_card.visible = false
 	if tracker == null:
 		return
-	_score.text = "SCORE %s     BEST COMBO %s" % [with_commas(tracker.score), with_commas(tracker.best_combo)]
+	# The score counts up once the card has shown what was earned.
+	var counting := not _card.visible or _card_total.visible
+	if counting and _shown_score < tracker.score:
+		_shown_score = minf(_shown_score + maxf((tracker.score - _shown_score) * 8.0, 2000.0) * delta, tracker.score)
+	elif tracker.score < _shown_score:
+		_shown_score = tracker.score
+	_score.text = "SCORE %s     BEST COMBO %s" % [with_commas(roundi(_shown_score)), with_commas(tracker.best_combo)]
 	var active := tracker.is_active()
 	_combo.visible = active
 	_list.visible = active

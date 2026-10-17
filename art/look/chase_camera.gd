@@ -3,7 +3,6 @@ extends Camera3D
 ## F7 toggles it. Gameplay keeps running exactly as in first person; this
 ## only moves the view. (The in-game corner camera is separate.)
 
-const FP_LAYER := 1 << 10  # layer 11: the view-model gun (see ArtLook)
 
 var player: Player
 var distance := 3.4
@@ -20,7 +19,7 @@ func _ready() -> void:
 	fov = 70.0
 	near = 0.05
 	far = 600.0
-	cull_mask = 0xFFFFF & ~FP_LAYER
+	cull_mask = 0xFFFFF & ~Pistol.VIEW_LAYER
 
 
 func _unhandled_input(event: InputEvent) -> void:
@@ -43,14 +42,22 @@ func _process(delta: float) -> void:
 		return
 	var target := _desired()
 	global_position = global_position.lerp(target, 1.0 - exp(-8.0 * delta))
-	look_at(player.global_position + Vector3.UP * 1.1, Vector3.UP)
+	_look()
 
 
 func _snap() -> void:
 	global_position = _desired()
-	look_at(player.global_position + Vector3.UP * 1.1, Vector3.UP)
+	_look()
 
 
 func _desired() -> Vector3:
-	var back := -player.forward()
-	return player.global_position + back * distance + Vector3.UP * height
+	# The player's frame tilts on ramps and loops; follow it.
+	var frame := player.global_basis.orthonormalized()
+	return player.global_position + frame * Vector3(0, height, distance)
+
+
+func _look() -> void:
+	var up := player.global_basis.y.normalized()
+	var target := player.global_position + up * 1.1
+	if global_position.distance_to(target) > 0.05:
+		look_at(target, up)

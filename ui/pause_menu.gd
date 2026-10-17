@@ -14,6 +14,7 @@ var _tabs: TabContainer
 var _moves_box: VBoxContainer
 var _controls_grid: GridContainer
 var _controls_note: Label
+var _pads_label: Label
 var _value_rows := {}
 ## Rebinding in progress: [action, pad] or empty.
 var _waiting: Array = []
@@ -26,6 +27,21 @@ func _ready() -> void:
 	_build()
 	_root.visible = false
 	Settings.changed.connect(_refresh)
+
+
+# Connected while in the tree only: a callable left on the Input singleton
+# aborts the engine on shutdown.
+func _enter_tree() -> void:
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+
+
+func _exit_tree() -> void:
+	Input.joy_connection_changed.disconnect(_on_joy_connection_changed)
+
+
+func _on_joy_connection_changed(_device: int, _connected: bool) -> void:
+	if _pads_label:
+		_refresh_pads()
 
 
 func setup(p: Player) -> void:
@@ -182,6 +198,9 @@ func _build_settings() -> Control:
 	box.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	box.add_theme_constant_override("separation", 10)
 	sc.add_child(box)
+	_pads_label = Label.new()
+	_pads_label.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	box.add_child(_pads_label)
 	_slider_row(box, "mouse_sensitivity", "Mouse sensitivity", 0.1, 5.0, 0.05, "%.2fx")
 	_slider_row(box, "ads_sensitivity", "Aim-down-sights sensitivity", 0.3, 2.0, 0.05, "%.2fx")
 	_slider_row(box, "gamepad_look_speed", "Controller look speed", 1.0, 8.0, 0.1, "%.1f")
@@ -289,7 +308,19 @@ func _build_controls() -> Control:
 	return sc
 
 
+## "Controllers: Xbox 360 Controller" or a hint when none is detected.
+static func pads_text(names: Array[String]) -> String:
+	if names.is_empty():
+		return "Controllers: none detected. Plug it in (any USB port works); if it still doesn't show, close Steam's controller support for Godot (Steam > Godot > Properties > Controller > Disable Steam Input)."
+	return "Controllers: " + ", ".join(names)
+
+
+func _refresh_pads() -> void:
+	_pads_label.text = pads_text(InputSetup.controller_names())
+
+
 func _refresh() -> void:
+	_refresh_pads()
 	for key: String in _value_rows:
 		var c: Control = _value_rows[key]
 		if c is HSlider:

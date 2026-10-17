@@ -4,7 +4,6 @@ extends TestCase
 ## switched on and off cleanly.
 
 const SANDBOX := preload("res://levels/sandbox.tscn")
-const RunnerBody := preload("res://art/characters/runner/runner_body.gd")
 const HUMANOID_BONES := ["Hips", "Spine", "Chest", "UpperChest", "Neck", "Head",
 	"LeftShoulder", "LeftUpperArm", "LeftLowerArm", "LeftHand",
 	"RightShoulder", "RightUpperArm", "RightLowerArm", "RightHand",
@@ -46,7 +45,6 @@ func _run_course(record: Array, with_art: bool) -> void:
 	await tree.physics_frame
 	for t in 200:
 		var f := InputFrame.make(Vector2(0.0, 1.0))
-		f.sprint_held = true
 		f.jump_pressed = t == 60
 		f.jump_held = t >= 60 and t < 70
 		f.crouch_pressed = t == 130
@@ -88,7 +86,6 @@ func test_body_follows_states_and_stays_grounded() -> void:
 	await tree.physics_frame
 	for t in 200:
 		var f := InputFrame.make(Vector2(0.0, 1.0))
-		f.sprint_held = true
 		f.jump_pressed = t == 60
 		f.crouch_pressed = t == 130
 		f.crouch_held = t >= 130 and t < 165

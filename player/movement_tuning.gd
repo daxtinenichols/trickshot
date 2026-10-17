@@ -5,14 +5,10 @@ extends Resource
 ## Units: meters, seconds, meters per second.
 
 @export_group("Run")
-## Speed when moving without sprint held.
-@export_range(1.0, 10.0, 0.1) var walk_speed := 4.2
-## Sprint whenever moving forward, no key needed.
-@export var auto_sprint := false
-## Sprint ground speed with zero momentum.
-@export_range(1.0, 20.0, 0.1) var run_speed := 6.0
+## You always sprint. Ground speed with zero momentum.
+@export_range(1.0, 20.0, 0.1) var run_speed := 7.5
 ## Ground speed cap at full momentum.
-@export_range(1.0, 30.0, 0.1) var top_speed := 9.5
+@export_range(1.0, 30.0, 0.1) var top_speed := 11.5
 ## Source-style ground acceleration factor.
 @export_range(0.0, 30.0, 0.1) var ground_accel := 9.0
 @export_range(0.0, 20.0, 0.1) var ground_friction := 6.0
@@ -33,7 +29,7 @@ extends Resource
 
 @export_group("Air")
 @export_range(0.0, 60.0, 0.1) var gravity := 19.0
-@export_range(0.0, 20.0, 0.1) var jump_velocity := 6.9
+@export_range(0.0, 20.0, 0.1) var jump_velocity := 7.8
 ## Quake-style air acceleration. Higher = stronger air strafing.
 @export_range(0.0, 100.0, 0.5) var air_accel := 12.0
 ## Cap on wish speed in the air. Small values = light control + strafe gains.
@@ -61,9 +57,8 @@ extends Resource
 
 @export_group("Prone and dive")
 @export_range(0.76, 1.5, 0.01) var prone_height := 0.8
+## Below this a dive slide ends and you get up.
 @export_range(0.0, 5.0, 0.1) var prone_speed := 1.4
-## Hold crouch this long while slow to go prone (controller-friendly).
-@export_range(0.1, 2.0, 0.05) var prone_hold_time := 0.45
 ## Dolphin dive: upward speed and forward boost.
 @export_range(0.0, 10.0, 0.1) var dive_up := 3.6
 @export_range(0.0, 10.0, 0.1) var dive_boost := 1.5
@@ -96,6 +91,28 @@ extends Resource
 @export_range(0.0, 30.0, 0.1) var wallrun_accel := 6.0
 ## Max angle between your movement and the wall (degrees) to start a wallrun.
 @export_range(0.0, 90.0, 1.0) var wallrun_max_entry_angle := 60.0
+
+@export_group("Ramps and loops")
+## Steep ramps and loops (anything in the "runnable" group) can be run on.
+## Gravity along them, as a fraction of normal gravity.
+@export_range(0.0, 2.0, 0.01) var surface_gravity_scale := 0.6
+## How fast running (holding forward) speeds you up on them, up to top speed.
+@export_range(0.0, 30.0, 0.1) var surface_accel := 6.5
+## Speed needed to stay on a vertical surface. Below this you drop off.
+@export_range(0.0, 20.0, 0.1) var surface_min_speed := 3.0
+## Speed needed to stay on upside down (the top of a loop).
+@export_range(0.0, 30.0, 0.1) var surface_inverted_speed := 6.0
+## Steering on a surface (degrees per second at full left/right).
+@export_range(0.0, 360.0, 1.0) var surface_steer := 70.0
+## Push into the surface (m/s) that keeps your feet on it.
+@export_range(0.0, 10.0, 0.1) var surface_stick := 2.0
+## How strongly a track (loop) steers you along itself.
+@export_range(0.0, 20.0, 0.1) var surface_flow_assist := 5.0
+## How quickly your body (and view) turns to match the surface.
+@export_range(1.0, 60.0, 0.5) var surface_align_rate := 18.0
+## Runnable slopes flatter than this (normal y) are just ground.
+@export_range(0.5, 1.0, 0.005) var surface_enter_flatness := 0.95
+@export_range(0.5, 1.0, 0.005) var surface_exit_flatness := 0.97
 
 @export_group("Wall jump and climb")
 @export_range(0.0, 20.0, 0.1) var wall_jump_push := 6.0
@@ -166,6 +183,19 @@ extends Resource
 ## In the air, once the view tips past 75 degrees it turns this much faster,
 ## so a committed flick carries you over into a flip.
 @export_range(1.0, 4.0, 0.05) var flip_look_gain := 1.75
+## Landing tucked forward (view down or further over) rolls instead of
+## landing hard. Needs at least this fall speed, or a half-done front flip.
+@export_range(0.0, 30.0, 0.5) var flip_roll_min_fall := 9.5
+## On the ground, pull the view this many degrees past straight down to roll.
+@export_range(5.0, 120.0, 1.0) var ground_roll_flick := 40.0
+## How fast that pull fades (radians per second), so it has to be a flick.
+@export_range(0.0, 20.0, 0.1) var ground_roll_flick_decay := 3.0
+## Side flip roll speed while lean is held in the air (degrees per second).
+@export_range(90.0, 1440.0, 10.0) var side_flip_speed := 540.0
+## Let go of lean within this many degrees of level and you settle upright.
+@export_range(0.0, 90.0, 1.0) var side_settle_degrees := 40.0
+## Landing rolled over further than this (degrees) is a crash.
+@export_range(10.0, 120.0, 1.0) var side_crash_degrees := 50.0
 ## Seconds for the quick 180 turn.
 @export_range(0.05, 0.6, 0.01) var quick_turn_time := 0.18
 
@@ -187,6 +217,11 @@ extends Resource
 ## Extra FOV at top speed.
 @export_range(0.0, 40.0, 1.0) var speed_fov_bonus := 10.0
 @export_range(0.0, 30.0, 0.5) var wallrun_tilt_degrees := 9.0
+## Lean on the ground: how far the camera moves sideways and tilts.
+@export_range(0.0, 1.0, 0.01) var lean_offset := 0.4
+@export_range(0.0, 30.0, 0.5) var lean_tilt_degrees := 12.0
+## How fast lean eases in and out (full lean per second).
+@export_range(1.0, 20.0, 0.5) var lean_speed := 7.0
 ## Head bob amplitude in meters at run speed (0 = off).
 @export_range(0.0, 0.2, 0.005) var head_bob := 0.035
 ## Camera dip on landing, meters per m/s of fall speed.

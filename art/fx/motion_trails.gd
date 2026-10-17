@@ -4,7 +4,6 @@ extends Node3D
 ## hot red toward top speed, so speed reads at a glance in third person.
 
 const POINTS := ["LeftHand", "RightHand", "LeftFoot", "RightFoot"]
-const BODY_LAYER := 1 << 9
 const WIDTH := 0.07
 
 var player: Player
@@ -25,7 +24,7 @@ func setup(p: Player, runner: Node3D) -> void:
 func _ready() -> void:
 	top_level = true
 	_instance.mesh = _mesh
-	_instance.layers = BODY_LAYER
+	_instance.layers = RunnerBody.LAYER
 	_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	_instance.extra_cull_margin = 16384.0
 	var mat := StandardMaterial3D.new()
