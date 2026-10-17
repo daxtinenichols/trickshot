@@ -15,8 +15,8 @@ later".
   **Mission Path** to the file, and tick **Rebuild** after saving the JSON
   to see the layout. Run the scene (F6) to play it.
 - Tests: `tests/test_campaign.gd` loads every mission, checks every spawn is
-  safe to stand on, and runs scripted routes through missions 0, 2 and 12.
-  Add a route for a new mission when its layout settles.
+  safe to stand on, and runs a bot through missions 0 and 12 and through every mission built from a `route`.
+  A route mission is tested automatically.
 - Pictures: `xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/mission_shots.gd -- <out_dir>`.
 
 ## The file
@@ -44,6 +44,53 @@ meters, Y up, and the route usually runs toward -Z. Sizes come from the
 movement numbers: a 0.8–1.1 m block vaults, up to ~1.5 m above your hands
 mantles, a 1.1 m gap under a bar slides, ~9 m is a running jump, ~12 m
 needs a wallrun, a 3 m face climbs.
+
+## Routes: long missions
+
+The campaign crosses the city from Parker's docks in the east to the
+broadcast tower in the west; each mission starts where the last ended.
+Long missions (500–1000 m) are written as a `route`: segments laid end to
+end toward -Z from the start, each roof with its features. The route adds
+its pieces, checkpoints and radio lines to the mission, a street under it
+and the city on both sides, and a bot route the tests run to the end.
+See `m03_glass_district.json`.
+
+```json
+"route": [
+ {"roof": 52, "do": [{"hurdles": true, "at": 14}, {"slide": true, "at": 30}]},
+ {"gap": 5},
+ {"roof": 64, "do": [{"checkpoint": "Office roofs", "at": 3}, {"window": 3.3, "at": 22}]},
+ {"wallrun": 12, "side": 1},
+ {"roof": 44, "y": 17, "do": [...]},
+ {"ramp_down": 0, "length": 22}
+]
+```
+
+| segment | |
+|---|---|
+| `{"roof": length, "y": h, "width": 12, "do": [...]}` | a roof (y 0 is the street). Higher than the roof before and straight on: a yellow face to climb (3 m max). Lower after a gap: a drop (roll from 3.5 m) |
+| `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof |
+| `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
+| `{"ramp_up": y}` / `{"ramp_down": y, "length": 22}` | a ramp to a new height (down is a slide ramp) |
+
+Features on a roof, `at` meters from its start:
+
+| feature | |
+|---|---|
+| `{"hurdles": true}` | a row of road barriers to vault |
+| `{"slide": true}` | a bar to slide under (12 m of ground before it) |
+| `{"window": x}` | a wall across with a low window at x to slide through |
+| `{"hop": true, "side": -1}` | a wall hop pair |
+| `{"checkpoint": "Name", "objective": 1}` | a checkpoint; objectives and radio can use `"at": "@Name"`, and `"at": "end"` for the route's end |
+| `{"encounter": "id", "length": 40, "raiders": [[x, d, wake]], "mutants": [[x, d]]}` | enemies (d from the feature); raiders get sandbags 3 m in front |
+| `{"tape": "id", "x": 4.6, "height": 0}` | a lost tape |
+| `{"radio": {"who", "line"}, "radius": 7}` | a radio line played here |
+| `{"prop": "car_wreck", "x": -4, "yaw": 80}`, `{"label": "text"}`, `{"mark": "#f57320"}` | dressing |
+| `{"lane": x}` | where the test bot runs from here |
+
+Roofs also get edge clutter from `clutter` (a mission-level list of props),
+kept out of run-ups, landings and features. Keep lines long and open:
+there is no speed cap, so a fast run must still land every roof.
 
 ### Checkpoints
 

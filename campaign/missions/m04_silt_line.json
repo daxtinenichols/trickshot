@@ -1,0 +1,81 @@
+{
+ "id": "m04_silt_line",
+ "title": "Silt Line",
+ "runner": "",
+ "par_seconds": 70,
+ "start": {"at": [0, 0, 2]},
+ "clutter": ["debris_pile", "tire_stack", "barrel_rust", "street_sign", "dumpster", "barricade_scrap", "generator", "crate_stack"],
+ "objectives": [
+  {"type": "reach", "name": "the Hollows", "text": "Get through the Silt. Don't stop", "at": "@Hollows"},
+  {"type": "reach", "name": "the overpass", "text": "Climb out of the Silt", "at": "@Overpass"},
+  {"type": "reach", "name": "Meridian Mall", "text": "Run the overpass to Meridian Mall", "at": "end"}
+ ],
+ "route": [
+  {"roof": 90, "do": [
+   {"label": "THE SILT: keep moving", "at": 4, "size": 1.2},
+   {"prop": "car_wreck", "x": -4.5, "at": 10, "yaw": 80},
+   {"hurdles": true, "at": 22},
+   {"slide": true, "at": 42},
+   {"prop": "dumpster", "x": 4.6, "at": 60, "yaw": 90},
+   {"hurdles": true, "at": 70},
+   {"radio": {"who": "mags", "line": "Parker! You're in the Silt. Whatever lives down there, don't let it catch you standing."}, "at": 8}
+  ]},
+  {"roof": 80, "do": [
+   {"checkpoint": "Hollows", "at": 4, "objective": 1},
+   {"radio": {"who": "mags", "line": "Crawlers. They're fast over short distances. Keep your speed and they can't keep up."}, "at": 6},
+   {"encounter": "crawlers", "at": 12, "length": 60, "mutants": [[-4.5, 22], [4.5, 34], [-4.5, 48]]},
+   {"hurdles": true, "at": 60}
+  ]},
+  {"ramp_up": 4, "length": 14},
+  {"roof": 50, "y": 4, "do": [
+   {"window": 3.3, "at": 18},
+   {"tape": "m04_tape_hollows", "x": -4.8, "at": 40}
+  ]},
+  {"roof": 56, "y": 7, "do": [
+   {"checkpoint": "Overpass", "at": 4, "objective": 2},
+   {"radio": {"who": "host", "line": "He climbed out! Folks, nobody climbs out of the Silt. I'm going to need a bigger bridge."}, "at": 5},
+   {"hurdles": true, "at": 20}
+  ]},
+  {"gap": 5},
+  {"roof": 70, "do": [
+   {"hop": true, "side": 1, "at": 12},
+   {"slide": true, "at": 50}
+  ]},
+  {"wallrun": 12, "side": 1},
+  {"roof": 84, "do": [
+   {"hurdles": true, "at": 26},
+   {"slide": true, "at": 48},
+   {"radio": {"who": "echo", "line": "...and the traffic on the overpass is one man, heading west, fast. Drive safe, darling."}, "at": 6}
+  ]},
+  {"ramp_down": 0, "length": 22},
+  {"roof": 50, "do": [
+   {"label": "MERIDIAN MALL", "at": 40, "size": 1.6},
+   {"mark": "#f57320", "at": 42}
+  ]}
+ ],
+ "radio": [
+  {"on": "start", "who": "host", "line": "Oops. Did that bridge fall down? Bridges are so old these days. Say hi to the Silt for me, Parker."},
+  {"on": "go", "who": "mags", "line": "You're alive. Good. Run. The dust down there isn't the dangerous part."},
+  {"on": "objective:2", "who": "mags", "line": "Up on the overpass. It runs straight to the mall. The mall is the only way across the center."},
+  {"on": "complete", "who": "host", "line": "Meridian Mall, folks! Our arena! Parker, darling, you've just walked into the main event."}
+ ],
+ "chatter": {
+  "bail": [
+   {"who": "host", "line": "Face first in the Silt! That'll stain."}
+  ],
+  "combo": [
+   {"who": "mags", "line": "That's how you outrun them. Don't stop."},
+   {"who": "host", "line": "He's dancing in the Silt! Somebody give the crawlers a lesson."}
+  ],
+  "kill": [
+   {"who": "mags", "line": "Don't fight them all. Run."}
+  ],
+  "down": [
+   {"who": "host", "line": "Dinner is served!"},
+   {"who": "mags", "line": "You stopped. Never stop down there."}
+  ],
+  "tape": [
+   {"who": "echo", "line": "...the Silt isn't empty. The Hollows were people once. Don't let him tell you otherwise."}
+  ]
+ }
+}
