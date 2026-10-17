@@ -10,7 +10,7 @@ This repo is currently the **movement sandbox**: a graybox level for building an
 2. Open Godot, choose **Import**, and select `project.godot` in this folder.
 3. Press **F5** (or the play button). You spawn on the run track.
 
-Mouse/keyboard and controller both work. Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, invert, volume), and custom controls.
+Mouse/keyboard and controller both work (any XInput pad, including a wired or wireless Xbox 360 controller; the Settings tab lists the controllers it sees). Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, invert, volume), and custom controls.
 
 ## Controls
 
@@ -18,20 +18,24 @@ Mouse/keyboard and controller both work. Press **Esc** (or Start) for the menu: 
 |---|---|---|
 | Move | WASD | Left stick |
 | Look | Mouse | Right stick |
-| Sprint (hold, any direction) | Shift | L3 |
 | Jump / vault / climb | Space | A |
 | Crouch / slide / roll | Ctrl or C | B |
-| Prone (hold) / dolphin dive | Z | D-pad down |
+| Dolphin dive (prone jump) | Z | D-pad down |
 | Kick | F | RB or R3 |
-| Quick turn (180) | Q | LB |
+| Quick turn (180) | Shift | LB |
+| Lean (side flip in the air) | Q / E | D-pad left / right |
 | Fire | Left mouse | Right trigger |
 | Aim down sights | Right mouse | Left trigger |
 | Reload | R | X |
 | Semi / full auto | B or V | Y |
 | Respawn | Backspace | Back |
 | Menu (moves, settings, controls) | Esc | Start |
-| Jump to zone | 1–9, 0 = shooting range | |
-| HUD / tuning / slow-mo / speed trail | F1 / F2 / F3 / F4 | |
+| Jump to zone | 1–9, 0 = shooting range, - = ramps and loop | |
+| HUD / tuning / slow-mo / speed trail / corner view | F1 / F2 / F3 / F4 / F5 | |
+
+You always sprint: there's no walk or sprint key. Let go of the stick to stop.
+
+A small third-person view in the lower-left corner shows your character so you can see what your moves look like (F5 hides it).
 
 ## How the moves work
 
@@ -39,20 +43,23 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 
 | Move | How | What precision gets you |
 |---|---|---|
-| Sprint | Hold Shift while moving, in any direction | Holding speed builds momentum, which raises your top speed (6 to 9.5 m/s) |
+| Run | Move in any direction (always a sprint) | Keeping your speed up builds momentum, which raises your top speed (7.5 to 11.5 m/s) |
 | Hop / bunny hop | Jump as you land | Jumping within ~2 frames of landing keeps all your speed; early jumps bleed it |
-| Hurdle / vault | Jump at a waist-high (yellow) wall | Taking off at the right distance gives a faster, cleaner vault |
+| Hurdle / vault | Press jump at a waist-high (yellow) wall, on the ground or in the air. Never automatic: you can always just jump over | Taking off at the right distance gives a faster, cleaner vault |
 | Mantle | Jump into a ledge up to ~1.5 m above your reach | Grabbing it cleanly keeps more speed |
 | Slide | Crouch while sprinting | Faster entry slides further; slopes add speed |
 | Slide landing | Hold crouch as you land from a fall | Turns some of your fall into forward speed |
-| Prone | Hold Z (or hold crouch while standing still). Let go to get up | |
-| Dolphin dive | Z while running fast | Tap to dive and pop up into a slide, hold to stay down. Dive through low windows |
+| Dolphin dive (prone jump) | Z. There's no lying prone or crawling | Tap to dive and pop up into a slide; hold to stay on your belly for low gaps. You get up by yourself when the slide runs out. Dive through low windows |
 | Wallrun | Jump into a blue wall at an angle, holding a direction | Shallow angle + speed = longer, floatier run. Look and aim anywhere while running; crouch drops off |
 | Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; chain wall to wall |
-| Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it |
-| Landing roll | Crouch just before a hard landing | Good timing keeps speed instead of a stun |
+| Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it (your view stays put; quick turn if you want to face away) |
+| Ramp run / loop | Run onto a purple ramp or loop | Gravity slows you going up and speeds you coming down. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off. Launch off the lip of a ramp for air tricks |
+| Roll | On the ground, flick the view down past your feet | A forward roll, like a flip on the ground. Keeps your speed |
+| Landing roll | Land tucked forward (view pointing down, or partway into a front flip), or press crouch just before a hard landing | Rolls out of big drops without losing speed instead of a stun |
 | Kick | F. In the air: kick off walls and targets | Kicking with speed pushes you further. Kicks doors open and breaks windows |
-| Quick turn | Q | Spins you 180. On a wall it faces you away from it, ready to jump |
+| Quick turn | Shift | Spins you 180. On a wall it faces you away from it, ready to jump |
+| Lean | Q / E on the ground | Peek around corners |
+| Side flip | Hold Q or E in the air | Rolls you sideways. Let go near level to land clean; land on your side and you crash |
 | Window smash | Run, slide or dive into glass fast enough | |
 | Backflip / front flip | In the air, keep moving the view up and over (backflip) or down and over (front flip) until it comes back around | Past straight up/down the view turns faster, so commit to the flick. The HUD shows your flip progress. Land level or you crash |
 | 360 / 720 | In the air, turn a full circle | Quick turn doesn't count |
@@ -75,11 +82,12 @@ All weapon numbers are in `weapons/weapon_stats.gd`.
 
 ## Combos and score
 
-Scoring works like Skate. Every move and every stylish hit adds points to a running combo shown at the bottom of the screen.
+Scoring works like Skate. Every move and every stylish hit adds points to a running combo shown at the bottom of the screen, and each one pops up as you do it ("+300 BACKFLIP").
 
 - **Multiplier:** +1 for each different trick in the combo. Repeating a trick is worth 60% of the last time.
 - **Speed and precision:** points scale from 1x at run pace to 2x at top speed, and from 0.75x (OK) to 1.25x (PERFECT).
 - **Banking:** the combo's points times its multiplier go to your score when you come to rest or go 2 s without a new trick. Sliding, wallrunning, climbing and vaulting hold the clock.
+- **Kill finish:** a kill ends the combo on the spot. A card shows the whole chain ending in COMBO KILL, then the points count into your score.
 - **Bailing:** a crash, a hard landing, slamming into a wall or falling out loses the combo.
 - **Shots count too:** headshot, air shot (0.4 s+ off the ground), long shot (40 m+), slide shot, wallrun shot, flip shot, spin shot and kills each add a trick.
 - **Damage:** shots hit harder in a combo: 1 + 0.2 per different trick, times the speed bonus, capped at 3x.
@@ -100,14 +108,17 @@ Point values are in `scoring/combo_tracker.gd`.
 | 8 | Kick-off yard | Air kicks off pillars and targets |
 | 9 | Doors and windows | Door kicks, dives and window smashes |
 | 0 | Shooting range | Static and moving targets, a wall to wallrun-and-shoot from, a platform for air shots |
+| - | Ramps and loop | A loop after a long run-up, a launch ramp, a tall steep ramp with height markers |
 
-Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide, and red is targets (yellow heads are headshots).
+Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide, purple is runnable ramps and loops, and red is targets (yellow heads are headshots).
 
 ## Tuning
 
 Player settings (sensitivity, FOV, controls) live in the Esc menu and save to `user://settings.cfg`.
 
 Press **F2** in game for live sliders on every movement number. **Save** writes your tuning to your user folder and loads it next time. In the editor, **Save as project defaults** writes it to `player/default_tuning.tres` so everyone gets it.
+
+Tuning saved before playtest 2 is ignored (the movement defaults changed a lot), so you start from the new feel.
 
 F3 toggles slow motion and F4 shows a speed-colored trail, which help when judging a move.
 
@@ -126,12 +137,12 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 
 | Folder | Contents |
 |---|---|
-| `player/` | Player controller (`player.gd`), tuning resource, input frame, movement math |
+| `player/` | Player controller (`player.gd`), tuning resource, input frame, movement math, third-person body rig |
 | `weapons/` | Test pistol, weapon stats, procedural sounds |
 | `targets/` | Shooting targets |
-| `levels/` | Sandbox scene, level builder (the layout is built in code), doors, windows, kick dummies |
+| `levels/` | Sandbox scene, level builder (the layout is built in code), ramp and loop shapes, doors, windows, kick dummies |
 | `scoring/` | Combo tracker (Skate-style combos, score, combo damage) |
-| `ui/` | Debug HUD, pause menu (moves list, settings, controls), tuning panel, hit marker, speed graph |
+| `ui/` | Debug HUD, combo HUD, corner third-person view, pause menu (moves list, settings, controls), tuning panel, hit marker, speed graph |
 | `autoload/` | Default input bindings, player settings and custom bindings |
 | `fx/` | Speed trail |
 | `tests/` | Test runner and suites |

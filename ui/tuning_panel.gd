@@ -5,7 +5,9 @@ extends CanvasLayer
 ## when running from the editor, "Save as project defaults" writes them into
 ## res://player/default_tuning.tres so they can be committed.
 
-const USER_PATH := "user://tuning.tres"
+## Bumped when the movement defaults change a lot (playtest 2: auto-sprint,
+## faster and higher), so an old save doesn't bring back the old feel.
+const USER_PATH := "user://tuning_v2.tres"
 const DEFAULTS_PATH := "res://player/default_tuning.tres"
 
 var player: Player

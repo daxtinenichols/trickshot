@@ -22,6 +22,23 @@ func add_box(center: Vector3, size: Vector3, rot_x_deg := 0.0) -> StaticBody3D:
 	return body
 
 
+## Runnable pieces from SurfaceShapes (ramps, loops).
+func add_surface(pieces: Array[Dictionary]) -> void:
+	for piece in pieces:
+		var body := StaticBody3D.new()
+		body.collision_layer = 1
+		body.add_to_group("runnable")
+		body.set_meta("flow", piece.flow)
+		body.set_meta("face", piece.face)
+		var shape := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = piece.size
+		shape.shape = box
+		body.add_child(shape)
+		add_child(body)
+		body.global_transform = piece.transform
+
+
 ## Big flat floor with its top at y = 0.
 func add_floor(size := 400.0) -> void:
 	add_box(Vector3(0.0, -0.5, 0.0), Vector3(size, 1.0, size))

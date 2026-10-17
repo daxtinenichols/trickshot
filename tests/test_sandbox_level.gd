@@ -29,9 +29,9 @@ func _step(frames: int, f: InputFrame = null) -> void:
 		await tree.physics_frame
 
 
-func test_has_ten_zones() -> void:
+func test_has_eleven_zones() -> void:
 	var b: SandboxBuilder = level.get_node("Builder")
-	check(b.spawns.size() == 10, "10 zone spawns (got %d)" % b.spawns.size())
+	check(b.spawns.size() == 11, "11 zone spawns (got %d)" % b.spawns.size())
 
 
 func test_every_zone_spawn_is_standable() -> void:
@@ -158,3 +158,21 @@ func test_breach_zone_door_and_wall_are_solid() -> void:
 			through = true
 			break
 	check(through, "kicked the door open and went through")
+
+
+func test_ramps_zone_loop_from_its_run_up() -> void:
+	level.go_to_zone(10)
+	await _step(20)
+	var upside_down := false
+	var tricks: Array[StringName] = []
+	player.trick.connect(func(n: StringName, _i: Dictionary) -> void: tricks.append(n))
+	player.scripted_input = TestWorld.forward_input()
+	for i in 900:
+		await tree.physics_frame
+		if player.body_up().y < -0.9:
+			upside_down = true
+		if &"loop" in tricks and player.state == Player.State.GROUND:
+			break
+	check(upside_down, "ran upside down")
+	check(&"loop" in tricks, "made it round the loop")
+	check(player.state == Player.State.GROUND, "running again after it")

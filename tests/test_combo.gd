@@ -168,3 +168,46 @@ func test_air_headshot_scores_style_and_hits_harder() -> void:
 	check(c._find(&"headshot") >= 0, "headshot scored")
 	check(c._find(&"air_shot") >= 0, "air shot scored")
 	check(c.multiplier() == 4, "slide, vault, headshot, air shot = x4 (got x%d)" % c.multiplier())
+
+
+# ------------------------------------------------------------------ kill finish and HUD
+
+func _kill_hit() -> Dictionary:
+	return {"target": w, "zone": &"head", "killed": true, "tags": [], "distance": 10.0}
+
+
+func test_kill_finishes_and_banks_the_combo() -> void:
+	await _setup()
+	var summaries: Array[Dictionary] = []
+	c.finished.connect(func(s: Dictionary) -> void: summaries.append(s))
+	c.on_trick(&"slide", {})
+	c.on_trick(&"vault", {})
+	c.on_hit(_kill_hit())
+	check(not c.is_active(), "the kill ended the combo")
+	# slide 50 + vault 75 + headshot 150 + combo kill 500 = 775, x4
+	check(c.score == 3100, "banked straight away (got %d)" % c.score)
+	check(summaries.size() == 1 and summaries[0].reason == &"kill", "finished by a kill")
+	if summaries.size() == 1:
+		check(summaries[0].entries.back().name == &"combo_kill", "the chain ends on the kill")
+
+
+func test_hud_shows_tricks_then_the_kill_card_then_points() -> void:
+	await _setup()
+	var hud := ComboHud.new()
+	w.add_child(hud)
+	hud.setup(c)
+	c.on_trick(&"wallrun", {})
+	c.on_trick(&"backflip", {})
+	check(hud._pops.get_child_count() == 2, "each trick pops up")
+	check((hud._pops.get_child(1) as Label).text == "+300  BACKFLIP", "pop shows points and name (%s)" % (hud._pops.get_child(1) as Label).text)
+	c.on_hit(_kill_hit())
+	check(hud._card.visible, "combo card shows")
+	check(hud._card_title.text == "COMBO KILL", "kill finish is called out (%s)" % hud._card_title.text)
+	check(hud._card_chain.text.ends_with("COMBO KILL"), "chain ends with the kill (%s)" % hud._card_chain.text)
+	hud._process(0.1)
+	check(not hud._card_total.visible, "total waits a beat")
+	check(roundi(hud._shown_score) == 0, "score hasn't moved yet")
+	for i in 60:
+		hud._process(1.0 / 60.0)
+	check(hud._card_total.visible, "then the points are awarded")
+	check(roundi(hud._shown_score) == c.score, "score counted up to %d (shows %d)" % [c.score, roundi(hud._shown_score)])

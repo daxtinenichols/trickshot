@@ -9,9 +9,10 @@ extends Node3D
 ##   blue   = wallrun walls
 ##   yellow = vault / mantle / climb features
 ##   green  = slide ramps
+##   purple = runnable ramps and loops (run up them, upside down if fast)
 ##   red    = kickable / shootable targets (yellow head = headshot)
 
-enum Kind { FLOOR, NEUTRAL, WALLRUN, PARKOUR, SLIDE }
+enum Kind { FLOOR, NEUTRAL, WALLRUN, PARKOUR, SLIDE, SURFACE }
 
 const COLORS := {
 	Kind.FLOOR: Color(0.56, 0.58, 0.62),
@@ -19,6 +20,7 @@ const COLORS := {
 	Kind.WALLRUN: Color(0.27, 0.6, 0.98),
 	Kind.PARKOUR: Color(0.98, 0.78, 0.26),
 	Kind.SLIDE: Color(0.32, 0.78, 0.58),
+	Kind.SURFACE: Color(0.7, 0.45, 0.95),
 }
 
 const SHADER := preload("res://levels/graybox.gdshader")
@@ -59,6 +61,7 @@ func build() -> void:
 	_zone_kick_yard(Vector3(110, 0, 0))
 	_zone_breach(Vector3(140, 0, 0))
 	_zone_range(Vector3(-120, 0, 0))
+	_zone_ramps(Vector3(130, 0, -50))
 
 
 # ---------------------------------------------------------------- zones
@@ -141,13 +144,13 @@ func _zone_slide_hill(o: Vector3) -> void:
 
 func _zone_drop_tower(o: Vector3) -> void:
 	_spawn(o + Vector3(0, 0, 18), "7 · DROP TOWER")
-	_label("Press crouch just before landing to roll", o + Vector3(0, 3.2, 14), 0.9)
+	_label("Land looking down (tucked) or press crouch just before landing to roll", o + Vector3(0, 3.2, 14), 0.9)
 	_staircase(o, 6, 2.0, -6.0)
 	_box(o + Vector3(0, 6, -10), Vector3(8, 12, 8), Kind.NEUTRAL)
 	_box(o + Vector3(5.5, 5.5, -10), Vector3(3, 1, 8), Kind.NEUTRAL)
 	_label("6 m drop", o + Vector3(5.5, 7.0, -10), 1.0)
 	_label("12 m drop: roll!", o + Vector3(0, 13.5, -14.5), 1.0)
-	_label("In the air: keep moving the view up and over to backflip, or turn a full circle for a 360", o + Vector3(0, 15.0, -10), 0.9)
+	_label("In the air: move the view up and over to backflip, turn a full circle for a 360, hold lean (Q/E) to side flip", o + Vector3(0, 15.0, -10), 0.9)
 
 
 func _zone_kick_yard(o: Vector3) -> void:
@@ -167,7 +170,7 @@ func _zone_kick_yard(o: Vector3) -> void:
 
 func _zone_breach(o: Vector3) -> void:
 	_spawn(o + Vector3(0, 0, 5), "9 · DOORS AND WINDOWS")
-	_label("Kick (F) doors open. Sprint + prone (Z) to dive through windows", o + Vector3(0, 3.2, 1), 0.9)
+	_label("Kick (F) doors open. Run + dive (Z) through windows", o + Vector3(0, 3.2, 1), 0.9)
 	# A wall with a door, a low window to dive through, and a high window.
 	var z := -14.0
 	_box(o + Vector3(-6.05, 1.5, z), Vector3(8.0, 3.0, 0.3), Kind.NEUTRAL)   # left of door: x -10.05..-2.05
@@ -210,6 +213,37 @@ func _zone_range(o: Vector3) -> void:
 	_staircase(o + Vector3(10, 0, 0), 2, 2.0, -2.0)
 	_box(o + Vector3(10, 2, -4), Vector3(4, 4, 4), Kind.NEUTRAL)
 	_label("Jump off and shoot mid-air", o + Vector3(10, 5.5, -4), 0.7)
+
+
+func _zone_ramps(o: Vector3) -> void:
+	_spawn(o + Vector3(0, 0, 5), "- · RAMPS AND LOOP")
+	_label("Purple surfaces can be run on. Up you lose speed; fast enough and you run upside down", o + Vector3(0, 3.2, 1), 0.8)
+	# Middle: a loop after a long run-up. You come out to its right.
+	_surface(SurfaceShapes.loop(o + Vector3(0, 0, -70), 4.5, 3.5, 5.5))
+	_label("LOOP: needs a full-speed run-up", o + Vector3(0, 10.5, -70), 1.0)
+	# Left: a quarter pipe that launches you up for flips. Land back on it
+	# to ride down.
+	var left := o + Vector3(-12, 0, -45)
+	_surface(SurfaceShapes.quarter_pipe(left, 3.5, 85.0, 0.0, 4.0))
+	_label("Launch ramp: flip, then land on the ramp to ride back down", left + Vector3(0, 5.5, -2), 0.8)
+	# Right: a tall steep ramp. How high can you run?
+	var right := o + Vector3(14, 0, -50)
+	_surface(SurfaceShapes.quarter_pipe(right, 5.0, 80.0, 14.0, 4.0))
+	for h: float in [4.0, 8.0, 12.0, 16.0]:
+		# Marker beside the ramp at height h (the straight part starts ~4.1 m up).
+		var a := deg_to_rad(80.0)
+		var z := right.z - 5.0 * sin(a) - (h - (5.0 - 5.0 * cos(a))) / tan(a)
+		_label("%d m" % roundi(h), Vector3(right.x + 2.6, h, z), 1.0)
+	_label("Steep ramp: how high can you run?", right + Vector3(0, 3.2, 2), 0.8)
+
+
+func _surface(pieces: Array[Dictionary]) -> void:
+	for piece in pieces:
+		var t: Transform3D = piece.transform
+		var body := _box_basis(t.origin, piece.size, t.basis, Kind.SURFACE)
+		body.add_to_group("runnable")
+		body.set_meta("flow", piece.flow)
+		body.set_meta("face", piece.face)
 
 
 # ---------------------------------------------------------------- helpers
