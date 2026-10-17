@@ -151,6 +151,13 @@ func test_moves_list_names_current_bindings() -> void:
 	check(MovesGuide.describe("{jump}").begins_with("J"), "follows rebinding")
 
 
+func test_moves_list_has_no_unknown_placeholders() -> void:
+	for m: Array in MovesGuide.MOVES:
+		for part: String in [m[1], m[2]]:
+			var text := MovesGuide.describe(part)
+			check(not text.contains("{"), "%s: every placeholder is a control (%s)" % [m[0], text])
+
+
 func test_menu_and_debug_inputs_are_reserved() -> void:
 	check(not GameSettings.is_bindable(_pad(JOY_BUTTON_START), true), "Start opens the menu")
 	check(not GameSettings.is_bindable(_key(KEY_F1), false), "F1 is the HUD toggle")

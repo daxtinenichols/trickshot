@@ -1036,3 +1036,74 @@ func test_looking_down_while_falling_is_not_a_crash() -> void:
 	p._look(0.0, deg_to_rad(-15.0))  # past straight down, aiming below
 	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
 	check(p.state != Player.State.STUN, "aiming down on a drop lands normally")
+
+
+func _lean(amount: float) -> InputFrame:
+	var f := _fwd()
+	f.lean = amount
+	return f
+
+
+## Wallruns on the right-hand wall holding a lean (+1 = right, toward the
+## wall). Returns {top: highest point above the start, frames: on the wall,
+## dist: distance along it}.
+func _lean_wallrun(lean: float) -> Dictionary:
+	if is_instance_valid(w):
+		w.queue_free()
+		await tree.process_frame
+	w = TestWorld.new()
+	tree.root.add_child(w)
+	var ok := await _enter_wallrun()
+	var p := w.player
+	var out := {"ok": ok, "top": 0.0, "frames": 0, "dist": 0.0}
+	if not ok:
+		return out
+	var y0 := p.global_position.y
+	var z0 := p.global_position.z
+	while p.state == Player.State.WALLRUN and out.frames < 200:
+		await w.step(1, _lean(lean))
+		out.frames += 1
+		out.top = maxf(out.top, p.global_position.y - y0)
+	out.dist = z0 - p.global_position.z
+	return out
+
+
+func test_lean_angles_the_wallrun() -> void:
+	var plain := await _lean_wallrun(0.0)
+	var up := await _lean_wallrun(1.0)
+	var down := await _lean_wallrun(-1.0)
+	check(plain.ok and up.ok and down.ok, "all three wallrun")
+	check(up.top > plain.top + 1.0, "leaning toward the wall runs up it (%.2f m vs %.2f m)" % [up.top, plain.top])
+	check(down.frames < plain.frames, "leaning away brings you down sooner (%d vs %d frames)" % [down.frames, plain.frames])
+	check(plain.dist > up.dist, "a flat run goes further along the wall (%.1f m vs %.1f m)" % [plain.dist, up.dist])
+
+
+func test_lean_on_a_wall_is_not_a_quick_turn() -> void:
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	await w.step(1, _lean(1.0))
+	var y := p.yaw
+	p._look(0.1, 0.0)
+	check_near(p.yaw - y, 0.1, 0.001, "turning on a wall is normal speed while leaning")
+
+
+func test_steep_wallrun_kicks_off_harder() -> void:
+	var push := []
+	for lean: float in [0.0, 1.0]:
+		if is_instance_valid(w):
+			w.queue_free()
+			await tree.process_frame
+		w = TestWorld.new()
+		tree.root.add_child(w)
+		var ok := await _enter_wallrun()
+		check(ok, "wallrun starts")
+		if not ok:
+			return
+		await w.step(20, _lean(lean))
+		await w.press(_fwd_jump())
+		push.append(Vector2(-w.player.velocity.x, w.player.velocity.y))
+	check(push[1].x > push[0].x + 1.0, "kicks off harder from a steep run (%.1f vs %.1f m/s)" % [push[1].x, push[0].x])
+	check(push[1].y > push[0].y, "and higher (%.1f vs %.1f m/s)" % [push[1].y, push[0].y])

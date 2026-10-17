@@ -19,24 +19,24 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Move | WASD | Left stick |
 | Look | Mouse | Right stick |
 | Jump / vault / climb | Space | A |
-| Crouch / slide / roll | Ctrl or C | B |
+| Crouch / slide / roll (double-tap to roll) | Ctrl or C | B |
 | Dolphin dive (prone jump) | Z | D-pad down |
 | Kick | F | RB or R3 |
-| Quick turn (180) | Shift | LB |
-| Lean (side flip in the air) | Q / E | D-pad left / right |
+| Boost (short burst of speed, 2 s cooldown) | Shift | LB or L3 |
+| Lean / quick turn (side flip in the air, angle a wallrun) | Q / E | D-pad left / right |
 | Fire | Left mouse | Right trigger |
 | Aim down sights | Right mouse | Left trigger |
 | Reload | R | X |
 | Semi / full auto | B or V | Y |
 | Respawn | Backspace | Back |
-| Menu (moves, settings, controls) | Esc | Start |
+| Menu (maps, moves, settings, controls) | Esc | Start |
 | Jump to zone | 1–9, 0 = shooting range, - = ramps and loop | |
-| HUD / tuning / slow-mo / speed trail / corner view | F1 / F2 / F3 / F4 / F5 | |
-| Art look / chase camera / next level | F9 / F10 / F11 | |
+| HUD / tuning / slow-mo / speed trail | F1 / F2 / F3 / F4 | |
+| Art look / chase camera / next level / corner view | F9 / F10 / F11 / F12 | |
 
 You always sprint: there's no walk or sprint key. Let go of the stick to stop.
 
-A small third-person view in the lower-left corner shows your character so you can see what your moves look like (F5 hides it).
+A small third-person view in the lower-left corner shows your character so you can see what your moves look like (F12 hides it).
 
 ## How the moves work
 
@@ -49,21 +49,23 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 | Hurdle / vault | Press jump at a waist-high (yellow) wall, on the ground or in the air. Never automatic: you can always just jump over | Taking off at the right distance gives a faster, cleaner vault |
 | Mantle | Jump into a ledge up to ~1.5 m above your reach | Grabbing it cleanly keeps more speed |
 | Slide | Crouch while sprinting | Faster entry slides further; slopes add speed |
-| Slide landing | Hold crouch as you land from a fall | Turns some of your fall into forward speed |
-| Dolphin dive (prone jump) | Z. There's no lying prone or crawling | Tap to dive and pop up into a slide; hold to stay on your belly for low gaps. You get up by yourself when the slide runs out. Dive through low windows |
-| Wallrun | Jump into a blue wall at an angle, holding a direction | Shallow angle + speed = longer, floatier run. Look and aim anywhere while running; crouch drops off |
-| Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; chain wall to wall |
-| Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it (your view stays put; quick turn if you want to face away) |
-| Ramp run / loop | Run onto a purple ramp or loop | Gravity slows you going up and speeds you coming down. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off. Launch off the lip of a ramp for air tricks |
+| Slide landing | Press crouch just before you land from a fall | Turns some of your fall into forward speed |
+| Dolphin dive (prone jump) | Z, on the ground or once in the air. There's no lying prone or crawling | Tap to dive and pop up into a slide; hold to stay on your belly for low gaps. You get up by yourself when the slide runs out. Dive through low windows |
+| Wallrun | Jump into a blue wall at an angle, holding a direction | Shallow angle + speed = longer, floatier run. Lean toward the wall (Q or E) to angle your run up it, away to flatten it out and come down: steeper climbs higher but costs speed, a flat run goes furthest. Look and aim anywhere while running; crouch drops off |
+| Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; the steeper you're running up it, the harder. Chain wall to wall |
+| Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it (your view stays put; hold Q or E while turning to face away quickly) |
+| Ramp run / loop | Run onto a purple ramp or loop | Gravity slows you going up and speeds you coming down. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off and keep facing the way you were. Launch off the lip of a ramp for air tricks |
+| Sideways ramp | Run onto a purple bank at an angle | Run along it tilted; steer with the stick or look up the slope to climb it, let go to drift down |
 | Roll | On the ground, flick the view down past your feet | A forward roll, like a flip on the ground. Keeps your speed |
-| Landing roll | Land tucked forward (view pointing down, or partway into a front flip), or press crouch just before a hard landing | Rolls out of big drops without losing speed instead of a stun |
+| Ground roll | Double-tap crouch while running | A quick forward roll that keeps your speed |
+| Landing roll | Hold crouch in the air (from any angle, even mid-flip), or land tucked forward | You curl into a ball and roll out of big drops without losing speed instead of a stun |
 | Kick | F. In the air: kick off walls and targets | Kicking with speed pushes you further. Kicks doors open and breaks windows |
-| Quick turn | Shift | Spins you 180. On a wall it faces you away from it, ready to jump |
-| Lean | Q / E on the ground | Peek around corners |
-| Side flip | Hold Q or E in the air | Rolls you sideways. Let go near level to land clean; land on your side and you crash |
+| Boost | Shift | A short burst of speed on the ground, a ramp or a wall, then a 2 s cooldown |
+| Lean / quick turn | Hold Q or E | Leans you to peek. While held, turning the view is faster and your run follows it without losing speed (in the air, part of your speed follows) |
+| Side flip | Hold Q or E in the air | Rolls you sideways one way (the first one you press). Holding it, or crouch, tucks you in and spins you faster; let go to open up and slow down. Near level it settles; land on your side and you crash |
 | Window smash | Run, slide or dive into glass fast enough | |
-| Backflip / front flip | In the air, keep moving the view up and over (backflip) or down and over (front flip) until it comes back around | Past straight up/down the view turns faster, so commit to the flick. The HUD shows your flip progress. Land level or you crash |
-| 360 / 720 | In the air, turn a full circle | Quick turn doesn't count |
+| Backflip / front flip | In the air, keep moving the view up and over (backflip) or down and over (front flip) until it comes back around | Past straight up/down the view turns faster, so commit to the flick. Flick hard past halfway and let go: momentum carries you round to level. Hold crouch to keep spinning. The HUD shows your flip progress. Land level or you crash |
+| 360 / 720 | In the air, turn a full circle | Momentum carries a fast spin round the same way as flips. Quick turn (Q/E) speeds the turn up |
 
 You never have to stand still, but you can: let go of the stick and you stop quickly.
 
@@ -109,11 +111,11 @@ Point values are in `scoring/combo_tracker.gd`.
 | 8 | Kick-off yard | Air kicks off pillars and targets |
 | 9 | Doors and windows | Door kicks, dives and window smashes |
 | 0 | Shooting range | Static and moving targets, a wall to wallrun-and-shoot from, a platform for air shots |
-| - | Ramps and loop | A loop after a long run-up, a launch ramp, a tall steep ramp with height markers |
+| - | Ramps and loop | A loop after a long run-up, a launch ramp, a tall steep ramp with height markers, a sideways ramp |
 
 ## Levels
 
-**F11** cycles through the levels: Sandbox, Rooftops, Combo Park.
+Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbox, Rooftops, Combo Park.
 
 **Rooftops** is a timed obstacle course across six rooftops. The clock starts at the green line and stops at the yellow finish. Hurdles and a slide bar, a gap, a door and a window wall, a wallrun across a 12 m gap, a 3 m climb, a dive window, a 9 m drop to roll out of, a sideways ramp and an optional loop, more hurdles and a last gap. Falling to the street puts you back at the last checkpoint and the clock keeps running. Your best time is saved. Keys 1–4 jump to the start and each checkpoint (from a checkpoint it's practice and doesn't set a best time).
 
@@ -161,4 +163,4 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 
 ## Art look
 
-The sandbox runs with the cel-shaded look on: toon shading, ink outlines, and speed lines at the screen edges when you're fast. **F9** switches between the art look and plain graybox. **F10** switches to a full-screen third-person chase camera (the F5 corner view shows the same runner) (motion trails stream from the hands and feet above run speed). How the art, animation and maps are made is in [docs/art-pipeline.md](docs/art-pipeline.md).
+The sandbox runs with the cel-shaded look on: toon shading, ink outlines, and speed lines at the screen edges when you're fast. **F9** switches between the art look and plain graybox. **F10** switches to a full-screen third-person chase camera (the F12 corner view shows the same runner) (motion trails stream from the hands and feet above run speed). How the art, animation and maps are made is in [docs/art-pipeline.md](docs/art-pipeline.md).

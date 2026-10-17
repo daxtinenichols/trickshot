@@ -183,6 +183,17 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var wallrun_sloppy_gravity := 0.5
 ## Speed lost per second while wallrunning with no direction held.
 @export_range(0.0, 20.0, 0.1) var wallrun_misalign_drag := 5.0
+## How fast leaning angles your wallrun up (toward the wall) or down
+## (away), degrees per second.
+@export_range(0.0, 360.0, 1.0) var wallrun_angle_rate := 80.0
+## Steepest angle you can run up a wall, and down it.
+@export_range(0.0, 85.0, 1.0) var wallrun_max_up_angle := 55.0
+@export_range(0.0, 85.0, 1.0) var wallrun_max_down_angle := 45.0
+## Share of gravity that slows you while running up a wall (the steeper,
+## the more it costs).
+@export_range(0.0, 1.0, 0.01) var wallrun_climb_cost := 0.6
+## Extra kick-off power when jumping off at the steepest angle (0.5 = 50%).
+@export_range(0.0, 2.0, 0.05) var wallrun_steep_kick := 0.5
 ## Ideal distance from a wall when you jump to vault it (from body edge).
 @export_range(0.0, 2.0, 0.05) var vault_ideal_distance := 0.35
 ## Fraction of speed into a wall that a kick-off turns into push.

@@ -54,6 +54,10 @@ var _ground_time := 0.0
 var _land_press_age := -1.0
 var _wallrun_time_limit := 1.0
 var _wallrun_gravity := 0.3
+## The wallrun's path: its angle up the wall (radians, negative runs down)
+## and your speed along it.
+var _wallrun_angle := 0.0
+var _wallrun_speed := 0.0
 var _kicks_left := 0
 var _kicked_ids: Array[int] = []
 var _pre_move_velocity := Vector3.ZERO
@@ -258,7 +262,8 @@ func _physics_process(delta: float) -> void:
 func simulate(f: InputFrame, delta: float) -> void:
 	state_time += delta
 	_update_timers(f, delta)
-	_turn_mod = absf(f.lean) > 0.3
+	# On a wall, lean angles your run instead.
+	_turn_mod = absf(f.lean) > 0.3 and state != State.WALLRUN
 	_carry_turn()
 	if f.boost_pressed:
 		_boost(f)
@@ -1004,9 +1009,13 @@ func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 	_wallrun_time_limit = lerpf(tuning.wallrun_min_time, tuning.wallrun_max_time, quality)
 	_wallrun_gravity = lerpf(tuning.wallrun_sloppy_gravity, tuning.wallrun_gravity_scale, quality)
 	var t := MovementMath.wall_tangent(n, _pre_move_velocity)
-	var v := t * maxf(speed, tuning.wallrun_min_speed)
-	v.y = maxf(velocity.y, tuning.wallrun_entry_lift)
-	velocity = v
+	# Your path up the wall comes from how you hit it: jump in rising
+	# steeply and you run up at a steep angle.
+	var h := maxf(speed, tuning.wallrun_min_speed)
+	var vy := maxf(velocity.y, tuning.wallrun_entry_lift)
+	_wallrun_angle = clampf(atan2(vy, h), -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
+	_wallrun_speed = Vector2(h, vy).length()
+	velocity = (t * cos(_wallrun_angle) + Vector3.UP * sin(_wallrun_angle)) * _wallrun_speed
 	_change_state(State.WALLRUN)
 	_trick(&"wallrun", {"quality": quality})
 
@@ -1014,7 +1023,9 @@ func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_set_height(tuning.stand_height if _can_stand() else tuning.crouch_height)
 	if _jump_buffer <= tuning.jump_buffer:
-		_wall_jump(wish)
+		# The steeper you're running up the wall, the harder you kick off.
+		var steep := clampf(_wallrun_angle / deg_to_rad(tuning.wallrun_max_up_angle), 0.0, 1.0)
+		_wall_jump(wish, &"wall_jump", 1.0 + tuning.wallrun_steep_kick * steep)
 		_tick_air(f, wish, delta)
 		return
 	if f.kick_pressed and _try_kick_off():
@@ -1034,7 +1045,16 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	_wall_normal = hit.normal
 	_since_wall = 0.0
 	var t := MovementMath.wall_tangent(_wall_normal, velocity)
-	var speed := MovementMath.horizontal_speed(velocity)
+	var a := _wallrun_angle
+	var speed := _wallrun_speed
+	# Gravity bends your path down the wall; running up it costs speed,
+	# running down gains it.
+	var g := tuning.gravity * _wallrun_gravity
+	speed -= tuning.gravity * (tuning.wallrun_climb_cost if a > 0.0 else _wallrun_gravity) * sin(a) * delta
+	a -= g * cos(a) / maxf(speed, 1.0) * delta
+	# Lean toward the wall to angle your run up it, away to bring it down.
+	a += _lean_toward_wall(f.lean) * deg_to_rad(tuning.wallrun_angle_rate) * delta
+	a = clampf(a, -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	# Hold any direction to keep running (and build up to wallrun speed);
 	# let go and the run bleeds speed. Where you look doesn't matter.
 	if f.move.length() > 0.3:
@@ -1042,19 +1062,36 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 			speed = minf(speed + tuning.wallrun_accel * delta, tuning.wallrun_speed)
 	else:
 		speed = maxf(speed - tuning.wallrun_misalign_drag * delta, 0.0)
-	var vy := velocity.y - tuning.gravity * _wallrun_gravity * delta
-	velocity = t * speed - MovementMath.horizontal(_wall_normal).normalized() * 1.5
-	velocity.y = vy
+	_wallrun_angle = a
+	_wallrun_speed = speed
+	velocity = (t * cos(a) + Vector3.UP * sin(a)) * speed - MovementMath.horizontal(_wall_normal).normalized() * 1.5
 	_move()
 	if is_on_floor():
 		_land(f)
-	elif MovementMath.horizontal_speed(velocity) < tuning.wallrun_min_speed * 0.5:
+	elif speed < tuning.wallrun_min_speed * 0.5:
 		_change_state(State.AIR)
 
 
-func _wall_jump(wish: Vector3, trick_name := &"wall_jump") -> void:
+## How much a lean points toward the wall you're running on (1 = all the
+## way toward it, -1 = away). Left and right are as you see them.
+func _lean_toward_wall(lean: float) -> float:
+	if absf(lean) < 0.05:
+		return 0.0
+	var right := forward().cross(Vector3.UP)
+	right.y = 0.0
+	var side := right.normalized().dot(MovementMath.horizontal(_wall_normal).normalized())
+	if absf(side) < 0.2:
+		# Looking straight at (or away from) the wall: go by where you run.
+		right = MovementMath.horizontal(velocity).cross(Vector3.UP).normalized()
+		side = right.dot(MovementMath.horizontal(_wall_normal).normalized())
+	# The wall normal points away from the wall, so a wall on your right
+	# has it pointing left.
+	return -lean * signf(side)
+
+
+func _wall_jump(wish: Vector3, trick_name := &"wall_jump", power := 1.0) -> void:
 	var boost_dir := wish.normalized() if wish.length() > 0.1 else forward()
-	velocity = MovementMath.wall_jump_velocity(velocity, _wall_normal, tuning.wall_jump_push, tuning.wall_jump_up, boost_dir, tuning.wall_jump_boost)
+	velocity = MovementMath.wall_jump_velocity(velocity, _wall_normal, tuning.wall_jump_push * power, tuning.wall_jump_up * lerpf(1.0, power, 0.5), boost_dir, tuning.wall_jump_boost)
 	_jump_buffer = 999.0
 	_wall_jump_lock = 0.2
 	_since_wall = 999.0
