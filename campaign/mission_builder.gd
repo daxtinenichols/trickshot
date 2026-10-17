@@ -18,6 +18,8 @@ const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
 const RAIDER_SCRIPT := preload("res://enemies/raider.gd")
 const MUTANT_SCRIPT := preload("res://enemies/mutant.gd")
+## Kinds enemies/ hasn't made yet, and what stands in for them meanwhile.
+const STAND_INS := {"trooper": "raider"}
 
 @export_file("*.json") var mission_path := ""
 ## Rebuilds the layout (editor helper: tick it after editing the JSON).
@@ -67,6 +69,9 @@ func build() -> void:
 		var script: Script = load(base_path)
 		base = script.new()
 		base.name = "Base"
+		if mission.has("route") and "open_exit" in base:
+			# The route carries on past the base's exit.
+			base.open_exit = true
 		add_child(base)  # builds itself in _ready
 	for piece: Dictionary in mission.get("pieces", []):
 		_piece(piece)
@@ -126,12 +131,14 @@ func _piece(p: Dictionary) -> void:
 	elif p.has("window"):
 		var s: Array = p.get("size", [2.2, 1.4])
 		_window(vec(p.window), Vector2(s[0], s[1]))
+		if yaw != 0.0 and not Engine.is_editor_hint():
+			_root.get_child(-1).rotation.y = yaw
 	elif p.has("target"):
 		var motion: ShootingTarget.Motion = ShootingTarget.Motion.get(String(p.get("motion", "STATIC")).to_upper(), ShootingTarget.Motion.STATIC)
 		_target(vec(p.target), motion, p.get("amplitude", 3.0), p.get("speed", 4.0))
 	elif p.has("ramp"):
 		var kind: Kind = Kind.get(p.get("kind", "SLIDE"), Kind.SLIDE)
-		_ramp(vec(p.ramp), vec(p.get("to", [0, 0, 0])), p.get("width", 4.0), kind)
+		_ramp_any(vec(p.ramp), vec(p.get("to", [0, 0, 0])), p.get("width", 4.0), kind)
 	elif p.has("loop"):
 		_surface(MapPieces.turned(SurfaceShapes.loop(vec(p.loop), p.get("radius", 4.5), p.get("width", 3.5), p.get("shift", 5.5)), vec(p.loop), yaw))
 	elif p.has("quarter_pipe"):
@@ -143,6 +150,8 @@ func _piece(p: Dictionary) -> void:
 	elif p.has("mark"):
 		var s: Array = p.get("size", [12, 0.8])
 		_floor_mark(vec(p.mark), Vector2(s[0], s[1]), Color(p.get("color", "#4de673")))
+		if yaw != 0.0:
+			_root.get_child(-1).rotation.y = yaw
 	elif p.has("tape"):
 		_tape(String(p.get("id", "tape_%d" % tapes.size())), vec(p.tape))
 	elif p.has("fire"):
@@ -151,6 +160,18 @@ func _piece(p: Dictionary) -> void:
 		_encounter(p)
 	else:
 		push_warning("MissionBuilder: unknown piece %s" % p)
+
+
+## A flat ramp from `top` to `bottom` in any direction (routes turn).
+func _ramp_any(top: Vector3, bottom: Vector3, width: float, kind: Kind) -> void:
+	var flat := Vector3(bottom.x - top.x, 0.0, bottom.z - top.z)
+	var run := flat.length()
+	var rise := top.y - bottom.y
+	# Facing down the ramp, tipped by its slope.
+	var heading := atan2(-flat.x, -flat.z) if run > 0.001 else 0.0
+	var basis := Basis(Vector3.UP, heading) * Basis(Vector3.RIGHT, -atan2(rise, run))
+	var normal := basis.y
+	_box_basis((top + bottom) * 0.5 - normal * 0.5, Vector3(width, 1, sqrt(run * run + rise * rise)), basis, kind)
 
 
 ## A lost broadcast tape: the model floats and spins; MissionRun collects it.
@@ -227,6 +248,8 @@ func _encounter(p: Dictionary) -> void:
 		for kind: String in ["raiders", "mutants"]:
 			for e: Dictionary in p.get(kind, []):
 				_label(kind.trim_suffix("s").to_upper(), vec(e.get("at", [0, 0, 0])) + Vector3(0, 1.6, 0), 0.5)
+		for e: Dictionary in p.get("enemies", []):
+			_label(String(e.get("type", "enemy")).to_upper(), vec(e.get("at", [0, 0, 0])) + Vector3(0, 1.6, 0), 0.5)
 		return
 	var enc: Node3D = ENCOUNTER_SCRIPT.new()
 	enc.name = "Encounter_" + String(p.encounter).validate_node_name()
@@ -249,7 +272,37 @@ func _encounter(p: Dictionary) -> void:
 			if e.has(k):
 				m.set(k, e[k])
 		enc.add_enemy(m, _enemy_xf(e))
+	for e: Dictionary in p.get("enemies", []):
+		var other := enemy_of_type(String(e.get("type", "")))
+		if other == null:
+			continue
+		for k: String in e:
+			if k not in ["type", "at", "yaw", "wake"] and k in other:
+				other.set(k, e[k])
+		enc.add_enemy(_enemy(other, e), _enemy_xf(e))
 	encounters.append(enc)
+
+
+## A new enemy of `type` ("raider", "mutant", or any kind enemies/ adds
+## later, like "drone" or "trooper": res://enemies/<type>.gd, same contract
+## as Raider). Until a kind exists, troopers stand in as raiders and the
+## rest are left out. Null if there's nothing to spawn.
+static func enemy_of_type(type: String) -> Node3D:
+	if type == "raider":
+		return RAIDER_SCRIPT.new()
+	if type == "mutant":
+		return MUTANT_SCRIPT.new()
+	var path := "res://enemies/%s.gd" % type
+	if type != "" and ResourceLoader.exists(path):
+		var script: Script = load(path)
+		var e: Object = script.new()
+		if e is Node3D:
+			return e
+		push_warning("MissionBuilder: %s is not a 3D enemy" % path)
+		return null
+	if type in STAND_INS:
+		return enemy_of_type(STAND_INS[type])
+	return null
 
 
 static func _enemy(e: Node3D, d: Dictionary) -> Node3D:
