@@ -218,13 +218,14 @@ func _score() -> int:
 	return combo.score if combo != null else 0
 
 
-## True when `pos` is inside a region: {"at", "size"} is a box, {"at",
-## "radius"} a cylinder 3 m up and down.
+## True when `pos` is inside a region: {"at", "size"} is a box (turned
+## `area_yaw` degrees, if set), {"at", "radius"} a cylinder 3 m up and down.
 static func inside(region: Dictionary, pos: Vector3) -> bool:
 	var at := MissionBuilder.vec(region.get("at", [0, 0, 0]))
 	if region.has("size"):
 		var half := MissionBuilder.vec(region.size) * 0.5
-		var d := (pos - at).abs()
+		# A region on a diagonal leg of a route is turned by area_yaw.
+		var d := (Basis(Vector3.UP, -deg_to_rad(float(region.get("area_yaw", 0.0)))) * (pos - at)).abs()
 		return d.x <= half.x and d.y <= half.y and d.z <= half.z
 	var r: float = region.get("radius", 6.0)
 	return Vector2(pos.x - at.x, pos.z - at.z).length() <= r and absf(pos.y - at.y) <= 3.0

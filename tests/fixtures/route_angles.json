@@ -1,0 +1,33 @@
+{
+ "id": "test_route_angles",
+ "title": "Route angles",
+ "runner": "",
+ "start": {"at": [0, 10, 2]},
+ "objectives": [
+  {"type": "reach", "name": "the diagonal", "at": "@Diagonal"},
+  {"type": "reach", "name": "the end", "at": "end"}
+ ],
+ "route": [
+  {"roof": 50, "do": [{"hurdles": true, "at": 22}]},
+  {"turn": "left", "angle": 45, "size": 22},
+  {"roof": 70, "do": [
+   {"checkpoint": "Diagonal", "at": 6, "objective": 1},
+   {"encounter": "mixed", "at": 14, "length": 40, "enemies": [
+    {"type": "shield", "x": -3, "d": 14},
+    {"type": "marksman", "x": 3, "d": 24, "wake": 1},
+    {"type": "brute", "x": 0, "d": 34},
+    {"type": "gun_drone", "x": 2, "d": 20, "height": 5}
+   ]}
+  ]},
+  {"gap": 5},
+  {"roof": 50, "y": 10},
+  {"turn": "right", "angle": 45, "size": 22},
+  {"roof": 50, "do": [{"piece": {"bank": [4, 0, 0], "length": 12, "side": 1}, "at": 20, "length": 14}]},
+  {"turn": "right", "angle": 45, "size": 22},
+  {"roof": 50},
+  {"ramp_down": 4, "length": 20},
+  {"roof": 50, "y": 4},
+  {"turn": "left", "angle": 45},
+  {"roof": 80, "do": [{"mark": "#f57320", "at": 70}]}
+ ]
+}
