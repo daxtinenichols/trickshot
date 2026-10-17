@@ -190,10 +190,16 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var wallrun_sloppy_gravity := 0.5
 ## Speed lost per second while wallrunning with no direction held.
 @export_range(0.0, 20.0, 0.1) var wallrun_misalign_drag := 5.0
-## How fast leaning angles your wallrun up (toward the wall) or down
-## (away), degrees per second.
+## How fast leaning angles your wallrun, degrees per second: away from the
+## wall turns it down, into the wall levels it out.
 @export_range(0.0, 360.0, 1.0) var wallrun_angle_rate := 80.0
-## Steepest angle you can run up a wall, and down it.
+## Leaning into the wall lifts your path to at most this angle (degrees):
+## enough to stay up, not to climb.
+@export_range(0.0, 45.0, 1.0) var wallrun_lean_up_angle := 2.0
+## Leaning into the wall stretches the run: each second leaning in adds
+## this many seconds to its time limit.
+@export_range(0.0, 1.0, 0.05) var wallrun_lean_time_bonus := 0.35
+## Steepest angle you can run up a wall (from a steep entry), and down it.
 @export_range(0.0, 85.0, 1.0) var wallrun_max_up_angle := 55.0
 @export_range(0.0, 85.0, 1.0) var wallrun_max_down_angle := 45.0
 ## Share of gravity that slows you while running up a wall (the steeper,

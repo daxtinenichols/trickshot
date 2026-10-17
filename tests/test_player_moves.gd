@@ -1058,9 +1058,10 @@ func _lean_wallrun(lean: float) -> Dictionary:
 	tree.root.add_child(w)
 	var ok := await _enter_wallrun()
 	var p := w.player
-	var out := {"ok": ok, "top": 0.0, "frames": 0, "dist": 0.0, "angle": 0.0}
+	var out := {"ok": ok, "top": 0.0, "frames": 0, "dist": 0.0, "angle": 0.0, "entry": 0.0}
 	if not ok:
 		return out
+	out.entry = p.wallrun_angle()
 	var y0 := p.global_position.y
 	var z0 := p.global_position.z
 	while p.state == Player.State.WALLRUN and out.frames < 200:
@@ -1074,15 +1075,16 @@ func _lean_wallrun(lean: float) -> Dictionary:
 	return out
 
 
-func test_lean_angles_the_wallrun() -> void:
+func test_lean_on_a_wallrun() -> void:
 	var plain := await _lean_wallrun(0.0)
 	var up := await _lean_wallrun(1.0)
 	var down := await _lean_wallrun(-1.0)
 	check(plain.ok and up.ok and down.ok, "all three wallrun")
-	check(up.top > plain.top + 1.0, "leaning toward the wall runs up it (%.2f m vs %.2f m)" % [up.top, plain.top])
+	check(up.frames > plain.frames + 15, "leaning into the wall keeps you on it longer (%d vs %d frames)" % [up.frames, plain.frames])
+	check(up.dist > plain.dist + 1.0, "and carries you further along it (%.1f m vs %.1f m)" % [up.dist, plain.dist])
+	check(up.top < plain.top + 0.6, "but doesn't climb it (%.2f m vs %.2f m)" % [up.top, plain.top])
+	check(up.angle <= up.entry + 0.001, "never steeper than you came in (%.2f vs %.2f rad)" % [up.angle, up.entry])
 	check(down.frames < plain.frames, "leaning away brings you down sooner (%d vs %d frames)" % [down.frames, plain.frames])
-	check(up.angle > 0.3, "the path angles up the wall (%.2f rad)" % up.angle)
-	check(plain.dist > up.dist, "a flat run goes further along the wall (%.1f m vs %.1f m)" % [plain.dist, up.dist])
 
 
 func test_lean_on_a_wall_is_not_a_quick_turn() -> void:
@@ -1099,7 +1101,7 @@ func test_lean_on_a_wall_is_not_a_quick_turn() -> void:
 
 func test_steep_wallrun_kicks_off_harder() -> void:
 	var push := []
-	for lean: float in [0.0, 1.0]:
+	for steep: bool in [false, true]:
 		if is_instance_valid(w):
 			w.queue_free()
 			await tree.process_frame
@@ -1109,7 +1111,9 @@ func test_steep_wallrun_kicks_off_harder() -> void:
 		check(ok, "wallrun starts")
 		if not ok:
 			return
-		await w.step(20, _lean(lean))
+		# A steep run comes from jumping in rising hard; set it directly.
+		w.player._wallrun_angle = deg_to_rad(w.player.tuning.wallrun_max_up_angle) if steep else 0.0
+		await w.step(1, _fwd())
 		await w.press(_fwd_jump())
 		push.append(Vector2(-w.player.velocity.x, w.player.velocity.y))
 	check(push[1].x > push[0].x + 1.0, "kicks off harder from a steep run (%.1f vs %.1f m/s)" % [push[1].x, push[0].x])
@@ -1123,16 +1127,22 @@ func test_wallrun_angle_turns_steadily_and_holds() -> void:
 		return
 	var p := w.player
 	var a0 := p.wallrun_angle()
-	await w.step(10, _lean(1.0))
+	await w.step(10, _lean(-1.0))
 	var a1 := p.wallrun_angle()
-	await w.step(10, _lean(1.0))
+	await w.step(10, _lean(-1.0))
 	var a2 := p.wallrun_angle()
 	var rate := deg_to_rad(p.tuning.wallrun_angle_rate) * 10.0 / 60.0
-	check_near(a1 - a0, rate, 0.02, "turns at a steady rate (%.3f rad)" % (a1 - a0))
-	check_near(a2 - a1, rate, 0.02, "the same rate the whole way (%.3f rad)" % (a2 - a1))
+	check_near(a0 - a1, rate, 0.02, "leaning away turns down at a steady rate (%.3f rad)" % (a0 - a1))
+	check_near(a1 - a2, rate, 0.02, "the same rate the whole way (%.3f rad)" % (a1 - a2))
 	await w.step(15, _fwd())
 	check(p.state == Player.State.WALLRUN, "still on the wall")
 	check_near(p.wallrun_angle(), a2, 0.001, "let go and it holds the angle")
+	# Leaning in from a downward run levels it out to a slight rise, no more.
+	var lean_up := deg_to_rad(p.tuning.wallrun_lean_up_angle)
+	await w.step(5, _lean(1.0))
+	check_near(p.wallrun_angle() - a2, rate * 0.5, 0.02, "leaning in turns up at the same rate")
+	await w.step(40, _lean(1.0))
+	check_near(p.wallrun_angle(), lean_up, 0.001, "and stops at a slight rise (%.3f rad)" % p.wallrun_angle())
 
 
 func test_lean_never_puts_the_view_in_a_wall() -> void:

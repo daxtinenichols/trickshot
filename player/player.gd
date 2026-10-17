@@ -1088,15 +1088,26 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# running down gains it.
 	var g := tuning.gravity * _wallrun_gravity
 	speed -= tuning.gravity * (tuning.wallrun_climb_cost if a > 0.0 else _wallrun_gravity) * sin(a) * delta
-	# Lean toward the wall to angle your run up it, away to bring it down,
-	# at a steady rate. Once you've set an angle it holds; until then the
-	# run arcs gently down.
+	# Lean away from the wall to angle your run down it, at a steady rate.
+	# Lean into the wall to stay up longer: it levels your path out with a
+	# slight rise (never a climb) and stretches the run. Once you've steered,
+	# the angle holds; until then the run arcs gently down.
 	var steer := _lean_toward_wall(f.lean)
-	if steer != 0.0:
+	var bend := g * cos(a) / maxf(speed, 1.0) * delta
+	var lean_up := deg_to_rad(tuning.wallrun_lean_up_angle)
+	if steer > 0.0:
 		_wallrun_steered = true
+		_wallrun_time_limit += steer * tuning.wallrun_lean_time_bonus * delta
+		if a > lean_up:
+			# A steep entry still arcs over; leaning in only stops the fall.
+			a = maxf(a - bend, lean_up)
+		else:
+			a = minf(a + steer * deg_to_rad(tuning.wallrun_angle_rate) * delta, lean_up)
+	elif steer < 0.0:
+		_wallrun_steered = true
+		a += steer * deg_to_rad(tuning.wallrun_angle_rate) * delta
 	elif not _wallrun_steered:
-		a -= g * cos(a) / maxf(speed, 1.0) * delta
-	a += steer * deg_to_rad(tuning.wallrun_angle_rate) * delta
+		a -= bend
 	a = clampf(a, -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	# Hold any direction to keep running (and build up to wallrun speed);
 	# let go and the run bleeds speed. Where you look doesn't matter.
