@@ -88,7 +88,11 @@ func _wallrun_frames(yaw: float) -> int:
 	w.add_box(Vector3(2.0, 3.0, -30.0), Vector3(1.0, 6.0, 60.0))
 	var p := w.spawn_player(Vector3(-1.8, 0.05, 0), yaw)
 	await w.step(20)
-	await w.step_until(func() -> bool: return p.global_position.x > 0.3, 300, _fwd())
+	# Jump the same distance short of the wall along your path, so both
+	# reach it at the same point in the jump (your path along the wall
+	# follows the angle you hit it at).
+	var reach := 1.5 - 0.38  # wall face minus body radius
+	await w.step_until(func() -> bool: return (reach - p.global_position.x) / sin(absf(yaw)) < 1.5, 300, _fwd())
 	await w.press(_fwd_jump())
 	var started := await w.step_until(func() -> bool: return p.state == Player.State.WALLRUN, 90, _fwd())
 	if not started:

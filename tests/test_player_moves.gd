@@ -1009,12 +1009,19 @@ func _turn_run(lean: float) -> Player:
 
 
 func test_quick_turn_turns_faster_and_keeps_speed() -> void:
-	var p := await _turn_run(1.0)
+	# Q (lean left) while turning left.
+	var p := await _turn_run(-1.0)
 	var turned := rad_to_deg(absf(angle_difference(0.0, p.yaw)))
 	check(turned > 80.0, "holding lean turns the view faster (%.0f deg)" % turned)
 	var h := MovementMath.horizontal(p.velocity)
 	check(h.length() > 8.5, "speed kept round the turn (%.2f m/s)" % h.length())
 	check(h.normalized().dot(p.forward()) > 0.95, "and going where you look")
+
+
+func test_quick_turn_only_toward_its_side() -> void:
+	# E (lean right) while turning left: a normal turn.
+	var p := await _turn_run(1.0)
+	check_near(rad_to_deg(absf(angle_difference(0.0, p.yaw))), 36.0, 0.5, "the other lean doesn't speed up the turn")
 
 
 func test_plain_turn_is_normal_speed() -> void:
@@ -1150,10 +1157,8 @@ func test_lean_on_a_wallrun() -> void:
 	var up := await _lean_wallrun(1.0)
 	var down := await _lean_wallrun(-1.0)
 	check(plain.ok and up.ok and down.ok, "all three wallrun")
-	check(up.frames > plain.frames + 15, "leaning into the wall keeps you on it longer (%d vs %d frames)" % [up.frames, plain.frames])
-	check(up.dist > plain.dist + 1.0, "and carries you further along it (%.1f m vs %.1f m)" % [up.dist, plain.dist])
-	check(up.top < plain.top + 0.6, "but doesn't climb it (%.2f m vs %.2f m)" % [up.top, plain.top])
-	check(up.angle <= up.entry + 0.001, "never steeper than you came in (%.2f vs %.2f rad)" % [up.angle, up.entry])
+	check(up.top > plain.top + 0.5, "leaning toward the wall rolls the run up it (%.2f m vs %.2f m)" % [up.top, plain.top])
+	check(up.angle > up.entry + 0.3, "the path turns up (%.2f -> %.2f rad)" % [up.entry, up.angle])
 	check(down.frames < plain.frames, "leaning away brings you down sooner (%d vs %d frames)" % [down.frames, plain.frames])
 
 
@@ -1190,29 +1195,32 @@ func test_steep_wallrun_kicks_off_harder() -> void:
 	check(push[1].y > push[0].y, "and higher (%.1f vs %.1f m/s)" % [push[1].y, push[0].y])
 
 
-func test_wallrun_angle_turns_steadily_and_holds() -> void:
+func test_wallrun_keeps_your_angle_and_lean_rolls_it() -> void:
 	var ok := await _enter_wallrun()
 	check(ok, "wallrun starts")
 	if not ok:
 		return
 	var p := w.player
+	var v := p._pre_move_velocity
+	var came_in := atan2(v.y, MovementMath.horizontal(v).length())
+	check_near(p.wallrun_angle(), came_in, 0.12, "runs at the angle you came in at (%.2f vs %.2f rad)" % [p.wallrun_angle(), came_in])
+	# Let go: nothing holds you up, gravity bends the path down.
 	var a0 := p.wallrun_angle()
-	await w.step(10, _lean(-1.0))
+	await w.step(10, _fwd())
+	var fall := a0 - p.wallrun_angle()
+	check(fall > 0.01, "gravity bends the run down (%.3f rad)" % fall)
+	# Lean away: rolls down at a steady rate on top of that.
 	var a1 := p.wallrun_angle()
 	await w.step(10, _lean(-1.0))
 	var a2 := p.wallrun_angle()
+	await w.step(10, _lean(-1.0))
+	var a3 := p.wallrun_angle()
 	var rate := deg_to_rad(p.tuning.wallrun_angle_rate) * 10.0 / 60.0
-	check_near(a0 - a1, rate, 0.02, "leaning away turns down at a steady rate (%.3f rad)" % (a0 - a1))
-	check_near(a1 - a2, rate, 0.02, "the same rate the whole way (%.3f rad)" % (a1 - a2))
-	await w.step(15, _fwd())
-	check(p.state == Player.State.WALLRUN, "still on the wall")
-	check_near(p.wallrun_angle(), a2, 0.001, "let go and it holds the angle")
-	# Leaning in from a downward run levels it out to a slight rise, no more.
-	var lean_up := deg_to_rad(p.tuning.wallrun_lean_up_angle)
-	await w.step(5, _lean(1.0))
-	check_near(p.wallrun_angle() - a2, rate * 0.5, 0.02, "leaning in turns up at the same rate")
-	await w.step(40, _lean(1.0))
-	check_near(p.wallrun_angle(), lean_up, 0.001, "and stops at a slight rise (%.3f rad)" % p.wallrun_angle())
+	check(a1 - a2 > rate, "leaning away rolls the path down (%.3f rad)" % (a1 - a2))
+	check_near(a2 - a3, a1 - a2, 0.04, "at a steady rate (%.3f then %.3f rad)" % [a1 - a2, a2 - a3])
+	# Lean toward the wall: rolls it back up.
+	await w.step(10, _lean(1.0))
+	check(p.wallrun_angle() > a3 + rate * 0.5, "leaning in rolls it up (%.3f -> %.3f rad)" % [a3, p.wallrun_angle()])
 
 
 func test_lean_never_puts_the_view_in_a_wall() -> void:

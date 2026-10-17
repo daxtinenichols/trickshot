@@ -81,6 +81,9 @@ func _run_route(route: Array, end_z: float, max_frames := 1800, log := false) ->
 				roll_armed = false
 		if player.state == Player.State.SLIDE or player.state == Player.State.CROUCH:
 			f.crouch_held = player.global_position.z > route[next - 1][0] - 4.0 if next > 0 else false
+		if player.state == Player.State.WALLRUN and player.wallrun_angle() < 0.05:
+			# Like a person would: lean toward the wall to keep the run level.
+			f.lean = 1.0 if player._lean_toward_wall(1.0) > 0.0 else -1.0
 		player.scripted_input = f
 		await tree.physics_frame
 	return false

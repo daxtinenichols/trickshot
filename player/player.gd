@@ -62,8 +62,6 @@ var _wallrun_gravity := 0.3
 ## and your speed along it.
 var _wallrun_angle := 0.0
 var _wallrun_speed := 0.0
-## Once you angle a wallrun with lean, it holds the angle you set.
-var _wallrun_steered := false
 ## The player's transform at the previous tick, for smoothing the view
 ## between ticks.
 var _prev_origin := Vector3.ZERO
@@ -142,8 +140,9 @@ var _path_to := Vector3.ZERO
 var _path_time := 0.3
 var _path_exit_velocity := Vector3.ZERO
 
-# Quick turn: held lean speeds up turning and carries your speed round.
-var _turn_mod := false
+# Quick turn: a held lean speeds up turning toward its side (Q left, E
+# right) and carries your speed round. -1 = left, 1 = right, 0 = off.
+var _turn_side := 0.0
 ## View yaw turned while quick turning since the last tick (radians).
 var _turn_carry := 0.0
 var _boost_cooldown := 0.0
@@ -245,12 +244,17 @@ func capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE
 
 
+## Is this turn toward the side of the lean held? (Positive yaw turns left.)
+func _quick_turning(d_yaw: float) -> bool:
+	return _turn_side != 0.0 and d_yaw * _turn_side < 0.0
+
+
 ## Turns the view. In the air the pitch is free, so pulling the view all the
 ## way over is a flip and turning a full circle is a 360. On the ground the
 ## pitch is clamped as usual.
 func _look(d_yaw: float, d_pitch: float) -> void:
 	if state == State.SURFACE:
-		if _turn_mod:
+		if _quick_turning(d_yaw):
 			d_yaw *= tuning.quick_turn_look_scale
 		_surface_look_yaw = wrapf(_surface_look_yaw + d_yaw, -PI, PI)
 		pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
@@ -264,7 +268,7 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		var dy := d_yaw * sin(r) + d_pitch * cos(r)
 		d_yaw = -dx if cos(pitch) < 0.0 else dx
 		d_pitch = dy
-	if _turn_mod:
+	if _quick_turning(d_yaw):
 		d_yaw *= tuning.quick_turn_look_scale
 		_turn_carry += d_yaw
 	yaw = wrapf(yaw + d_yaw, -PI, PI)
@@ -308,7 +312,7 @@ func simulate(f: InputFrame, delta: float) -> void:
 	state_time += delta
 	_update_timers(f, delta)
 	# On a wall, lean angles your run instead.
-	_turn_mod = absf(f.lean) > 0.3 and state != State.WALLRUN
+	_turn_side = signf(f.lean) if absf(f.lean) > 0.3 and state != State.WALLRUN else 0.0
 	_carry_turn()
 	if f.boost_pressed:
 		_boost(f)
@@ -1089,13 +1093,12 @@ func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 	_wallrun_time_limit = lerpf(tuning.wallrun_min_time, tuning.wallrun_max_time, quality)
 	_wallrun_gravity = lerpf(tuning.wallrun_sloppy_gravity, tuning.wallrun_gravity_scale, quality)
 	var t := MovementMath.wall_tangent(n, _pre_move_velocity)
-	# Your path up the wall comes from how you hit it: jump in rising
-	# steeply and you run up at a steep angle.
+	# Your path along the wall is the angle you came in at: rising steeply,
+	# you run up at a steep angle; coming down, you run down.
 	var h := maxf(speed, tuning.wallrun_min_speed)
-	var vy := maxf(velocity.y, tuning.wallrun_entry_lift)
+	var vy := velocity.y
 	_wallrun_angle = clampf(atan2(vy, h), -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	_wallrun_speed = Vector2(h, vy).length()
-	_wallrun_steered = false
 	velocity = (t * cos(_wallrun_angle) + Vector3.UP * sin(_wallrun_angle)) * _wallrun_speed
 	_change_state(State.WALLRUN)
 	_trick(&"wallrun", {"quality": quality})
@@ -1132,26 +1135,11 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# running down gains it.
 	var g := tuning.gravity * _wallrun_gravity
 	speed -= tuning.gravity * (tuning.wallrun_climb_cost if a > 0.0 else _wallrun_gravity) * sin(a) * delta
-	# Lean away from the wall to angle your run down it, at a steady rate.
-	# Lean into the wall to stay up longer: it levels your path out with a
-	# slight rise (never a climb) and stretches the run. Once you've steered,
-	# the angle holds; until then the run arcs gently down.
-	var steer := _lean_toward_wall(f.lean)
-	var bend := g * cos(a) / maxf(speed, 1.0) * delta
-	var lean_up := deg_to_rad(tuning.wallrun_lean_up_angle)
-	if steer > 0.0:
-		_wallrun_steered = true
-		_wallrun_time_limit += steer * tuning.wallrun_lean_time_bonus * delta
-		if a > lean_up:
-			# A steep entry still arcs over; leaning in only stops the fall.
-			a = maxf(a - bend, lean_up)
-		else:
-			a = minf(a + steer * deg_to_rad(tuning.wallrun_angle_rate) * delta, lean_up)
-	elif steer < 0.0:
-		_wallrun_steered = true
-		a += steer * deg_to_rad(tuning.wallrun_angle_rate) * delta
-	elif not _wallrun_steered:
-		a -= bend
+	# Gravity always bends the path down a little (nothing holds you up).
+	# Leaning rolls your path round on the wall at a steady rate: toward
+	# the wall turns it up, away turns it down.
+	a -= g * cos(a) / maxf(speed, 1.0) * delta
+	a += _lean_toward_wall(f.lean) * deg_to_rad(tuning.wallrun_angle_rate) * delta
 	a = clampf(a, -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	# Hold any direction to keep running (and build up to wallrun speed);
 	# let go and the run bleeds speed. Where you look doesn't matter.

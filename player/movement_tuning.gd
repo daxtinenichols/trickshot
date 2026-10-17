@@ -92,8 +92,6 @@ extends Resource
 @export_range(0.0, 5.0, 0.05) var wallrun_max_time := 1.6
 ## Gravity multiplier while wallrunning.
 @export_range(0.0, 1.0, 0.01) var wallrun_gravity_scale := 0.15
-## Upward speed given when a wallrun starts.
-@export_range(0.0, 10.0, 0.1) var wallrun_entry_lift := 2.6
 ## Speed the wallrun accelerates toward along the wall.
 @export_range(0.0, 20.0, 0.1) var wallrun_speed := 8.5
 @export_range(0.0, 30.0, 0.1) var wallrun_accel := 6.0
@@ -194,15 +192,9 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var wallrun_sloppy_gravity := 0.5
 ## Speed lost per second while wallrunning with no direction held.
 @export_range(0.0, 20.0, 0.1) var wallrun_misalign_drag := 5.0
-## How fast leaning angles your wallrun, degrees per second: away from the
-## wall turns it down, into the wall levels it out.
+## How fast leaning rolls your wallrun's path round, degrees per second:
+## toward the wall turns it up, away turns it down.
 @export_range(0.0, 360.0, 1.0) var wallrun_angle_rate := 80.0
-## Leaning into the wall lifts your path to at most this angle (degrees):
-## enough to stay up, not to climb.
-@export_range(0.0, 45.0, 1.0) var wallrun_lean_up_angle := 2.0
-## Leaning into the wall stretches the run: each second leaning in adds
-## this many seconds to its time limit.
-@export_range(0.0, 1.0, 0.05) var wallrun_lean_time_bonus := 0.35
 ## Steepest angle you can run up a wall (from a steep entry), and down it.
 @export_range(0.0, 85.0, 1.0) var wallrun_max_up_angle := 55.0
 @export_range(0.0, 85.0, 1.0) var wallrun_max_down_angle := 45.0
@@ -249,7 +241,8 @@ extends Resource
 @export_range(0.0, 2.0, 0.01) var spin_carry_time := 0.3
 
 @export_group("Quick turn and boost")
-## Holding a lean button turns the view this many times faster.
+## Holding a lean button turns the view this many times faster toward that
+## side (Q left, E right); turning the other way is normal speed.
 @export_range(1.0, 5.0, 0.1) var quick_turn_look_scale := 2.5
 ## While quick turning, your speed turns with your view: all of it on the
 ## ground, this share of it in the air.
