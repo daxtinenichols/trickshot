@@ -38,6 +38,7 @@ var _cooldown := 0.0
 var _reload_left := 0.0
 var _bloom := 0.0
 var _since_shot := 999.0
+var _await_release := false
 var _rng := RandomNumberGenerator.new()
 var _model: Node3D
 var _kick := 0.0
@@ -82,8 +83,15 @@ func _physics_process(delta: float) -> void:
 	if player:
 		use_device_input = player.use_device_input
 	if use_device_input:
-		# A click that recaptures the mouse shouldn't also fire.
+		# A click that recaptures the mouse shouldn't also fire: after the
+		# mouse comes back, fire and aim wait until both are let go once.
 		var live := player == null or player.is_mouse_captured()
+		var firing := Input.is_action_pressed("fire") or Input.is_action_pressed("aim")
+		if not live:
+			_await_release = true
+		elif _await_release and not firing:
+			_await_release = false
+		live = live and not _await_release
 		trigger_held = live and Input.is_action_pressed("fire")
 		trigger_pressed = live and Input.is_action_just_pressed("fire")
 		aim_held = live and Input.is_action_pressed("aim")

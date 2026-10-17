@@ -13,6 +13,10 @@ var _panel: PanelContainer
 var _list: VBoxContainer
 var _status: Label
 var _rows := {}
+
+## Tuning fields that are really player preferences (Esc menu > Settings).
+## Hidden here, and never baked into project defaults.
+const PLAYER_SETTINGS := [&"mouse_sensitivity", &"gamepad_look_speed", &"base_fov"]
 var _mouse_was_captured := false
 
 
@@ -64,6 +68,7 @@ func setup(p: Player) -> void:
 		var saved := ResourceLoader.load(USER_PATH, "", ResourceLoader.CACHE_MODE_IGNORE) as MovementTuning
 		if saved != null:
 			copy_tuning(saved, player.tuning)
+			Settings.apply_to(player)
 			_status.text = "Loaded your saved tuning."
 	_build_rows()
 
@@ -101,6 +106,8 @@ func _build_rows() -> void:
 			continue
 		if not (prop.usage & PROPERTY_USAGE_SCRIPT_VARIABLE):
 			continue
+		if prop.name in PLAYER_SETTINGS:
+			continue  # set per player in the Esc menu
 		match prop.type:
 			TYPE_FLOAT, TYPE_INT:
 				_add_slider(prop)
@@ -181,12 +188,16 @@ func _save_user() -> void:
 
 func _save_defaults() -> void:
 	var copy: MovementTuning = player.tuning.duplicate()
+	var fresh := MovementTuning.new()
+	for pname: StringName in PLAYER_SETTINGS:
+		copy.set(pname, fresh.get(pname))
 	var err := ResourceSaver.save(copy, DEFAULTS_PATH)
 	_status.text = "Wrote project defaults; commit player/default_tuning.tres." if err == OK else "Save failed (error %d)." % err
 
 
 func _reset() -> void:
 	copy_tuning(MovementTuning.new(), player.tuning)
+	Settings.apply_to(player)
 	if ResourceLoader.exists(USER_PATH):
 		DirAccess.remove_absolute(ProjectSettings.globalize_path(USER_PATH))
 	_refresh()

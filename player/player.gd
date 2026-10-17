@@ -58,6 +58,8 @@ var _stand_shape: CapsuleShape3D
 var _crouch_shape: CapsuleShape3D
 var _prone_shape: CapsuleShape3D
 var _crouch_hold := 0.0
+## Time spent crouched, holding crouch and standing still (-> prone).
+var _crouch_still := 0.0
 var _diving := false
 # Rotation done in the air since takeoff (radians, unwrapped).
 var _air_yaw := 0.0
@@ -257,6 +259,7 @@ func _change_state(to: State) -> void:
 	var from := state
 	state = to
 	state_time = 0.0
+	_crouch_still = 0.0
 	if to == State.AIR:
 		_air_yaw = 0.0
 		_air_pitch = 0.0
@@ -264,6 +267,8 @@ func _change_state(to: State) -> void:
 		_flips_done = 0
 	elif from == State.AIR:
 		_settle_pitch()
+		# A dive ends when you touch anything (landing reads it before this).
+		_diving = false
 	state_changed.emit(from, to)
 
 
@@ -273,8 +278,10 @@ func _settle_pitch() -> void:
 
 
 ## Upside down or tipped too far to land on your feet?
+## Only counts once a flip was actually started (90+ degrees of rotation in
+## this air time), so looking straight down to aim while dropping is safe.
 func _landing_crashed() -> bool:
-	return absf(wrapf(pitch, -PI, PI)) > deg_to_rad(tuning.crash_pitch)
+	return absf(_air_pitch) >= deg_to_rad(90.0) and absf(wrapf(pitch, -PI, PI)) > deg_to_rad(tuning.crash_pitch)
 
 
 func _check_air_rotation() -> void:
@@ -347,6 +354,12 @@ func _update_momentum(delta: float) -> void:
 # ---------------------------------------------------------------- ground
 
 func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
+	# Arrived on the ground short (crouched, prone, diving) under something
+	# low: stay crouched instead of standing up into it.
+	if _height < tuning.stand_height - 0.01 and not _can_stand():
+		_change_state(State.CROUCH)
+		_tick_crouch(f, wish, delta)
+		return
 	_set_height(tuning.stand_height)
 	if _jump_buffer <= tuning.jump_buffer:
 		if _try_obstacle(f, true):
@@ -406,9 +419,12 @@ func _tick_crouch(f: InputFrame, wish: Vector3, delta: float) -> void:
 		return
 	# Holding crouch while standing still (no move input) goes prone, so
 	# crouch-walking never drops you by accident.
-	var held_still := _crouch_hold >= tuning.prone_hold_time and f.move.length() < 0.1 and horizontal_speed() < 0.5
+	var still := f.crouch_held and _crouch_hold >= 0.0 and f.move.length() < 0.1 and horizontal_speed() < 0.5
+	_crouch_still = _crouch_still + delta if still else 0.0
+	var held_still := _crouch_still >= tuning.prone_hold_time
 	if f.prone_pressed or held_still:
 		_crouch_hold = -999.0
+		_crouch_still = 0.0
 		_change_state(State.PRONE)
 		return
 	if f.kick_pressed:
@@ -596,11 +612,13 @@ func _tick_roll(f: InputFrame, wish: Vector3, delta: float) -> void:
 	if not is_on_floor():
 		_change_state(State.AIR)
 		return
-	if state_time >= tuning.roll_time and _can_stand():
+	if state_time >= tuning.roll_time:
 		if f.crouch_held and horizontal_speed() >= tuning.slide_min_speed:
 			_start_slide()
-		else:
+		elif _can_stand():
 			_change_state(State.GROUND)
+		else:
+			_change_state(State.CROUCH)  # rolled under something low
 
 
 func _start_stun() -> void:
@@ -629,6 +647,7 @@ func _tick_prone(f: InputFrame, wish: Vector3, delta: float) -> void:
 	if (not holding or f.jump_pressed) and _shape_fits(_crouch_shape, global_position):
 		_set_height(tuning.crouch_height)
 		_crouch_hold = -999.0
+		_jump_buffer = 999.0  # the jump that got you up isn't also a jump
 		_change_state(State.CROUCH)
 		if not f.crouch_held and _can_stand():
 			_set_height(tuning.stand_height)
@@ -663,6 +682,7 @@ func _tick_prone_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 	var holding := f.prone_held or f.crouch_held
 	if (f.jump_pressed or not holding) and _shape_fits(_crouch_shape, global_position):
 		_set_height(tuning.crouch_height)
+		_slide_flat_time = 0.0
 		_change_state(State.SLIDE if horizontal_speed() >= tuning.slide_min_speed else State.CROUCH)
 		return
 	velocity = MovementMath.apply_friction(velocity, tuning.prone_slide_friction, 0.0, delta)
@@ -1168,6 +1188,13 @@ func respawn(t: Variant = null) -> void:
 	pitch = 0.0
 	_kick_pitch = 0.0
 	_kick_yaw = 0.0
+	_air_yaw = 0.0
+	_air_pitch = 0.0
+	_spins_done = 0
+	_flips_done = 0
+	_turn_left = 0.0
+	_jump_buffer = 999.0
+	state_time = 0.0
 	respawned.emit()
 
 

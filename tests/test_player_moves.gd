@@ -723,3 +723,60 @@ func test_flip_needs_less_input_once_past_vertical() -> void:
 		p._look(0.0, total / steps)
 		await w.step(1)
 	check(&"backflip" in w.tricks_seen, "a committed 245 deg flick flips (air pitch %.0f deg)" % rad_to_deg(p.air_rotation().y))
+
+
+# ------------------------------------------------------------------ regressions (review findings)
+
+func test_landing_crouched_under_low_ceiling_stays_crouched() -> void:
+	w.add_floor()
+	# Ceiling at 1.3 m: crouch (1.0) fits, standing (1.8) doesn't.
+	w.add_box(Vector3(0, 1.8, 0), Vector3(6, 1.0, 6))
+	var p := w.spawn_player(Vector3(0, 0.3, 0))
+	p._set_height(p.tuning.crouch_height)
+	await w.step(30)
+	check(p.state == Player.State.CROUCH, "stays crouched under the ceiling (%s)" % Player.State.keys()[p.state])
+	check_near(p._height, p.tuning.crouch_height, 0.01, "crouch height kept")
+	check(p.global_position.y < 0.2, "not pushed through the ceiling (y %.2f)" % p.global_position.y)
+
+
+func test_dive_ends_when_you_touch_a_wall() -> void:
+	var p := await _airborne(3.0)
+	p._diving = true
+	p._change_state(Player.State.WALLRUN)
+	check(not p._diving, "dive flag cleared when the dive turns into something else")
+
+
+func test_respawn_clears_air_rotation() -> void:
+	var p := await _airborne(30.0)
+	for i in 10:
+		p._look(deg_to_rad(30.0), 0.0)
+		await w.step(1)
+	p.respawn()
+	await w.step(1)
+	p._look(deg_to_rad(70.0), 0.0)
+	await w.step(1)
+	check(not (&"spin_360" in w.tricks_seen), "spin before respawning doesn't carry over")
+
+
+func test_crouch_held_through_slide_doesnt_drop_prone_instantly() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await _run_to(7.0)
+	var crouch := InputFrame.make(Vector2.ZERO, false, true)
+	await w.step(1, crouch)
+	crouch.crouch_pressed = false
+	var stopped := await w.step_until(func() -> bool: return p.state == Player.State.CROUCH, 240, crouch)
+	check(stopped, "slide ends in a crouch")
+	await w.step_until(func() -> bool: return p.horizontal_speed() < 0.5 or p.state != Player.State.CROUCH, 120, crouch)
+	await w.step(3, crouch)
+	check(p.state == Player.State.CROUCH, "doesn't drop prone the moment you stop (%s)" % Player.State.keys()[p.state])
+	await w.step(int(p.tuning.prone_hold_time * 60.0) + 5, crouch)
+	check(p.state == Player.State.PRONE, "keeps holding still: goes prone")
+
+
+func test_looking_down_while_falling_is_not_a_crash() -> void:
+	var p := await _airborne(4.0)
+	p.pitch = deg_to_rad(-89.0)
+	p._look(0.0, deg_to_rad(-15.0))  # past straight down, aiming below
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
+	check(p.state != Player.State.STUN, "aiming down on a drop lands normally")

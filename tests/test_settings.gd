@@ -147,3 +147,17 @@ func test_moves_list_names_current_bindings() -> void:
 	check(text == "Space / A to jump, Z / D-pad down to dive", "placeholders filled (%s)" % text)
 	Settings.rebind("jump", _key(KEY_J))
 	check(MovesGuide.describe("{jump}").begins_with("J"), "follows rebinding")
+
+
+func test_menu_and_debug_inputs_are_reserved() -> void:
+	check(not GameSettings.is_bindable(_pad(JOY_BUTTON_START), true), "Start opens the menu")
+	check(not GameSettings.is_bindable(_key(KEY_F1), false), "F1 is the HUD toggle")
+	check(not GameSettings.is_bindable(_key(KEY_1), false), "1 is a zone key")
+	var wheel := InputEventMouseButton.new()
+	wheel.button_index = MOUSE_BUTTON_WHEEL_UP
+	wheel.pressed = true
+	check(not GameSettings.is_bindable(wheel, false), "mouse wheel can't be held")
+	var m4 := InputEventMouseButton.new()
+	m4.button_index = MOUSE_BUTTON_XBUTTON1
+	m4.pressed = true
+	check(GameSettings.is_bindable(m4, false), "mouse 4 is fine")
