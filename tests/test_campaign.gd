@@ -8,7 +8,7 @@ extends TestCase
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
-	"quarter_pipe", "bank", "label", "mark", "tape", "fire"]
+	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter"]
 
 var level: Node3D
 var player: Player
@@ -374,11 +374,46 @@ func test_on_air_can_be_finished() -> void:
 	# Run to the lookouts, take them out, run on.
 	await _run_route(ON_AIR_ROUTE.slice(0, 7), 1200, -88.0)
 	check(run.objective == 1, "at the lookouts (objective %d, at %s)" % [run.objective, player.global_position])
-	for t in level.builder.find_children("*", "ShootingTarget", true, false):
-		(t as ShootingTarget).killed.emit({"zone": &"head"})
+	for e: Node in level.builder.encounters[0].enemies:
+		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
 	var done := await _run_route(ON_AIR_ROUTE.slice(7), 1200)
 	check(done, "a scripted run finishes On Air (stopped at %s, objective %d)" % [player.global_position, run.objective])
 	check(run.falls == 0, "without falling (%d)" % run.falls)
+
+
+func test_on_air_lookouts_are_raiders() -> void:
+	await _load(_index("m02_on_air"))
+	var b: MissionBuilder = level.builder
+	check(b.encounters.size() == 1, "On Air has one encounter")
+	var enc: Node3D = b.encounters[0]
+	check(enc.enemies.size() == 3, "three raiders (%d)" % enc.enemies.size())
+	for e: Node in enc.enemies:
+		check(e.get_script() == MissionBuilder.RAIDER_SCRIPT, "lookouts are raiders")
+		check(absf(e.global_position.y - 8.0) < 0.5, "standing on the roof (%s)" % e.global_position)
+	check(enc.covers.size() > 0, "with cover spots")
+	check(level.find_children("*", "CanvasLayer", false, false).any(func(n: Node) -> bool: return n.get_script() == level.HURT_OVERLAY_SCRIPT), "and the hurt overlay")
+	# Step onto the lookout roof: they wake.
+	player.respawn(b.spawns[2])
+	await _step(5)
+	check(enc.phase == EnemyEncounter.Phase.ACTIVE, "the encounter starts on the roof")
+	check(run.objective == 1, "practice from the lookout roof starts at the shooting")
+	# One kill, then go down: the raiders come back and the count starts over.
+	enc.enemies[0].take_hit({"damage": 500.0, "zone": &"body", "position": enc.enemies[0].global_position})
+	check(run.objective_text().contains("(1 / 3)"), "one down (%s)" % run.objective_text())
+	var health: PlayerHealth = PlayerHealth.of(player)
+	health.take_damage(500.0, Vector3.ZERO)
+	await _step(2)
+	check(run.downs == 1, "went down once")
+	check(player.global_position.distance_to(b.spawns[2].origin) < 1.0, "back at the checkpoint (%s)" % player.global_position)
+	check(enc.alive_count() == 3, "raiders reset")
+	check(run.objective_text().contains("(0 / 3)"), "count starts over (%s)" % run.objective_text())
+	for e: Node in enc.enemies:
+		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
+	await _step(2)
+	check(run.objective == 2, "three raiders down")
+	check(run.headshots == 3, "headshots counted (%d)" % run.headshots)
+	await _step(400)
+	check(enc.alive_count() == 0, "a cleared encounter stays cleared")
 
 
 const SIGNAL_OUT_ROUTE := [

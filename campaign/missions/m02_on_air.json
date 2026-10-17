@@ -24,7 +24,7 @@
   {"at": [4, 8, -62], "radius": 7, "who": "mags", "line": "Gap's too wide. Wall on the right, same as home."},
   {"on": "checkpoint:1", "who": "mags", "line": "Blue panels: wallrun one, then jump to kick off to the next. That's a wall hop."},
   {"on": "objective:1", "who": "host", "line": "Lookouts! Say hello to the man of the hour."},
-  {"on": "objective:1", "who": "mags", "line": "Three of them. Click the mouse wheel when it gets busy: time slows for a few seconds. Use it."},
+  {"on": "objective:1", "who": "mags", "line": "Three gunners. Watch for the red laser: that's a shot coming, so move. Click the mouse wheel when it gets busy: time slows for a few seconds. Use it."},
   {"on": "done:1", "who": "host", "line": "Oh, he shoots too. Echo, darling, you never mentioned that."},
   {"on": "objective:2", "who": "mags", "line": "That mast is their relay. Get past it and you're out of their sight. Wall on your left this time."},
   {"on": "complete", "who": "host", "line": "He's quick, folks! Quicker than my last three couriers, may they rest in pieces."},
@@ -49,6 +49,10 @@
   "kill": [
    {"who": "host", "line": "Somebody tell payroll."},
    {"who": "host", "line": "That was a good lookout. He looked out. Briefly."}
+  ],
+  "down": [
+   {"who": "host", "line": "And our courier takes a nap! Somebody fetch him a pillow."},
+   {"who": "mags", "line": "Up. Don't stand still in their sights: run, then shoot."}
   ],
   "headshot": [
    {"who": "host", "line": "Right through the headset. Rude."},
@@ -91,9 +95,9 @@
   {"label": "Wallrun, then jump: hop to the other wall", "at": [0, 12.5, -88], "size": 0.8},
   {"prop": "sandbag_wall", "at": [-3, 8, -116]},
   {"prop": "sandbag_wall", "at": [3, 8, -117]},
-  {"target": [-3, 8, -120], "motion": "static"},
-  {"target": [3, 8, -121], "motion": "static"},
-  {"target": [0, 8, -124], "motion": "strafe", "amplitude": 3.0, "speed": 3.0},
+  {"encounter": "lookouts", "area": {"at": [0, 12, -106], "size": [12, 10, 46]},
+   "raiders": [{"at": [-3, 8, -119], "yaw": 180}, {"at": [3, 8, -120], "yaw": 180}, {"at": [0, 8, -126], "yaw": 180, "wake": 1.5}],
+   "cover": [{"at": [-3, 8, -116], "length": 2.0}, {"at": [3, 8, -117], "length": 2.0}]},
   {"prop": "crate_wood", "at": [5.0, 8, -110], "yaw": 12},
   {"prop": "crate_wood", "at": [4.6, 8, -111.4], "yaw": -6},
   {"prop": "generator", "at": [-0.5, 8, -128.6]},
