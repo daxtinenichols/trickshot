@@ -17,8 +17,9 @@ extends Node
 ## - Dead Air: the run goes out live on a raider warlord's radio show. With
 ##   no combo running the music plays "on air", band-limited with a crackle
 ##   under it; a combo opens it up to full sound. Combo milestones get a
-##   broadcast jingle, and play_radio() puts a voice line (later) on the
-##   radio, keyed with static, with the music ducked under it.
+##   broadcast jingle, and play_radio() puts a voice line on the radio,
+##   keyed with static, with the music ducked under it (RadioFeed voices
+##   each line it shows; clips come from audio/voice_lines.gd).
 ## - Slow-mo muffles and deepens everything, matching the vignette.
 ##
 ## Buses: Master > Music, SFX and Radio. set_music_volume()/set_sfx_volume()
@@ -399,6 +400,36 @@ func play_radio(stream: AudioStream, volume_db := 0.0, interference := false) ->
 	_voice_duck = stream.get_length() + 0.3
 	if not _radio.finished.is_connected(_on_radio_done):
 		_radio.finished.connect(_on_radio_done)
+
+
+## Cuts the radio voice off (the mission it belonged to has gone).
+func stop_radio() -> void:
+	if _radio != null and _radio.playing:
+		_radio.stop()
+		_voice_duck = 0.0
+
+
+## A voice shouted out in the world by `node` (a raider's taunt), following
+## it around. Skipped while that node is still mid-line.
+func play_voice_on(node: Node3D, stream: AudioStream, volume_db := 0.0) -> void:
+	if not enabled or stream == null or node == null or not node.is_inside_tree():
+		return
+	var old := node.get_node_or_null(^"Voice") as AudioStreamPlayer3D
+	if old != null and old.playing:
+		return
+	if old != null:
+		old.free()
+	var p := AudioStreamPlayer3D.new()
+	p.name = &"Voice"
+	p.stream = stream
+	p.volume_db = volume_db
+	p.unit_size = 10.0
+	p.position = Vector3(0, 1.6, 0)
+	p.bus = &"SFX"
+	node.add_child(p)
+	p.finished.connect(p.queue_free)
+	if not _headless:
+		p.play()
 
 
 func _on_radio_done() -> void:

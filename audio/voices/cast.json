@@ -1,0 +1,10 @@
+{
+	"_about": "Who speaks with which voice. 'voice' is a Kokoro-82M voice id (Apache-2.0); 'speed' scales delivery. Change a voice, then run audio/tools/make_voices.py --force SPEAKER.",
+	"host":   {"voice": "am_fenrir",   "speed": 1.05},
+	"mags":   {"voice": "bf_emma",     "speed": 0.97},
+	"echo":   {"voice": "af_heart",    "speed": 1.0},
+	"parker": {"voice": "am_michael",  "speed": 1.05},
+	"juno":   {"voice": "af_kore",     "speed": 1.0},
+	"raider": {"voice": "am_puck",     "speed": 1.1},
+	"raider2": {"voice": "bm_lewis",   "speed": 1.1}
+}

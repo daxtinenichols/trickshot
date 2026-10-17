@@ -15,8 +15,11 @@ extends CanvasLayer
 ##              {"who", "line"}, used in turn, never more than one every few
 ##              seconds and never over a story line.
 ##
-## Lines queue and never stop the game. Presentation only: nothing here
-## changes the simulation.
+## Lines queue and never stop the game. Each line is spoken over the radio
+## when it has a voice clip (audio/voice_lines.gd) and stays up until it
+## has been said. Presentation only: nothing here changes the simulation.
+
+const Voices := preload("res://audio/voice_lines.gd")
 
 const SPEAKERS := {
 	"host": ["THE HOST", Color(1.0, 0.36, 0.3)],
@@ -153,6 +156,19 @@ func _show(l: Dictionary) -> void:
 	history.append(l)
 	_shown_for = 0.0
 	_show_time = duration(l.line)
+	var voice := Voices.stream_for(l.who, l.line)
+	if voice != null:
+		_show_time = maxf(_show_time, voice.get_length() + 0.35)
+		var audio := get_node_or_null(^"/root/GameAudio")
+		if audio != null:
+			# Echo's coded messages break up as they slip through.
+			audio.play_radio(voice, 0.0, l.who == "echo")
+
+
+func _exit_tree() -> void:
+	var audio := get_node_or_null(^"/root/GameAudio")
+	if audio != null and not current.is_empty():
+		audio.stop_radio()
 
 
 func _build() -> void:

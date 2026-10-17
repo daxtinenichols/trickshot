@@ -148,7 +148,7 @@ Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbo
 - **4 Silt Line** (the Silt, 530 m): the bridge is gone; run through the crawlers without stopping, climb onto the overpass and run it to Meridian Mall.
 - **12 Signal Out** (the burning tower): you play Echo and the Host chases you. He follows your exact path, never drops more than about 22 m behind, and catches you if you slow down; Parker coaches you on the radio. Beating it unlocks Echo as a runner for every mission.
 
-Mags, the Host, Echo and Parker talk over the radio (subtitles low in the middle) while you run; nothing stops the game. The clock starts when you leave the start, the objective shows under it, falling sends you to the last checkpoint, and lost broadcast tapes hide on the harder routes. Number keys jump to checkpoints as practice runs. Missions are data files; how to write one is in [docs/missions.md](docs/missions.md).
+Mags, the Host, Echo and Parker talk over the radio while you run, in spoken voices through a radio filter with subtitles low in the middle (Echo's coded messages break up with static, and raiders shout their taunts when they tag you); nothing stops the game. The clock starts when you leave the start, the objective shows under it, falling sends you to the last checkpoint, and lost broadcast tapes hide on the harder routes. Number keys jump to checkpoints as practice runs. Missions are data files; how to write one is in [docs/missions.md](docs/missions.md).
 
 Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide, purple is runnable ramps and loops, and red is targets (yellow heads are headshots).
 
@@ -203,6 +203,7 @@ Everything you hear is synthesised in code, so there are no audio files to licen
 - **World:** glass shattering and doors slamming, however they break or open.
 - **Music:** an 8-bar wasteland loop. With no combo it plays "on air" through the warlord's radio, filtered with a crackle under it. A combo opens it to full sound with drums and bass; 3 tricks add percussion, 5 add the lead. Combo milestones (3, 5, 8 tricks) get a radio jingle, banking rings out and a bail stings.
 - **Slow-mo** muffles and deepens everything while it's on.
+- **Voices:** every radio line and raider taunt is spoken. The clips are generated offline with Kokoro, an Apache-2.0 speech model, one voice per character (`audio/voices/cast.json`), by `python3 audio/tools/make_voices.py`; rerun it after adding lines. A recorded take saved as `audio/voices/recorded/<who>/<file>` (names in `audio/voices/script.csv`) replaces the synthetic one.
 
 The first launch builds the sounds in the background (the music fades in a few seconds later) and caches them in `user://audio_cache.bin`; later launches load the cache. To audition every sound as WAV files:
 
