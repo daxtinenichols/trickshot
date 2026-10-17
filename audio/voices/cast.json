@@ -4,6 +4,7 @@
 	"mags":   {"voice": "bf_emma",     "speed": 0.97},
 	"echo":   {"voice": "af_heart",    "speed": 1.0},
 	"parker": {"voice": "am_michael",  "speed": 1.05},
+	"vell":   {"voice": "bm_george",   "speed": 0.95},
 	"juno":   {"voice": "af_kore",     "speed": 1.0},
 	"vell":   {"voice": "bm_george",   "speed": 0.92},
 	"raider": {"voice": "am_puck",     "speed": 1.1},

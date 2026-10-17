@@ -173,7 +173,7 @@ Each is a list of `{"who", "line"}` used in turn, at most one every few
 seconds, and never over a story line.
 
 Every line is spoken. After adding or rewording lines, run
-`python3 audio/tools/make_voices.py` (setup in its header) to voice them; until
+`python3 audio/tools/make_voices.py` (setup in its header) to voice them (lines from the story briefs are usually voiced already: `--briefs` reads them ahead of time into `audio/voices/upcoming.json`); until
 then a new line shows as a subtitle only. Voices per speaker are in
 `audio/voices/cast.json`; `audio/voices/script.csv` is the recording script, and
 a recorded take saved under `audio/voices/recorded/` replaces the synthetic one.
