@@ -5,8 +5,10 @@ extends Camera3D
 
 
 var player: Player
-var distance := 3.4
-var height := 1.5
+## Up and behind, looking down on the runner (about 25 degrees).
+var distance := 4.2
+var height := 3.0
+var look_height := 0.9
 var _active := false
 
 
@@ -58,6 +60,6 @@ func _desired() -> Vector3:
 
 func _look() -> void:
 	var up := player.global_basis.y.normalized()
-	var target := player.global_position + up * 1.1
+	var target := player.global_position + up * look_height
 	if global_position.distance_to(target) > 0.05:
 		look_at(target, up)
