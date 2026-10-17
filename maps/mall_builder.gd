@@ -22,6 +22,8 @@ extends SandboxBuilder
 ## Sizes come from the movement numbers: 1 m blocks vault, 1.5 m mantle, 3 m
 ## climbs, 1.1 m gaps slide.
 
+const PropKit := preload("res://art/props/prop_kit.gd")
+
 const HALF_W := 30.0  # inside, wall to wall
 const FRONT_Z := 10.0
 const BACK_Z := -90.0
@@ -96,29 +98,30 @@ func _parking_lot() -> void:
 	for x in range(-36, 37, 4):
 		if absi(x) > 4:
 			_floor_mark(Vector3(x, 0, 38), Vector2(0.15, 5), Color(0.78, 0.74, 0.62))
-	# Wrecks to vault and mantle (1.6 m tall: mantle the body, run the roof).
+	# Wrecks to mantle and run over, and the junk round the doors.
 	var wrecks := [
-		[Vector3(-9, 0, 30), 0.3, 0], [Vector3(-16, 0, 22), -0.2, 1], [Vector3(10, 0, 33), 1.4, 2],
-		[Vector3(17, 0, 21), 0.1, 3], [Vector3(-24, 0, 36), 1.6, 4], [Vector3(26, 0, 40), -0.4, 5],
+		[Vector3(-9, 0, 30), 0.3], [Vector3(-16, 0, 22), -0.2], [Vector3(10, 0, 33), 1.4],
+		[Vector3(17, 0, 21), 0.1], [Vector3(-24, 0, 36), 1.6], [Vector3(26, 0, 40), -0.4],
 	]
 	for w: Array in wrecks:
-		_wreck(w[0], w[1], SIGN_COLORS[w[2]])
-	# Dead lamp posts.
+		_prop("car_wreck", w[0], w[1])
+	_prop("dumpster", Vector3(-12, 0, 11.5), PI)
+	_prop("dumpster", Vector3(-15, 0, 12.2), PI + 0.25)
+	_prop("tire_stack", Vector3(13, 0, 12), 0.0)
+	_prop("tire_stack", Vector3(13.8, 0, 12.6), 0.6)
+	for x: float in [-6.5, 6.5]:
+		_prop("barricade_jersey", Vector3(x, 0, 15), PI * 0.5 * signf(x) * 0.3)
+	_prop("loudspeaker_pole", Vector3(8, 0, 13), PI)
 	# Ground around the building, and low concrete barriers all round.
 	_part(Vector3(0, -0.52, -45), Vector3(80, 1, 110), Kind.FLOOR)
 	for x: float in [-40.0, 40.0]:
 		_part(Vector3(x, 0.5, -25), Vector3(0.6, 1, 150), Kind.PARKOUR, "NEUTRAL")
 	for z: float in [-100.0, 50.0]:
 		_part(Vector3(0, 0.5, z), Vector3(80, 1, 0.6), Kind.PARKOUR, "NEUTRAL")
+	# Dead lamp posts.
 	for p: Vector3 in [Vector3(-14, 0, 40), Vector3(14, 0, 40), Vector3(-30, 0, 18), Vector3(30, 0, 18)]:
 		_part(p + Vector3(0, 3.5, 0), Vector3(0.3, 7, 0.3), Kind.NEUTRAL, "RUST")
 		_part(p + Vector3(0, 7.0, 0.6), Vector3(0.4, 0.2, 1.4), Kind.NEUTRAL, "RUST")
-
-
-func _wreck(at: Vector3, yaw: float, paint: Color) -> void:
-	var b := Basis(Vector3.UP, yaw)
-	_part_basis(at + Vector3(0, 0.55, 0), Vector3(1.8, 0.8, 4.3), b, Kind.NEUTRAL, "RUST", paint.darkened(0.25))
-	_part_basis(at + Vector3(0, 1.25, 0) + b * Vector3(0, 0, 0.3), Vector3(1.6, 0.6, 2.2), b, Kind.NEUTRAL, "RUST", paint.darkened(0.4))
 
 
 # ---------------------------------------------------------------- building
@@ -250,13 +253,16 @@ func _atrium() -> void:
 	_label("Wallrun the billboards, side to side", Vector3(0, 3.6, -42), 0.8)
 
 
-## Ground-floor corridors under the walkways: carts to vault, a fallen sign
+## Ground-floor corridors under the walkways: crates to vault, a fallen sign
 ## to slide under, overhead lights.
 func _corridors() -> void:
 	var cx := (ATRIUM_X + SHOP_X) * 0.5 + 0.5
 	for s: float in [-1.0, 1.0]:
 		for z: float in [-22.0, -58.0]:
-			_part(Vector3(s * cx, 0.5, z), Vector3(1.4, 1, 2.6), Kind.PARKOUR, "RUST")
+			_prop("crate_wood", Vector3(s * cx, 0, z), 0.2 * s)
+			_prop("crate_wood", Vector3(s * cx, 0, z - 1.1), -0.1 * s)
+		_prop("barrel_rust", Vector3(s * (cx + 2.5), 0, -27), 0.0)
+		_prop("barrel_rust", Vector3(s * (cx + 2.9), 0, -27.6), 1.0)
 		# Fallen sign resting on rubble: slide under (1.1 m clear).
 		_part(Vector3(s * cx, 1.35, -34), Vector3(7, 0.5, 0.8), Kind.PARKOUR, "SIGN", SIGN_COLORS[4])
 		_part(Vector3(s * (cx - 3.4), 0.55, -34), Vector3(0.6, 1.1, 0.8), Kind.NEUTRAL)
@@ -314,8 +320,8 @@ func _collapse() -> void:
 	var walk_cx := (ATRIUM_X + SHOP_X) * 0.5
 	_part_basis(Vector3(walk_cx, UPPER_Y - 1.1, HOLE.x - 0.9), Vector3(SHOP_X - ATRIUM_X - 1, 0.4, 2.2), Basis(Vector3.RIGHT, -0.9), Kind.NEUTRAL)
 	_part_basis(Vector3(walk_cx - 1, 1.4, mid), Vector3(5, 0.4, 3.2), Basis(Vector3.FORWARD, 0.5), Kind.NEUTRAL)
-	for p: Vector3 in [Vector3(walk_cx + 2, 0.3, mid - 2), Vector3(walk_cx - 3, 0.25, mid + 2.5)]:
-		_part(p, Vector3(1.2, 0.6 if p.x > walk_cx else 0.5, 1.0), Kind.NEUTRAL)
+	_prop("debris_pile", Vector3(walk_cx + 2, 0, mid - 2), 0.4)
+	_prop("debris_pile", Vector3(walk_cx - 3, 0, mid + 2.5), 2.1)
 	_floor_mark(Vector3(walk_cx, UPPER_Y, HOLE.x + 1.0), Vector2(SHOP_X - ATRIUM_X, 0.3), Color(0.85, 0.65, 0.2))
 	_label("Floor's gone: wallrun the blue wall", Vector3(walk_cx, UPPER_Y + 3.2, HOLE.x + 6), 0.8)
 
@@ -340,8 +346,17 @@ func _food_court() -> void:
 	# Fallen roof: tilted slabs to run up, and rubble.
 	_part_basis(Vector3(2, 1.2, -84), Vector3(7, 0.5, 6), Basis(Vector3.RIGHT, 0.35) * Basis(Vector3.UP, 0.3), Kind.NEUTRAL)
 	_part_basis(Vector3(-6, 0.9, -80), Vector3(4, 0.5, 5), Basis(Vector3.FORWARD, -0.4), Kind.NEUTRAL)
-	for p: Vector3 in [Vector3(6, 0.4, -79), Vector3(-2, 0.3, -88), Vector3(9, 0.35, -88.5)]:
-		_part_basis(p, Vector3(1.4, 0.8, 1.1), Basis(Vector3.UP, p.x * 0.3), Kind.NEUTRAL)
+	for p: Vector3 in [Vector3(6, 0, -79), Vector3(-2, 0, -88), Vector3(8.5, 0, -88.5)]:
+		_prop("debris_pile", p, p.x * 0.3)
+	# A raider camp on the back mezzanine, overlooking the court: cover to
+	# fight from, a generator and radio still running.
+	_prop("sandbag_wall", Vector3(-6, UPPER_Y, -73.3), 0.0)
+	_prop("sandbag_wall", Vector3(-20, UPPER_Y, -73.3), 0.0)
+	_prop("barricade_scrap", Vector3(22, UPPER_Y, -72), 0.0)
+	_prop("generator", Vector3(-26, UPPER_Y, -72), PI * 0.5)
+	_prop("radio_set", Vector3(-24, UPPER_Y, -71), 0.4)
+	_prop("tarp_shelter", Vector3(-26, 0, -80), PI * 0.5)
+	_prop("dumpster", Vector3(27.5, 0, -88), PI * 0.5)
 	for s: float in [-1.0, 1.0]:
 		_part(Vector3(s * 8, 0.5, -75.5), Vector3(2.5, 1, 1.5), Kind.PARKOUR, "NEUTRAL")
 	_lamp(Vector3(-20, 4.5, -84), WARM, 1.2)
@@ -410,6 +425,13 @@ func _slab(center: Vector3, size: Vector3) -> void:
 
 func _roof_slab(center: Vector3, size: Vector3) -> void:
 	_part(center, size, Kind.NEUTRAL)
+
+
+## A prop from the shared kit (art/props), bottom center at `at`, turned by
+## yaw. Loaded by path, so a model the editor hasn't imported yet shows as
+## gray boxes instead of breaking the map.
+func _prop(prop_name: String, at: Vector3, yaw: float) -> Node3D:
+	return PropKit.place(_root, prop_name, Transform3D(Basis(Vector3.UP, yaw), at))
 
 
 ## The body _ramp just made.
