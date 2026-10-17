@@ -519,24 +519,59 @@ func test_on_air_lookouts_are_raiders() -> void:
 	player.global_position = Vector3(c.x, 8.05, c.z)
 	await _step(5)
 	check(enc.phase == EnemyEncounter.Phase.ACTIVE, "the encounter starts on the roof")
-	check(run.objective == 1, "practice from the lookout roof starts at the shooting")
+	check(run.objective == 2, "practice from the lookout roof: the lookouts are a bonus, the mast is the goal")
+	check(run.bonuses.has(1) and run.bonus_text().contains("(0 / 3)"), "the lookout bonus is open (%s)" % run.bonus_text())
 	# One kill, then go down: the raiders come back and the count starts over.
 	enc.enemies[0].take_hit({"damage": 500.0, "zone": &"body", "position": enc.enemies[0].global_position})
-	check(run.objective_text().contains("(1 / 3)"), "one down (%s)" % run.objective_text())
+	check(run.bonus_text().contains("(1 / 3)"), "one down (%s)" % run.bonus_text())
 	var health: PlayerHealth = PlayerHealth.of(player)
 	health.take_damage(500.0, Vector3.ZERO)
 	await _step(2)
 	check(run.downs == 1, "went down once")
 	check(player.global_position.distance_to(b.spawns[2].origin) < 1.0, "back at the checkpoint (%s)" % player.global_position)
 	check(enc.alive_count() == n, "raiders reset")
-	check(run.objective_text().contains("(0 / 3)"), "count starts over (%s)" % run.objective_text())
+	check(run.bonus_text().contains("(0 / 3)"), "count starts over (%s)" % run.bonus_text())
+	var score: int = level.combo.score
 	for e: Node in enc.enemies:
 		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
 	await _step(2)
-	check(run.objective == 2, "the lookouts are down")
+	check(run.bonuses[1].done and run.bonuses_done() == 1, "the lookouts are down: bonus done")
+	check(level.combo.score >= score + MissionRun.BONUS_POINTS, "and it pays (%d -> %d)" % [score, level.combo.score])
+	check(run.objective == 2, "still heading for the mast")
 	check(run.headshots == n, "headshots counted (%d)" % run.headshots)
 	await _step(400)
 	check(enc.alive_count() == 0, "a cleared encounter stays cleared")
+
+
+## Kill goals are bonuses: in Storm Channels you can run past both Ward
+## squads and still win at the end, and a bonus you ran past is closed,
+## not something to go back for.
+func test_kill_goals_are_bonuses() -> void:
+	await _load(_index("m08_storm_channels"))
+	var objs: Array = run.objectives
+	check(MissionRun.is_bonus(objs[1]) and MissionRun.is_bonus(objs[3]), "the squad fights are bonus goals")
+	check(not MissionRun.is_bonus(objs[0]) and not MissionRun.is_bonus(objs[4]), "the run itself isn't")
+	await _step(10, _forward())
+	for i in [0, 2, 4]:
+		check(run.objective == i, "on objective %d (%d)" % [i, run.objective])
+		player.global_position = MissionBuilder.vec(objs[i].at) + Vector3(0, 0.1, 0)
+		await _step(2)
+	check(run.phase == MissionRun.Phase.COMPLETE, "reaching the end wins without a kill")
+	check(run.kills == 0 and run.result.bonuses == 0 and run.result.total_bonuses == 2, "no bonuses (%s)" % run.result)
+	check(run.bonuses[1].closed and run.bonuses[3].closed, "the skipped bonuses closed")
+	# Every campaign kill goal is a bonus; only The Yard's lessons are required.
+	for m: Dictionary in Campaign.missions():
+		if m.get("file", "") == "":
+			continue
+		for o: Dictionary in Campaign.load_mission_file(m.file).get("objectives", []):
+			if String(o.get("type", "")) == "shoot" and not MissionRun.is_bonus(o):
+				check(m.id == "m01_the_yard", "%s: kill goal '%s' is required" % [m.id, o.get("text", "")])
+
+
+func _forward() -> InputFrame:
+	var f := InputFrame.new()
+	f.move = Vector2(0, -1)
+	return f
 
 
 func test_signal_out_can_be_escaped() -> void:
@@ -552,8 +587,9 @@ func test_signal_out_can_be_escaped() -> void:
 
 
 ## Every mission built from a route: a bot runs the route it generates
-## from start to finish (enemies can't take it down, and any shooting
-## objective is done for it), without falling; where the route forks, a
+## from start to finish (enemies can't take it down, and it kills nobody:
+## kill goals are bonuses, so only a `clear` like Juno's is done for it),
+## without falling; where the route forks, a
 ## second run takes the other line of every fork.
 func test_route_missions_can_be_finished() -> void:
 	var all := Campaign.missions()

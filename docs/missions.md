@@ -142,14 +142,26 @@ Checkpoints are in order; reaching a later one counts the ones before.
 
 ### Objectives
 
-Done in order; the mission is complete when the last one is.
+Done in order; the mission is complete when the last required one is.
+
+**Kill goals are never required to win.** A `shoot` objective is a bonus
+goal unless it says `"optional": false` (only the yard's practice dummies in
+The Yard do), and any objective with `"optional": true` is one too. The
+chain steps over bonus goals, so reaching the end always wins and nobody is
+sent back for enemies they ran past. A bonus opens when the chain reaches
+it (its `objective:N` line plays then), stays open until the next required
+objective is done, shows under the objective on the HUD, and is worth
+`MissionRun.BONUS_POINTS` (1,000) when finished in time (`done:N` plays).
+The results card counts them. Keep `clear` for story beats you can't skip,
+like Juno's fight. Radio and HUD text for a bonus must not say the player
+has to do it to go on.
 
 | type | fields | done when |
 |---|---|---|
 | `reach` | `at`, `size` (box) or `radius` (cylinder 3 m up and down), `name` | you're inside the region |
 | `score` | `points` | your total score this run reaches it |
 | `combo` | `multiplier` | you bank a combo at that multiplier or more |
-| `shoot` | `count`, `headshots` (true = only headshot kills count) | that many target kills since the objective began |
+| `shoot` | `count`, `headshots` (true = only headshot kills count) | that many target kills since the objective began (a bonus goal by default) |
 | `collect` | `count` (default: every tape) | that many tapes found |
 | `clear` | `encounter` (its id) | that encounter is cleared: every enemy down, or out of the fight like a spared Juno |
 
