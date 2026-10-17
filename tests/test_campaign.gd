@@ -525,7 +525,7 @@ func _bot_run(label: String, alt := false) -> void:
 	var health := PlayerHealth.ensure(player)
 	health.can_die = false
 	run.event.connect(func(e: String) -> void:
-		if e.begins_with("objective:") and run.current_objective().get("type", "") == "shoot":
+		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear"]:
 			for enc: Node3D in level.builder.encounters:
 				for en: Node in enc.enemies:
 					if not en.is_dead:
@@ -668,7 +668,7 @@ func test_hand_made_missions_can_be_finished() -> void:
 
 func _auto_shoot_objectives() -> void:
 	run.event.connect(func(e: String) -> void:
-		if e.begins_with("objective:") and run.current_objective().get("type", "") == "shoot":
+		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear"]:
 			for enc: Node3D in level.builder.encounters:
 				for en: Node in enc.enemies:
 					if not en.is_dead:
@@ -736,3 +736,69 @@ func _run_path(path: Array, max_frames := 6000) -> bool:
 		player.scripted_input = f
 		await tree.physics_frame
 	return false
+
+
+## m07: Juno can't be killed outright, so her fight is a `clear` objective;
+## sparing her or not plays a different line.
+func test_juno_fate_picks_the_line() -> void:
+	var i := _index_of("m07_parking_spiral")
+	for choice: String in ["spared", "not_spared"]:
+		await _load(i)
+		var events: Array[String] = []
+		run.event.connect(func(e: String) -> void: events.append(e))
+		var enc: Node3D = null
+		for e: Node3D in level.builder.encounters:
+			if e.get_meta("id", "") == "Juno":
+				enc = e
+		check(enc != null, "m07 has Juno's encounter")
+		if enc == null:
+			return
+		var juno: Node = null
+		for en: Node in enc.enemies:
+			if en.has_signal("fate_decided"):
+				juno = en
+		check(juno != null, "Juno is the real Juno, not a stand-in")
+		if juno == null:
+			return
+		check(not run.encounter_cleared("Juno"), "Juno's fight isn't cleared at the start")
+		enc.start()
+		for en: Node in enc.enemies:
+			if en != juno:
+				en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position})
+		juno.take_hit({"damage": 1000.0, "zone": &"body", "position": juno.global_position})
+		check(juno.is_beaten and juno.fate == "", "a big hit beats Juno without killing her")
+		if choice == "not_spared":
+			juno.take_hit({"damage": 10.0, "zone": &"body", "position": juno.global_position})
+		else:
+			juno._decide("spared")
+			juno._leave()
+		check(("fate:" + choice) in events, "%s: the radio hears fate:%s (%s)" % [choice, choice, events])
+		check(run.encounter_cleared("Juno"), "%s: Juno's fight is cleared" % choice)
+		var lines: Array = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.get("on", "") == "fate:" + choice)
+		check(lines.size() == 1, "%s: m07 has one line for it" % choice)
+		level.queue_free()
+		level = null
+		await tree.process_frame
+
+
+## m05: the arena's shots wake its sleeping Hollows.
+func test_atrium_shots_wake_sleepers() -> void:
+	await _load(_index_of("m05_atrium"))
+	var arena: Node3D = null
+	for e: Node3D in level.builder.encounters:
+		if e.get_meta("id", "") == "arena":
+			arena = e
+	check(arena != null and arena.hear_shots, "m05's arena hears shots")
+	var sleepers: Array = arena.enemies.filter(func(e: Node) -> bool: return e.sleeper)
+	check(sleepers.size() >= 4, "the arena has sleeping Hollows (%d)" % sleepers.size())
+	level.queue_free()
+	level = null
+	await tree.process_frame
+
+
+func _index_of(id: String) -> int:
+	var all := Campaign.missions()
+	for i in all.size():
+		if all[i].id == id:
+			return i
+	return -1

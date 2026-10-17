@@ -140,6 +140,7 @@ Done in order; the mission is complete when the last one is.
 | `combo` | `multiplier` | you bank a combo at that multiplier or more |
 | `shoot` | `count`, `headshots` (true = only headshot kills count) | that many target kills since the objective began |
 | `collect` | `count` (default: every tape) | that many tapes found |
+| `clear` | `encounter` (its id) | that encounter is cleared: every enemy down, or out of the fight like a spared Juno |
 
 `text` is what the HUD shows; without it a default is written.
 
@@ -229,7 +230,12 @@ crawlers, leapers and brutes as mutants, and drones of every kind are left
 out, so keep a `shoot` count within the enemies that are sure to spawn.
 Optional: `max_aiming` (2: raiders
 aiming at once), `restart` (seconds before a cleared encounter comes back;
-never by default). Every kill counts toward `shoot` objectives, like targets.
+never by default), `hear_shots` (true: your shots wake the encounter's
+`"sleeper": true` enemies within `hearing_radius`, 30 m; they also wake
+within `wake_distance`, 5 m). Every kill counts toward `shoot` objectives,
+like targets. A boss who can be spared (Juno) never counts as a kill unless
+you finish her, so use a `clear` objective for her fight, and the radio
+events `fate:spared` / `fate:not_spared` for the line that follows.
 
 ## Hand-made missions on a base map
 

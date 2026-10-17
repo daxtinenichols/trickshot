@@ -82,7 +82,7 @@
   {"mark": [0, 6, -76], "size": [5, 0.3], "color": "#b98a62"},
   {"tape": [19.0, 6.6, -42], "id": "m05_tape_collapse"},
 
-  {"encounter": "arena", "area": {"at": [0, 6, -40], "size": [60, 14, 62]},
+  {"encounter": "arena", "area": {"at": [0, 6, -40], "size": [60, 14, 62]}, "hear_shots": true,
    "mutants": [
     {"at": [6, 0, -20], "leash_radius": 14, "aggro_radius": 10},
     {"at": [-8, 0, -24], "leash_radius": 14, "aggro_radius": 10, "wake": 1.0},
@@ -93,7 +93,12 @@
    "enemies": [
     {"type": "leaper", "at": [-16, 6, -42], "yaw": 180},
     {"type": "leaper", "at": [16, 6, -56], "yaw": 180, "wake": 1.0},
-    {"type": "leaper", "at": [0, 6, -50], "yaw": 180, "wake": 2.0}
+    {"type": "leaper", "at": [0, 6, -50], "yaw": 180, "wake": 2.0},
+    {"type": "crawler", "at": [-11.5, 0, -30], "yaw": 90, "sleeper": true},
+    {"type": "mutant", "at": [11.5, 0, -40], "yaw": -90, "sleeper": true},
+    {"type": "crawler", "at": [-11.5, 0, -56], "yaw": 90, "sleeper": true},
+    {"type": "mutant", "at": [11.5, 0, -64], "yaw": -90, "sleeper": true},
+    {"type": "leaper", "at": [-18, 6, -30], "yaw": 90, "sleeper": true}
    ],
    "raiders": [
     {"at": [-20, 6, -62], "yaw": -90},
@@ -120,7 +125,7 @@
   {"prop": "loudspeaker_pole", "at": [-5.6, 0, -178], "yaw": 180},
   {"prop": "sandbag_wall", "at": [-19, 6, -155.5], "yaw": 0},
   {"prop": "sandbag_wall", "at": [16.5, 6, -140], "yaw": 90},
-  {"encounter": "concourse", "area": {"at": [0, 6, -117], "size": [60, 14, 86]},
+  {"encounter": "concourse", "area": {"at": [0, 6, -117], "size": [60, 14, 86]}, "hear_shots": true,
    "mutants": [
     {"at": [-20, 0, -80], "leash_radius": 12, "aggro_radius": 10},
     {"at": [10, 0, -80], "leash_radius": 12, "aggro_radius": 10, "wake": 1.0},
@@ -128,7 +133,9 @@
     {"at": [8, 0, -126], "leash_radius": 12, "aggro_radius": 10, "wake": 1.0}
    ],
    "enemies": [
-    {"type": "leaper", "at": [0, 6, -152], "yaw": 180, "wake": 1.5}
+    {"type": "leaper", "at": [0, 6, -152], "yaw": 180, "wake": 1.5},
+    {"type": "crawler", "at": [-12, 0, -96], "yaw": 90, "sleeper": true},
+    {"type": "crawler", "at": [12, 0, -112], "yaw": -90, "sleeper": true}
    ],
    "raiders": [
     {"at": [-19, 6, -158], "yaw": 180},

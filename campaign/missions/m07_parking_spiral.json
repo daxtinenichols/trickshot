@@ -10,7 +10,7 @@
  "objectives": [
   {"type": "reach", "name": "the car park", "text": "Over the skybridge to the car park", "at": [-6, 21, -474.5], "size": [28, 4, 9]},
   {"type": "reach", "name": "the bottom of the spiral", "text": "Down the spiral after Juno", "at": [0, 1.5, -483], "size": [22, 3, 4]},
-  {"type": "shoot", "count": 3, "text": "Beat Juno and her hunters"},
+  {"type": "clear", "encounter": "Juno", "text": "Beat Juno and her hunters"},
   {"type": "reach", "name": "the service road", "text": "Out onto the service road, heading west", "at": [0, 3, -652], "size": [30, 8, 6]}
  ],
  "checkpoints": [
@@ -28,7 +28,8 @@
   {"at": [-15.5, 19, -492], "size": [9, 5, 6], "who": "mags", "line": "Those ones run like you do. They'll come at you from the side. Keep moving."},
   {"on": "checkpoint:1", "who": "juno", "line": "You were always the fast one. I was always the one who got paid."},
   {"on": "checkpoint:2", "who": "juno", "line": "Come on, then. Show the city."},
-  {"on": "done:2", "who": "juno", "line": "Go on. Get her. Before I change my mind."},
+  {"on": "fate:spared", "who": "juno", "line": "Go on. Get her. Before I change my mind."},
+  {"on": "fate:not_spared", "who": "mags", "line": "...She was one of ours, once. Keep going."},
   {"on": "complete", "who": "host", "line": "Well. Our ratings are through the roof, and every single one of you is cheering for the wrong man."},
   {"on": "complete", "who": "host", "line": "Let's take a short break for a word from our sponsor."},
   {"on": "complete", "who": "vell", "line": "Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it."},

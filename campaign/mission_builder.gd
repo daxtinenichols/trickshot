@@ -21,7 +21,6 @@ const MUTANT_SCRIPT := preload("res://enemies/mutant.gd")
 ## Kinds enemies/ hasn't made yet, and what stands in for them meanwhile
 ## (drones of every kind are left out until they exist).
 const STAND_INS := {"trooper": "raider", "shield": "raider", "marksman": "raider", "heavy": "raider",
-	"bruiser": "raider", "hunter": "raider", "juno": "raider",
 	"brute": "mutant", "leaper": "mutant", "crawler": "mutant"}
 
 @export_file("*.json") var mission_path := ""
@@ -325,6 +324,9 @@ func _encounter(p: Dictionary) -> void:
 	# A mission's encounter stays cleared; the sandbox arena's restarts.
 	enc.restart_time = p.get("restart", INF)
 	enc.max_aiming = p.get("max_aiming", enc.max_aiming)
+	for k: String in ["hear_shots", "hearing_radius", "wake_distance"]:
+		if p.has(k):
+			enc.set(k, p[k])
 	for c: Dictionary in p.get("cover", []):
 		enc.add_cover_wall(vec(c.get("at", [0, 0, 0])), c.get("length", 2.0), c.get("thickness", 0.55),
 				deg_to_rad(c.get("yaw", 0.0)), c.get("spacing", 2.2))
