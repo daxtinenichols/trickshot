@@ -1,0 +1,55 @@
+[gd_scene load_steps=11 format=3]
+
+[ext_resource type="Script" path="res://levels/sandbox.gd" id="1_sandbox"]
+[ext_resource type="Script" path="res://levels/sandbox_builder.gd" id="2_builder"]
+[ext_resource type="PackedScene" path="res://player/player.tscn" id="3_player"]
+[ext_resource type="Script" path="res://ui/debug_hud.gd" id="4_hud"]
+[ext_resource type="Script" path="res://ui/tuning_panel.gd" id="5_tuning"]
+[ext_resource type="Script" path="res://fx/speed_trail.gd" id="6_trail"]
+
+[sub_resource type="ProceduralSkyMaterial" id="sky_mat"]
+sky_top_color = Color(0.36, 0.52, 0.78, 1)
+sky_horizon_color = Color(0.78, 0.8, 0.86, 1)
+ground_bottom_color = Color(0.2, 0.21, 0.24, 1)
+ground_horizon_color = Color(0.78, 0.8, 0.86, 1)
+
+[sub_resource type="Sky" id="sky"]
+sky_material = SubResource("sky_mat")
+
+[sub_resource type="Environment" id="env"]
+background_mode = 2
+sky = SubResource("sky")
+ambient_light_source = 3
+ambient_light_energy = 0.9
+tonemap_mode = 2
+ssao_enabled = true
+fog_enabled = true
+fog_light_color = Color(0.76, 0.79, 0.86, 1)
+fog_density = 0.002
+
+[node name="Sandbox" type="Node3D"]
+script = ExtResource("1_sandbox")
+
+[node name="WorldEnvironment" type="WorldEnvironment" parent="."]
+environment = SubResource("env")
+
+[node name="Sun" type="DirectionalLight3D" parent="."]
+transform = Transform3D(0.866025, -0.353553, 0.353553, 0, 0.707107, 0.707107, -0.5, -0.612372, 0.612372, 0, 30, 0)
+light_energy = 1.2
+shadow_enabled = true
+directional_shadow_max_distance = 160.0
+
+[node name="Builder" type="Node3D" parent="."]
+script = ExtResource("2_builder")
+
+[node name="Player" parent="." instance=ExtResource("3_player")]
+transform = Transform3D(1, 0, 0, 0, 1, 0, 0, 0, 1, 0, 0.1, 5)
+
+[node name="SpeedTrail" type="MeshInstance3D" parent="."]
+script = ExtResource("6_trail")
+
+[node name="DebugHud" type="CanvasLayer" parent="."]
+script = ExtResource("4_hud")
+
+[node name="TuningPanel" type="CanvasLayer" parent="."]
+script = ExtResource("5_tuning")
