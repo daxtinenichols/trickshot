@@ -152,9 +152,8 @@ const SCENARIOS := [
 
 func _action() -> void:
 	var cam := Camera3D.new()
-	cam.cull_mask &= ~4  # skip the first-person gun (Pistol.VIEW_LAYER)
 	cam.fov = 50.0
-	cam.cull_mask = 0xFFFFF & ~(1 << 10)
+	cam.cull_mask = 0xFFFFF & ~(1 << 10) & ~4
 	level.add_child(cam)
 	cam.add_child(root.get_node("ArtLook").make_outline_quad())
 	var f: InputFrame = player.scripted_input
