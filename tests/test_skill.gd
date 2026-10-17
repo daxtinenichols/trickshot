@@ -160,6 +160,64 @@ func test_vault_from_ideal_distance_is_faster() -> void:
 	check(ideal > far + 0.4, "ideal distance exits faster (%.2f vs %.2f)" % [ideal, far])
 
 
+## Frames to run from z = 0 to z = -16 over a waist-high hurdle at z = -8,
+## either vaulting it (jump at the ideal distance) or jumping over early.
+## Returns [frames, speed at the end].
+func _hurdle_run(vault: bool) -> Array:
+	var w := _world()
+	w.add_floor()
+	w.add_box(Vector3(0, 0.5, -8), Vector3(6, 1.0, 0.4))
+	var p := w.spawn_player(Vector3(0, 0.05, 0))
+	await w.step(20)
+	var frames := [0]
+	var press_z := -7.07 if vault else -5.3
+	await w.step_until(func() -> bool:
+		frames[0] += 1
+		return p.global_position.z < press_z, 300, _fwd())
+	await w.press(_fwd_jump())
+	var vaulted := p.state == Player.State.VAULT
+	await w.step_until(func() -> bool:
+		frames[0] += 1
+		return p.global_position.z < -16.0, 300, _fwd())
+	check(vaulted == vault, "vaulted" if vault else "jumped over without vaulting")
+	return [frames[0], p.horizontal_speed()]
+
+
+func test_vault_beats_jumping_over() -> void:
+	var vault := await _hurdle_run(true)
+	var jump := await _hurdle_run(false)
+	check(vault[1] > jump[1] + 0.5, "a vault comes out faster than a jump over (%.2f vs %.2f m/s)" % [vault[1], jump[1]])
+	check(vault[0] <= jump[0], "and gets you there sooner (%d vs %d frames)" % [vault[0], jump[0]])
+
+
+## Runs at a waist-high thick block (face at z = -8), jumps at press_z and
+## mantles onto it. Returns [speed before, speed coming out], or [] if it
+## wasn't a mantle.
+func _mantle_speeds(press_z: float) -> Array:
+	var w := _world()
+	w.add_floor()
+	w.add_box(Vector3(0, 0.5, -10), Vector3(6, 1.0, 4))
+	var p := w.spawn_player(Vector3(0, 0.05, 0))
+	await w.step(20)
+	await w.step_until(func() -> bool: return p.global_position.z < press_z, 300, _fwd())
+	var before := p.horizontal_speed()
+	await w.press(_fwd_jump())
+	if p.state != Player.State.MANTLE:
+		return []
+	await w.step_until(func() -> bool: return p.state != Player.State.MANTLE, 90, _fwd())
+	return [before, p.horizontal_speed()]
+
+
+func test_clean_mantle_keeps_your_speed() -> void:
+	var clean := await _mantle_speeds(-7.07)
+	var sloppy := await _mantle_speeds(-6.7)
+	check(clean.size() == 2 and sloppy.size() == 2, "both jumps mantle (%s, %s)" % [clean, sloppy])
+	if clean.size() < 2 or sloppy.size() < 2:
+		return
+	check(clean[1] >= clean[0] * 0.98, "a clean mantle keeps your speed (%.2f -> %.2f)" % clean)
+	check(sloppy[1] < sloppy[0] * 0.85, "a sloppy one loses some (%.2f -> %.2f)" % sloppy)
+
+
 func _kick_push(run_in: float) -> float:
 	var w := _world()
 	w.add_floor()

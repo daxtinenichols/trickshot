@@ -165,3 +165,29 @@ func test_steer_up_a_sideways_ramp_by_looking() -> void:
 			p._look(0.5, 0.0)  # look up the slope
 		return f)
 	check(up.top > plain.top + 0.5, "looking up the ramp climbs it (%.2f m vs %.2f m)" % [up.top, plain.top])
+
+
+func test_bailing_off_a_loop_keeps_turning() -> void:
+	w.add_floor()
+	_add_loop(-70.0)
+	var p := await _settle()
+	await w.step_until(func() -> bool: return p.state == Player.State.SURFACE and p.body_up().y < -0.4, 900, _fwd())
+	check(p.state == Player.State.SURFACE, "upside down on the loop")
+	# Brake until too slow to hold on.
+	var before := Vector3.ZERO
+	var off := false
+	for i in 120:
+		p._process(0.0)
+		before = -p.camera.global_basis.z
+		await w.step(1, InputFrame.make(Vector2(0, -1)))
+		if p.state == Player.State.AIR:
+			off = true
+			break
+	check(off, "dropped off")
+	p._process(0.0)
+	var after := -p.camera.global_basis.z
+	check(before.angle_to(after) < deg_to_rad(5.0), "the view doesn't snap (%.1f deg)" % rad_to_deg(before.angle_to(after)))
+	var pitch0 := p.pitch
+	await w.step(10)
+	check(p.pitch > pitch0 + deg_to_rad(5.0), "keeps turning the way the loop turned you (%.1f -> %.1f deg)" % [rad_to_deg(pitch0), rad_to_deg(p.pitch)])
+	check(absf(p._air_pitch) > PI * 0.5, "counts as partway into a flip (%.0f deg)" % rad_to_deg(p._air_pitch))

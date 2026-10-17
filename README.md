@@ -49,20 +49,20 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 |---|---|---|
 | Run | Move in any direction (always a sprint) | Keeping your speed up builds momentum, which raises your top speed (7.5 to 11.5 m/s) |
 | Hop / bunny hop | Jump as you land | Jumping within ~2 frames of landing keeps all your speed; early jumps bleed it |
-| Hurdle / vault | Press jump at a waist-high (yellow) wall, on the ground or in the air. Never automatic: you can always just jump over | Taking off at the right distance gives a faster, cleaner vault |
-| Mantle | Jump into a ledge up to ~1.5 m above your reach | Grabbing it cleanly keeps more speed |
+| Hurdle / vault | Press jump at a waist-high (yellow) wall, on the ground or in the air. Never automatic: you can always just jump over | A vault keeps more speed than jumping over. Taking off at the right distance gives a faster, cleaner vault that adds speed and momentum |
+| Mantle | Jump into a ledge up to ~1.5 m above your reach | A clean grab keeps all your speed, even at the top of a wall climb; a sloppy one loses some |
 | Slide | Crouch while sprinting | Faster entry slides further; slopes add speed |
 | Slide landing | Press crouch just before you land from a fall | Turns some of your fall into forward speed |
 | Dolphin dive (prone jump) | Z, on the ground or once in the air. There's no lying prone or crawling | Tap to dive and pop up into a slide; hold to stay on your belly for low gaps. You get up by yourself when the slide runs out. Dive through low windows |
 | Wallrun | Jump into a blue wall at an angle, holding a direction | Shallow angle + speed = longer, floatier run. Lean toward the wall (Q or E) to angle your run up it, away to flatten it out and come down: steeper climbs higher but costs speed, a flat run goes furthest. Look and aim anywhere while running; crouch drops off |
 | Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; the steeper you're running up it, the harder. Chain wall to wall |
 | Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it (your view stays put; hold Q or E while turning to face away quickly) |
-| Ramp run / loop | Run onto a purple ramp or loop | Gravity slows you going up and speeds you coming down. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off and keep facing the way you were. Launch off the lip of a ramp for air tricks |
+| Ramp run / loop | Run onto a purple ramp or loop | Gravity slows you going up and speeds you coming down. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off. Drop off upside down and you keep turning the way the loop turned you, so you can come round and land it like a flip. Launch off the lip of a ramp for air tricks |
 | Sideways ramp | Run onto a purple bank at an angle | Run along it tilted; steer with the stick or look up the slope to climb it, let go to drift down |
 | Roll | On the ground, flick the view down past your feet | A forward roll, like a flip on the ground. Keeps your speed |
 | Ground roll | Double-tap crouch while running | A quick forward roll that keeps your speed |
 | Landing roll | Hold crouch in the air (from any angle, even mid-flip), or land tucked forward | You curl into a ball and roll out of big drops without losing speed instead of a stun |
-| Kick | F. In the air: kick off walls and targets | Kicking with speed pushes you further. Kicks doors open and breaks windows |
+| Kick | F. In the air: kick off walls and targets | Kicking with speed pushes you further and keeps your speed along the wall. Kicks doors open and breaks windows |
 | Boost | Shift | A short burst of speed on the ground, a ramp or a wall, then a 2 s cooldown |
 | Lean / quick turn | Hold Q or E | Leans you to peek. While held, turning the view is faster and your run follows it without losing speed (in the air, part of your speed follows) |
 | Side flip | Hold Q or E in the air | Rolls you sideways one way (the first one you press). Holding it, or crouch, tucks you in and spins you faster; let go to open up and slow down. Near level it settles; land on your side and you crash |

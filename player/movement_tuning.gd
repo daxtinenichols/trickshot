@@ -73,12 +73,18 @@ extends Resource
 ## Thickest obstacle that counts as vaultable; thicker ones are mantled onto.
 @export_range(0.2, 3.0, 0.05) var vault_max_depth := 1.4
 @export_range(0.05, 1.0, 0.01) var vault_time := 0.28
-@export_range(0.0, 0.5, 0.01) var vault_speed_bonus := 0.12
+## Speed gained by a clean vault (0.15 = 15%). A sloppy one still keeps
+## nearly all of it, so vaulting beats jumping over.
+@export_range(0.0, 0.5, 0.01) var vault_speed_bonus := 0.15
+## Extra momentum (raising your top speed) from a clean vault or mantle.
+@export_range(0.0, 1.0, 0.01) var clean_move_momentum := 0.15
 ## How far above your feet you can catch a ledge while airborne.
 @export_range(0.2, 3.0, 0.05) var mantle_air_reach := 1.55
 @export_range(0.05, 1.0, 0.01) var mantle_time := 0.32
-## Fraction of horizontal speed kept after a mantle.
-@export_range(0.0, 1.0, 0.01) var mantle_speed_keep := 0.7
+## Fraction of horizontal speed kept after a sloppy mantle. A clean one
+## (quality at or above mantle_clean_quality) keeps all of it.
+@export_range(0.0, 1.0, 0.01) var mantle_speed_keep := 0.55
+@export_range(0.05, 1.0, 0.01) var mantle_clean_quality := 0.7
 @export_range(0.0, 10.0, 0.1) var mantle_min_exit_speed := 3.5
 
 @export_group("Wallrun")
@@ -157,7 +163,8 @@ extends Resource
 @export_range(0.5, 4.0, 0.05) var kick_range := 1.7
 @export_range(0.0, 20.0, 0.1) var kick_push := 7.5
 @export_range(0.0, 20.0, 0.1) var kick_up := 6.5
-## Fraction of speed along the surface kept through a kick-off.
+## Fraction of speed along the surface kept through a weak kick-off; a
+## strong one (kicking hard into the surface) keeps all of it.
 @export_range(0.0, 1.0, 0.01) var kick_keep_tangent := 0.9
 @export_range(0, 6, 1) var kicks_per_air_time := 2
 @export_range(0.0, 50.0, 0.5) var kick_target_impulse := 14.0

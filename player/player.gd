@@ -49,6 +49,10 @@ var _wallrun_used_normal := Vector3.ZERO
 var _wall_jump_lock := 0.0
 var _climb_used := false
 var _climb_start_speed := 0.0
+## Horizontal speed you hit a climb with, given back by a clean mantle at
+## the top.
+var _climb_entry_speed := 0.0
+var _climb_quality := 0.0
 var _ground_time := 0.0
 ## Seconds between the jump press and touching down (-1 = no early press).
 var _land_press_age := -1.0
@@ -107,6 +111,13 @@ var _surface_look_yaw := 0.0
 var _surface_looped := false
 ## Direction the track under you runs (from its "flow" meta), or zero.
 var _surface_flow := Vector3.ZERO
+## Coming off a loop upside down: how far round you are (as a flip) and how
+## fast the loop was turning you, carried into the air.
+var _exit_air_pitch := 0.0
+var _exit_flip_rate := 0.0
+## The current spin carry came from a loop: it keeps its rate (no fade, no
+## halfway rule) until you take over with the view or come round level.
+var _carry_free := false
 ## Visual: the difference between the view on the surface and the upright
 ## view after leaving it, eased out so leaving never snaps the camera.
 var _view_offset := Quaternion.IDENTITY
@@ -360,8 +371,14 @@ func _change_state(to: State) -> void:
 		_roll_dir = 0.0
 		_roll_rate = 0.0
 		_look_acc = Vector2.ZERO
+		_air_pitch = _exit_air_pitch
+		_spin_vel = Vector2(0.0, _exit_flip_rate)
+		_carry_free = _exit_flip_rate != 0.0
+		_exit_air_pitch = 0.0
+		_exit_flip_rate = 0.0
 	elif from == State.AIR:
 		_spin_vel = Vector2.ZERO
+		_carry_free = false
 		_settle_pitch()
 		# A dive ends when you touch anything (landing reads it before this).
 		_diving = false
@@ -432,17 +449,19 @@ func _tick_spin_carry(f: InputFrame, delta: float) -> void:
 	if turned.length() > 0.0001:
 		var rate := turned / delta
 		_spin_vel = _spin_vel.lerp(rate, 0.5) if _spin_vel.dot(rate) > 0.0 else rate
+		_carry_free = false
 		return
-	if _spin_vel.length() < deg_to_rad(tuning.spin_carry_min):
-		_spin_vel = Vector2.ZERO
-		return
-	# Only a flip or spin past halfway round carries on, so looking around
-	# (aiming, tucking for a landing, overshooting a finished flip) never
-	# runs away from you.
-	if fmod(absf(_air_pitch), TAU) < PI:
-		_spin_vel.y = 0.0
-	if fmod(absf(_air_yaw), TAU) < PI:
-		_spin_vel.x = 0.0
+	if not _carry_free:
+		if _spin_vel.length() < deg_to_rad(tuning.spin_carry_min):
+			_spin_vel = Vector2.ZERO
+			return
+		# Only a flip or spin past halfway round carries on, so looking
+		# around (aiming, tucking for a landing, overshooting a finished
+		# flip) never runs away from you.
+		if fmod(absf(_air_pitch), TAU) < PI:
+			_spin_vel.y = 0.0
+		if fmod(absf(_air_yaw), TAU) < PI:
+			_spin_vel.x = 0.0
 	var step := _spin_vel * delta
 	# A flip or spin that carries round to level stops there, so letting go
 	# just before you come round lands you straight.
@@ -456,7 +475,7 @@ func _tick_spin_carry(f: InputFrame, delta: float) -> void:
 	pitch += step.y
 	_air_yaw += step.x
 	_air_pitch += step.y
-	if not f.crouch_held:
+	if not f.crouch_held and not _carry_free:
 		_spin_vel *= exp(-delta / maxf(tuning.spin_carry_time, 0.01))
 
 
@@ -1132,6 +1151,8 @@ func _try_wall_climb(f: InputFrame, from_ground: bool) -> bool:
 	var q_speed := clampf(MovementMath.horizontal(velocity).length() / tuning.top_speed, 0.0, 1.0)
 	var climb_q := 0.5 * q_face + 0.5 * q_speed
 	_climb_start_speed = tuning.wall_climb_speed * lerpf(0.85, 1.15, climb_q)
+	_climb_entry_speed = MovementMath.horizontal(velocity).length()
+	_climb_quality = climb_q
 	velocity = Vector3(0.0, _climb_start_speed, 0.0)
 	_change_state(State.WALLCLIMB)
 	_trick(&"wall_climb", {"quality": climb_q})
@@ -1393,6 +1414,8 @@ func _orient_to_surface(delta: float) -> void:
 ## floor), and the tilt eases out.
 func _leave_surface(onto_ground := false) -> void:
 	var view := (global_basis * Basis.from_euler(Vector3(pitch, _surface_look_yaw, 0.0))).orthonormalized()
+	var spin := _body_spin
+	var look_pitch := pitch
 	if onto_ground:
 		# Relative to where you're running (the body can lag a little
 		# behind it through the bottom of a loop).
@@ -1411,6 +1434,15 @@ func _leave_surface(onto_ground := false) -> void:
 		if h.length() > 0.0001:
 			yaw = atan2(-h.x, -h.y)
 		pitch = clampf(asin(clampf(fwd.y, -1.0, 1.0)), deg_to_rad(-89.0), deg_to_rad(89.0))
+		if global_basis.y.y < -0.1:
+			# Off a loop past upside down: you're partway through a flip.
+			# Keep turning the way the loop was turning you instead of
+			# snapping upright; let it come round and land it.
+			yaw = wrapf(yaw + PI, -PI, PI)
+			var rate := spin.dot(Basis(Vector3.UP, yaw).x)
+			pitch = (PI if rate >= 0.0 else -PI) - pitch
+			_exit_air_pitch = pitch - look_pitch
+			_exit_flip_rate = rate
 	var upright := Basis.from_euler(Vector3(pitch, yaw, 0.0))
 	_view_offset_start = (Quaternion(view) * Quaternion(upright).inverse()).normalized()
 	_view_offset = _view_offset_start
@@ -1550,7 +1582,8 @@ func _start_vault(info: Dictionary) -> void:
 	var mid := (_path_from + _path_to) * 0.5
 	_path_ctrl = Vector3(mid.x, info.top + 0.55 + (info.top - mid.y) * 0.3, mid.z)
 	_path_time = tuning.vault_time * lerpf(1.35, 0.85, q)
-	_path_exit_velocity = dir * speed * (1.0 + lerpf(-0.1, tuning.vault_speed_bonus, q))
+	_path_exit_velocity = dir * speed * (1.0 + lerpf(-0.03, tuning.vault_speed_bonus, q))
+	momentum = minf(momentum + tuning.clean_move_momentum * q, 1.0)
 	_jump_buffer = 999.0
 	_change_state(State.VAULT)
 	_trick(&"vault", {"height": info.height, "quality": q})
@@ -1561,7 +1594,16 @@ func _start_mantle(info: Dictionary) -> void:
 	# low on your body (not at the fingertips) is fast and keeps speed.
 	var q := _distance_quality(info) if info.grounded else 1.0 - clampf((info.reach - 0.45) / 0.55, 0.0, 1.0)
 	var dir: Vector3 = -info.face_normal
-	var keep := maxf(horizontal_speed() * minf(tuning.mantle_speed_keep * lerpf(0.6, 1.3, q), 1.0), tuning.mantle_min_exit_speed)
+	# A clean mantle keeps all your speed; a sloppy one loses some. Off a
+	# climb, it's the speed you ran into the wall with, kept as well as you
+	# hit the climb.
+	var speed := maxf(horizontal_speed(), MovementMath.horizontal(_pre_move_velocity).length())
+	if state == State.WALLCLIMB:
+		speed = _climb_entry_speed
+		q = _climb_quality
+	var share := lerpf(tuning.mantle_speed_keep, 1.0, smoothstep(0.0, tuning.mantle_clean_quality, q))
+	var keep := maxf(speed * share, tuning.mantle_min_exit_speed)
+	momentum = minf(momentum + tuning.clean_move_momentum * q, 1.0)
 	_path_from = global_position
 	_path_to = info.land
 	_path_ctrl = Vector3(_path_from.x, info.top + 0.35, _path_from.z)
@@ -1630,7 +1672,10 @@ func _try_kick_off() -> bool:
 	# Kicking while moving into the surface turns that speed into push.
 	var into := maxf(-MovementMath.horizontal(velocity).dot(MovementMath.horizontal(n).normalized()), 0.0)
 	var kick_q := clampf(into / tuning.top_speed, 0.0, 1.0)
-	velocity = MovementMath.kick_velocity(velocity, n, tuning.kick_push + into * tuning.kick_reflect, tuning.kick_up, tuning.kick_keep_tangent)
+	# A strong kick keeps all your speed along the surface; a weak one
+	# scrubs a little.
+	var keep := lerpf(tuning.kick_keep_tangent, 1.0, kick_q)
+	velocity = MovementMath.kick_velocity(velocity, n, tuning.kick_push + into * tuning.kick_reflect, tuning.kick_up, keep)
 	_kicks_left -= 1
 	_kicked_ids.append(cid)
 	_since_wall = 999.0
