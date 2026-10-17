@@ -13,9 +13,7 @@ signal state_changed(from: State, to: State)
 signal landed(fall_speed: float)
 signal respawned
 
-## PRONE and PRONE_SLIDE are never entered any more (prone and the dive were
-## removed); they stay only until the runner body stops naming them.
-enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL, STUN, PRONE, PRONE_SLIDE, SURFACE }
+enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL, STUN, SURFACE }
 
 const RADIUS := 0.38
 const EYE_OFFSET := 0.14
@@ -2058,12 +2056,6 @@ func vault_progress() -> float:
 	if state not in [State.VAULT, State.MANTLE]:
 		return 0.0
 	return clampf(state_time / _path_time, 0.0, 1.0)
-
-
-## Always false: the dive was removed. Kept until the runner body stops
-## asking.
-func is_diving() -> bool:
-	return false
 
 
 ## Seconds since last on the ground (wallruns and climbs count as off it).
