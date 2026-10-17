@@ -125,6 +125,33 @@ main-line roof starts, and a faded mark on the other line of a fork.
 `FACADE`; a segment's own `look` wins). `TOWER_BASE` dresses them as the
 broadcast tower's scaffolded concrete decks (m10).
 
+### The city round a route
+
+`campaign/city.gd` builds over every bit of ground the route doesn't use:
+solid blocks right up to the course (1.5 m from a roof's edge, 3.5 m from
+a street, with a pavement) standing at least 9 m over the highest roof
+near them, bigger blocks with narrow streets further out, and a band of
+blocks past the floor's edge for the skyline. So a run is a street or a
+canyon of roofs with nowhere else to go, and the course is the only way
+the eye can follow. Streets get pavements and kerbs, dead lamps,
+dumpsters, wrecks (some burning), rubble and faded road lines; the
+ground under gaps gets rubble and wrecks. Same mission, same city.
+
+| key | |
+|---|---|
+| `"skyline": false` | no city |
+| `"road_lines": false` | no road lines (streets that are really storm channels) |
+| `"city_open": [[x0, z0, x1, z1]]` | ground the city leaves open: the hollow a spiral climbs round (m10) |
+
+Base maps give the city their ground as a `FOOTPRINT` const (x, z rect);
+the city keeps off it and its ring of buildings.
+
+With streets on a route, the usual `fail_y` sits below the street, so a
+fall off a high roof would leave you stuck in the slot beside it. The
+route then adds `"pits": {"y": 1.2, "streets": [regions]}`: anywhere
+below `y` that isn't on a street region (or the base map's ground) counts
+as a fall too.
+
 Roofs also get edge clutter from `clutter` (a mission-level list of props),
 kept out of run-ups, landings and features. Keep lines long and open:
 there is no speed cap, so a fast run must still land every roof.

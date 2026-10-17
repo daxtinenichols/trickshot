@@ -41,6 +41,8 @@ const ESCALATOR_W := 2.4
 ## ruined buildings that closes the map.
 const GROUND_CENTER := Vector3(0, 0, -195)
 const GROUND_SIZE := Vector2(120, 530)
+## The ground inside the ring of buildings (x, z): a campaign city keeps off it.
+const FOOTPRINT := Rect2(GROUND_CENTER.x - GROUND_SIZE.x * 0.5, GROUND_CENTER.z - GROUND_SIZE.y * 0.5, GROUND_SIZE.x, GROUND_SIZE.y)
 ## The east walkway's collapsed stretch (z range).
 const HOLE := Vector2(-38.0, -46.0)
 
@@ -653,12 +655,66 @@ func _store() -> void:
 			[Vector3(-4, ry, -372), 0.0, "vent_stack"], [Vector3(18, ry, -392), 0.0, "vent_stack"], [Vector3(-18, ry, -398), 0.6, "satellite_dish"],
 			[Vector3(0, ry, -412), 0.0, "water_tank"], [Vector3(10, ry, -355), 0.0, "sandbag_wall"], [Vector3(-8, ry, -390), 1.57, "sandbag_wall"]]:
 		_prop(p[2], p[0], p[1])
+	_store_roof_edges()
 	_lamp(Vector3(0, UPPER_Y - 0.8, -360), WARM, 1.4)
 	_lamp(Vector3(-14, ROOF_Y - 0.8, -360), WARM, 1.0)
 	_lamp(Vector3(14, ROOF_Y - 0.8, -380), COOL, 1.0)
 	if not Engine.is_editor_hint():
 		_target(Vector3(10, UPPER_Y + 0.8, -358), ShootingTarget.Motion.STATIC)
 		_target(Vector3(-16, 0, -377), ShootingTarget.Motion.STRAFE, 2.0, 3.0)
+
+
+## The store roof is a closed yard: the hatch comes up in it and the only
+## way on is the skybridge gap at the back edge (when a mission carries on,
+## see open_exit). A plant room with the store's sign shuts off the long
+## mall roof to the north, and the Static's sheet-metal hoardings, topped
+## with wire, close the side edges and the rest of the back. All 4.5 m or
+## more: too tall to climb.
+func _store_roof_edges() -> void:
+	var y := ROOF_Y + 0.5
+	var back := DOCK_BACK + 0.4
+	# North: lift motor room and water plant, the sign on its south face.
+	_part(Vector3(0, y + 3.5, STORE_Z - 2.0), Vector3(WING_HALF * 2 + 1.4, 7.0, 3.4), Kind.NEUTRAL, "BRICK")
+	_sign_band(Vector3(0, y + 4.6, STORE_Z - 3.9), Vector3(16, 2.0, 0.3), PI, "HARGROVE & SONS", SIGN_COLORS[1], 2.6)
+	_prop("water_tank", Vector3(-15, y + 7.0, STORE_Z - 2.0), 0.0)
+	_prop("antenna_mast", Vector3(17, y + 7.0, STORE_Z - 2.0), 0.0)
+	# Sides, back to front.
+	for side: float in [-1.0, 1.0]:
+		_hoarding(Vector2(side * (WING_HALF - 0.3), STORE_Z - 3.7), Vector2(side * (WING_HALF - 0.3), back), y)
+	# The back: open over the skybridge when the run goes on, lit so the
+	# gap reads from the hatch.
+	var gap := 2.6 if open_exit else 0.0
+	for side: float in [-1.0, 1.0]:
+		if gap > 0.0:
+			_hoarding(Vector2(side * (WING_HALF - 0.3), back), Vector2(side * gap, back), y)
+		else:
+			_hoarding(Vector2(-WING_HALF + 0.3, back), Vector2(WING_HALF - 0.3, back), y)
+			break
+	if gap > 0.0:
+		for side: float in [-1.0, 1.0]:
+			_part(Vector3(side * (gap + 0.3), y + 3.0, back), Vector3(0.6, 6.0, 0.6), Kind.NEUTRAL, "RUST")
+		_part(Vector3(0, y + 5.8, back), Vector3(gap * 2.0 + 1.2, 0.5, 0.6), Kind.NEUTRAL, "RUST")
+		_lamp(Vector3(0, y + 5.2, back + 0.8), WARM, 2.2)
+		_prop("barrel_rust", Vector3(-4.2, y, back + 1.2), 0.0)
+		_prop("barrel_rust", Vector3(4.2, y, back + 1.2), 0.6)
+
+
+## A run of corrugated sheet hoarding on posts from a to b (x, z) on the
+## roof at y: 4.5 m sheets, a coil of wire along the top.
+func _hoarding(a: Vector2, b: Vector2, y: float) -> void:
+	var length := a.distance_to(b)
+	if length < 0.1:
+		return
+	var mid := (a + b) * 0.5
+	var along_x := absf(b.x - a.x) > absf(b.y - a.y)
+	var size := Vector3(length, 4.5, 0.2) if along_x else Vector3(0.2, 4.5, length)
+	_part(Vector3(mid.x, y + 2.25, mid.y), size, Kind.NEUTRAL, "CORRUGATED")
+	var wire := Vector3(length, 0.35, 0.35) if along_x else Vector3(0.35, 0.35, length)
+	_part(Vector3(mid.x, y + 4.7, mid.y), wire, Kind.NEUTRAL, "RUST")
+	var posts := maxi(1, roundi(length / 4.0))
+	for i in posts + 1:
+		var p := a.lerp(b, float(i) / posts)
+		_part(Vector3(p.x, y + 2.4, p.y), Vector3(0.3, 4.8, 0.3), Kind.NEUTRAL, "RUST")
 
 
 ## The well through the sales floor: the high line goes up it (mantle two

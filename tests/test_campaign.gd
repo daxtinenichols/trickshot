@@ -638,6 +638,50 @@ func test_route_turns_and_forks() -> void:
 	check(end[1] == 7.0, "on the last roof")
 
 
+## The city round a route: blocks fill the ground next to the course
+## without touching any of its roofs, and every block beside a roof stands
+## too tall to climb onto from it.
+func test_route_city_closes_the_course() -> void:
+	var m := Campaign.load_mission_file(TWISTS)
+	var roofs: Array[Array] = []
+	var city: Array[Array] = []
+	for p: Dictionary in m.pieces:
+		if not p.has("building"):
+			continue
+		var s: Array = Route_._turn_size([p.size[0], 0, p.size[1]], deg_to_rad(float(p.get("yaw", 0.0))))
+		var r := Rect2(p.building[0] - s[0] * 0.5, p.building[2] - s[2] * 0.5, s[0], s[2])
+		(city if p.get("city", false) else roofs).append([r, float(p.building[1])])
+	check(city.size() > 50, "a city round the route (%d blocks)" % city.size())
+	var overlaps := 0
+	var low := 0
+	for c: Array in city:
+		for r: Array in roofs:
+			var cut: Rect2 = (c[0] as Rect2).intersection(r[0])
+			if cut.get_area() > 0.01:
+				overlaps += 1
+			elif (c[0] as Rect2).grow(3.0).intersects(r[0]) and float(c[1]) < float(r[1]) + 9.0:
+				low += 1
+	check(overlaps == 0, "no block stands on the course (%d)" % overlaps)
+	check(low == 0, "blocks beside a roof clear it by 9 m (%d too low)" % low)
+
+
+## A route with streets and high roofs: down off a roof (into the slot
+## beside it) counts as a fall, down on the street doesn't.
+func test_route_pits_count_falls_off_the_streets() -> void:
+	var m := Route_.expand({"id": "t", "route": [{"street": 40}, {"ramp_up": 8}, {"roof": 40}]})
+	check(m.has("pits"), "a route with streets and roofs gets pits")
+	var on_street := func(pos: Vector3) -> bool:
+		for r: Dictionary in m.pits.streets:
+			if MissionRun.inside(r, pos):
+				return true
+		return false
+	check(on_street.call(Vector3(0, 0, -20)), "the street is not a pit")
+	check(on_street.call(Vector3(8, 0.2, -20)), "nor its pavement")
+	check(not on_street.call(Vector3(0, 0, -75)), "the ground under the roof is")
+	var high := Route_.expand({"id": "t", "route": [{"roof": 40, "y": 8}, {"gap": 6}, {"roof": 40}]})
+	check(not high.has("pits"), "an all-roof route falls by fail_y alone")
+
+
 ## A route can carry on from its base map's exit (the mall's loading dock
 ## road) instead of the world origin.
 func test_route_from_base_exit() -> void:

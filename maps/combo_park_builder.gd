@@ -23,6 +23,8 @@ const HALF := 66.0  # the first yard is 132 x 132 m
 const FAR_Z := -570.0
 const FLOOR_CENTER := Vector3(0, 0, (HALF + FAR_Z) * 0.5)
 const FLOOR_SIZE := Vector2(HALF * 2, HALF - FAR_Z)
+## The ground inside the ring of buildings (x, z): a campaign city keeps off it.
+const FOOTPRINT := Rect2(FLOOR_CENTER.x - FLOOR_SIZE.x * 0.5, FLOOR_CENTER.z - FLOOR_SIZE.y * 0.5, FLOOR_SIZE.x, FLOOR_SIZE.y)
 ## Where a run starts and ends (spawns[0] is ENTRY). The campaign reads these
 ## by path and carries on past EXIT.
 const ENTRY := Transform3D(Basis.IDENTITY, Vector3(0, 0, 30))

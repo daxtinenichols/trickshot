@@ -110,6 +110,18 @@ func fail_y() -> float:
 	return mission.get("fail_y", -50.0)
 
 
+## Down off the course (low, and not on any of its streets): see "pits"
+## in docs/missions.md.
+func _in_pit(pos: Vector3) -> bool:
+	var pits: Dictionary = mission.get("pits", {})
+	if pits.is_empty() or pos.y >= float(pits.y):
+		return false
+	for r: Dictionary in pits.streets:
+		if inside(r, pos):
+			return false
+	return true
+
+
 func par_seconds() -> float:
 	return mission.get("par_seconds", 0.0)
 
@@ -158,7 +170,7 @@ func _physics_process(_delta: float) -> void:
 			event.emit("go")
 	if phase == Phase.RUNNING:
 		ticks += 1
-	if pos.y < fail_y():
+	if pos.y < fail_y() or _in_pit(pos):
 		falls += 1
 		_back_to_checkpoint()
 		event.emit("fall")
