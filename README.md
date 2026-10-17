@@ -31,10 +31,13 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Respawn | Backspace | Back |
 | Menu (maps, moves, settings, controls) | Esc | Start |
 | Jump to zone | 1–9, 0 = shooting range, - = ramps and loop | |
-| HUD / tuning / slow-mo / speed trail | F1 / F2 / F3 / F4 | |
+| Slow motion (down to 10%, back up to normal) | Mouse wheel down / up, or F3 for 30% | |
+| HUD / tuning / speed trail | F1 / F2 / F4 | |
 | Art look / chase camera / next level / corner view | F9 / F10 / F11 / F12 | |
 
 You always sprint: there's no walk or sprint key. Let go of the stick to stop.
+
+Scroll the mouse wheel down to slow time in 10% steps, and up to bring it back; it never goes faster than normal. The screen edges darken while time is slowed. The game still runs the same 1/60 s steps, just less often, so a move in slow motion plays out exactly as it would at full speed.
 
 A small third-person view in the lower-left corner shows your character so you can see what your moves look like (F12 hides it).
 

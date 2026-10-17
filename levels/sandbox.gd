@@ -46,5 +46,3 @@ func _unhandled_input(event: InputEvent) -> void:
 		if InputMap.has_action("zone_%d" % (i + 1)) and event.is_action_pressed("zone_%d" % (i + 1)):
 			go_to_zone(i)
 			return
-	if event.is_action_pressed("debug_slowmo"):
-		Engine.time_scale = 0.3 if is_equal_approx(Engine.time_scale, 1.0) else 1.0

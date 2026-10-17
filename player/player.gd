@@ -58,6 +58,10 @@ var _wallrun_gravity := 0.3
 ## and your speed along it.
 var _wallrun_angle := 0.0
 var _wallrun_speed := 0.0
+## The player's transform at the previous tick, for smoothing the view in
+## slow motion.
+var _prev_origin := Vector3.ZERO
+var _prev_rotation := Quaternion.IDENTITY
 var _kicks_left := 0
 var _kicked_ids: Array[int] = []
 var _pre_move_velocity := Vector3.ZERO
@@ -156,6 +160,8 @@ var weapon: Node
 func _ready() -> void:
 	if tuning == null:
 		tuning = MovementTuning.new()
+	_prev_origin = global_position
+	_prev_rotation = Quaternion(global_basis.orthonormalized())
 	_stand_shape = CapsuleShape3D.new()
 	_stand_shape.radius = RADIUS
 	_stand_shape.height = tuning.stand_height
@@ -249,6 +255,8 @@ func set_view(new_yaw: float, new_pitch := 0.0) -> void:
 # ---------------------------------------------------------------- tick
 
 func _physics_process(delta: float) -> void:
+	_prev_origin = global_position
+	_prev_rotation = Quaternion(global_basis.orthonormalized())
 	var f: InputFrame
 	if scripted_input != null:
 		f = scripted_input
@@ -1706,6 +1714,19 @@ func _boost(f: InputFrame) -> void:
 	_trick_feedback(&"boost")
 
 
+## Where the player is drawn this frame: between the last two ticks, facing
+## where you look right now. Matches global_transform at normal speed; in
+## slow motion (ticks far apart) it keeps the view and body moving smoothly.
+func visual_transform() -> Transform3D:
+	if Engine.time_scale >= 0.999:
+		return global_transform
+	var t := Engine.get_physics_interpolation_fraction()
+	var pos := _prev_origin.lerp(global_position, t)
+	if state == State.SURFACE:
+		return Transform3D(Basis(_prev_rotation.slerp(Quaternion(global_basis.orthonormalized()), t)), pos)
+	return Transform3D(Basis(Vector3.UP, yaw), pos)
+
+
 ## 0 = boost ready, 1 = just used.
 func boost_cooldown() -> float:
 	return _boost_cooldown / maxf(tuning.boost_cooldown, 0.01)
@@ -1735,6 +1756,8 @@ func respawn(t: Variant = null) -> void:
 		_leave_surface()
 	global_position = _spawn.origin
 	set_view(_spawn.basis.get_euler().y, 0.0)
+	_prev_origin = global_position
+	_prev_rotation = Quaternion(global_basis)
 	velocity = Vector3.ZERO
 	momentum = 0.0
 	_set_height(tuning.stand_height)
@@ -1776,7 +1799,8 @@ func _process(delta: float) -> void:
 	if use_device_input:
 		var stick := InputSetup.look_stick()
 		if stick.length() > 0.15:
-			var pad := tuning.gamepad_look_speed * aim_sensitivity_scale() * delta
+			# Real time, so looking around isn't slowed down in slow motion.
+			var pad := tuning.gamepad_look_speed * aim_sensitivity_scale() * delta / maxf(Engine.time_scale, 0.01)
 			var pitch_scale := 0.7
 			if state == State.AIR:
 				pad *= tuning.gamepad_air_spin
@@ -1815,6 +1839,9 @@ func _process(delta: float) -> void:
 	else:
 		_air_roll_view = lerp_angle(_air_roll_view, 0.0, 1.0 - exp(-12.0 * delta))
 	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view)
+	if Engine.time_scale < 0.999:
+		# In slow motion the ticks are far apart: smooth the view between them.
+		head.global_transform = visual_transform() * head.transform
 	if not _view_offset.is_equal_approx(Quaternion.IDENTITY):
 		# Eases out from a standstill (critically damped), so the view starts
 		# moving gently instead of jumping.
