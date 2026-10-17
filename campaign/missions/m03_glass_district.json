@@ -89,13 +89,25 @@
   },
   {"gap": 8},
   {
-   "roof": 64,
+   "roof": 40,
    "y": 8,
    "do": [
     {"radio": {"who": "mags", "line": "That bridge is the only way over the Silt. Get across before he thinks of something."}, "at": 10},
-    {"hurdles": true, "at": 30},
-    {"label": "THE SILT BRIDGE", "at": 58, "size": 1.4},
-    {"mark": "#f57320", "at": 60}
+    {"hurdles": true, "at": 22}
+   ]
+  },
+  {
+   "roof": 26,
+   "bridge": true,
+   "beyond": 150,
+   "do": [
+    {"label": "THE SILT BRIDGE", "at": 2, "size": 1.4},
+    {"piece": {"mark": [0, -7.98, -80], "size": [56, 190], "color": "#7a6c58"}, "at": 0},
+    {"piece": {"prop": "car_wreck", "at": [-3.2, 0, -44], "yaw": 12}, "at": 0},
+    {"piece": {"prop": "car_wreck", "at": [3.4, 0, -78], "yaw": 168}, "at": 0},
+    {"piece": {"prop": "barricade_jersey", "at": [-1.5, 0, -108], "yaw": 70}, "at": 0},
+    {"piece": {"prop": "car_wreck", "at": [-2.8, 0, -131], "yaw": 200}, "at": 0},
+    {"mark": "#f57320", "at": 22}
    ]
   }
  ],
