@@ -164,6 +164,69 @@ func test_chase_camera_looks_down_on_the_runner() -> void:
 	cam.queue_free()
 
 
+func _wheel(cam: Node, button: MouseButton) -> void:
+	var e := InputEventMouseButton.new()
+	e.button_index = button
+	e.pressed = true
+	cam._unhandled_input(e)
+
+
+func test_chase_camera_tilts_with_the_view_and_zooms_to_first_person() -> void:
+	ArtLook.ensure_body(player)
+	var cam: Camera3D = preload("res://art/look/chase_camera.gd").new()
+	level.add_child(cam)
+	cam.setup(player)
+	cam.set_active(true)
+	await tree.process_frame
+	var level_y := cam.global_position.y - player.global_position.y
+	player.set_view(player.yaw, deg_to_rad(-40.0))
+	await tree.process_frame
+	var down_y := cam.global_position.y - player.global_position.y
+	player.set_view(player.yaw, deg_to_rad(20.0))
+	await tree.process_frame
+	var up_y := cam.global_position.y - player.global_position.y
+	check(down_y > level_y + 1.0 and up_y < level_y - 1.0, "looking down raises the camera, up lowers it (%.1f / %.1f / %.1f)" % [down_y, level_y, up_y])
+	player.set_view(player.yaw, 0.0)
+	# Scroll in until it hands over to the first-person camera.
+	var before: float = cam.distance
+	_wheel(cam, MOUSE_BUTTON_WHEEL_UP)
+	check(cam.distance < before, "wheel up zooms in")
+	for i in 30:
+		_wheel(cam, MOUSE_BUTTON_WHEEL_UP)
+	check(not cam.is_active() and player.camera.current, "zoomed all the way in = first person")
+	_wheel(cam, MOUSE_BUTTON_WHEEL_DOWN)
+	check(cam.is_active() and cam.current, "scrolling out of first person comes back to third")
+	cam.set_active(false)
+	cam.queue_free()
+
+
+func test_gun_look_replaces_the_test_pistol_visuals() -> void:
+	var gun: Pistol = player.weapon
+	_look().attach_to_player(player)
+	var look: GunLook = player.get_node("GunLook")
+	check(not gun.builtin_visuals, "test pistol boxes and effects off")
+	check(look.fp_model.get_parent() == gun.view_model, "first-person model rides the view model")
+	var hand := look.held_model.get_parent() as BoneAttachment3D
+	check(hand != null and hand.bone_name == "RightHand", "third-person gun is in the right hand")
+	level.go_to_zone(9)
+	await tree.physics_frame
+	gun.trigger_pressed = true
+	await tree.physics_frame
+	await tree.process_frame
+	check(look._flashes.all(func(f: Node3D) -> bool: return f.visible), "muzzle flash shows")
+	check(look._tracers.size() == 1, "tracer spawned")
+	check(look._casings.size() == 1, "casing ejected")
+	var slide: Node3D = look._slides[0]
+	check(slide.position.z > slide.get_meta("rest_z") + 0.005, "slide blows back")
+	for i in 20:
+		await tree.process_frame
+	check(look._flashes.all(func(f: Node3D) -> bool: return not f.visible), "flash is brief")
+	_look().set_enabled(false)
+	await tree.process_frame
+	check(gun.builtin_visuals, "test pistol visuals back with the art look off")
+	_look().set_enabled(true)
+
+
 func test_body_is_smooth_in_slow_motion() -> void:
 	# In slow-mo the sim ticks less often than frames are drawn; the body must
 	# follow the interpolated transform, moving a little every frame instead

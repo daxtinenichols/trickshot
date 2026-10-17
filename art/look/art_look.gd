@@ -271,6 +271,12 @@ func attach_to_player(player: Player) -> void:
 	var lines: CanvasLayer = SpeedLines.new()
 	_add(player, lines)
 	lines.setup(player)
+	var pistol := player.weapon as Pistol
+	if pistol and pistol.view_model:
+		var gun := GunLook.new()
+		gun.name = "GunLook"
+		_add(player, gun)
+		gun.setup(pistol, player.get_node("RunnerBody") as RunnerBody)
 
 
 ## The player's runner body, built on first use. The first-person camera is

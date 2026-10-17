@@ -1,15 +1,43 @@
 extends Camera3D
-## Full-screen third-person camera for watching the runner's animation.
-## F10 toggles it. Gameplay keeps running exactly as in first person; this
-## only moves the view. (The in-game corner camera is separate.)
+## Full-screen third-person camera. F10 toggles it; the scroll wheel zooms,
+## and zooming all the way in drops back to first person (scrolling out from
+## first person comes back here). Gameplay keeps running exactly as in first
+## person; this only moves the view.
+##
+## An orbit around the runner: mouse/stick left-right turns it with the
+## player's yaw, up-down tilts it with the player's look pitch. It follows
+## the player's interpolated transform rigidly (no positional lag), so the
+## runner stays steady on screen at any frame rate; only zoom and wall
+## pull-in are smoothed. (The in-game corner camera is separate.)
 
+## Wheel actions, registered here like ArtLook's function keys so the rebind
+## menu reserves them.
+const ZOOM_ACTIONS := {"camera_zoom_in": MOUSE_BUTTON_WHEEL_UP, "camera_zoom_out": MOUSE_BUTTON_WHEEL_DOWN}
+const MIN_DISTANCE := 1.6
+const MAX_DISTANCE := 9.0
+## Each wheel notch scales the distance by this much.
+const ZOOM_STEP := 1.18
+## Coming out of first person lands this far back.
+const ENTER_DISTANCE := 2.6
 
 var player: Player
-## Up and behind, looking down on the runner (about 25 degrees).
-var distance := 4.2
-var height := 3.0
+## Default distance and how far it looks down on the runner with a level view.
+var distance := 5.2
+var tilt_deg := 28.0
+## The point it orbits, above the runner's feet.
 var look_height := 0.9
 var _active := false
+var _zoom := 5.2  # smoothed distance
+var _pull := 9999.0  # wall pull-in, smoothed
+
+
+static func register_actions() -> void:
+	for action: String in ZOOM_ACTIONS:
+		if not InputMap.has_action(action):
+			InputMap.add_action(action)
+			var b := InputEventMouseButton.new()
+			b.button_index = ZOOM_ACTIONS[action]
+			InputMap.action_add_event(action, b)
 
 
 func setup(p: Player) -> void:
@@ -22,12 +50,34 @@ func _ready() -> void:
 	near = 0.05
 	far = 600.0
 	cull_mask = 0xFFFFF & ~Pistol.VIEW_LAYER
+	register_actions()
+	_zoom = distance
 
 
 func _unhandled_input(event: InputEvent) -> void:
+	if player == null:
+		return
 	if event.is_action_pressed("toggle_chase_cam") and not event.is_echo():
 		set_active(not _active)
 		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("camera_zoom_out"):
+		if _active:
+			distance = minf(distance * ZOOM_STEP, MAX_DISTANCE)
+		elif player.camera.current:
+			distance = ENTER_DISTANCE
+			set_active(true)
+			_zoom = MIN_DISTANCE
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("camera_zoom_in") and _active:
+		if distance <= MIN_DISTANCE + 0.01:
+			set_active(false)
+		else:
+			distance = maxf(distance / ZOOM_STEP, MIN_DISTANCE)
+		get_viewport().set_input_as_handled()
+
+
+func is_active() -> bool:
+	return _active
 
 
 func set_active(on: bool) -> void:
@@ -42,25 +92,43 @@ func set_active(on: bool) -> void:
 func _process(delta: float) -> void:
 	if not _active or player == null:
 		return
-	var target := _desired()
-	global_position = global_position.lerp(target, 1.0 - exp(-8.0 * delta))
-	_look()
+	# Real time, so zooming feels the same in slow motion.
+	var real := delta / maxf(Engine.time_scale, 0.01)
+	_zoom = lerpf(_zoom, distance, 1.0 - exp(-12.0 * real))
+	_place(real)
 
 
 func _snap() -> void:
-	global_position = _desired()
-	_look()
+	_zoom = distance
+	_pull = 9999.0
+	_place(0.0)
 
 
-func _desired() -> Vector3:
-	# The player's frame tilts on ramps and loops; follow it (smoothed in slow-mo).
+func _place(real_delta: float) -> void:
 	var vt := player.visual_transform()
-	return vt.origin + vt.basis.orthonormalized() * Vector3(0, height, distance)
+	var frame := vt.basis.orthonormalized()
+	var pivot := vt.origin + frame.y * look_height
+	# Level view = tilt_deg down; looking up swings the camera low, looking
+	# down swings it overhead.
+	var angle := clampf(deg_to_rad(tilt_deg) - player.pitch, deg_to_rad(-55.0), deg_to_rad(85.0))
+	var orbit := frame * Basis(Vector3.RIGHT, -angle)
+	var back := orbit.z
+	var want := _zoom
+	# Pull in in front of walls; ease back out so it doesn't pop.
+	var hit := _wall_distance(pivot, back, want + 0.3)
+	if hit < _pull or real_delta == 0.0:
+		_pull = hit
+	else:
+		_pull = lerpf(_pull, hit, 1.0 - exp(-5.0 * real_delta))
+	var d := minf(want, _pull - 0.3)
+	d = maxf(d, 0.4)
+	global_transform = Transform3D(orbit, pivot + back * d)
 
 
-func _look() -> void:
-	var vt := player.visual_transform()
-	var up := vt.basis.y.normalized()
-	var target := vt.origin + up * look_height
-	if global_position.distance_to(target) > 0.05:
-		look_at(target, up)
+func _wall_distance(from: Vector3, dir: Vector3, length: float) -> float:
+	if not is_inside_tree():
+		return length
+	var q := PhysicsRayQueryParameters3D.create(from, from + dir * length, 1)
+	q.exclude = [player.get_rid()]
+	var r := get_world_3d().direct_space_state.intersect_ray(q)
+	return length if r.is_empty() else from.distance_to(r.position)
