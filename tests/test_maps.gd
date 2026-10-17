@@ -412,3 +412,8 @@ func test_park_edges_closed() -> void:
 func test_mall_edges_closed() -> void:
 	await _load(MALL)
 	_check_closed(MallBuilder.GROUND_CENTER, MallBuilder.GROUND_SIZE)
+
+
+func test_sandbox_edges_closed() -> void:
+	await _load(preload("res://levels/sandbox.tscn"))
+	_check_closed(Vector3(10, 0, -27.5), Vector2(320, 285))

@@ -50,7 +50,11 @@ func build() -> void:
 	spawns.clear()
 	zone_names.clear()
 
-	_box(Vector3(10, -0.5, -40), Vector3(320, 1, 260), Kind.FLOOR)
+	# Floor reaches past the enemies arena (to z 115); ruined buildings close every edge.
+	_box(Vector3(10, -0.5, -27.5), Vector3(320, 1, 285), Kind.FLOOR)
+	for piece in MapPieces.perimeter(Vector3(10, 0, -27.5), Vector2(320, 285)):
+		var t: Transform3D = piece.transform
+		_box_basis(t.origin, piece.size, t.basis, Kind.NEUTRAL).set_meta("look", "FACADE")
 	_zone_run_track(Vector3(0, 0, 0))
 	_zone_vault_lane(Vector3(20, 0, 0))
 	_zone_mantle_steps(Vector3(40, 0, 0))
