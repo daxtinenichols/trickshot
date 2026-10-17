@@ -81,10 +81,28 @@ static func is_bindable(ev: InputEvent, pad: bool) -> bool:
 	if pad:
 		if ev is InputEventJoypadMotion:
 			return absf((ev as InputEventJoypadMotion).axis_value) >= 0.5
-		return ev is InputEventJoypadButton
+		return ev is InputEventJoypadButton and not _is_reserved(_normalize(ev))
 	if ev is InputEventKey:
-		return (ev as InputEventKey).physical_keycode != KEY_ESCAPE
-	return ev is InputEventMouseButton
+		return not _is_reserved(_normalize(ev))
+	if ev is InputEventMouseButton:
+		# Wheel "presses" arrive and release in one frame; held actions miss them.
+		var b := (ev as InputEventMouseButton).button_index
+		return b not in [MOUSE_BUTTON_WHEEL_UP, MOUSE_BUTTON_WHEEL_DOWN, MOUSE_BUTTON_WHEEL_LEFT, MOUSE_BUTTON_WHEEL_RIGHT]
+	return false
+
+
+## Inputs owned by actions players can't rebind (menu, zones, debug keys).
+static func _is_reserved(ev: InputEvent) -> bool:
+	var rebindable := {}
+	for pair: Array in REBINDABLE:
+		rebindable[pair[0]] = true
+	for action in InputMap.get_actions():
+		if rebindable.has(String(action)) or String(action).begins_with("ui_"):
+			continue
+		for existing in InputMap.action_get_events(action):
+			if _same_input(existing, ev):
+				return true
+	return false
 
 
 ## The event in an action's keyboard/mouse or controller slot (or null).
