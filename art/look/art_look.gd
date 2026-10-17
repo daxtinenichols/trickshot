@@ -17,23 +17,47 @@ signal toggled(on: bool)
 
 const GRAYBOX_SHADER := preload("res://levels/graybox.gdshader")
 const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
+const WASTELAND_SHADER := preload("res://art/shaders/wasteland.gdshader")
 const OUTLINE_SHADER := preload("res://art/shaders/outline_post.gdshader")
 const SpeedLines := preload("res://art/fx/speed_lines.gd")
 const ChaseCamera := preload("res://art/look/chase_camera.gd")
 
 
-## Graybox color -> art color. Same color language, richer palette.
+## Graybox kind -> art color. Same color language as the graybox (blue walls
+## to run on, yellow to vault or climb, green to slide under), faded and
+## weathered for the post-apocalyptic look.
 const PALETTE := {
-	"FLOOR": Color(0.66, 0.65, 0.66),
-	"NEUTRAL": Color(0.90, 0.89, 0.87),
-	"WALLRUN": Color(0.22, 0.56, 1.0),
-	"PARKOUR": Color(1.0, 0.74, 0.16),
-	"SLIDE": Color(0.20, 0.82, 0.60),
+	"FLOOR": Color(0.46, 0.43, 0.40),
+	"NEUTRAL": Color(0.74, 0.69, 0.62),
+	"WALLRUN": Color(0.24, 0.50, 0.84),
+	"PARKOUR": Color(0.95, 0.70, 0.18),
+	"SLIDE": Color(0.28, 0.68, 0.50),
+	"SURFACE": Color(0.62, 0.42, 0.82),
+	"FACADE": Color(0.64, 0.60, 0.55),
 }
 
-## Ambient (shadow) color and strength of the art look.
-const AMBIENT := Color(0.74, 0.79, 0.92)
+## Which wasteland.gdshader surface each kind uses, and its texture scale in
+## meters. Painted kinds wear through to rust (metal) or concrete.
+enum Surface { PLAIN, CONCRETE, RUST, ASPHALT, PAINTED_METAL, PAINTED_CONCRETE, FACADE }
+const SURFACES := {
+	"FLOOR": [Surface.ASPHALT, 1.0],
+	"NEUTRAL": [Surface.CONCRETE, 1.0],
+	"WALLRUN": [Surface.PAINTED_METAL, 1.0],
+	"PARKOUR": [Surface.PAINTED_CONCRETE, 0.8],
+	"SLIDE": [Surface.PAINTED_METAL, 0.8],
+	"SURFACE": [Surface.PAINTED_METAL, 1.2],
+	"FACADE": [Surface.FACADE, 1.0],
+}
+
+## Ambient (shadow) color and strength: warm gray, like light bounced off dust.
+const AMBIENT := Color(0.82, 0.74, 0.66)
 const AMBIENT_ENERGY := 0.55
+## Hazy, dusty sky and fog.
+const SKY_TOP := Color(0.46, 0.50, 0.56)
+const SKY_HORIZON := Color(0.92, 0.76, 0.56)
+const GROUND_BOTTOM := Color(0.40, 0.33, 0.27)
+const FOG := Color(0.86, 0.72, 0.54)
+const SUN := Color(1.0, 0.88, 0.70)
 
 var enabled := true
 ## Off in headless runs (tests) unless a test turns it on explicitly.
@@ -91,6 +115,28 @@ func world_material(color: Color, grid := 0.35) -> ShaderMaterial:
 	return _world_materials[key]
 
 
+## The weathered, textured material for a map kind ("FLOOR", "WALLRUN",
+## "FACADE"... see SURFACES), optionally in another color. Procedural and
+## world-space, so any box or curve gets it without UVs. Shared per kind and
+## color.
+func wasteland_material(kind: String, color := Color.TRANSPARENT, grid := 0.0) -> ShaderMaterial:
+	var spec: Array = SURFACES.get(kind, [Surface.PAINTED_CONCRETE, 1.0])
+	if color.a == 0.0:
+		color = PALETTE.get(kind, PALETTE.NEUTRAL)
+	var key := "w/%s/%s/%.2f" % [kind, color.to_html(), grid]
+	if not _world_materials.has(key):
+		var m := ShaderMaterial.new()
+		m.shader = WASTELAND_SHADER
+		m.set_shader_parameter("base_color", color)
+		m.set_shader_parameter("surface", spec[0])
+		m.set_shader_parameter("tex_scale", spec[1])
+		m.set_shader_parameter("grid_strength", grid)
+		# Dust settles on everything flat except steep runnable curves.
+		m.set_shader_parameter("dust_amount", 0.25 if kind == "SURFACE" else 0.45)
+		_world_materials[key] = m
+	return _world_materials[key]
+
+
 func _on_node_added(node: Node) -> void:
 	if enabled and auto_attach:
 		# Wait a frame: builders and players finish setting up in _ready.
@@ -110,6 +156,8 @@ func _apply(node: Node) -> void:
 		_restyle_geometry(node)
 	elif node is WorldEnvironment:
 		_restyle_environment(node)
+	elif node is DirectionalLight3D:
+		_restyle_sun(node)
 	elif node is Player:
 		attach_to_player(node)
 
@@ -120,19 +168,30 @@ func _restyle_geometry(g: GeometryInstance3D) -> void:
 		return
 	var base: Color = m.get_shader_parameter("base_color")
 	var kind := _kind_for(g, base)
-	var color: Color = PALETTE.get(kind, base)
 	_swapped.append([g, m])
-	g.material_override = world_material(color, 0.35 if kind == "FLOOR" else 0.2)
+	# A faint meter grid stays on the ground so distances still read.
+	var grid := 0.12 if kind == "FLOOR" else 0.0
+	if PALETTE.has(kind):
+		g.material_override = wasteland_material(kind, Color.TRANSPARENT, grid)
+	else:
+		# Custom colored marks (start/finish lines...): worn paint on concrete.
+		g.material_override = wasteland_material("", base)
 
 
 func _kind_for(g: Node, base: Color) -> String:
 	var body := g.get_parent()
+	# Maps can ask for a look the gameplay kind doesn't say (a skyline
+	# building is NEUTRAL to the player but a ruined facade to the eye).
+	if body and body.has_meta("look"):
+		return body.get_meta("look")
 	if body and body.has_meta("kind"):
 		return body.get_meta("kind")
 	# Floor marks have no body: match the closest graybox color.
 	var best := ""
 	var best_d := 0.04
 	for k: String in PALETTE:
+		if not SandboxBuilder.Kind.has(k):
+			continue
 		var c: Color = SandboxBuilder.COLORS[SandboxBuilder.Kind[k]]
 		var d := Vector3(c.r - base.r, c.g - base.g, c.b - base.b).length()
 		if d < best_d:
@@ -153,19 +212,25 @@ func _restyle_environment(we: WorldEnvironment) -> void:
 		"tonemap_mode": env.tonemap_mode,
 		"fog_light_color": env.fog_light_color,
 		"fog_density": env.fog_density,
+		"fog_sky_affect": env.fog_sky_affect,
+		"fog_sun_scatter": env.fog_sun_scatter,
 		"adjustment_enabled": env.adjustment_enabled,
 		"adjustment_saturation": env.adjustment_saturation,
 	}
-	# Flat, cool ambient = the cel shadow color. No AO smudges.
+	# Flat, warm ambient = the cel shadow color. No AO smudges.
 	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
 	env.ambient_light_color = AMBIENT
 	env.ambient_light_energy = AMBIENT_ENERGY
 	env.ssao_enabled = false
 	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
-	env.fog_light_color = Color(0.80, 0.86, 0.96)
-	env.fog_density = 0.0035
+	# Dust haze: thicker fog so distant ruins fade into the sky.
+	env.fog_light_color = FOG
+	env.fog_density = 0.0045
+	# Keep some sky gradient above the haze, and a glow around the sun.
+	env.fog_sky_affect = 0.35
+	env.fog_sun_scatter = 0.25
 	env.adjustment_enabled = true
-	env.adjustment_saturation = 1.12
+	env.adjustment_saturation = 0.92
 	var sky_mat := env.sky.sky_material as ProceduralSkyMaterial if env.sky else null
 	if sky_mat:
 		_env_backup[sky_mat] = {
@@ -174,10 +239,18 @@ func _restyle_environment(we: WorldEnvironment) -> void:
 			"ground_horizon_color": sky_mat.ground_horizon_color,
 			"ground_bottom_color": sky_mat.ground_bottom_color,
 		}
-		sky_mat.sky_top_color = Color(0.24, 0.50, 0.92)
-		sky_mat.sky_horizon_color = Color(0.86, 0.90, 0.98)
-		sky_mat.ground_horizon_color = Color(0.86, 0.90, 0.98)
-		sky_mat.ground_bottom_color = Color(0.45, 0.50, 0.62)
+		sky_mat.sky_top_color = SKY_TOP
+		sky_mat.sky_horizon_color = SKY_HORIZON
+		sky_mat.ground_horizon_color = SKY_HORIZON
+		sky_mat.ground_bottom_color = GROUND_BOTTOM
+
+
+## Low, warm sun through the dust.
+func _restyle_sun(sun: DirectionalLight3D) -> void:
+	if _env_backup.has(sun):
+		return
+	_env_backup[sun] = {"light_color": sun.light_color}
+	sun.light_color = SUN
 
 
 ## Adds outlines and speed lines to a player, plus the runner body and the
