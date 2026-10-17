@@ -32,13 +32,13 @@ const ChaseCamera := preload("res://art/look/chase_camera.gd")
 ## to run on, yellow to vault or climb, green to slide under), faded and
 ## weathered for the post-apocalyptic look.
 const PALETTE := {
-	"FLOOR": Color(0.46, 0.43, 0.40),
-	"NEUTRAL": Color(0.74, 0.69, 0.62),
-	"WALLRUN": Color(0.24, 0.50, 0.84),
-	"PARKOUR": Color(0.95, 0.70, 0.18),
-	"SLIDE": Color(0.28, 0.68, 0.50),
-	"SURFACE": Color(0.62, 0.42, 0.82),
-	"FACADE": Color(0.64, 0.60, 0.55),
+	"FLOOR": Color(0.40, 0.37, 0.34),
+	"NEUTRAL": Color(0.60, 0.56, 0.50),
+	"WALLRUN": Color(0.22, 0.45, 0.76),
+	"PARKOUR": Color(0.86, 0.60, 0.14),
+	"SLIDE": Color(0.25, 0.60, 0.45),
+	"SURFACE": Color(0.55, 0.37, 0.74),
+	"FACADE": Color(0.54, 0.50, 0.45),
 }
 
 ## Which wasteland.gdshader surface each kind uses, and its texture scale in
@@ -56,7 +56,7 @@ const SURFACES := {
 
 ## Ambient (shadow) color and strength: warm gray, like light bounced off dust.
 const AMBIENT := Color(0.82, 0.74, 0.66)
-const AMBIENT_ENERGY := 0.55
+const AMBIENT_ENERGY := 0.3
 ## Hazy, dusty sky and fog.
 const SKY_TOP := Color(0.46, 0.50, 0.56)
 const SKY_HORIZON := Color(0.92, 0.76, 0.56)
@@ -213,53 +213,57 @@ func _restyle_environment(we: WorldEnvironment) -> void:
 	var env := we.environment
 	if env == null or _env_backup.has(env):
 		return
-	_env_backup[env] = {
-		"ambient_light_source": env.ambient_light_source,
-		"ambient_light_color": env.ambient_light_color,
-		"ambient_light_energy": env.ambient_light_energy,
-		"ssao_enabled": env.ssao_enabled,
-		"tonemap_mode": env.tonemap_mode,
-		"fog_light_color": env.fog_light_color,
-		"fog_density": env.fog_density,
-		"fog_sky_affect": env.fog_sky_affect,
-		"fog_sun_scatter": env.fog_sun_scatter,
-		"adjustment_enabled": env.adjustment_enabled,
-		"adjustment_saturation": env.adjustment_saturation,
-	}
-	# Flat, warm ambient = the cel shadow color. No AO smudges.
-	env.ambient_light_source = Environment.AMBIENT_SOURCE_COLOR
-	env.ambient_light_color = AMBIENT
-	env.ambient_light_energy = AMBIENT_ENERGY
-	env.ssao_enabled = false
-	env.tonemap_mode = Environment.TONE_MAPPER_LINEAR
+	# Polished, a little more natural than flat cel: sky-tinted ambient with
+	# soft contact shadows (AO), filmic tone mapping and a gentle bloom on
+	# bright things (sky, muzzle flashes, sparks).
+	_look_set(env, "ambient_light_source", Environment.AMBIENT_SOURCE_SKY)
+	_look_set(env, "ambient_light_energy", AMBIENT_ENERGY)
+	_look_set(env, "ambient_light_sky_contribution", 0.65)
+	_look_set(env, "ambient_light_color", AMBIENT)
+	_look_set(env, "ssao_enabled", true)
+	_look_set(env, "ssao_radius", 1.4)
+	_look_set(env, "ssao_intensity", 1.6)
+	_look_set(env, "ssao_light_affect", 0.15)
+	_look_set(env, "tonemap_mode", Environment.TONE_MAPPER_ACES)
+	_look_set(env, "tonemap_exposure", 0.85)
+	_look_set(env, "glow_enabled", true)
+	_look_set(env, "glow_intensity", 0.55)
+	_look_set(env, "glow_bloom", 0.04)
+	_look_set(env, "glow_hdr_threshold", 1.1)
 	# Dust haze: thicker fog so distant ruins fade into the sky.
-	env.fog_light_color = FOG
-	env.fog_density = 0.0045
+	_look_set(env, "fog_light_color", FOG)
+	_look_set(env, "fog_density", 0.0045)
 	# Keep some sky gradient above the haze, and a glow around the sun.
-	env.fog_sky_affect = 0.35
-	env.fog_sun_scatter = 0.25
-	env.adjustment_enabled = true
-	env.adjustment_saturation = 0.92
+	_look_set(env, "fog_sky_affect", 0.35)
+	_look_set(env, "fog_sun_scatter", 0.25)
+	_look_set(env, "adjustment_enabled", true)
+	_look_set(env, "adjustment_saturation", 0.98)
+	_look_set(env, "adjustment_contrast", 1.12)
 	var sky_mat := env.sky.sky_material as ProceduralSkyMaterial if env.sky else null
 	if sky_mat:
-		_env_backup[sky_mat] = {
-			"sky_top_color": sky_mat.sky_top_color,
-			"sky_horizon_color": sky_mat.sky_horizon_color,
-			"ground_horizon_color": sky_mat.ground_horizon_color,
-			"ground_bottom_color": sky_mat.ground_bottom_color,
-		}
-		sky_mat.sky_top_color = SKY_TOP
-		sky_mat.sky_horizon_color = SKY_HORIZON
-		sky_mat.ground_horizon_color = SKY_HORIZON
-		sky_mat.ground_bottom_color = GROUND_BOTTOM
+		_look_set(sky_mat, "sky_top_color", SKY_TOP)
+		_look_set(sky_mat, "sky_horizon_color", SKY_HORIZON)
+		_look_set(sky_mat, "ground_horizon_color", SKY_HORIZON)
+		_look_set(sky_mat, "ground_bottom_color", GROUND_BOTTOM)
 
 
-## Low, warm sun through the dust.
+## Low, warm sun through the dust, with soft-edged shadows.
 func _restyle_sun(sun: DirectionalLight3D) -> void:
 	if _env_backup.has(sun):
 		return
-	_env_backup[sun] = {"light_color": sun.light_color}
-	sun.light_color = SUN
+	_look_set(sun, "light_color", SUN)
+	_look_set(sun, "light_energy", 1.55)
+	_look_set(sun, "light_angular_distance", 1.2)
+	_look_set(sun, "shadow_blur", 1.5)
+
+
+## Sets a property the look changes, remembering the original for F9.
+func _look_set(obj: Object, prop: String, value: Variant) -> void:
+	if not _env_backup.has(obj):
+		_env_backup[obj] = {}
+	if not _env_backup[obj].has(prop):
+		_env_backup[obj][prop] = obj.get(prop)
+	obj.set(prop, value)
 
 
 ## Adds outlines and speed lines to a player, plus the runner body and the
