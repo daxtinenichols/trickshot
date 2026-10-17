@@ -62,6 +62,8 @@ var _wallrun_gravity := 0.3
 ## and your speed along it.
 var _wallrun_angle := 0.0
 var _wallrun_speed := 0.0
+## Once you angle a wallrun with lean, it holds the angle you set.
+var _wallrun_steered := false
 ## The player's transform at the previous tick, for smoothing the view in
 ## slow motion.
 var _prev_origin := Vector3.ZERO
@@ -1049,6 +1051,7 @@ func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 	var vy := maxf(velocity.y, tuning.wallrun_entry_lift)
 	_wallrun_angle = clampf(atan2(vy, h), -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	_wallrun_speed = Vector2(h, vy).length()
+	_wallrun_steered = false
 	velocity = (t * cos(_wallrun_angle) + Vector3.UP * sin(_wallrun_angle)) * _wallrun_speed
 	_change_state(State.WALLRUN)
 	_trick(&"wallrun", {"quality": quality})
@@ -1085,9 +1088,15 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# running down gains it.
 	var g := tuning.gravity * _wallrun_gravity
 	speed -= tuning.gravity * (tuning.wallrun_climb_cost if a > 0.0 else _wallrun_gravity) * sin(a) * delta
-	a -= g * cos(a) / maxf(speed, 1.0) * delta
-	# Lean toward the wall to angle your run up it, away to bring it down.
-	a += _lean_toward_wall(f.lean) * deg_to_rad(tuning.wallrun_angle_rate) * delta
+	# Lean toward the wall to angle your run up it, away to bring it down,
+	# at a steady rate. Once you've set an angle it holds; until then the
+	# run arcs gently down.
+	var steer := _lean_toward_wall(f.lean)
+	if steer != 0.0:
+		_wallrun_steered = true
+	elif not _wallrun_steered:
+		a -= g * cos(a) / maxf(speed, 1.0) * delta
+	a += steer * deg_to_rad(tuning.wallrun_angle_rate) * delta
 	a = clampf(a, -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	# Hold any direction to keep running (and build up to wallrun speed);
 	# let go and the run bleeds speed. Where you look doesn't matter.
@@ -1766,6 +1775,22 @@ func _boost(f: InputFrame) -> void:
 	_trick_feedback(&"boost")
 
 
+## How far the view can lean sideways (`want`, + right) without poking into
+## a wall: stops short of anything in the way.
+func _peek_room(want: float) -> float:
+	if absf(want) < 0.001 or not is_inside_tree():
+		return want
+	const MARGIN := 0.18
+	var from := head.global_position
+	var side := head.global_basis.x * signf(want)
+	var q := PhysicsRayQueryParameters3D.create(from, from + side * (absf(want) + MARGIN), 1)
+	q.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	if hit.is_empty():
+		return want
+	return signf(want) * maxf(from.distance_to(hit.position) - MARGIN, 0.0)
+
+
 ## Where the player is drawn this frame: between the last two ticks, facing
 ## where you look right now. Matches global_transform at normal speed; in
 ## slow motion (ticks far apart) it keeps the view and body moving smoothly.
@@ -1894,7 +1919,8 @@ func _process(delta: float) -> void:
 	elif state == State.SLIDE:
 		target_roll = deg_to_rad(-2.5)
 	# Lean peeks on the ground; in the air it's a side flip instead.
-	_peek = lerpf(_peek, 0.0 if state == State.AIR else lean, 1.0 - exp(-14.0 * delta))
+	# (On a wall, lean angles the run instead.)
+	_peek = lerpf(_peek, 0.0 if state in [State.AIR, State.WALLRUN] else lean, 1.0 - exp(-14.0 * delta))
 	target_roll -= _peek * deg_to_rad(tuning.lean_tilt_degrees)
 	_roll = lerpf(_roll, target_roll, 1.0 - exp(-10.0 * delta))
 	if state == State.AIR:
@@ -1913,7 +1939,7 @@ func _process(delta: float) -> void:
 		var k := (1.0 + wt) * exp(-wt)
 		_view_offset = Quaternion.IDENTITY if k < 0.001 else Quaternion.IDENTITY.slerp(_view_offset_start, k)
 		head.global_basis = Basis(_view_offset) * head.global_basis
-	camera.position = Vector3(_peek * tuning.lean_offset, 0.0, 0.0)
+	camera.position = Vector3(_peek_room(_peek * tuning.lean_offset), 0.0, 0.0)
 
 	var over := clampf((speed - tuning.run_speed) / maxf(tuning.top_speed + 4.0 - tuning.run_speed, 0.1), 0.0, 1.0)
 	var target_fov := lerpf(tuning.base_fov + tuning.speed_fov_bonus * over, aim_fov, aim_zoom)
