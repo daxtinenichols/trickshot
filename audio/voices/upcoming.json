@@ -403,5 +403,200 @@
 		"who": "juno",
 		"line": "Not bad, courier. Not bad.",
 		"where": "brief: Ending (after m12)"
+	},
+	{
+		"who": "mags",
+		"line": "Helmet's off. Finish it.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "mags",
+		"line": "Clean.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "host",
+		"line": "Careful, Parker. The sponsor bills for damage to the concrete.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "host",
+		"line": "Lovely line, Parker. I'm told the Ward finds it very irritating.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Keep the speed through the banks.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "host",
+		"line": "Oh, that's one of the sponsor's. Somebody start the paperwork.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Don't trade with a squad. Move, then shoot.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "host",
+		"line": "Down he goes, on the Ward's dime. Commercial break!",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "echo",
+		"line": "...the Ward closed the channels the year the rain stopped. Nobody asked who opened them.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "mags",
+		"line": "Clean.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, the sponsor felt that one.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "Mind the gap, Parker! No, really, mind it. I blew it up.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "He's making my demolition look like a stunt course. I hate that.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "mags",
+		"line": "That's the line. Keep it.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "Off the rails! I've been waiting all night to say that.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "Another one off the sponsor's payroll. Very cost-effective, Parker.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Keep moving. Squads can't hit what won't stand still.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "Down on the tracks! Somebody check the timetable.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "echo",
+		"line": "...the trains stopped the week the Ward took the reservoir. They said it was the power. It was never the power.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Clean.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "echo",
+		"line": "Got that one on camera, courier. The whole city saw it.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "host",
+		"line": "Long way down, Parker! Well. Medium way. Try harder.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "echo",
+		"line": "Look at you. Half the city's on their roofs watching.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Up, up, up.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "host",
+		"line": "Gravity! My oldest and most loyal sponsor.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "mags",
+		"line": "Back on the scaffold. Again.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "host",
+		"line": "Do you know what marksmen cost, Parker? Do you?",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Keep climbing. They can't hold the whole tower.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "host",
+		"line": "And he's down! Stop the clock! No, keep the clock going, it's funnier.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "echo",
+		"line": "...if you're hearing this, I hid it on the dish before he moved me upstairs. Keep the porch light on.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "mags",
+		"line": "Clean.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "echo",
+		"line": "Nice. Do that again.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "host",
+		"line": "Tripped on my carpet! That's imported, Parker.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "host",
+		"line": "Not in my studio. Not in my lovely studio.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Almost there.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "host",
+		"line": "That was my floor manager. I'll need a new one.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "mags",
+		"line": "Up. You're nearly at her. Get up.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "host",
+		"line": "And he's down! So close, folks. So, so close.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "echo",
+		"line": "...he keeps the old tapes in the office safe. Twenty years of lies, all labelled. He's very tidy.",
+		"where": "brief: m11 Dead Air"
 	}
 ]
