@@ -3,8 +3,8 @@ extends Node
 ## level or the player having to know about it. Autoloaded as `ArtLook`.
 ##
 ## On (default): toon materials, ink outlines, a styled sky and light, and
-## speed lines. F6 toggles it, to compare with the graybox. The runner body
-## (built by the corner cam, or here if a level has none) and the F7 chase
+## speed lines. F9 toggles it, to compare with the graybox. The runner body
+## (built by the corner cam, or here if a level has none) and the F10 chase
 ## camera stay either way.
 ##
 ## Visuals only ever read the player's state; nothing here feeds back into
@@ -45,13 +45,24 @@ var _env_backup := {}
 var _attached: Array = []  # nodes this look added, removed when turned off
 
 
+## Function keys away from F5-F8, which the Godot editor uses to run, pause
+## and stop the game. Registered as actions so the rebind menu reserves them.
+const KEYS := {"toggle_art_look": KEY_F9, "toggle_chase_cam": KEY_F10}
+
+
 func _ready() -> void:
 	auto_attach = DisplayServer.get_name() != "headless"
 	get_tree().node_added.connect(_on_node_added)
+	for action: String in KEYS:
+		if not InputMap.has_action(action):
+			InputMap.add_action(action)
+			var k := InputEventKey.new()
+			k.physical_keycode = KEYS[action]
+			InputMap.action_add_event(action, k)
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F6:
+	if event.is_action_pressed("toggle_art_look") and not event.is_echo():
 		set_enabled(not enabled)
 		get_viewport().set_input_as_handled()
 

@@ -129,6 +129,8 @@ func _section_drop() -> void:
 	# 5.5 m to the right, still clear of the straight line from the window.
 	_surface(SurfaceShapes.loop(Vector3(-8.0, 4.0, -150), 4.5, 3.5, 5.5))
 	_label("LOOP (optional)", Vector3(-8.0, 14.5, -150), 1.0)
+	# Right edge: a sideways ramp to ride out of the landing.
+	_surface(MapPieces.bank(Vector3(6.5, 4.0, -130), 10.0, 1.0, 3.0, 60.0, 1.0))
 	# Right lane, straight on from the window: hurdles to keep the combo going.
 	for z: float in [-142.0, -152.0, -162.0]:
 		_box(Vector3(3.75, 4.45, z), Vector3(9.5, 0.9, 0.4), Kind.PARKOUR)

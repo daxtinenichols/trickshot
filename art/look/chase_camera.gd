@@ -1,6 +1,6 @@
 extends Camera3D
 ## Full-screen third-person camera for watching the runner's animation.
-## F7 toggles it. Gameplay keeps running exactly as in first person; this
+## F10 toggles it. Gameplay keeps running exactly as in first person; this
 ## only moves the view. (The in-game corner camera is separate.)
 
 
@@ -23,7 +23,7 @@ func _ready() -> void:
 
 
 func _unhandled_input(event: InputEvent) -> void:
-	if event is InputEventKey and event.pressed and not event.echo and event.physical_keycode == KEY_F7:
+	if event.is_action_pressed("toggle_chase_cam") and not event.is_echo():
 		set_active(not _active)
 		get_viewport().set_input_as_handled()
 

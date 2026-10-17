@@ -2,7 +2,7 @@ extends TestCase
 ## The rooftop course and the combo park: both load, every spawn is a safe
 ## place to stand, a scripted runner can finish the course without falling,
 ## the course timer starts, checkpoints, catches falls and finishes, the combo
-## park's features work in place, and F8 cycles the levels.
+## park's features work in place, and F11 cycles the levels.
 
 const ROOFTOPS := preload("res://maps/rooftops.tscn")
 const PARK := preload("res://maps/combo_park.tscn")
@@ -202,7 +202,7 @@ func test_rooftops_finish_time_formats() -> void:
 func test_park_spawns_are_standable() -> void:
 	await _load(PARK)
 	var b: ComboParkBuilder = level.builder
-	check(b.spawns.size() == 5, "five spawns (%d)" % b.spawns.size())
+	check(b.spawns.size() == 6, "six spawns (%d)" % b.spawns.size())
 	for i in b.spawns.size():
 		level.go_to_zone(i)
 		await _step(40)
@@ -274,11 +274,59 @@ func test_park_zigzag_wallrun() -> void:
 
 # ---------------------------------------------------------------- switcher
 
-func test_f8_cycles_levels() -> void:
+func test_level_keys() -> void:
 	check(InputMap.has_action(Levels.ACTION), "next_level action registered")
 	var k := InputEventKey.new()
-	k.physical_keycode = KEY_F8
-	k.pressed = true
-	check(not GameSettings.is_bindable(k, false), "F8 is reserved")
+	for key: Key in [KEY_F9, KEY_F10, KEY_F11]:
+		k.physical_keycode = key
+		k.pressed = true
+		check(not GameSettings.is_bindable(k, false), "%s is reserved" % OS.get_keycode_string(key))
 	for entry: Array in Levels.LEVELS:
 		check(ResourceLoader.exists(entry[0]), "%s exists" % entry[1])
+
+
+func _ride_bank(spawn: int, view: float, approach: Callable, max_frames := 300, steer := 0.0) -> Dictionary:
+	level.go_to_zone(spawn)
+	await _step(20)
+	player.set_view(view)
+	var on := [0, INF, -INF]  # frames on the surface, min z, max height
+	player.scripted_input = TestWorld.forward_input()
+	for i in max_frames:
+		await tree.physics_frame
+		# Once on the ramp, steer up it.
+		player.scripted_input = InputFrame.make(Vector2(steer if player.state == Player.State.SURFACE else 0.0, 1.0))
+		if player.state == Player.State.SURFACE:
+			on[0] += 1
+			on[1] = minf(on[1], player.global_position.z)
+			on[2] = maxf(on[2], player.global_position.y)
+		if approach.call():
+			break
+	return {"frames": on[0], "min_z": on[1], "top": on[2]}
+
+
+func test_park_banked_ramp() -> void:
+	await _load(PARK)
+	# Spawn 6 is beside the first bank (starts x -34, rises toward -X); angle
+	# a little left so you run up onto it.
+	var r := await _ride_bank(5, 0.3, func() -> bool: return player.global_position.z < 10.0)
+	check(r.frames > 30, "runs along the sideways ramp (%d frames)" % r.frames)
+	# Steering into it carries you up the slope.
+	var up := await _ride_bank(5, 0.3, func() -> bool: return player.global_position.z < 10.0, 300, -0.7)
+	check(up.top > 0.6, "steering up the slope gains height (%.2f m)" % up.top)
+
+
+func test_rooftops_banked_ramp() -> void:
+	await _load(ROOFTOPS)
+	player.global_position = Vector3(4.5, 4.05, -128.5)
+	await _step(5)
+	player.set_view(-0.32)
+	var on := 0
+	player.scripted_input = TestWorld.forward_input()
+	for i in 200:
+		await tree.physics_frame
+		if player.state == Player.State.SURFACE:
+			on += 1
+		if player.global_position.z < -140.0:
+			break
+	check(on > 15, "runs on the rooftop sideways ramp (%d frames)" % on)
+	check(player.global_position.y > 3.5, "still on the roof (%s)" % player.global_position)

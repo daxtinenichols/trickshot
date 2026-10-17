@@ -127,3 +127,23 @@ func _graybox_count() -> int:
 		if m and m.shader == preload("res://levels/graybox.gdshader"):
 			n += 1
 	return n
+
+
+func test_motion_trails_follow_the_runner() -> void:
+	# Body is built where the player spawned; the trails must still be drawn
+	# in world space wherever the runner goes (they used to carry the spawn
+	# offset with them).
+	var body: RunnerBody = ArtLook.ensure_body(player)
+	level.go_to_zone(3)
+	await tree.physics_frame
+	player.set_view(0.7)
+	player.scripted_input = TestWorld.forward_input()
+	for i in 150:
+		await tree.physics_frame
+	check(player.velocity.length() > player.tuning.run_speed, "running fast enough for trails (%.1f)" % player.velocity.length())
+	var inst: MeshInstance3D = body.trails._instance
+	var aabb: AABB = inst.global_transform * inst.mesh.get_aabb()
+	check(aabb.size.length() > 0.1, "trails are drawn")
+	for b: String in ["LeftFoot", "RightHand"]:
+		var p := body.bone_world_position(b)
+		check(aabb.grow(0.3).has_point(p), "%s trail is at the body (%s not in %s)" % [b, p, aabb])
