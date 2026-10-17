@@ -44,7 +44,7 @@ say so, since the script would overwrite those edits.
   `LeftUpperArm`...), T-pose rest. Any humanoid animation (mocap, CC0 packs,
   hand-keyed clips) retargets onto it in Godot with no renaming.
 - Shown on render layer 2. The first-person camera leaves that layer out;
-  the corner camera (F5) and the chase camera (F10) include it. The body
+  the corner camera (F12) and the chase camera (F10) include it. The body
   still casts its shadow in first person. The view-model pistol is on its
   own layer (`Pistol.VIEW_LAYER`), which only the first-person camera sees.
 
@@ -109,7 +109,7 @@ and the `landed` / `trick` / `respawned` signals.
 code-built sandbox it swaps the graybox materials; real maps use
 `ArtLook.world_material(color)` directly.
 
-In game: **F5** toggles the corner camera, **F9** toggles the art look
+In game: **F12** toggles the corner camera, **F9** toggles the art look
 (compare with graybox), **F10** toggles a full-screen chase camera.
 F5-F8 are left alone because the Godot editor uses them to run, pause and
 stop the game.
