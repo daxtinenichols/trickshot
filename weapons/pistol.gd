@@ -7,6 +7,9 @@ extends Node3D
 ## is, even mid-flip at full speed. Spamming blooms; controlled fire doesn't.
 
 signal fired(ammo: int)
+## Every shot, for muzzle flashes, tracers, impacts and sound: the world
+## muzzle point, where the shot ended, and the raycast result ({} on a miss).
+signal shot(muzzle: Vector3, end: Vector3, result: Dictionary)
 ## info: {collider, target, zone, damage, distance, position, normal, direction, killed, tags}
 signal hit(info: Dictionary)
 signal reload_started
@@ -19,6 +22,19 @@ const HITBOX_MASK := 1 | 4
 const VIEW_LAYER := 4
 
 @export var stats: WeaponStats
+## The test pistol's own box model, flash light, tracer, impact marks and
+## shot sound. Turn off when a real gun model and effects take over (they
+## parent under view_model and listen to `shot`).
+var builtin_visuals := true:
+	set(on):
+		builtin_visuals = on
+		if _builtin:
+			_builtin.visible = on
+
+## Moves with aim, recoil and reloads; the gun model sits under it.
+var view_model: Node3D
+## The muzzle, in view_model space.
+const MUZZLE_LOCAL := Vector3(0, 0.032, -0.128)
 
 var player: Player
 var camera: Camera3D
@@ -43,8 +59,13 @@ var _bloom := 0.0
 var _since_shot := 999.0
 var _await_release := false
 var _rng := RandomNumberGenerator.new()
-var _model: Node3D
+## Looks only (recoil roll), so it never shifts the spread's random sequence.
+var _fx_rng := RandomNumberGenerator.new()
+var _builtin: Node3D
+## Gun recoil spring: 0 at rest, about 1 at the peak of a shot's kick.
 var _kick := 0.0
+var _kick_vel := 0.0
+var _kick_roll := 0.0
 var _flash: OmniLight3D
 var _audio: AudioStreamPlayer
 var _hit_audio: AudioStreamPlayer
@@ -168,7 +189,8 @@ func _fire() -> void:
 		dir = (dir + (basis.x * cos(around) + basis.y * sin(around)) * tan(angle)).normalized()
 	_bloom = minf(_bloom + stats.bloom_per_shot, stats.max_bloom)
 	if player:
-		player.add_view_kick(deg_to_rad(stats.recoil_pitch), deg_to_rad(_rng.randf_range(-stats.recoil_yaw, stats.recoil_yaw)), stats.recoil_recovery)
+		player.add_view_kick(deg_to_rad(stats.recoil_pitch), deg_to_rad(_rng.randf_range(-stats.recoil_yaw, stats.recoil_yaw)), stats.recoil_recovery,
+			deg_to_rad(_fx_rng.randf_range(-stats.recoil_roll, stats.recoil_roll)), stats.fov_punch)
 
 	var from := camera.global_position
 	var to := from + dir * stats.max_range
@@ -214,15 +236,24 @@ func _resolve_hit(result: Dictionary, from: Vector3, dir: Vector3) -> void:
 		collider.on_hit(info)
 	if target:
 		_play(_hit_audio, _head_tick if zone == &"head" else _body_tick)
+		# Hit-stop: time catches for a moment when a headshot or kill lands.
+		if info.killed:
+			SlowMo.hit_stop(stats.hitstop_kill, stats.hitstop_speed)
+		elif zone == &"head":
+			SlowMo.hit_stop(stats.hitstop_headshot, stats.hitstop_speed)
 	hit.emit(info)
 
 
 # ---------------------------------------------------------------- visuals
 
 func _build_model() -> void:
-	_model = Node3D.new()
-	_model.scale = Vector3.ONE * 0.8
-	add_child(_model)
+	view_model = Node3D.new()
+	add_child(view_model)
+	# The test pistol's own boxes and flash (hidden when builtin_visuals is off).
+	_builtin = Node3D.new()
+	_builtin.scale = Vector3.ONE * 0.8
+	_builtin.visible = builtin_visuals
+	view_model.add_child(_builtin)
 	var dark := StandardMaterial3D.new()
 	dark.albedo_color = Color(0.13, 0.14, 0.17)
 	dark.roughness = 0.4
@@ -238,7 +269,7 @@ func _build_model() -> void:
 	_flash.omni_range = 4.0
 	_flash.light_energy = 0.0
 	_flash.position = Vector3(0, 0.04, -0.2)
-	_model.add_child(_flash)
+	_builtin.add_child(_flash)
 
 
 func _part(size: Vector3, pos: Vector3, mat: Material) -> void:
@@ -250,36 +281,59 @@ func _part(size: Vector3, pos: Vector3, mat: Material) -> void:
 	m.material_override = mat
 	m.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
 	m.layers = VIEW_LAYER
-	_model.add_child(m)
+	_builtin.add_child(m)
+
+
+## Where shots leave the gun (for muzzle effects).
+func muzzle_transform() -> Transform3D:
+	return view_model.global_transform * Transform3D(Basis.IDENTITY, MUZZLE_LOCAL)
+
+
+## 0..1 through a reload, -1 when not reloading.
+func reload_progress() -> float:
+	return 1.0 - _reload_left / stats.reload_time if is_reloading() else -1.0
 
 
 func _process(delta: float) -> void:
-	_kick = move_toward(_kick, 0.0, delta * 6.0)
-	_flash.light_energy = move_toward(_flash.light_energy, 0.0, delta * 60.0)
+	# The gun snaps back and up, then springs home (critically damped).
+	const W := 26.0
+	var e := exp(-W * delta)
+	var c := _kick_vel + _kick * W
+	_kick = (_kick + c * delta) * e
+	_kick_vel = (_kick_vel - c * W * delta) * e
+	_flash.light_energy = move_toward(_flash.light_energy, 0.0, delta * 90.0)
 	var hip := Vector3(0.17, -0.17, -0.44)
 	var ads := Vector3(0.0, -0.105, -0.36)
 	var pos := hip.lerp(ads, aim_blend)
-	pos.z += _kick * 0.06
-	var rot_x := _kick * 0.35
+	# Less movement aimed in, so the sights stay readable.
+	var amount := _kick * lerpf(1.0, 0.45, aim_blend)
+	pos.z += amount * 0.08
+	pos.y += amount * 0.012
+	var rot_x := amount * 0.5
 	if is_reloading():
 		var t := 1.0 - _reload_left / stats.reload_time
 		var dip := sin(t * PI)
 		pos.y -= dip * 0.12
 		rot_x -= dip * 0.9
-	_model.position = pos
-	_model.rotation = Vector3(rot_x, 0, 0)
+	view_model.position = pos
+	view_model.rotation = Vector3(rot_x, 0, amount * _kick_roll)
 	for i in range(_impacts.size() - 1, -1, -1):
 		if not is_instance_valid(_impacts[i]):
 			_impacts.remove_at(i)
 
 
 func _effects(end: Vector3, result: Dictionary) -> void:
-	_kick = 1.0
-	_flash.light_energy = 3.0
-	_play(_audio, _shot_sound)
+	# A spring started at this speed peaks at about 1.
+	_kick_vel += 26.0 * exp(1.0)
+	_kick_roll = _fx_rng.randf_range(-0.25, 0.25)
 	if not is_inside_tree():
 		return
-	var muzzle := _model.global_transform * Vector3(0, 0.04, -0.16)
+	var muzzle := muzzle_transform().origin
+	shot.emit(muzzle, end, result)
+	if not builtin_visuals:
+		return
+	_flash.light_energy = 5.0
+	_play(_audio, _shot_sound)
 	var tracer := MeshInstance3D.new()
 	var len := muzzle.distance_to(end)
 	var bm := BoxMesh.new()

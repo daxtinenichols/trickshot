@@ -222,8 +222,8 @@ func _process(delta: float) -> void:
 	if _pistol:
 		var mode := "AUTO" if _pistol.full_auto else "SEMI"
 		_ammo_label.text = ("RELOADING" if _pistol.is_reloading() else "%d / %d" % [_pistol.ammo, _pistol.stats.magazine]) + "\n" + mode
-	if Engine.time_scale < 1.0:
-		_detail_label.text += "   SLOW-MO %d%%" % roundi(Engine.time_scale * 100.0)
+	if SlowMo.speed < 1.0:
+		_detail_label.text += "   SLOW-MO %d%%" % roundi(SlowMo.speed * 100.0)
 	for child in _feed.get_children():
 		var item := child as Label
 		var age: float = item.get_meta("age") + delta

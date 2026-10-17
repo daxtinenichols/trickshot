@@ -62,6 +62,8 @@ var _wallrun_gravity := 0.3
 ## and your speed along it.
 var _wallrun_angle := 0.0
 var _wallrun_speed := 0.0
+## Once you angle a wallrun with lean, it holds the angle you set.
+var _wallrun_steered := false
 ## The player's transform at the previous tick, for smoothing the view in
 ## slow motion.
 var _prev_origin := Vector3.ZERO
@@ -154,6 +156,13 @@ var _eye_height := 1.66
 var _kick_pitch := 0.0
 var _kick_yaw := 0.0
 var _kick_recovery := 12.0
+## Recoil springs: the kick punches up over a couple of frames and settles
+## (critically damped), plus a little roll and a field-of-view punch.
+var _kick_vel := Vector2.ZERO
+var _kick_roll := 0.0
+var _kick_roll_vel := 0.0
+var _fov_base := 0.0
+var _fov_punch := 0.0
 
 ## Set by the held weapon: 0 = hip, 1 = fully aimed down sights.
 var invert_y := false
@@ -1042,6 +1051,7 @@ func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 	var vy := maxf(velocity.y, tuning.wallrun_entry_lift)
 	_wallrun_angle = clampf(atan2(vy, h), -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	_wallrun_speed = Vector2(h, vy).length()
+	_wallrun_steered = false
 	velocity = (t * cos(_wallrun_angle) + Vector3.UP * sin(_wallrun_angle)) * _wallrun_speed
 	_change_state(State.WALLRUN)
 	_trick(&"wallrun", {"quality": quality})
@@ -1078,9 +1088,15 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# running down gains it.
 	var g := tuning.gravity * _wallrun_gravity
 	speed -= tuning.gravity * (tuning.wallrun_climb_cost if a > 0.0 else _wallrun_gravity) * sin(a) * delta
-	a -= g * cos(a) / maxf(speed, 1.0) * delta
-	# Lean toward the wall to angle your run up it, away to bring it down.
-	a += _lean_toward_wall(f.lean) * deg_to_rad(tuning.wallrun_angle_rate) * delta
+	# Lean toward the wall to angle your run up it, away to bring it down,
+	# at a steady rate. Once you've set an angle it holds; until then the
+	# run arcs gently down.
+	var steer := _lean_toward_wall(f.lean)
+	if steer != 0.0:
+		_wallrun_steered = true
+	elif not _wallrun_steered:
+		a -= g * cos(a) / maxf(speed, 1.0) * delta
+	a += steer * deg_to_rad(tuning.wallrun_angle_rate) * delta
 	a = clampf(a, -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	# Hold any direction to keep running (and build up to wallrun speed);
 	# let go and the run bleeds speed. Where you look doesn't matter.
@@ -1759,6 +1775,22 @@ func _boost(f: InputFrame) -> void:
 	_trick_feedback(&"boost")
 
 
+## How far the view can lean sideways (`want`, + right) without poking into
+## a wall: stops short of anything in the way.
+func _peek_room(want: float) -> float:
+	if absf(want) < 0.001 or not is_inside_tree():
+		return want
+	const MARGIN := 0.18
+	var from := head.global_position
+	var side := head.global_basis.x * signf(want)
+	var q := PhysicsRayQueryParameters3D.create(from, from + side * (absf(want) + MARGIN), 1)
+	q.exclude = [get_rid()]
+	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	if hit.is_empty():
+		return want
+	return signf(want) * maxf(from.distance_to(hit.position) - MARGIN, 0.0)
+
+
 ## Where the player is drawn this frame: between the last two ticks, facing
 ## where you look right now. Matches global_transform at normal speed; in
 ## slow motion (ticks far apart) it keeps the view and body moving smoothly.
@@ -1814,6 +1846,10 @@ func respawn(t: Variant = null) -> void:
 	_since_floor = 999.0
 	_change_state(State.AIR)
 	pitch = 0.0
+	_kick_vel = Vector2.ZERO
+	_kick_roll = 0.0
+	_kick_roll_vel = 0.0
+	_fov_punch = 0.0
 	_kick_pitch = 0.0
 	_kick_yaw = 0.0
 	_air_yaw = 0.0
@@ -1851,9 +1887,16 @@ func _process(delta: float) -> void:
 				pad *= tuning.gamepad_air_spin
 				pitch_scale = 1.0
 			_look(-stick.x * pad, -stick.y * pad * pitch_scale * (-1.0 if invert_y else 1.0))
-	var settle := exp(-_kick_recovery * delta)
-	_kick_pitch *= settle
-	_kick_yaw *= settle
+	var w := _kick_omega()
+	var ks := _spring(Vector2(_kick_pitch, _kick_yaw), _kick_vel, w, delta)
+	var kick: Vector2 = ks[0]
+	_kick_vel = ks[1]
+	_kick_pitch = minf(kick.x, deg_to_rad(8.0))
+	_kick_yaw = clampf(kick.y, deg_to_rad(-3.0), deg_to_rad(3.0))
+	var r := _spring(_kick_roll, _kick_roll_vel, w, delta)
+	_kick_roll = r[0]
+	_kick_roll_vel = r[1]
+	_fov_punch *= exp(-14.0 * delta)
 	head.rotation = Vector3(pitch + _kick_pitch + roll_spin(), _surface_look_yaw if state == State.SURFACE else 0.0, 0.0)
 
 	var speed := horizontal_speed()
@@ -1876,14 +1919,15 @@ func _process(delta: float) -> void:
 	elif state == State.SLIDE:
 		target_roll = deg_to_rad(-2.5)
 	# Lean peeks on the ground; in the air it's a side flip instead.
-	_peek = lerpf(_peek, 0.0 if state == State.AIR else lean, 1.0 - exp(-14.0 * delta))
+	# (On a wall, lean angles the run instead.)
+	_peek = lerpf(_peek, 0.0 if state in [State.AIR, State.WALLRUN] else lean, 1.0 - exp(-14.0 * delta))
 	target_roll -= _peek * deg_to_rad(tuning.lean_tilt_degrees)
 	_roll = lerpf(_roll, target_roll, 1.0 - exp(-10.0 * delta))
 	if state == State.AIR:
 		_air_roll_view = wrapf(_air_roll, -PI, PI)
 	else:
 		_air_roll_view = lerp_angle(_air_roll_view, 0.0, 1.0 - exp(-12.0 * delta))
-	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view)
+	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view + _kick_roll)
 	if Engine.time_scale < 0.999:
 		# In slow motion the ticks are far apart: smooth the view between them.
 		head.global_transform = visual_transform() * head.transform
@@ -1895,19 +1939,40 @@ func _process(delta: float) -> void:
 		var k := (1.0 + wt) * exp(-wt)
 		_view_offset = Quaternion.IDENTITY if k < 0.001 else Quaternion.IDENTITY.slerp(_view_offset_start, k)
 		head.global_basis = Basis(_view_offset) * head.global_basis
-	camera.position = Vector3(_peek * tuning.lean_offset, 0.0, 0.0)
+	camera.position = Vector3(_peek_room(_peek * tuning.lean_offset), 0.0, 0.0)
 
 	var over := clampf((speed - tuning.run_speed) / maxf(tuning.top_speed + 4.0 - tuning.run_speed, 0.1), 0.0, 1.0)
 	var target_fov := lerpf(tuning.base_fov + tuning.speed_fov_bonus * over, aim_fov, aim_zoom)
-	camera.fov = lerpf(camera.fov, target_fov, 1.0 - exp(-(6.0 + 20.0 * aim_zoom) * delta))
+	if _fov_base <= 0.0:
+		_fov_base = camera.fov
+	_fov_base = lerpf(_fov_base, target_fov, 1.0 - exp(-(6.0 + 20.0 * aim_zoom) * delta))
+	camera.fov = _fov_base + _fov_punch * (1.0 - aim_zoom * 0.7)
 
 
 ## Recoil: kicks the view up (and a little sideways), settling back at
 ## `recovery` per second. Purely visual on top of the aim direction.
-func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float) -> void:
-	_kick_pitch = minf(_kick_pitch + pitch_amount, deg_to_rad(8.0))
-	_kick_yaw = clampf(_kick_yaw + yaw_amount, deg_to_rad(-3.0), deg_to_rad(3.0))
+## Recoil: the view punches up by about pitch_amount (and yaw_amount, roll)
+## over a couple of frames, then settles. Presentation only: the real pitch
+## and yaw never change, so aim and flips stay clean. fov_punch widens the
+## view for a moment (degrees).
+func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float, roll_amount := 0.0, fov_punch := 0.0) -> void:
 	_kick_recovery = recovery
+	# A critically damped spring started with this speed peaks at `amount`.
+	var w := _kick_omega()
+	_kick_vel += Vector2(pitch_amount, yaw_amount) * w * exp(1.0)
+	_kick_roll_vel += roll_amount * w * exp(1.0)
+	_fov_punch += fov_punch
+
+
+func _kick_omega() -> float:
+	return maxf(_kick_recovery * 2.0, 1.0)
+
+
+## Advances a critically damped spring (toward 0) exactly, at any frame time.
+static func _spring(x: Variant, v: Variant, w: float, dt: float) -> Array:
+	var e := exp(-w * dt)
+	var c: Variant = v + x * w
+	return [(x + c * dt) * e, (v - c * w * dt) * e]
 
 
 ## The roll's forward camera turn (radians, added to the view pitch).

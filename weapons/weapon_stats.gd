@@ -40,6 +40,16 @@ extends Resource
 @export_range(0.0, 5.0, 0.05) var recoil_yaw := 0.35
 ## How fast the view settles back (per second).
 @export_range(0.0, 40.0, 0.5) var recoil_recovery := 12.0
+## Random roll of the view per shot, and how much the view widens.
+@export_range(0.0, 5.0, 0.05) var recoil_roll := 0.5
+@export_range(0.0, 10.0, 0.1) var fov_punch := 1.6
+
+@export_group("Hit feel")
+## Hit-stop: time briefly slows on a headshot and on a kill (real seconds),
+## down to this speed.
+@export_range(0.0, 0.3, 0.005) var hitstop_headshot := 0.035
+@export_range(0.0, 0.5, 0.005) var hitstop_kill := 0.09
+@export_range(0.05, 1.0, 0.05) var hitstop_speed := 0.2
 
 @export_group("Aim")
 @export_range(20.0, 90.0, 1.0) var aim_fov := 62.0

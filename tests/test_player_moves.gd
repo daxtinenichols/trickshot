@@ -1114,3 +1114,40 @@ func test_steep_wallrun_kicks_off_harder() -> void:
 		push.append(Vector2(-w.player.velocity.x, w.player.velocity.y))
 	check(push[1].x > push[0].x + 1.0, "kicks off harder from a steep run (%.1f vs %.1f m/s)" % [push[1].x, push[0].x])
 	check(push[1].y > push[0].y, "and higher (%.1f vs %.1f m/s)" % [push[1].y, push[0].y])
+
+
+func test_wallrun_angle_turns_steadily_and_holds() -> void:
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	var a0 := p.wallrun_angle()
+	await w.step(10, _lean(1.0))
+	var a1 := p.wallrun_angle()
+	await w.step(10, _lean(1.0))
+	var a2 := p.wallrun_angle()
+	var rate := deg_to_rad(p.tuning.wallrun_angle_rate) * 10.0 / 60.0
+	check_near(a1 - a0, rate, 0.02, "turns at a steady rate (%.3f rad)" % (a1 - a0))
+	check_near(a2 - a1, rate, 0.02, "the same rate the whole way (%.3f rad)" % (a2 - a1))
+	await w.step(15, _fwd())
+	check(p.state == Player.State.WALLRUN, "still on the wall")
+	check_near(p.wallrun_angle(), a2, 0.001, "let go and it holds the angle")
+
+
+func test_lean_never_puts_the_view_in_a_wall() -> void:
+	w.add_floor()
+	# Wall face at x = 0.42, right beside the player (radius 0.38).
+	w.add_box(Vector3(0.92, 2.0, 0.0), Vector3(1.0, 4.0, 6.0))
+	var p := w.spawn_player(Vector3(0, 0.05, 0))
+	await w.step(10)
+	var f := InputFrame.new()
+	f.lean = 1.0
+	await w.step(30, f)
+	p._process(0.0)
+	check(p.camera.global_position.x < 0.42 - 0.1, "the view stops short of the wall (x %.2f)" % p.camera.global_position.x)
+	# Open space on the left: the full lean.
+	f.lean = -1.0
+	await w.step(40, f)
+	p._process(0.0)
+	check(p.camera.global_position.x < -p.tuning.lean_offset * 0.8, "leans fully where there's room (x %.2f)" % p.camera.global_position.x)
