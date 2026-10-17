@@ -27,6 +27,9 @@ const WALL_X := 6.5
 const FORK_SPREAD := WIDTH + 6.0
 ## Length of the wide roof where a fork splits or joins.
 const PLAZA := 28.0
+## A bridge deck's thickness and the distance between its piers.
+const BRIDGE_DECK := 1.0
+const BRIDGE_SPAN := 30.0
 ## Clutter that sits at roof edges, out of the lane.
 const CLUTTER := ["ac_unit", "vent_stack", "satellite_dish", "generator", "barrel_rust",
 	"crate_wood", "tire_stack", "crate_stack", "antenna_mast", "loudspeaker_pole"]
@@ -294,7 +297,9 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 		st.y = float(seg.y)
 	var z0: float = st.z
 	var w: float = seg.get("width", WIDTH)
-	if st.y > 0.5:
+	if seg.get("bridge", false):
+		_bridge(st, z0, length, w, float(seg.get("beyond", 0.0)))
+	elif st.y > 0.5:
 		_add(st, {"building": [0, st.y, z0 - length * 0.5], "size": [w, length], "look": seg.get("look", st.roof_look)})
 	# (At street level, y 0, the street itself is the floor.)
 	_height(st, z0, z0 - length)
@@ -315,10 +320,31 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 		busy.append([0.0, 14.0])
 	for f: Dictionary in seg.get("do", []):
 		busy.append(_feature(st, f, z0))
-	if not seg.get("bare", false):
+	if not seg.get("bare", false) and not seg.get("bridge", false):
 		_clutter(st, z0, length, busy)
 	st.z = z0 - length
 	st.roof_end = st.z
+
+
+## A bridge deck instead of a building: a concrete slab on piers with
+## steel girders under its edges and railings along them. `beyond` m more
+## of the span carry on past the segment's end (the far side of the bridge,
+## seen but not run).
+static func _bridge(st: Dictionary, z0: float, length: float, w: float, beyond: float) -> void:
+	var y: float = st.y
+	var total := length + beyond
+	var mid := z0 - total * 0.5
+	_add(st, {"box": [0, y - BRIDGE_DECK * 0.5, mid], "size": [w, BRIDGE_DECK, total], "kind": "NEUTRAL", "footprint": true})
+	for side: float in [-1.0, 1.0]:
+		_add(st, {"box": [side * (w * 0.5 - 0.8), y - BRIDGE_DECK - 0.6, mid], "size": [0.6, 1.2, total], "kind": "NEUTRAL", "look": "RUST"})
+		var x := side * (w * 0.5 - 0.3)
+		_add(st, {"row": "railing", "from": [x, y, z0 - 1.0], "to": [x, y, z0 - total + 1.0],
+			"count": maxi(int(total / 2.0), 2), "yaw": 90.0})
+	# Piers every BRIDGE_SPAN m down to the street.
+	var d := BRIDGE_SPAN * 0.5
+	while d < total:
+		_add(st, {"box": [0, (y - BRIDGE_DECK - 1.2) * 0.5, z0 - d], "size": [w * 0.5, y - BRIDGE_DECK - 1.2, 2.4], "kind": "NEUTRAL"})
+		d += BRIDGE_SPAN
 
 
 ## Walls and a roof over a roof's whole length, `height` m up: the inside
@@ -690,6 +716,11 @@ static func _footprints(pieces: Array) -> Array[Rect2]:
 		if p.has("building"):
 			var s: Array = _turn_size([p.size[0], 0, p.size[1]], deg_to_rad(float(p.get("yaw", 0.0))))
 			var c: Array = p.building
+			out.append(Rect2(c[0] - s[0] * 0.5, c[2] - s[2] * 0.5, s[0], s[2]))
+		elif p.has("box") and p.get("footprint", false):
+			# A box the city keeps clear of, like a bridge deck.
+			var s: Array = _turn_size(p.size, deg_to_rad(float(p.get("yaw", 0.0))))
+			var c: Array = p.box
 			out.append(Rect2(c[0] - s[0] * 0.5, c[2] - s[2] * 0.5, s[0], s[2]))
 		elif p.has("slab"):
 			var r := Rect2(p.slab[0][0], p.slab[0][1], 0, 0)
