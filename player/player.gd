@@ -85,6 +85,8 @@ var _air_roll := 0.0
 ## Side-flip spin: direction (locked once started) and speed (rad/s).
 var _roll_dir := 0.0
 var _roll_rate := 0.0
+## A roll carried off a surface: keeps its rate until you lean.
+var _roll_carry := false
 ## View turned by the player since the last tick, and the spin carried on
 ## from it in the air (yaw, pitch, rad/s).
 var _look_acc := Vector2.ZERO
@@ -113,10 +115,13 @@ var _surface_look_yaw := 0.0
 var _surface_looped := false
 ## Direction the track under you runs (from its "flow" meta), or zero.
 var _surface_flow := Vector3.ZERO
-## Coming off a loop upside down: how far round you are (as a flip) and how
-## fast the loop was turning you, carried into the air.
+## Flying off a ramp or loop: how far round you are (as a flip), how tilted
+## (as a side flip), and how fast the surface was turning you (yaw, pitch
+## and roll rates), all carried into the air.
 var _exit_air_pitch := 0.0
-var _exit_flip_rate := 0.0
+var _exit_spin := Vector2.ZERO
+var _exit_air_roll := 0.0
+var _exit_roll_rate := 0.0
 ## The current spin carry came from a loop: it keeps its rate (no fade, no
 ## halfway rule) until you take over with the view or come round level.
 var _carry_free := false
@@ -381,13 +386,20 @@ func _change_state(to: State) -> void:
 		_roll_rate = 0.0
 		_look_acc = Vector2.ZERO
 		_air_pitch = _exit_air_pitch
-		_spin_vel = Vector2(0.0, _exit_flip_rate)
-		_carry_free = _exit_flip_rate != 0.0
+		_spin_vel = _exit_spin
+		_carry_free = _exit_spin != Vector2.ZERO
+		_air_roll = _exit_air_roll
+		_roll_dir = signf(_exit_roll_rate)
+		_roll_rate = absf(_exit_roll_rate)
+		_roll_carry = _exit_roll_rate != 0.0
 		_exit_air_pitch = 0.0
-		_exit_flip_rate = 0.0
+		_exit_spin = Vector2.ZERO
+		_exit_air_roll = 0.0
+		_exit_roll_rate = 0.0
 	elif from == State.AIR:
 		_spin_vel = Vector2.ZERO
 		_carry_free = false
+		_roll_carry = false
 		_settle_pitch()
 		# A dive ends when you touch anything (landing reads it before this).
 		_diving = false
@@ -426,6 +438,13 @@ func _landing_tucked(fall: float) -> bool:
 ## open up and slow down. Opened up near level you settle upright; land
 ## on your side and you crash.
 func _tick_air_roll(f: InputFrame, delta: float) -> void:
+	if _roll_carry:
+		# Rolling off a surface: it turns at its own rate until you lean,
+		# then it's an ordinary side flip in that direction.
+		if absf(f.lean) <= 0.3:
+			_air_roll += _roll_dir * _roll_rate * delta
+			return
+		_roll_carry = false
 	if _roll_dir == 0.0:
 		if absf(f.lean) <= 0.3:
 			return
@@ -1262,6 +1281,9 @@ func surface_need_speed(n: Vector3) -> float:
 ## Running (or sliding, or landing fast) onto a steep runnable surface
 ## sticks you to it.
 func _try_enter_surface() -> bool:
+	# Coming down mid-flip or on your side you can't run it: you hit it.
+	if state == State.AIR and (_landing_crashed() or _landing_tipped()):
+		return false
 	var c := _runnable_contact()
 	if c.is_empty():
 		return false
@@ -1283,6 +1305,7 @@ func _try_enter_surface() -> bool:
 	var h := MovementMath.horizontal(velocity)
 	if h.length() > 0.2:
 		travel_yaw = atan2(-h.x, -h.z)
+	var view_before := Basis.from_euler(Vector3(pitch, yaw, -_air_roll if state == State.AIR else 0.0))
 	_change_state(State.SURFACE)
 	_surface_n = n
 	_surface_up = Vector3.UP
@@ -1292,6 +1315,15 @@ func _try_enter_surface() -> bool:
 	_surface_looped = false
 	_surface_flow = _flow_of(c.collider)
 	_orient_to_surface(0.0)
+	# Landing partway round a flip settles the view; ease into it rather
+	# than snapping.
+	var view_after := global_basis * Basis.from_euler(Vector3(pitch, _surface_look_yaw, 0.0))
+	var offset := (Quaternion(view_before.orthonormalized()) * Quaternion(view_after.orthonormalized()).inverse()).normalized()
+	if offset.get_angle() > 0.01:
+		_view_offset_start = offset
+		_view_offset = offset
+		_view_offset_time = 0.0
+		_view_offset_rate = 10.0
 	_trick(&"ramp_run")
 	return true
 
@@ -1339,8 +1371,9 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 	var flow := _surface_flow - n * _surface_flow.dot(n)
 	if flow.length() > 0.1 and (track or n.y < 0.2):
 		flow = flow.normalized() * signf(dir.dot(flow))
+		var assist := tuning.surface_flow_assist * (1.0 - clampf(absf(f.move.x), 0.0, 1.0))
 		if dir.dot(flow) > 0.5:
-			dir = dir.slerp(flow, 1.0 - exp(-tuning.surface_flow_assist * delta)).normalized()
+			dir = dir.slerp(flow, 1.0 - exp(-assist * delta)).normalized()
 	if f.move.y > 0.3:
 		speed = minf(speed + tuning.surface_accel * delta, maxf(speed, tuning.top_speed))
 	elif f.move.y < -0.3:
@@ -1446,7 +1479,8 @@ func _orient_to_surface(delta: float) -> void:
 
 
 ## Back to upright. Flying off (a bail, a jump, a ramp's lip) you keep
-## looking exactly where you were, and any leftover roll eases out. Running
+## looking exactly where you were, tilt and all, and keep turning the way
+## the surface was turning you, like any body flying free. Running
 ## off onto the ground you keep your view relative to your body (so the
 ## body's tilt at the bottom of a loop doesn't leave you staring at the
 ## floor), and the tilt eases out.
@@ -1472,16 +1506,26 @@ func _leave_surface(onto_ground := false) -> void:
 		if h.length() > 0.0001:
 			yaw = atan2(-h.x, -h.y)
 		pitch = clampf(asin(clampf(fwd.y, -1.0, 1.0)), deg_to_rad(-89.0), deg_to_rad(89.0))
-		if global_basis.y.y < -0.1:
-			# Off a loop past upside down: you're partway through a flip.
-			# Keep turning the way the loop was turning you instead of
-			# snapping upright; let it come round and land it.
+		var flip_rate := spin.dot(Basis(Vector3.UP, yaw).x)
+		if view.y.y < 0.0:
+			# Head below your feet (off a loop past upside down, or tipped
+			# back off a steep ramp): you're partway through a flip, so
+			# count it as one instead of rolling the view upright.
 			yaw = wrapf(yaw + PI, -PI, PI)
-			var rate := spin.dot(Basis(Vector3.UP, yaw).x)
-			pitch = (PI if rate >= 0.0 else -PI) - pitch
+			flip_rate = spin.dot(Basis(Vector3.UP, yaw).x)
+			pitch = (PI if flip_rate >= 0.0 else -PI) - pitch
 			_exit_air_pitch = pitch - look_pitch
-			_exit_flip_rate = rate
-	var upright := Basis.from_euler(Vector3(pitch, yaw, 0.0))
+		# Whatever tilt is left is a side-flip angle, kept as it is.
+		var tilt := (Basis.from_euler(Vector3(pitch, yaw, 0.0)).inverse() * view).get_euler().z
+		_exit_air_roll = -tilt
+		# Keep turning as the surface turned you: flip, spin and roll.
+		var roll_rate := spin.dot(fwd)
+		_exit_spin = Vector2(spin.y, flip_rate)
+		var spin_min := deg_to_rad(tuning.surface_exit_spin_min)
+		if _exit_spin.length() < spin_min:
+			_exit_spin = Vector2.ZERO
+		_exit_roll_rate = roll_rate if absf(roll_rate) >= spin_min else 0.0
+	var upright := Basis.from_euler(Vector3(pitch, yaw, -_exit_air_roll))
 	_view_offset_start = (Quaternion(view) * Quaternion(upright).inverse()).normalized()
 	_view_offset = _view_offset_start
 	_view_offset_time = 0.0
@@ -1883,6 +1927,7 @@ func respawn(t: Variant = null) -> void:
 	_sideflips_done = 0
 	_roll_dir = 0.0
 	_roll_rate = 0.0
+	_roll_carry = false
 	_spin_vel = Vector2.ZERO
 	_look_acc = Vector2.ZERO
 	_air_dive_used = false

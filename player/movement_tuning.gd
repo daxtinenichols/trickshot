@@ -119,7 +119,11 @@ extends Resource
 ## Push into the surface (m/s) that keeps your feet on it.
 @export_range(0.0, 10.0, 0.1) var surface_stick := 2.0
 ## How strongly a track (loop) steers you along itself.
+## (Steering with the stick overrides it, so you can run off the side.)
 @export_range(0.0, 20.0, 0.1) var surface_flow_assist := 5.0
+## Flying off a surface turning slower than this (degrees/s) doesn't carry
+## the turn into the air.
+@export_range(0.0, 360.0, 1.0) var surface_exit_spin_min := 15.0
 ## How quickly your body (and view) turns to match the surface. Lower is
 ## smoother over the seams between track pieces, higher hugs the track.
 @export_range(1.0, 60.0, 0.5) var surface_align_rate := 12.0
