@@ -158,6 +158,13 @@ lets tests run the real map:
   and a caved-in food court with a debris ramp up. Bodies carry visual-only
   `look` (TILE, RUST, SIGN...) and `look_color` metas for the art pass.
   Tests check each spawn, the escalator climb and the storefront glass.
+- **Long maps and the campaign**: Rooftops, Combo Park and the mall are
+  campaign base maps. Each builder has `ENTRY` (= `spawns[0]`) and `EXIT`
+  Transform3D constants (the mall also `ANCHOR_ENTRY`/`ANCHOR_EXIT` for its
+  department store) and `open_exit`, which leaves the far (-Z) edge of the
+  ring of buildings open so a mission can carry on. Main line runs to -Z.
+- **Closed edges**: every map's floor is ringed with `MapPieces.perimeter`;
+  `_check_closed` in tests/test_maps.gd proves it.
 - **Sideways ramps** (`MapPieces.bank` in `maps/map_pieces.gd`): a quarter
   pipe turned to rise beside the way you run, with its flow along the run.
   The player rides them with the normal surface rules; steepness and radius
