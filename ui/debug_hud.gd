@@ -1,7 +1,8 @@
 class_name DebugHud
 extends CanvasLayer
 ## On-screen readouts for tuning movement: speed, state, momentum, a speed
-## graph, and a feed of moves as they happen. F1 toggles it.
+## graph, ammo, the crosshair and hit markers. F1 toggles it. (Tricks are
+## called out by the combo HUD.)
 
 const STATE_COLORS := {
 	Player.State.GROUND: Color(0.85, 0.87, 0.9),
@@ -50,7 +51,7 @@ const TRICK_NAMES := {
 	&"boost": "BOOST",
 }
 
-const HELP := "Esc: maps, moves list, settings and controls · Backspace respawn · 1-9 zones, 0 shooting range, - ramps and loop · F1 HUD · F2 tuning · wheel click slow-mo (F3 holds it) · wheel zoom (third person) · F4 speed trail · F9 art look · F10 chase cam · F11 next map (or pick one in the Esc menu) · F12 corner cam"
+const HELP := "Esc: maps, moves list, settings and controls · Backspace respawn · 1-9 zones, 0 shooting range, - ramps and loop · F1 HUD · F2 tuning · wheel click slow-mo (F3 holds it) · wheel zoom (third person) · F4 speed trail · F9 art look · F10 chase cam · F11 next map (or pick one in the Esc menu)"
 
 var player: Player
 
@@ -59,7 +60,6 @@ var _state_label: Label
 var _detail_label: Label
 var _momentum_bar: ProgressBar
 var _graph: SpeedGraph
-var _feed: VBoxContainer
 var _toast: Label
 var _toast_time := 0.0
 var _root: Control
@@ -67,20 +67,6 @@ var _hit_marker: HitMarker
 var _rotation_label: Label
 var _ammo_label: Label
 var _pistol: Pistol
-
-const SHOT_TAG_NAMES := {
-	&"airborne": "AIRBORNE",
-	&"wallrun": "WALLRUN",
-	&"sliding": "SLIDING",
-	&"climbing": "CLIMBING",
-	&"vaulting": "VAULTING",
-	&"flipping": "MID-FLIP",
-	&"spinning": "MID-SPIN",
-	&"upside_down": "UPSIDE DOWN",
-	&"side_flipping": "MID-SIDE-FLIP",
-	&"surface": "RAMP",
-	&"fast": "FAST",
-}
 
 
 ## How well a move was done, as players see it.
@@ -123,13 +109,6 @@ func _ready() -> void:
 	_detail_label.modulate = Color(1, 1, 1, 0.75)
 	_graph = SpeedGraph.new()
 	box.add_child(_graph)
-
-	_feed = VBoxContainer.new()
-	_feed.set_anchors_preset(Control.PRESET_TOP_RIGHT)
-	_feed.position = Vector2(-340, 16)
-	_feed.custom_minimum_size = Vector2(320, 0)
-	_feed.alignment = BoxContainer.ALIGNMENT_BEGIN
-	_root.add_child(_feed)
 
 	var cross := Label.new()
 	cross.text = "+"
@@ -185,7 +164,6 @@ func _ready() -> void:
 func setup(p: Player) -> void:
 	player = p
 	_graph.player = p
-	p.trick.connect(_on_trick)
 	_pistol = p.weapon as Pistol
 	if _pistol:
 		_pistol.hit.connect(_on_shot_hit)
@@ -219,31 +197,6 @@ func _process(delta: float) -> void:
 		_ammo_label.text = ("RELOADING" if _pistol.is_reloading() else "%d / %d" % [_pistol.ammo, _pistol.stats.magazine]) + "\n" + mode
 	if SlowMo.speed < 1.0:
 		_detail_label.text += "   SLOW-MO %d%%" % roundi(SlowMo.speed * 100.0)
-	for child in _feed.get_children():
-		var item := child as Label
-		var age: float = item.get_meta("age") + delta
-		item.set_meta("age", age)
-		item.modulate.a = clampf(3.0 - age, 0.0, 1.0)
-		if age > 3.0:
-			item.queue_free()
-
-
-func _on_trick(trick_name: StringName, info: Dictionary) -> void:
-	var item := Label.new()
-	item.text = "%s   %.1f m/s" % [TRICK_NAMES.get(trick_name, String(trick_name).to_upper()), info.get("speed", 0.0)]
-	if info.has("quality"):
-		item.text = "%s  %s" % [quality_grade(info.quality), item.text]
-	item.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	item.add_theme_font_size_override("font_size", 22)
-	item.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	item.add_theme_constant_override("outline_size", 6)
-	var bad := trick_name in [&"hard_landing", &"wall_impact", &"crash"]
-	item.add_theme_color_override("font_color", Color(1, 0.45, 0.35) if bad else Color(1, 0.92, 0.6))
-	item.set_meta("age", 0.0)
-	_feed.add_child(item)
-	_feed.move_child(item, 0)
-	while _feed.get_child_count() > 7:
-		_feed.get_child(_feed.get_child_count() - 1).free()
 
 
 ## "BACKFLIP 64%" while a flip or spin is under way in the air.
@@ -265,39 +218,12 @@ static func rotation_text(p: Player) -> String:
 	return "   ".join(parts)
 
 
-## Describes a shot for the feed: "HEADSHOT · AIRBORNE · MID-FLIP  70".
-static func shot_text(info: Dictionary) -> String:
-	var parts: Array[String] = []
-	if info.get("killed", false):
-		parts.append("KILL")
-	if info.get("zone", &"") == &"head":
-		parts.append("HEADSHOT")
-	for t: StringName in info.get("tags", []):
-		parts.append(SHOT_TAG_NAMES.get(t, String(t).to_upper()))
-	return "%s   %d" % [" · ".join(parts) if not parts.is_empty() else "HIT", roundi(float(info.get("damage", 0.0)))]
-
-
 func _on_shot_hit(info: Dictionary) -> void:
 	if info.get("target") == null:
 		return
 	var head: bool = info.get("zone", &"") == &"head"
 	var kill: bool = info.get("killed", false)
 	_hit_marker.show_hit(head, kill)
-	# Only stylish or decisive shots go in the feed, to keep it readable.
-	if not (kill or head or not (info.get("tags", []) as Array).is_empty()):
-		return
-	var item := Label.new()
-	item.text = shot_text(info)
-	item.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
-	item.add_theme_font_size_override("font_size", 22)
-	item.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	item.add_theme_constant_override("outline_size", 6)
-	item.add_theme_color_override("font_color", Color(1.0, 0.4, 0.3) if kill else Color(1.0, 0.85, 0.25) if head else Color(0.8, 0.9, 1.0))
-	item.set_meta("age", 0.0)
-	_feed.add_child(item)
-	_feed.move_child(item, 0)
-	while _feed.get_child_count() > 7:
-		_feed.get_child(_feed.get_child_count() - 1).free()
 
 
 func _label(parent: Node, font_size: int) -> Label:

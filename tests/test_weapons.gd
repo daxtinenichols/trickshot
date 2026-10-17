@@ -335,6 +335,70 @@ func test_headshots_and_kills_never_slow_time() -> void:
 	check(killed, "and a kill")
 
 
+# ------------------------------------------------------------------ aim help
+
+## Shoots once at `point` with aim help at `strength`; returns the hit zone
+## (&"" on a miss).
+func _assisted_shot(point: Vector3, strength: float) -> StringName:
+	for t in tree.get_nodes_in_group("targets"):
+		t.health = t.max_health  # keep it alive through the series
+	_gun().aim_assist = strength
+	var before := hits.size()
+	await _shoot(point)
+	await _settle_gun()
+	return hits[before].zone if hits.size() > before else &""
+
+
+func test_aim_help_bends_near_misses_onto_the_head() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	await w.step(2)
+	var beside := _head(t) + Vector3(0.35, 0, 0)  # just past the head
+	check(await _assisted_shot(beside, 0.0) == &"", "off: a near miss misses")
+	check(await _assisted_shot(beside, 1.0) == &"head", "on: it bends onto the head")
+	var wide := _head(t) + Vector3(1.5, 0, 0)
+	check(await _assisted_shot(wide, 1.0) == &"", "a wide miss still misses")
+	var neck := t.global_position + Vector3(0, 1.35, 0)  # top of the body
+	check(await _assisted_shot(neck, 0.0) == &"body", "off: the top of the body is a body hit")
+	check(await _assisted_shot(neck, 1.0) == &"head", "on: a hit just under the head moves up to it")
+	check(await _assisted_shot(_chest(t), 1.0) == &"body", "a chest shot stays a body shot")
+
+
+func test_aim_help_never_goes_through_walls() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	# A wall covering the target's head from the side the shot passes.
+	w.add_box(Vector3(0, 1.62, -12), Vector3(0.6, 0.6, 0.2))
+	await w.step(2)
+	check(await _assisted_shot(_head(t) + Vector3(0.6, 0, 0), 1.0) != &"head", "no bending onto a head behind cover")
+
+
+func test_aim_help_slows_controller_look_over_targets() -> void:
+	await _setup()
+	var t := _target(Vector3(0, 0, -15))
+	await w.step(2)
+	_aim(_head(t))
+	await w.step(1)
+	_aim(_head(t))
+	_gun().aim_assist = 1.0
+	check(_gun().look_slowdown() < 0.6, "slower over a target (%.2f)" % _gun().look_slowdown())
+	_gun().aim_assist = 0.0
+	check(_gun().look_slowdown() == 1.0, "off: full speed")
+	_gun().aim_assist = 1.0
+	_aim(_head(t) + Vector3(5, 0, 0))
+	check(_gun().look_slowdown() == 1.0, "full speed away from targets")
+
+
+func test_aim_help_setting_reaches_the_gun() -> void:
+	await _setup()
+	Settings.aim_assist = 0.2
+	Settings.apply_to(w.player)
+	check_near(_gun().aim_assist, 0.2, 0.001, "setting applied")
+	Settings.reset_values()
+	Settings.apply_to(w.player)
+	check_near(_gun().aim_assist, 0.5, 0.001, "default is light help")
+
+
 func test_hit_marker_pops_on_hits() -> void:
 	var m := HitMarker.new()
 	w.add_child(m)

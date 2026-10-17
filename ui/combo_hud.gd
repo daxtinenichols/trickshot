@@ -2,7 +2,7 @@ class_name ComboHud
 extends CanvasLayer
 ## Score and the running combo: "1,240 x 5", the tricks in it, the time left
 ## before it banks, and the shot damage it gives. Each trick pops up as you
-## do it ("+300 BACKFLIP"). When a combo ends, a card shows the whole chain
+## do it ("+300 BACKFLIP  PERFECT"). All of it sits in the top-right corner. When a combo ends, a card shows the whole chain
 ## (ending in the kill, if a kill finished it), then the points go into the
 ## score. Bails flash red.
 
@@ -43,6 +43,9 @@ const CARD_TIME := 3.2
 ## When the card's total appears (and the score starts counting up).
 const CARD_TOTAL_AT := 0.6
 const POP_TIME := 1.1
+## The column in the top-right corner: width and distance from the edges.
+const WIDTH := 420.0
+const MARGIN := 20.0
 
 
 static func trick_label(trick_name: StringName) -> String:
@@ -81,58 +84,59 @@ func _ready() -> void:
 	_root.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	add_child(_root)
 
-	_score = _make_label(24, Control.PRESET_CENTER_TOP, Vector2(-400, 16), 800)
+	# Everything stacks in one right-aligned column in the top-right corner,
+	# medium sized, clear of the crosshair: score, the running combo, bails,
+	# trick pop-ups, then the card when a combo ends.
+	var column := VBoxContainer.new()
+	column.set_anchors_preset(Control.PRESET_TOP_RIGHT)
+	column.position = Vector2(-MARGIN - WIDTH, MARGIN)
+	column.custom_minimum_size = Vector2(WIDTH, 0)
+	column.add_theme_constant_override("separation", 2)
+	column.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_root.add_child(column)
 
-	var box := VBoxContainer.new()
-	box.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	box.position = Vector2(-450, -230)
-	box.custom_minimum_size = Vector2(900, 0)
-	box.alignment = BoxContainer.ALIGNMENT_END
-	box.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(box)
-	_combo = _styled(Label.new(), 44)
-	box.add_child(_combo)
-	_list = _styled(Label.new(), 18)
+	_score = _styled(Label.new(), 17)
+	_score.modulate = Color(1, 1, 1, 0.85)
+	column.add_child(_score)
+	_combo = _styled(Label.new(), 32)
+	column.add_child(_combo)
+	_list = _styled(Label.new(), 15)
 	_list.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	box.add_child(_list)
+	column.add_child(_list)
 	_bar = ProgressBar.new()
 	_bar.max_value = 1.0
 	_bar.step = 0.001
 	_bar.show_percentage = false
-	_bar.custom_minimum_size = Vector2(240, 6)
-	_bar.size_flags_horizontal = Control.SIZE_SHRINK_CENTER
-	box.add_child(_bar)
-	_damage = _styled(Label.new(), 15)
+	_bar.custom_minimum_size = Vector2(200, 5)
+	_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
+	column.add_child(_bar)
+	_damage = _styled(Label.new(), 13)
 	_damage.modulate = Color(1, 1, 1, 0.75)
-	box.add_child(_damage)
+	column.add_child(_damage)
 
-	_flash = _make_label(34, Control.PRESET_CENTER, Vector2(-300, -150), 600)
+	_flash = _styled(Label.new(), 24)
+	column.add_child(_flash)
 
-	# Trick pop-ups, stacked just above the running combo.
+	# Trick pop-ups, newest at the bottom.
 	_pops = VBoxContainer.new()
-	_pops.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
-	_pops.position = Vector2(-300, -330)
-	_pops.custom_minimum_size = Vector2(600, 96)
-	_pops.alignment = BoxContainer.ALIGNMENT_END
+	_pops.add_theme_constant_override("separation", 0)
 	_pops.mouse_filter = Control.MOUSE_FILTER_IGNORE
-	_root.add_child(_pops)
+	column.add_child(_pops)
 
-	# Combo-finished card, upper middle (clear of the crosshair).
+	# Combo-finished card.
 	_card = VBoxContainer.new()
-	_card.set_anchors_preset(Control.PRESET_CENTER_TOP)
-	_card.position = Vector2(-420, 90)
-	_card.custom_minimum_size = Vector2(840, 0)
+	_card.add_theme_constant_override("separation", 0)
 	_card.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	_card.visible = false
-	_root.add_child(_card)
-	_card_title = _styled(Label.new(), 40)
+	column.add_child(_card)
+	_card_title = _styled(Label.new(), 28)
 	_card.add_child(_card_title)
-	_card_chain = _styled(Label.new(), 20)
+	_card_chain = _styled(Label.new(), 15)
 	_card_chain.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	_card.add_child(_card_chain)
-	_card_math = _styled(Label.new(), 24)
+	_card_math = _styled(Label.new(), 18)
 	_card.add_child(_card_math)
-	_card_total = _styled(Label.new(), 46)
+	_card_total = _styled(Label.new(), 30)
 	_card.add_child(_card_total)
 
 
@@ -178,12 +182,14 @@ func show_card(summary: Dictionary) -> void:
 
 
 func _on_added(trick_name: StringName, points: int) -> void:
-	var l := _styled(Label.new(), 26)
+	var l := _styled(Label.new(), 22)
 	l.text = "+%s  %s" % [with_commas(points), trick_label(trick_name)]
+	if tracker and tracker.last_quality >= 0.0:
+		l.text += "  " + DebugHud.quality_grade(tracker.last_quality)
 	var shot := SHOT_NAMES.has(trick_name)
 	l.add_theme_color_override("font_color", Color(1.0, 0.6, 0.4) if shot else Color(1.0, 0.93, 0.62))
 	l.set_meta("age", 0.0)
-	l.pivot_offset = Vector2(300, 16)
+	l.pivot_offset = Vector2(WIDTH, 14)
 	_pops.add_child(l)
 	while _pops.get_child_count() > 3:
 		var old := _pops.get_child(0)
@@ -194,6 +200,7 @@ func _on_added(trick_name: StringName, points: int) -> void:
 func _process(delta: float) -> void:
 	_flash_time -= delta
 	_flash.modulate.a = clampf(_flash_time / 0.4, 0.0, 1.0)
+	_flash.visible = _flash_time > 0.0
 	for child in _pops.get_children():
 		var l := child as Label
 		var age: float = l.get_meta("age") + delta
@@ -217,7 +224,7 @@ func _process(delta: float) -> void:
 		_shown_score = minf(_shown_score + maxf((tracker.score - _shown_score) * 8.0, 2000.0) * delta, tracker.score)
 	elif tracker.score < _shown_score:
 		_shown_score = tracker.score
-	_score.text = "SCORE %s     BEST COMBO %s" % [with_commas(roundi(_shown_score)), with_commas(tracker.best_combo)]
+	_score.text = "SCORE %s   BEST COMBO %s" % [with_commas(roundi(_shown_score)), with_commas(tracker.best_combo)]
 	var active := tracker.is_active()
 	_combo.visible = active
 	_list.visible = active
@@ -237,19 +244,10 @@ func _show_flash(text: String, color: Color) -> void:
 	_flash_time = 1.4
 
 
-func _make_label(font_size: int, preset: Control.LayoutPreset, pos: Vector2, width: float) -> Label:
-	var l := _styled(Label.new(), font_size)
-	l.set_anchors_preset(preset)
-	l.position = pos
-	l.custom_minimum_size = Vector2(width, 0)
-	_root.add_child(l)
-	return l
-
-
 func _styled(l: Label, font_size: int) -> Label:
 	l.add_theme_font_size_override("font_size", font_size)
 	l.add_theme_color_override("font_outline_color", Color(0, 0, 0))
-	l.add_theme_constant_override("outline_size", 7)
-	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	l.add_theme_constant_override("outline_size", 5)
+	l.horizontal_alignment = HORIZONTAL_ALIGNMENT_RIGHT
 	l.mouse_filter = Control.MOUSE_FILTER_IGNORE
 	return l

@@ -35,6 +35,17 @@ extends Resource
 ## Extra spread at top movement speed (kept small: moving shots should land).
 @export_range(0.0, 5.0, 0.01) var move_spread := 0.25
 
+@export_group("Aim help (degrees, at full strength)")
+## A shot that would miss bends onto a target whose hitbox centre is within
+## this angle of it (heads first).
+@export_range(0.0, 10.0, 0.1) var assist_miss_cone := 2.5
+## A body hit moves up to the head if the head is within this angle.
+@export_range(0.0, 10.0, 0.1) var assist_head_cone := 1.2
+## Controller: look slows down while a target is within this angle...
+@export_range(0.0, 20.0, 0.5) var assist_slow_cone := 4.0
+## ...to this share of normal speed.
+@export_range(0.0, 1.0, 0.05) var assist_slow_speed := 0.45
+
 @export_group("Recoil (degrees)")
 @export_range(0.0, 10.0, 0.05) var recoil_pitch := 1.2
 @export_range(0.0, 5.0, 0.05) var recoil_yaw := 0.35

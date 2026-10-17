@@ -163,6 +163,9 @@ var _bob_phase := 0.0
 var _dip := 0.0
 var _roll := 0.0
 var _air_roll_view := 0.0
+## _air_roll at the start of the tick, so the view can roll smoothly between
+## ticks.
+var _prev_air_roll := 0.0
 var _peek := 0.0
 var _eye_height := 1.66
 # Weapon recoil: a visual view kick on top of the aim, so flips/spins
@@ -316,7 +319,13 @@ func lean_look(d_yaw: float, d_pitch: float) -> void:
 ## directly; on a wall it rolls your path round (like leaning). Elsewhere
 ## it does nothing.
 func roll_look(d: float) -> void:
-	_roll_input += d * tuning.mouse_roll_scale
+	d *= tuning.mouse_roll_scale
+	_roll_input += d
+	if state == State.AIR:
+		# Straight away, like turning and pitching, so it's as smooth as the
+		# mouse; the tick only reads how fast you're rolling.
+		_air_roll += d
+		_prev_air_roll += d
 
 
 ## Point the view somewhere (used by spawns and tests).
@@ -331,6 +340,7 @@ func set_view(new_yaw: float, new_pitch := 0.0) -> void:
 func _physics_process(delta: float) -> void:
 	_prev_origin = global_position
 	_prev_rotation = Quaternion(global_basis.orthonormalized())
+	_prev_air_roll = _air_roll
 	var f: InputFrame
 	if scripted_input != null:
 		f = scripted_input
@@ -447,6 +457,7 @@ func _change_state(to: State) -> void:
 		_roll_carry = _exit_roll_rate != 0.0
 		_lean_locked = from == State.WALLRUN and absf(lean) > 0.3
 		_mouse_rolled = false
+		_prev_air_roll = _air_roll
 		_exit_air_pitch = 0.0
 		_exit_spin = Vector2.ZERO
 		_exit_air_roll = 0.0
@@ -525,7 +536,6 @@ func _tick_air_roll(f: InputFrame, delta: float) -> void:
 ## (settling near level); a slow one just stops where it is.
 func _mouse_roll(delta: float) -> bool:
 	if _roll_tick != 0.0:
-		_air_roll += _roll_tick
 		_roll_dir = signf(_roll_tick)
 		_roll_rate = minf(absf(_roll_tick) / delta, deg_to_rad(tuning.side_flip_speed))
 		_roll_carry = false
@@ -1923,6 +1933,7 @@ func respawn(t: Variant = null) -> void:
 	_mouse_rolled = false
 	_mouse_turn = 0.0
 	_mouse_lean = 0.0
+	_prev_air_roll = 0.0
 	_jump_buffer = 999.0
 	state_time = 0.0
 	respawned.emit()
@@ -1940,6 +1951,8 @@ func _process(delta: float) -> void:
 			if state == State.AIR:
 				pad *= tuning.gamepad_air_spin
 				pitch_scale = 1.0
+			if weapon and weapon.has_method("look_slowdown"):
+				pad *= weapon.look_slowdown()
 			_look(-stick.x * pad, -stick.y * pad * pitch_scale * (-1.0 if invert_y else 1.0))
 	var w := _kick_omega()
 	var ks := _spring(Vector2(_kick_pitch, _kick_yaw), _kick_vel, w, delta)
@@ -1979,7 +1992,8 @@ func _process(delta: float) -> void:
 	target_roll -= _peek * deg_to_rad(tuning.lean_tilt_degrees)
 	_roll = lerpf(_roll, target_roll, 1.0 - exp(-10.0 * delta))
 	if state == State.AIR:
-		_air_roll_view = wrapf(_air_roll, -PI, PI)
+		var frac := Engine.get_physics_interpolation_fraction() if is_physics_processing() else 1.0
+		_air_roll_view = wrapf(lerpf(_prev_air_roll, _air_roll, frac), -PI, PI)
 	else:
 		_air_roll_view = lerp_angle(_air_roll_view, 0.0, 1.0 - exp(-12.0 * delta))
 	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view + _kick_roll)

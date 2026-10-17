@@ -39,6 +39,9 @@ var gamepad_look_speed := 3.2
 var invert_y := false
 ## The third-person camera turns with flips and rolls (ChaseCamera reads it).
 var camera_follow_flips := false
+## Aim help, 0 (off) to 1: shots bend onto nearby heads and bodies, and
+## controller look slows over targets.
+var aim_assist := 0.5
 var fov := 85.0
 var volume := 0.8
 ## action -> {"kbm": event dict or null, "pad": event dict or null}.
@@ -60,6 +63,8 @@ func apply_to(p: Player) -> void:
 	p.tuning.base_fov = fov
 	p.invert_y = invert_y
 	p.ads_sensitivity = ads_sensitivity
+	if p.weapon is Pistol:
+		(p.weapon as Pistol).aim_assist = aim_assist
 	var bus := AudioServer.get_bus_index("Master")
 	AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(volume, 0.0001)))
 
@@ -70,6 +75,7 @@ func reset_values() -> void:
 	gamepad_look_speed = 3.2
 	invert_y = false
 	camera_follow_flips = false
+	aim_assist = 0.5
 	fov = 85.0
 	volume = 0.8
 	changed.emit()
@@ -292,6 +298,7 @@ func save_settings(path := "") -> void:
 	cfg.set_value("look", "gamepad_look_speed", gamepad_look_speed)
 	cfg.set_value("look", "invert_y", invert_y)
 	cfg.set_value("look", "camera_follow_flips", camera_follow_flips)
+	cfg.set_value("look", "aim_assist", aim_assist)
 	cfg.set_value("look", "fov", fov)
 	cfg.set_value("audio", "volume", volume)
 	for action: String in custom_bindings:
@@ -309,6 +316,7 @@ func load_settings(path := "") -> void:
 	gamepad_look_speed = cfg.get_value("look", "gamepad_look_speed", gamepad_look_speed)
 	invert_y = cfg.get_value("look", "invert_y", invert_y)
 	camera_follow_flips = cfg.get_value("look", "camera_follow_flips", camera_follow_flips)
+	aim_assist = cfg.get_value("look", "aim_assist", aim_assist)
 	fov = cfg.get_value("look", "fov", fov)
 	volume = cfg.get_value("audio", "volume", volume)
 	custom_bindings.clear()

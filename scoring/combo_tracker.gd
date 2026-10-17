@@ -91,6 +91,8 @@ const REST_STATES := [Player.State.GROUND, Player.State.CROUCH]
 @export var long_shot_distance := 40.0
 
 var player: Player
+## How well the last trick added was done (0..1), or -1 if it isn't graded.
+var last_quality := -1.0
 var score := 0
 var best_combo := 0
 ## Current combo: one entry per trick name, in order first done:
@@ -201,6 +203,7 @@ func add(trick_name: StringName, base: float, speed: float, quality: float = -1.
 	combo_points += value
 	time_left = bank_after
 	_rest = 0.0
+	last_quality = quality
 	added.emit(trick_name, roundi(value))
 	combo_changed.emit()
 	return idx

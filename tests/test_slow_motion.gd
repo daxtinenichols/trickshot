@@ -151,7 +151,7 @@ func test_slow_motion_keeps_the_tick_length() -> void:
 		frames += 1
 	tree.physics_frame.disconnect(ticked)
 	var ticks: int = count[0]
-	check_between(ticks, 43, 53, "40% of the ticks (%d in %d frames)" % [ticks, frames])
+	check_between(ticks, 43, 53, "40%% of the ticks (%d in %d frames)" % [ticks, frames])
 	var per_tick := (z0 - p.global_position.z) / maxf(ticks, 1)
 	check_near(per_tick, p.horizontal_speed() / 60.0, 0.02, "each tick still moves 1/60 s worth (%.3f m)" % per_tick)
 	check(full_t < 0.0, "was running")
