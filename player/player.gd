@@ -1580,6 +1580,13 @@ func wall_normal() -> Vector3:
 	return _wall_normal
 
 
+## 0..1 through the current vault or mantle (0 otherwise).
+func vault_progress() -> float:
+	if state not in [State.VAULT, State.MANTLE]:
+		return 0.0
+	return clampf(state_time / _path_time, 0.0, 1.0)
+
+
 func is_diving() -> bool:
 	return _diving
 

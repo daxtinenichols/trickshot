@@ -53,7 +53,7 @@ const TRICK_NAMES := {
 	&"quick_turn": "QUICK TURN",
 }
 
-const HELP := "Esc: moves list, settings and controls · Backspace respawn · 1-9 zones, 0 shooting range · F1 HUD · F2 tuning · F3 slow-mo · F4 speed trail"
+const HELP := "Esc: moves list, settings and controls · Backspace respawn · 1-9 zones, 0 shooting range, - ramps and loop · F1 HUD · F2 tuning · F3 slow-mo · F4 speed trail · F5 corner cam"
 
 var player: Player
 
