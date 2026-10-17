@@ -253,6 +253,27 @@ func test_radio_plays_story_lines_and_chatter() -> void:
 	check(RadioFeed.duration("short") >= 2.0 and RadioFeed.duration("x".repeat(400)) <= 7.0, "durations clamp")
 
 
+func test_echo_chatter_waits_for_the_uplink() -> void:
+	await _load(_index("m10_the_climb"))
+	var radio: RadioFeed = level.radio
+	var echo := func() -> bool: return radio.queue.any(func(l: Dictionary) -> bool: return l.who == "echo")
+	for k in 4:
+		radio.queue.clear()
+		radio.current = {}
+		radio._chatter_ready_at = 0.0
+		radio.notify("combo")
+	check(not echo.call(), "Echo stays off the air before she takes the uplink")
+	radio.notify("checkpoint:1")
+	var heard := false
+	for k in 4:
+		radio.queue.clear()
+		radio.current = {}
+		radio._chatter_ready_at = 0.0
+		radio.notify("combo")
+		heard = heard or echo.call()
+	check(heard, "and cheers him on after")
+
+
 # ---------------------------------------------------------------- the chase
 
 func test_pursuer_follows_your_path() -> void:

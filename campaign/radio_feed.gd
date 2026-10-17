@@ -47,6 +47,8 @@ var _played := {}
 var _chatter := {}
 var _chatter_next := {}
 var _chatter_ready_at := 0.0
+## Mission events seen so far (chatter with "after" waits for its event).
+var _seen := {}
 var _shown_for := 0.0
 var _show_time := 0.0
 var _last_msec := 0
@@ -74,6 +76,7 @@ func _ready() -> void:
 ## A mission event happened: queue the story lines it triggers, or a
 ## chatter reaction if the radio is free.
 func notify(event_name: String) -> void:
+	_seen[event_name] = true
 	var story_found := false
 	for i in _story.size():
 		var s: Dictionary = _story[i]
@@ -98,9 +101,18 @@ func _chat(event_name: String) -> void:
 	var pool: Array = _chatter[event_name]
 	if pool.is_empty():
 		return
-	var i: int = _chatter_next.get(event_name, 0)
-	_chatter_next[event_name] = (i + 1) % pool.size()
-	var c: Dictionary = pool[i]
+	# The next line in turn whose "after" event (if any) has happened, e.g.
+	# Echo only once she's on open air.
+	var start: int = _chatter_next.get(event_name, 0)
+	var c := {}
+	for k in pool.size():
+		var i := (start + k) % pool.size()
+		if not pool[i].has("after") or _seen.has(String(pool[i].after)):
+			c = pool[i]
+			_chatter_next[event_name] = (i + 1) % pool.size()
+			break
+	if c.is_empty():
+		return
 	_chatter_ready_at = _now() + CHATTER_COOLDOWN
 	say(c.get("who", "host"), c.get("line", ""))
 

@@ -161,7 +161,7 @@ spot.
 `chatter` holds reactions to how you play, by event: `bail`, `combo` (a
 banked combo of x4 or more), `fall`, `kill`, `headshot`, `down` (enemies
 took you down), `caught`, `tape`.
-Each is a list of `{"who", "line"}` used in turn, at most one every few
+Each is a list of `{"who", "line"}` used in turn (a line with `"after": "checkpoint:1"` waits until that event has happened), at most one every few
 seconds, and never over a story line.
 
 Every line is spoken. After adding or rewording lines, run
