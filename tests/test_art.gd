@@ -241,7 +241,8 @@ func test_chase_camera_can_follow_side_flips() -> void:
 		await tree.process_frame
 	var tilt := func() -> float: return cam.global_basis.y.angle_to(Vector3.UP)
 	var level_tilt: float = tilt.call()
-	cam.follow_flips = true
+	# The pause-menu setting wins over the camera's own fallback.
+	Settings.camera_follow_flips = true
 	await tree.process_frame
 	await tree.process_frame
 	var follow_tilt: float = tilt.call()
@@ -249,6 +250,7 @@ func test_chase_camera_can_follow_side_flips() -> void:
 	check(level_tilt < 0.5, "off: the camera stays upright through a side flip (%.2f rad)" % level_tilt)
 	check(follow_tilt > 0.7, "on: the camera rolls with the side flip (%.2f rad)" % follow_tilt)
 	check(cam.global_basis.x.dot(player.camera.global_basis.x) > 0.95, "rolls the same way as the view (up %s)" % up_view)
+	Settings.camera_follow_flips = false
 	cam.set_active(false)
 	cam.queue_free()
 

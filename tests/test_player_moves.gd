@@ -860,11 +860,105 @@ func test_side_flip_opened_up_spins_slower() -> void:
 	check(open < tucked * 0.6, "but slower than tucked (%.1f vs %.1f deg)" % [rad_to_deg(open), rad_to_deg(tucked)])
 
 
-func test_half_side_flip_crashes() -> void:
-	var p := await _airborne(4.0)
-	await w.step_until(func() -> bool: return p.air_roll() < deg_to_rad(-150.0), 90, _lean_frame(-1.0))
-	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
-	check(&"crash" in w.tricks_seen, "landing on your side is a crash")
+func test_mouse_roll_rolls_you_directly() -> void:
+	var p := await _airborne(10.0)
+	# Boost held, the mouse rolls you by as much as it moves, either way.
+	# Slowly (2 degrees a tick is 120 degrees a second).
+	for i in 15:
+		p.roll_look(deg_to_rad(2.0))
+		await w.step(1)
+	check_near(rad_to_deg(p.air_roll()), 30.0, 1.0, "mouse right rolls right")
+	for i in 5:
+		p.roll_look(deg_to_rad(-2.0))
+		await w.step(1)
+	check_near(rad_to_deg(p.air_roll()), 20.0, 1.0, "and back left (no direction lock)")
+	# A slow roll stops where you leave it.
+	await w.step(10)
+	check_near(rad_to_deg(p.air_roll()), 20.0, 1.0, "a slow roll just stops")
+	# A fast one carries on after you let go, like an opened side flip.
+	for i in 6:
+		p.roll_look(deg_to_rad(12.0))
+		await w.step(1)
+	var r := p.air_roll()
+	await w.step(6)
+	check(p.air_roll() > r + deg_to_rad(10.0), "a fast roll carries on (%.0f -> %.0f deg)" % [rad_to_deg(r), rad_to_deg(p.air_roll())])
+
+
+## Lands a running jump after side-flipping round to `roll_deg` (0 = no
+## flip). Returns {state on landing, speed before, speed a second later}.
+func _side_flip_landing(roll_deg: float) -> Dictionary:
+	if is_instance_valid(w):
+		w.queue_free()
+		await tree.process_frame
+	w = TestWorld.new()
+	tree.root.add_child(w)
+	w.add_floor()
+	var p := w.spawn_player(Vector3(0, 4.0, 0))
+	p.velocity = Vector3(0, 0, -9)
+	await w.step(1, _fwd())
+	if roll_deg > 0.0:
+		await w.step_until(func() -> bool: return p.air_roll() <= deg_to_rad(-roll_deg), 90, _lean(-1.0))
+	var out := {"state": "", "before": p.horizontal_speed(), "land": 0.0, "after": 0.0}
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120, _fwd())
+	out.state = Player.State.keys()[p.state]
+	out.land = p.horizontal_speed()
+	await w.step(60, _fwd())
+	out.after = p.horizontal_speed()
+	return out
+
+
+func test_landing_on_your_side_rolls_and_keeps_moving() -> void:
+	var clean := await _side_flip_landing(0.0)
+	var side := await _side_flip_landing(150.0)
+	check(side.state == "ROLL", "coming down on your side is a shoulder roll (%s)" % side.state)
+	check(not (&"crash" in w.tricks_seen), "not a crash")
+	check(side.after > side.before * 0.85, "keeps moving (%.1f -> %.1f m/s)" % [side.before, side.after])
+	check(clean.land >= side.land, "a clean landing keeps at least as much (%.1f vs %.1f m/s)" % [clean.land, side.land])
+
+
+func test_held_wallrun_lean_doesnt_side_flip() -> void:
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	# Lean into the wall until the run ends, still holding the lean.
+	await w.step_until(func() -> bool: return p.state != Player.State.WALLRUN, 300, _lean(1.0))
+	check(p.state == Player.State.AIR, "came off the wall (%s)" % Player.State.keys()[p.state])
+	await w.step(15, _lean(1.0))
+	check(absf(p.air_roll()) < 0.01, "the held lean doesn't start a side flip (%.0f deg)" % rad_to_deg(p.air_roll()))
+	await w.step(2, _fwd())
+	await w.step(10, _lean(1.0))
+	check(absf(p.air_roll()) > 0.3 or p.state != Player.State.AIR, "let go and lean again to side flip")
+
+
+## Moves the view as a mouse would (right / up on screen) while held at an
+## angle in the air, and returns how the crosshair moved on screen.
+func _aim_on_screen(view_pitch: float, view_roll: float, right: float, up: float) -> Vector2:
+	var p := await _airborne(20.0)
+	p.set_physics_process(false)
+	p.pitch = view_pitch
+	p._air_roll = view_roll
+	p.rotation = Vector3(0.0, p.yaw, 0.0)
+	p._process(0.0)
+	var before := p.camera.global_basis
+	p._look(-right * 0.05, up * 0.05)
+	p.rotation = Vector3(0.0, p.yaw, 0.0)  # what the next tick does
+	p._process(0.0)
+	var moved := -p.camera.global_basis.z - (-before.z)
+	return Vector2(moved.dot(before.x), moved.dot(before.y))
+
+
+func test_aim_follows_the_view_in_the_air() -> void:
+	for c: Array in [[0.0, 0.0, "upright"], [PI, 0.0, "upside down"], [0.0, PI * 0.5, "on your side"], [2.4, 1.0, "mid flip and tilted"]]:
+		var r := await _aim_on_screen(c[0], c[1], 1.0, 0.0)
+		check(r.x > 0.03 and absf(r.y) < r.x * 0.5, "%s: moving right aims right (%s)" % [c[2], r])
+		var u := await _aim_on_screen(c[0], c[1], 0.0, 1.0)
+		check(u.y > 0.03 and absf(u.x) < u.y * 0.5, "%s: moving up aims up (%s)" % [c[2], u])
+		w.queue_free()
+		await tree.process_frame
+		w = TestWorld.new()
+		tree.root.add_child(w)
 
 
 func test_lean_on_the_ground_peeks() -> void:
@@ -939,12 +1033,19 @@ func _turn_run(lean: float) -> Player:
 
 
 func test_quick_turn_turns_faster_and_keeps_speed() -> void:
-	var p := await _turn_run(1.0)
+	# Q (lean left) while turning left.
+	var p := await _turn_run(-1.0)
 	var turned := rad_to_deg(absf(angle_difference(0.0, p.yaw)))
 	check(turned > 80.0, "holding lean turns the view faster (%.0f deg)" % turned)
 	var h := MovementMath.horizontal(p.velocity)
 	check(h.length() > 8.5, "speed kept round the turn (%.2f m/s)" % h.length())
 	check(h.normalized().dot(p.forward()) > 0.95, "and going where you look")
+
+
+func test_quick_turn_only_toward_its_side() -> void:
+	# E (lean right) while turning left: a normal turn.
+	var p := await _turn_run(1.0)
+	check_near(rad_to_deg(absf(angle_difference(0.0, p.yaw))), 36.0, 0.5, "the other lean doesn't speed up the turn")
 
 
 func test_plain_turn_is_normal_speed() -> void:
@@ -1080,10 +1181,8 @@ func test_lean_on_a_wallrun() -> void:
 	var up := await _lean_wallrun(1.0)
 	var down := await _lean_wallrun(-1.0)
 	check(plain.ok and up.ok and down.ok, "all three wallrun")
-	check(up.frames > plain.frames + 15, "leaning into the wall keeps you on it longer (%d vs %d frames)" % [up.frames, plain.frames])
-	check(up.dist > plain.dist + 1.0, "and carries you further along it (%.1f m vs %.1f m)" % [up.dist, plain.dist])
-	check(up.top < plain.top + 0.6, "but doesn't climb it (%.2f m vs %.2f m)" % [up.top, plain.top])
-	check(up.angle <= up.entry + 0.001, "never steeper than you came in (%.2f vs %.2f rad)" % [up.angle, up.entry])
+	check(up.top > plain.top + 0.5, "leaning toward the wall rolls the run up it (%.2f m vs %.2f m)" % [up.top, plain.top])
+	check(up.angle > up.entry + 0.3, "the path turns up (%.2f -> %.2f rad)" % [up.entry, up.angle])
 	check(down.frames < plain.frames, "leaning away brings you down sooner (%d vs %d frames)" % [down.frames, plain.frames])
 
 
@@ -1120,29 +1219,50 @@ func test_steep_wallrun_kicks_off_harder() -> void:
 	check(push[1].y > push[0].y, "and higher (%.1f vs %.1f m/s)" % [push[1].y, push[0].y])
 
 
-func test_wallrun_angle_turns_steadily_and_holds() -> void:
+func test_wallrun_keeps_your_angle_and_lean_rolls_it() -> void:
 	var ok := await _enter_wallrun()
 	check(ok, "wallrun starts")
 	if not ok:
 		return
 	var p := w.player
+	var v := p._pre_move_velocity
+	var came_in := atan2(v.y, MovementMath.horizontal(v).length())
+	check_near(p.wallrun_angle(), came_in, 0.12, "runs at the angle you came in at (%.2f vs %.2f rad)" % [p.wallrun_angle(), came_in])
+	# Let go: nothing holds you up, gravity bends the path down.
 	var a0 := p.wallrun_angle()
-	await w.step(10, _lean(-1.0))
+	await w.step(10, _fwd())
+	var fall := a0 - p.wallrun_angle()
+	check(fall > 0.01, "gravity bends the run down (%.3f rad)" % fall)
+	# Lean away: rolls down at a steady rate on top of that.
 	var a1 := p.wallrun_angle()
 	await w.step(10, _lean(-1.0))
 	var a2 := p.wallrun_angle()
+	await w.step(10, _lean(-1.0))
+	var a3 := p.wallrun_angle()
 	var rate := deg_to_rad(p.tuning.wallrun_angle_rate) * 10.0 / 60.0
-	check_near(a0 - a1, rate, 0.02, "leaning away turns down at a steady rate (%.3f rad)" % (a0 - a1))
-	check_near(a1 - a2, rate, 0.02, "the same rate the whole way (%.3f rad)" % (a1 - a2))
-	await w.step(15, _fwd())
-	check(p.state == Player.State.WALLRUN, "still on the wall")
-	check_near(p.wallrun_angle(), a2, 0.001, "let go and it holds the angle")
-	# Leaning in from a downward run levels it out to a slight rise, no more.
-	var lean_up := deg_to_rad(p.tuning.wallrun_lean_up_angle)
-	await w.step(5, _lean(1.0))
-	check_near(p.wallrun_angle() - a2, rate * 0.5, 0.02, "leaning in turns up at the same rate")
-	await w.step(40, _lean(1.0))
-	check_near(p.wallrun_angle(), lean_up, 0.001, "and stops at a slight rise (%.3f rad)" % p.wallrun_angle())
+	check(a1 - a2 > rate, "leaning away rolls the path down (%.3f rad)" % (a1 - a2))
+	check_near(a2 - a3, a1 - a2, 0.04, "at a steady rate (%.3f then %.3f rad)" % [a1 - a2, a2 - a3])
+	# Lean toward the wall: rolls it back up.
+	await w.step(10, _lean(1.0))
+	check(p.wallrun_angle() > a3 + rate * 0.5, "leaning in rolls it up (%.3f -> %.3f rad)" % [a3, p.wallrun_angle()])
+
+
+func test_mouse_roll_steers_a_wallrun() -> void:
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	await w.step(1, _fwd())
+	# The wall is on your right: rolling right (toward it) turns the path up.
+	var a0 := p.wallrun_angle()
+	p.roll_look(0.2)
+	await w.step(1, _fwd())
+	check(p.wallrun_angle() > a0 + 0.15, "rolling toward the wall turns it up (%.3f -> %.3f rad)" % [a0, p.wallrun_angle()])
+	var a1 := p.wallrun_angle()
+	p.roll_look(-0.3)
+	await w.step(1, _fwd())
+	check(p.wallrun_angle() < a1 - 0.25, "rolling away turns it down (%.3f -> %.3f rad)" % [a1, p.wallrun_angle()])
 
 
 func test_lean_never_puts_the_view_in_a_wall() -> void:

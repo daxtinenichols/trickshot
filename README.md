@@ -10,7 +10,7 @@ This repo is currently the **movement sandbox**: a graybox level for building an
 2. Open Godot, choose **Import**, and select `project.godot` in this folder.
 3. Press **F5** (or the play button). You spawn on the run track.
 
-Mouse/keyboard and controller both work (any XInput pad, including a wired or wireless Xbox 360 controller; the Settings tab lists the controllers it sees). Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, invert, volume), and custom controls.
+Mouse/keyboard and controller both work (any XInput pad, including a wired or wireless Xbox 360 controller; the Settings tab lists the controllers it sees). Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, invert, third-person camera following flips, volume), and custom controls.
 
 ## Controls
 
@@ -23,6 +23,7 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Dolphin dive (prone jump) | Z | Y |
 | Kick | F | R3 |
 | Boost (short burst of speed, 2 s cooldown) | Shift | L3 (click the left stick) |
+| Mouse roll (test): hold Shift in the air or on a wall and move the mouse left/right to roll instead of turn | Shift + mouse | |
 | Lean / quick turn (side flip in the air, steer a wallrun) | Q / E | LB / RB |
 | Fire | Left mouse | Right trigger |
 | Aim down sights | Right mouse | Left trigger |
@@ -55,18 +56,18 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 | Slide | Crouch while sprinting | Faster entry slides further; slopes add speed |
 | Slide landing | Press crouch just before you land from a fall | Turns some of your fall into forward speed |
 | Dolphin dive (prone jump) | Z, on the ground or once in the air. There's no lying prone or crawling | Tap to dive and pop up into a slide; hold to stay on your belly for low gaps. You get up by yourself when the slide runs out. Dive through low windows |
-| Wallrun | Jump into a blue wall at an angle, holding a direction | Shallow angle + speed = longer, floatier run. Lean into the wall (Q or E) to stay up longer: your path levels out with a slight rise and the run lasts longer. Lean away to angle it down. The angle turns at a steady rate and holds when you let go. Jumping in rising hard gives a steep run up the wall that costs speed. Look and aim anywhere while running; crouch drops off |
+| Wallrun | Jump into a blue wall at an angle, holding a direction | You keep the angle you hit the wall at, and gravity keeps bending your path down: nothing holds you up. Shallow angle + speed = a longer run. Lean (Q or E) to roll your path round on the wall like a roll: toward the wall turns it up, away turns it down. Running up the wall costs speed. Look and aim anywhere while running; crouch drops off |
 | Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; the steeper you're running up it, the harder. Chain wall to wall |
 | Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it (your view stays put; hold Q or E while turning to face away quickly) |
-| Ramp run / loop | Run onto a purple ramp or loop | Gravity slows you going up and speeds you coming down. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off. Drop off upside down and you keep turning the way the loop turned you, so you can come round and land it like a flip. Launch off the lip of a ramp for air tricks |
+| Ramp run / loop | Run onto a purple ramp or loop | Gravity slows you going up and speeds you coming down. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off. Steer with the stick to run off the side. Whenever you leave a ramp or loop you fly off like a real body: you keep your angle and keep turning the way it was turning you (move the view to take over), so off a loop you can come round and land it like a flip. Land on a ramp mid-flip and you crash into it. Launch off the lip of a ramp for air tricks |
 | Sideways ramp | Run onto a purple bank at an angle, or across any steep ramp | Run along it tilted like a wallrun; steer with the stick or look up the slope to climb it, let go to drift down |
 | Roll | On the ground, flick the view down past your feet | A forward roll, like a flip on the ground. Keeps your speed |
 | Ground roll | Double-tap crouch while running | A quick forward roll that keeps your speed |
 | Landing roll | Hold crouch in the air (from any angle, even mid-flip), or land tucked forward | You curl into a ball and roll out of big drops without losing speed instead of a stun |
 | Kick | F. In the air: kick off walls and targets | Kicking with speed pushes you further and keeps your speed along the wall. Kicks doors open and breaks windows |
 | Boost | Shift | A short burst of speed on the ground, a ramp or a wall, then a 2 s cooldown |
-| Lean / quick turn | Hold Q or E | Leans you to peek. While held, turning the view is faster and your run follows it without losing speed (in the air, part of your speed follows) |
-| Side flip | Hold Q or E in the air | Rolls you sideways one way (the first one you press). Holding it, or crouch, tucks you in and spins you faster; let go to open up and slow down. Near level it settles; land on your side and you crash |
+| Lean / quick turn | Hold Q or E | Leans you to peek. While held, turning the view toward that side (Q left, E right) is faster and your run follows it without losing speed (in the air, part of your speed follows) |
+| Side flip | Hold Q or E in the air | Rolls you sideways one way (the first one you press). Holding it, or crouch, tucks you in and spins you faster; let go to open up and slow down. Near level it settles; land on your side and you shoulder-roll, keeping your speed (the further off level, the more it costs). A lean you were holding on a wallrun doesn't flip you as you come off: let go and lean again |
 | Window smash | Run, slide or dive into glass fast enough | |
 | Backflip / front flip | In the air, keep moving the view up and over (backflip) or down and over (front flip) until it comes back around | Past straight up/down the view turns faster, so commit to the flick. Flick hard past halfway and let go: momentum carries you round to level. Hold crouch to keep spinning. The HUD shows your flip progress. Land level or you crash |
 | 360 / 720 | In the air, turn a full circle | Momentum carries a fast spin round the same way as flips. Quick turn (Q/E) speeds the turn up |

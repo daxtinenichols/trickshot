@@ -79,7 +79,7 @@ func test_run_up_a_steep_ramp_losing_speed() -> void:
 	check(slowest < entry_speed - 3.0, "slowed going up (%.1f -> %.1f m/s)" % [entry_speed, slowest])
 	check_between(top, 3.0, 15.0, "got partway up")
 	await w.step_until(func() -> bool: return p.state in [Player.State.GROUND, Player.State.ROLL, Player.State.STUN], 300, _fwd())
-	check(p.global_position.y < 0.5, "came back down")
+	check(p.global_position.y < 0.5, "came back down (%s at %s, air pitch %.0f, roll %.0f)" % [Player.State.keys()[p.state], p.global_position, rad_to_deg(p._air_pitch), rad_to_deg(p._air_roll)])
 
 
 func test_quarter_pipe_launches_you_up() -> void:
@@ -189,6 +189,53 @@ func test_running_across_a_ramp_holds_your_line() -> void:
 			break
 	check(frames > 40, "runs along the ramp like a wallrun (%d frames)" % frames)
 	check(frames >= across.frames * 0.8, "about as long as along a sideways ramp (%d vs %d frames)" % [frames, across.frames])
+
+
+## Runs onto the loop, then holds `f` from partway up its side. Returns the
+## frames until you leave it and the view's turn (degrees) each frame.
+func _leave_loop(f: InputFrame) -> Dictionary:
+	w.add_floor()
+	_add_loop(-70.0)
+	var p := await _settle()
+	await w.step_until(func() -> bool: return p.state == Player.State.SURFACE and p.body_up().y < 0.2, 900, _fwd())
+	var out := {"frames": -1, "before": [], "after": [], "x": p.global_position.x}
+	p._process(0.0)
+	var last := Quaternion(p.camera.global_basis.orthonormalized())
+	for i in 120:
+		await w.step(1, f)
+		p._process(0.0)
+		var q := Quaternion(p.camera.global_basis.orthonormalized())
+		var turn := rad_to_deg(last.angle_to(q))
+		last = q
+		if p.state == Player.State.SURFACE:
+			out.before.append(turn)
+		elif p.state == Player.State.AIR:
+			if out.frames < 0:
+				out.frames = i
+				out.x = p.global_position.x - out.x
+			else:
+				out.after.append(turn)
+			if out.after.size() >= 15:
+				break
+		else:
+			break
+	return out
+
+
+func test_steer_off_the_side_of_a_loop() -> void:
+	var r := await _leave_loop(InputFrame.make(Vector2(1, 1)))
+	check(r.frames >= 0 and r.frames < 40, "steering sideways runs you off the edge (%d frames)" % r.frames)
+	check(r.x > 1.5, "off the side you steered to (%.1f m)" % r.x)
+
+
+func test_leaving_a_loop_keeps_turning_like_a_body() -> void:
+	var r := await _leave_loop(InputFrame.make(Vector2(1, 1)))
+	check(r.after.size() >= 15, "flew a while")
+	if r.after.is_empty() or r.before.is_empty():
+		return
+	var was: float = r.before.back()
+	for t: float in r.after:
+		check_between(t, was * 0.6, was * 1.4, "the view keeps turning the way the loop turned it (%.1f vs %.1f deg per frame)" % [t, was])
 
 
 func test_bailing_off_a_loop_keeps_turning() -> void:

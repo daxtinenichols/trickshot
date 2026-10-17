@@ -62,8 +62,6 @@ var _wallrun_gravity := 0.3
 ## and your speed along it.
 var _wallrun_angle := 0.0
 var _wallrun_speed := 0.0
-## Once you angle a wallrun with lean, it holds the angle you set.
-var _wallrun_steered := false
 ## The player's transform at the previous tick, for smoothing the view
 ## between ticks.
 var _prev_origin := Vector3.ZERO
@@ -85,6 +83,11 @@ var _air_roll := 0.0
 ## Side-flip spin: direction (locked once started) and speed (rad/s).
 var _roll_dir := 0.0
 var _roll_rate := 0.0
+## A roll carried off a surface: keeps its rate until you lean.
+var _roll_carry := false
+## Still holding the lean you steered a wallrun with: it won't start a side
+## flip until you let go and lean again.
+var _lean_locked := false
 ## View turned by the player since the last tick, and the spin carried on
 ## from it in the air (yaw, pitch, rad/s).
 var _look_acc := Vector2.ZERO
@@ -113,10 +116,13 @@ var _surface_look_yaw := 0.0
 var _surface_looped := false
 ## Direction the track under you runs (from its "flow" meta), or zero.
 var _surface_flow := Vector3.ZERO
-## Coming off a loop upside down: how far round you are (as a flip) and how
-## fast the loop was turning you, carried into the air.
+## Flying off a ramp or loop: how far round you are (as a flip), how tilted
+## (as a side flip), and how fast the surface was turning you (yaw, pitch
+## and roll rates), all carried into the air.
 var _exit_air_pitch := 0.0
-var _exit_flip_rate := 0.0
+var _exit_spin := Vector2.ZERO
+var _exit_air_roll := 0.0
+var _exit_roll_rate := 0.0
 ## The current spin carry came from a loop: it keeps its rate (no fade, no
 ## halfway rule) until you take over with the view or come round level.
 var _carry_free := false
@@ -134,8 +140,15 @@ var _path_to := Vector3.ZERO
 var _path_time := 0.3
 var _path_exit_velocity := Vector3.ZERO
 
-# Quick turn: held lean speeds up turning and carries your speed round.
-var _turn_mod := false
+# Quick turn: a held lean speeds up turning toward its side (Q left, E
+# right) and carries your speed round. -1 = left, 1 = right, 0 = off.
+var _turn_side := 0.0
+## The last tick rolled you with the mouse.
+var _mouse_rolled := false
+# Mouse roll (boost held + mouse left/right in the air or on a wall):
+# radians gathered since the last tick, and what this tick uses.
+var _roll_input := 0.0
+var _roll_tick := 0.0
 ## View yaw turned while quick turning since the last tick (radians).
 var _turn_carry := 0.0
 var _boost_cooldown := 0.0
@@ -215,7 +228,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and is_mouse_captured():
 		var m := event as InputEventMouseMotion
 		var sens := tuning.mouse_sensitivity * aim_sensitivity_scale()
-		_look(-m.relative.x * sens, -m.relative.y * sens * (-1.0 if invert_y else 1.0))
+		var d_pitch := -m.relative.y * sens * (-1.0 if invert_y else 1.0)
+		if Input.is_action_pressed("boost") and state in [State.AIR, State.WALLRUN]:
+			# Holding boost, left and right rolls you instead of turning.
+			roll_look(m.relative.x * sens)
+			_look(0.0, d_pitch)
+		else:
+			_look(-m.relative.x * sens, d_pitch)
 	elif event is InputEventMouseButton and event.pressed and not is_mouse_captured():
 		capture_mouse(true)
 	elif event.is_action_pressed("reset"):
@@ -237,17 +256,31 @@ func capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE
 
 
+## Is this turn toward the side of the lean held? (Positive yaw turns left.)
+func _quick_turning(d_yaw: float) -> bool:
+	return _turn_side != 0.0 and d_yaw * _turn_side < 0.0
+
+
 ## Turns the view. In the air the pitch is free, so pulling the view all the
 ## way over is a flip and turning a full circle is a 360. On the ground the
 ## pitch is clamped as usual.
 func _look(d_yaw: float, d_pitch: float) -> void:
 	if state == State.SURFACE:
-		if _turn_mod:
+		if _quick_turning(d_yaw):
 			d_yaw *= tuning.quick_turn_look_scale
 		_surface_look_yaw = wrapf(_surface_look_yaw + d_yaw, -PI, PI)
 		pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
 		return
-	if _turn_mod:
+	if state == State.AIR:
+		# Aim follows the view however you're turned: tilted by a side flip,
+		# the view moves with the tilted screen, and upside down (past
+		# vertical in a flip) turning left and right swap round.
+		var r := _air_roll
+		var dx := d_yaw * cos(r) - d_pitch * sin(r)
+		var dy := d_yaw * sin(r) + d_pitch * cos(r)
+		d_yaw = -dx if cos(pitch) < 0.0 else dx
+		d_pitch = dy
+	if _quick_turning(d_yaw):
 		d_yaw *= tuning.quick_turn_look_scale
 		_turn_carry += d_yaw
 	yaw = wrapf(yaw + d_yaw, -PI, PI)
@@ -263,6 +296,13 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		if raw < deg_to_rad(-89.0) and d_pitch < 0.0:
 			_ground_flick += deg_to_rad(-89.0) - raw
 		pitch = clampf(raw, deg_to_rad(-89.0), deg_to_rad(89.0))
+
+
+## Mouse roll: + rolls right. In the air it's a side flip you steer
+## directly; on a wall it rolls your path round (like leaning). Elsewhere
+## it does nothing.
+func roll_look(d: float) -> void:
+	_roll_input += d * tuning.mouse_roll_scale
 
 
 ## Point the view somewhere (used by spawns and tests).
@@ -290,8 +330,10 @@ func _physics_process(delta: float) -> void:
 func simulate(f: InputFrame, delta: float) -> void:
 	state_time += delta
 	_update_timers(f, delta)
+	_roll_tick = _roll_input if state in [State.AIR, State.WALLRUN] else 0.0
+	_roll_input = 0.0
 	# On a wall, lean angles your run instead.
-	_turn_mod = absf(f.lean) > 0.3 and state != State.WALLRUN
+	_turn_side = signf(f.lean) if absf(f.lean) > 0.3 and state != State.WALLRUN else 0.0
 	_carry_turn()
 	if f.boost_pressed:
 		_boost(f)
@@ -381,13 +423,22 @@ func _change_state(to: State) -> void:
 		_roll_rate = 0.0
 		_look_acc = Vector2.ZERO
 		_air_pitch = _exit_air_pitch
-		_spin_vel = Vector2(0.0, _exit_flip_rate)
-		_carry_free = _exit_flip_rate != 0.0
+		_spin_vel = _exit_spin
+		_carry_free = _exit_spin != Vector2.ZERO
+		_air_roll = _exit_air_roll
+		_roll_dir = signf(_exit_roll_rate)
+		_roll_rate = absf(_exit_roll_rate)
+		_roll_carry = _exit_roll_rate != 0.0
+		_lean_locked = from == State.WALLRUN and absf(lean) > 0.3
+		_mouse_rolled = false
 		_exit_air_pitch = 0.0
-		_exit_flip_rate = 0.0
+		_exit_spin = Vector2.ZERO
+		_exit_air_roll = 0.0
+		_exit_roll_rate = 0.0
 	elif from == State.AIR:
 		_spin_vel = Vector2.ZERO
 		_carry_free = false
+		_roll_carry = false
 		_settle_pitch()
 		# A dive ends when you touch anything (landing reads it before this).
 		_diving = false
@@ -426,6 +477,19 @@ func _landing_tucked(fall: float) -> bool:
 ## open up and slow down. Opened up near level you settle upright; land
 ## on your side and you crash.
 func _tick_air_roll(f: InputFrame, delta: float) -> void:
+	if _mouse_roll(delta):
+		return
+	if _lean_locked:
+		if absf(f.lean) > 0.3:
+			return
+		_lean_locked = false
+	if _roll_carry:
+		# Rolling off a surface: it turns at its own rate until you lean,
+		# then it's an ordinary side flip in that direction.
+		if absf(f.lean) <= 0.3:
+			_air_roll += _roll_dir * _roll_rate * delta
+			return
+		_roll_carry = false
 	if _roll_dir == 0.0:
 		if absf(f.lean) <= 0.3:
 			return
@@ -440,6 +504,27 @@ func _tick_air_roll(f: InputFrame, delta: float) -> void:
 			_roll_rate = 0.0
 		return
 	_air_roll += _roll_dir * _roll_rate * delta
+
+
+## Rolling with the mouse (boost held) turns you directly, either way.
+## Let go mid-spin and a fast roll carries on like an opened-up side flip
+## (settling near level); a slow one just stops where it is.
+func _mouse_roll(delta: float) -> bool:
+	if _roll_tick != 0.0:
+		_air_roll += _roll_tick
+		_roll_dir = signf(_roll_tick)
+		_roll_rate = minf(absf(_roll_tick) / delta, deg_to_rad(tuning.side_flip_speed))
+		_roll_carry = false
+		_lean_locked = false
+		_mouse_rolled = true
+		return true
+	if not _mouse_rolled:
+		return false
+	_mouse_rolled = false
+	if _roll_rate < deg_to_rad(tuning.spin_carry_min):
+		_roll_dir = 0.0
+		_roll_rate = 0.0
+	return false
 
 
 ## Would `step` take `total` round past the next whole turn?
@@ -735,6 +820,14 @@ func _land(f: InputFrame) -> void:
 	var crouch_age := _since_crouch_press
 	var tucked := _landing_tucked(fall) and not _landing_tipped()
 	if _tuck_roll(f, fall, crouch_age):
+		return
+	if _landing_tipped() and not _landing_crashed() and not _diving:
+		# Down on your side partway round a side flip: a shoulder roll that
+		# keeps you moving. The further off upright, the more speed it costs.
+		var off := absf(rad_to_deg(wrapf(_air_roll, -PI, PI)))
+		var flipped := _sideflips_done > 0
+		_air_roll = 0.0
+		_start_roll(timing_quality(off, 25.0, 160.0), &"flip_roll" if flipped else &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
 		return
 	if _landing_tipped() or (_landing_crashed() and not tucked):
 		_diving = false
@@ -1045,13 +1138,12 @@ func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 	_wallrun_time_limit = lerpf(tuning.wallrun_min_time, tuning.wallrun_max_time, quality)
 	_wallrun_gravity = lerpf(tuning.wallrun_sloppy_gravity, tuning.wallrun_gravity_scale, quality)
 	var t := MovementMath.wall_tangent(n, _pre_move_velocity)
-	# Your path up the wall comes from how you hit it: jump in rising
-	# steeply and you run up at a steep angle.
+	# Your path along the wall is the angle you came in at: rising steeply,
+	# you run up at a steep angle; coming down, you run down.
 	var h := maxf(speed, tuning.wallrun_min_speed)
-	var vy := maxf(velocity.y, tuning.wallrun_entry_lift)
+	var vy := velocity.y
 	_wallrun_angle = clampf(atan2(vy, h), -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	_wallrun_speed = Vector2(h, vy).length()
-	_wallrun_steered = false
 	velocity = (t * cos(_wallrun_angle) + Vector3.UP * sin(_wallrun_angle)) * _wallrun_speed
 	_change_state(State.WALLRUN)
 	_trick(&"wallrun", {"quality": quality})
@@ -1088,26 +1180,14 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# running down gains it.
 	var g := tuning.gravity * _wallrun_gravity
 	speed -= tuning.gravity * (tuning.wallrun_climb_cost if a > 0.0 else _wallrun_gravity) * sin(a) * delta
-	# Lean away from the wall to angle your run down it, at a steady rate.
-	# Lean into the wall to stay up longer: it levels your path out with a
-	# slight rise (never a climb) and stretches the run. Once you've steered,
-	# the angle holds; until then the run arcs gently down.
-	var steer := _lean_toward_wall(f.lean)
-	var bend := g * cos(a) / maxf(speed, 1.0) * delta
-	var lean_up := deg_to_rad(tuning.wallrun_lean_up_angle)
-	if steer > 0.0:
-		_wallrun_steered = true
-		_wallrun_time_limit += steer * tuning.wallrun_lean_time_bonus * delta
-		if a > lean_up:
-			# A steep entry still arcs over; leaning in only stops the fall.
-			a = maxf(a - bend, lean_up)
-		else:
-			a = minf(a + steer * deg_to_rad(tuning.wallrun_angle_rate) * delta, lean_up)
-	elif steer < 0.0:
-		_wallrun_steered = true
-		a += steer * deg_to_rad(tuning.wallrun_angle_rate) * delta
-	elif not _wallrun_steered:
-		a -= bend
+	# Gravity always bends the path down a little (nothing holds you up).
+	# Leaning rolls your path round on the wall at a steady rate: toward
+	# the wall turns it up, away turns it down.
+	a -= g * cos(a) / maxf(speed, 1.0) * delta
+	a += _lean_toward_wall(f.lean) * deg_to_rad(tuning.wallrun_angle_rate) * delta
+	# Rolling with the mouse (boost held) turns the path the same way, by
+	# as much as you move it.
+	a += _roll_tick * _wall_side()
 	a = clampf(a, -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	# Hold any direction to keep running (and build up to wallrun speed);
 	# let go and the run bleeds speed. Where you look doesn't matter.
@@ -1131,6 +1211,12 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 func _lean_toward_wall(lean: float) -> float:
 	if absf(lean) < 0.05:
 		return 0.0
+	return lean * _wall_side()
+
+
+## Which side of you the wall is on: 1 = right, -1 = left (as you see it,
+## or by where you run when looking straight at or away from it).
+func _wall_side() -> float:
 	var right := forward().cross(Vector3.UP)
 	right.y = 0.0
 	var side := right.normalized().dot(MovementMath.horizontal(_wall_normal).normalized())
@@ -1140,7 +1226,7 @@ func _lean_toward_wall(lean: float) -> float:
 		side = right.dot(MovementMath.horizontal(_wall_normal).normalized())
 	# The wall normal points away from the wall, so a wall on your right
 	# has it pointing left.
-	return -lean * signf(side)
+	return -signf(side)
 
 
 func _wall_jump(wish: Vector3, trick_name := &"wall_jump", power := 1.0) -> void:
@@ -1262,6 +1348,9 @@ func surface_need_speed(n: Vector3) -> float:
 ## Running (or sliding, or landing fast) onto a steep runnable surface
 ## sticks you to it.
 func _try_enter_surface() -> bool:
+	# Coming down mid-flip or on your side you can't run it: you hit it.
+	if state == State.AIR and (_landing_crashed() or _landing_tipped()):
+		return false
 	var c := _runnable_contact()
 	if c.is_empty():
 		return false
@@ -1283,6 +1372,7 @@ func _try_enter_surface() -> bool:
 	var h := MovementMath.horizontal(velocity)
 	if h.length() > 0.2:
 		travel_yaw = atan2(-h.x, -h.z)
+	var view_before := Basis.from_euler(Vector3(pitch, yaw, -_air_roll if state == State.AIR else 0.0))
 	_change_state(State.SURFACE)
 	_surface_n = n
 	_surface_up = Vector3.UP
@@ -1292,6 +1382,15 @@ func _try_enter_surface() -> bool:
 	_surface_looped = false
 	_surface_flow = _flow_of(c.collider)
 	_orient_to_surface(0.0)
+	# Landing partway round a flip settles the view; ease into it rather
+	# than snapping.
+	var view_after := global_basis * Basis.from_euler(Vector3(pitch, _surface_look_yaw, 0.0))
+	var offset := (Quaternion(view_before.orthonormalized()) * Quaternion(view_after.orthonormalized()).inverse()).normalized()
+	if offset.get_angle() > 0.01:
+		_view_offset_start = offset
+		_view_offset = offset
+		_view_offset_time = 0.0
+		_view_offset_rate = 10.0
 	_trick(&"ramp_run")
 	return true
 
@@ -1339,8 +1438,9 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 	var flow := _surface_flow - n * _surface_flow.dot(n)
 	if flow.length() > 0.1 and (track or n.y < 0.2):
 		flow = flow.normalized() * signf(dir.dot(flow))
+		var assist := tuning.surface_flow_assist * (1.0 - clampf(absf(f.move.x), 0.0, 1.0))
 		if dir.dot(flow) > 0.5:
-			dir = dir.slerp(flow, 1.0 - exp(-tuning.surface_flow_assist * delta)).normalized()
+			dir = dir.slerp(flow, 1.0 - exp(-assist * delta)).normalized()
 	if f.move.y > 0.3:
 		speed = minf(speed + tuning.surface_accel * delta, maxf(speed, tuning.top_speed))
 	elif f.move.y < -0.3:
@@ -1446,7 +1546,8 @@ func _orient_to_surface(delta: float) -> void:
 
 
 ## Back to upright. Flying off (a bail, a jump, a ramp's lip) you keep
-## looking exactly where you were, and any leftover roll eases out. Running
+## looking exactly where you were, tilt and all, and keep turning the way
+## the surface was turning you, like any body flying free. Running
 ## off onto the ground you keep your view relative to your body (so the
 ## body's tilt at the bottom of a loop doesn't leave you staring at the
 ## floor), and the tilt eases out.
@@ -1472,16 +1573,26 @@ func _leave_surface(onto_ground := false) -> void:
 		if h.length() > 0.0001:
 			yaw = atan2(-h.x, -h.y)
 		pitch = clampf(asin(clampf(fwd.y, -1.0, 1.0)), deg_to_rad(-89.0), deg_to_rad(89.0))
-		if global_basis.y.y < -0.1:
-			# Off a loop past upside down: you're partway through a flip.
-			# Keep turning the way the loop was turning you instead of
-			# snapping upright; let it come round and land it.
+		var flip_rate := spin.dot(Basis(Vector3.UP, yaw).x)
+		if view.y.y < 0.0:
+			# Head below your feet (off a loop past upside down, or tipped
+			# back off a steep ramp): you're partway through a flip, so
+			# count it as one instead of rolling the view upright.
 			yaw = wrapf(yaw + PI, -PI, PI)
-			var rate := spin.dot(Basis(Vector3.UP, yaw).x)
-			pitch = (PI if rate >= 0.0 else -PI) - pitch
+			flip_rate = spin.dot(Basis(Vector3.UP, yaw).x)
+			pitch = (PI if flip_rate >= 0.0 else -PI) - pitch
 			_exit_air_pitch = pitch - look_pitch
-			_exit_flip_rate = rate
-	var upright := Basis.from_euler(Vector3(pitch, yaw, 0.0))
+		# Whatever tilt is left is a side-flip angle, kept as it is.
+		var tilt := (Basis.from_euler(Vector3(pitch, yaw, 0.0)).inverse() * view).get_euler().z
+		_exit_air_roll = -tilt
+		# Keep turning as the surface turned you: flip, spin and roll.
+		var roll_rate := spin.dot(fwd)
+		_exit_spin = Vector2(spin.y, flip_rate)
+		var spin_min := deg_to_rad(tuning.surface_exit_spin_min)
+		if _exit_spin.length() < spin_min:
+			_exit_spin = Vector2.ZERO
+		_exit_roll_rate = roll_rate if absf(roll_rate) >= spin_min else 0.0
+	var upright := Basis.from_euler(Vector3(pitch, yaw, -_exit_air_roll))
 	_view_offset_start = (Quaternion(view) * Quaternion(upright).inverse()).normalized()
 	_view_offset = _view_offset_start
 	_view_offset_time = 0.0
@@ -1883,6 +1994,7 @@ func respawn(t: Variant = null) -> void:
 	_sideflips_done = 0
 	_roll_dir = 0.0
 	_roll_rate = 0.0
+	_roll_carry = false
 	_spin_vel = Vector2.ZERO
 	_look_acc = Vector2.ZERO
 	_air_dive_used = false
@@ -1892,6 +2004,9 @@ func respawn(t: Variant = null) -> void:
 	_turn_carry = 0.0
 	_boost_cooldown = 0.0
 	_boost_time = 0.0
+	_roll_input = 0.0
+	_roll_tick = 0.0
+	_mouse_rolled = false
 	_jump_buffer = 999.0
 	state_time = 0.0
 	respawned.emit()

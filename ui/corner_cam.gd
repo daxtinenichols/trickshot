@@ -79,7 +79,18 @@ func setup(p: Player) -> void:
 	player = p
 	# Shared with the art look's chase camera: one body per player. It also
 	# makes the first-person camera skip the body's layer.
-	rig = ArtLook.ensure_body(p)
+	if ArtLook != null:
+		rig = ArtLook.ensure_body(p)
+	else:
+		# The art look failed to load (say, the editor hasn't scanned new
+		# files yet): build the body here so the runner still shows.
+		rig = p.get_node_or_null("RunnerBody")
+		if rig == null:
+			rig = RunnerBody.new()
+			rig.name = "RunnerBody"
+			p.add_child(rig)
+			rig.setup(p)
+		p.camera.cull_mask &= ~RunnerBody.LAYER
 	_placed = false
 	_follow(0.0)
 

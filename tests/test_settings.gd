@@ -79,6 +79,7 @@ func test_bindings_and_values_survive_save_and_load() -> void:
 	Settings.rebind("crouch", _key(KEY_X))
 	Settings.mouse_sensitivity = 1.7
 	Settings.invert_y = true
+	Settings.camera_follow_flips = true
 	Settings.fov = 100.0
 	Settings.save_settings()
 	# Wipe to defaults, then load from disk.
@@ -89,6 +90,7 @@ func test_bindings_and_values_survive_save_and_load() -> void:
 	check(InputMap.action_has_event("crouch", _key(KEY_X)), "crouch on X after load")
 	check_near(Settings.mouse_sensitivity, 1.7, 0.001, "mouse sensitivity loaded")
 	check(Settings.invert_y, "invert loaded")
+	check(Settings.camera_follow_flips, "camera follow flips loaded")
 	check_near(Settings.fov, 100.0, 0.001, "fov loaded")
 
 

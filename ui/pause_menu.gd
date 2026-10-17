@@ -233,6 +233,12 @@ func _build_settings() -> Control:
 	inv.toggled.connect(func(on: bool) -> void: _set_value("invert_y", on))
 	box.add_child(inv)
 	_value_rows["invert_y"] = inv
+	var follow := CheckButton.new()
+	follow.text = "Third-person camera follows flips and rolls"
+	follow.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	follow.toggled.connect(func(on: bool) -> void: _set_value("camera_follow_flips", on))
+	box.add_child(follow)
+	_value_rows["camera_follow_flips"] = follow
 	var reset := Button.new()
 	reset.text = "Reset settings"
 	reset.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN

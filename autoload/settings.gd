@@ -38,6 +38,8 @@ var mouse_sensitivity := 1.0
 var ads_sensitivity := 1.0
 var gamepad_look_speed := 3.2
 var invert_y := false
+## The third-person camera turns with flips and rolls (ChaseCamera reads it).
+var camera_follow_flips := false
 var fov := 85.0
 var volume := 0.8
 ## action -> {"kbm": event dict or null, "pad": event dict or null}.
@@ -68,6 +70,7 @@ func reset_values() -> void:
 	ads_sensitivity = 1.0
 	gamepad_look_speed = 3.2
 	invert_y = false
+	camera_follow_flips = false
 	fov = 85.0
 	volume = 0.8
 	changed.emit()
@@ -289,6 +292,7 @@ func save_settings(path := "") -> void:
 	cfg.set_value("look", "ads_sensitivity", ads_sensitivity)
 	cfg.set_value("look", "gamepad_look_speed", gamepad_look_speed)
 	cfg.set_value("look", "invert_y", invert_y)
+	cfg.set_value("look", "camera_follow_flips", camera_follow_flips)
 	cfg.set_value("look", "fov", fov)
 	cfg.set_value("audio", "volume", volume)
 	for action: String in custom_bindings:
@@ -305,6 +309,7 @@ func load_settings(path := "") -> void:
 	ads_sensitivity = cfg.get_value("look", "ads_sensitivity", ads_sensitivity)
 	gamepad_look_speed = cfg.get_value("look", "gamepad_look_speed", gamepad_look_speed)
 	invert_y = cfg.get_value("look", "invert_y", invert_y)
+	camera_follow_flips = cfg.get_value("look", "camera_follow_flips", camera_follow_flips)
 	fov = cfg.get_value("look", "fov", fov)
 	volume = cfg.get_value("audio", "volume", volume)
 	custom_bindings.clear()
