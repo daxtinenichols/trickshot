@@ -860,6 +860,30 @@ func test_side_flip_opened_up_spins_slower() -> void:
 	check(open < tucked * 0.6, "but slower than tucked (%.1f vs %.1f deg)" % [rad_to_deg(open), rad_to_deg(tucked)])
 
 
+func test_mouse_roll_rolls_you_directly() -> void:
+	var p := await _airborne(10.0)
+	# Boost held, the mouse rolls you by as much as it moves, either way.
+	# Slowly (2 degrees a tick is 120 degrees a second).
+	for i in 15:
+		p.roll_look(deg_to_rad(2.0))
+		await w.step(1)
+	check_near(rad_to_deg(p.air_roll()), 30.0, 1.0, "mouse right rolls right")
+	for i in 5:
+		p.roll_look(deg_to_rad(-2.0))
+		await w.step(1)
+	check_near(rad_to_deg(p.air_roll()), 20.0, 1.0, "and back left (no direction lock)")
+	# A slow roll stops where you leave it.
+	await w.step(10)
+	check_near(rad_to_deg(p.air_roll()), 20.0, 1.0, "a slow roll just stops")
+	# A fast one carries on after you let go, like an opened side flip.
+	for i in 6:
+		p.roll_look(deg_to_rad(12.0))
+		await w.step(1)
+	var r := p.air_roll()
+	await w.step(6)
+	check(p.air_roll() > r + deg_to_rad(10.0), "a fast roll carries on (%.0f -> %.0f deg)" % [rad_to_deg(r), rad_to_deg(p.air_roll())])
+
+
 ## Lands a running jump after side-flipping round to `roll_deg` (0 = no
 ## flip). Returns {state on landing, speed before, speed a second later}.
 func _side_flip_landing(roll_deg: float) -> Dictionary:
@@ -1221,6 +1245,24 @@ func test_wallrun_keeps_your_angle_and_lean_rolls_it() -> void:
 	# Lean toward the wall: rolls it back up.
 	await w.step(10, _lean(1.0))
 	check(p.wallrun_angle() > a3 + rate * 0.5, "leaning in rolls it up (%.3f -> %.3f rad)" % [a3, p.wallrun_angle()])
+
+
+func test_mouse_roll_steers_a_wallrun() -> void:
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts")
+	if not ok:
+		return
+	var p := w.player
+	await w.step(1, _fwd())
+	# The wall is on your right: rolling right (toward it) turns the path up.
+	var a0 := p.wallrun_angle()
+	p.roll_look(0.2)
+	await w.step(1, _fwd())
+	check(p.wallrun_angle() > a0 + 0.15, "rolling toward the wall turns it up (%.3f -> %.3f rad)" % [a0, p.wallrun_angle()])
+	var a1 := p.wallrun_angle()
+	p.roll_look(-0.3)
+	await w.step(1, _fwd())
+	check(p.wallrun_angle() < a1 - 0.25, "rolling away turns it down (%.3f -> %.3f rad)" % [a1, p.wallrun_angle()])
 
 
 func test_lean_never_puts_the_view_in_a_wall() -> void:

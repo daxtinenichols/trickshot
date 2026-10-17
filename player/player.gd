@@ -143,6 +143,12 @@ var _path_exit_velocity := Vector3.ZERO
 # Quick turn: a held lean speeds up turning toward its side (Q left, E
 # right) and carries your speed round. -1 = left, 1 = right, 0 = off.
 var _turn_side := 0.0
+## The last tick rolled you with the mouse.
+var _mouse_rolled := false
+# Mouse roll (boost held + mouse left/right in the air or on a wall):
+# radians gathered since the last tick, and what this tick uses.
+var _roll_input := 0.0
+var _roll_tick := 0.0
 ## View yaw turned while quick turning since the last tick (radians).
 var _turn_carry := 0.0
 var _boost_cooldown := 0.0
@@ -222,7 +228,13 @@ func _unhandled_input(event: InputEvent) -> void:
 	if event is InputEventMouseMotion and is_mouse_captured():
 		var m := event as InputEventMouseMotion
 		var sens := tuning.mouse_sensitivity * aim_sensitivity_scale()
-		_look(-m.relative.x * sens, -m.relative.y * sens * (-1.0 if invert_y else 1.0))
+		var d_pitch := -m.relative.y * sens * (-1.0 if invert_y else 1.0)
+		if Input.is_action_pressed("boost") and state in [State.AIR, State.WALLRUN]:
+			# Holding boost, left and right rolls you instead of turning.
+			roll_look(m.relative.x * sens)
+			_look(0.0, d_pitch)
+		else:
+			_look(-m.relative.x * sens, d_pitch)
 	elif event is InputEventMouseButton and event.pressed and not is_mouse_captured():
 		capture_mouse(true)
 	elif event.is_action_pressed("reset"):
@@ -286,6 +298,13 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		pitch = clampf(raw, deg_to_rad(-89.0), deg_to_rad(89.0))
 
 
+## Mouse roll: + rolls right. In the air it's a side flip you steer
+## directly; on a wall it rolls your path round (like leaning). Elsewhere
+## it does nothing.
+func roll_look(d: float) -> void:
+	_roll_input += d * tuning.mouse_roll_scale
+
+
 ## Point the view somewhere (used by spawns and tests).
 func set_view(new_yaw: float, new_pitch := 0.0) -> void:
 	yaw = new_yaw
@@ -311,6 +330,8 @@ func _physics_process(delta: float) -> void:
 func simulate(f: InputFrame, delta: float) -> void:
 	state_time += delta
 	_update_timers(f, delta)
+	_roll_tick = _roll_input if state in [State.AIR, State.WALLRUN] else 0.0
+	_roll_input = 0.0
 	# On a wall, lean angles your run instead.
 	_turn_side = signf(f.lean) if absf(f.lean) > 0.3 and state != State.WALLRUN else 0.0
 	_carry_turn()
@@ -409,6 +430,7 @@ func _change_state(to: State) -> void:
 		_roll_rate = absf(_exit_roll_rate)
 		_roll_carry = _exit_roll_rate != 0.0
 		_lean_locked = from == State.WALLRUN and absf(lean) > 0.3
+		_mouse_rolled = false
 		_exit_air_pitch = 0.0
 		_exit_spin = Vector2.ZERO
 		_exit_air_roll = 0.0
@@ -455,6 +477,8 @@ func _landing_tucked(fall: float) -> bool:
 ## open up and slow down. Opened up near level you settle upright; land
 ## on your side and you crash.
 func _tick_air_roll(f: InputFrame, delta: float) -> void:
+	if _mouse_roll(delta):
+		return
 	if _lean_locked:
 		if absf(f.lean) > 0.3:
 			return
@@ -480,6 +504,27 @@ func _tick_air_roll(f: InputFrame, delta: float) -> void:
 			_roll_rate = 0.0
 		return
 	_air_roll += _roll_dir * _roll_rate * delta
+
+
+## Rolling with the mouse (boost held) turns you directly, either way.
+## Let go mid-spin and a fast roll carries on like an opened-up side flip
+## (settling near level); a slow one just stops where it is.
+func _mouse_roll(delta: float) -> bool:
+	if _roll_tick != 0.0:
+		_air_roll += _roll_tick
+		_roll_dir = signf(_roll_tick)
+		_roll_rate = minf(absf(_roll_tick) / delta, deg_to_rad(tuning.side_flip_speed))
+		_roll_carry = false
+		_lean_locked = false
+		_mouse_rolled = true
+		return true
+	if not _mouse_rolled:
+		return false
+	_mouse_rolled = false
+	if _roll_rate < deg_to_rad(tuning.spin_carry_min):
+		_roll_dir = 0.0
+		_roll_rate = 0.0
+	return false
 
 
 ## Would `step` take `total` round past the next whole turn?
@@ -1140,6 +1185,9 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# the wall turns it up, away turns it down.
 	a -= g * cos(a) / maxf(speed, 1.0) * delta
 	a += _lean_toward_wall(f.lean) * deg_to_rad(tuning.wallrun_angle_rate) * delta
+	# Rolling with the mouse (boost held) turns the path the same way, by
+	# as much as you move it.
+	a += _roll_tick * _wall_side()
 	a = clampf(a, -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	# Hold any direction to keep running (and build up to wallrun speed);
 	# let go and the run bleeds speed. Where you look doesn't matter.
@@ -1163,6 +1211,12 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 func _lean_toward_wall(lean: float) -> float:
 	if absf(lean) < 0.05:
 		return 0.0
+	return lean * _wall_side()
+
+
+## Which side of you the wall is on: 1 = right, -1 = left (as you see it,
+## or by where you run when looking straight at or away from it).
+func _wall_side() -> float:
 	var right := forward().cross(Vector3.UP)
 	right.y = 0.0
 	var side := right.normalized().dot(MovementMath.horizontal(_wall_normal).normalized())
@@ -1172,7 +1226,7 @@ func _lean_toward_wall(lean: float) -> float:
 		side = right.dot(MovementMath.horizontal(_wall_normal).normalized())
 	# The wall normal points away from the wall, so a wall on your right
 	# has it pointing left.
-	return -lean * signf(side)
+	return -signf(side)
 
 
 func _wall_jump(wish: Vector3, trick_name := &"wall_jump", power := 1.0) -> void:
@@ -1950,6 +2004,9 @@ func respawn(t: Variant = null) -> void:
 	_turn_carry = 0.0
 	_boost_cooldown = 0.0
 	_boost_time = 0.0
+	_roll_input = 0.0
+	_roll_tick = 0.0
+	_mouse_rolled = false
 	_jump_buffer = 999.0
 	state_time = 0.0
 	respawned.emit()

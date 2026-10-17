@@ -10,7 +10,7 @@ This repo is currently the **movement sandbox**: a graybox level for building an
 2. Open Godot, choose **Import**, and select `project.godot` in this folder.
 3. Press **F5** (or the play button). You spawn on the run track.
 
-Mouse/keyboard and controller both work (any XInput pad, including a wired or wireless Xbox 360 controller; the Settings tab lists the controllers it sees). Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, invert, volume), and custom controls.
+Mouse/keyboard and controller both work (any XInput pad, including a wired or wireless Xbox 360 controller; the Settings tab lists the controllers it sees). Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, invert, third-person camera following flips, volume), and custom controls.
 
 ## Controls
 
@@ -23,6 +23,7 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Dolphin dive (prone jump) | Z | Y |
 | Kick | F | R3 |
 | Boost (short burst of speed, 2 s cooldown) | Shift | L3 (click the left stick) |
+| Mouse roll (test): hold Shift in the air or on a wall and move the mouse left/right to roll instead of turn | Shift + mouse | |
 | Lean / quick turn (side flip in the air, steer a wallrun) | Q / E | LB / RB |
 | Fire | Left mouse | Right trigger |
 | Aim down sights | Right mouse | Left trigger |

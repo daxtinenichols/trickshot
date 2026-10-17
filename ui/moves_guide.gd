@@ -21,6 +21,7 @@ const MOVES := [
 	["Boost", "{boost}.", "A short burst of speed on the ground, a ramp or a wall. Then it needs 2 s to recharge."],
 	["Lean / quick turn", "Hold {lean_left} or {lean_right}.", "Leans you to peek around corners. While held, turning toward that side is faster and your run follows it without losing speed."],
 	["Side flip", "Hold {lean_left} or {lean_right} in the air.", "Rolls you sideways, the way you first pressed. Hold it (or {crouch}) to tuck and spin faster, let go to open up and slow down. Near level it settles; land on your side and you shoulder-roll, losing a little speed. Coming off a wallrun, let go of the lean and press it again to flip."],
+	["Mouse roll (testing)", "Hold {boost} in the air or on a wall and move the mouse left or right.", "The mouse rolls you instead of turning, by as much as you move it, either way: a side flip in the air, or rolling your wallrun's path up or down the wall. Roll fast and let go and it carries on like an opened-up side flip. Up and down still aim."],
 	["Kick", "{kick}.", "Opens doors and breaks windows. In the air, kick off walls and targets. More speed, bigger push."],
 	["Window smash", "Run, slide or dive into glass fast.", ""],
 	["Backflip", "In the air, keep moving the view up and over until it comes back around.", "Flick hard: past straight up it turns faster. Flick past halfway and let go, and momentum carries you round. Land level or you crash."],

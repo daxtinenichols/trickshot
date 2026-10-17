@@ -244,6 +244,10 @@ extends Resource
 ## Holding a lean button turns the view this many times faster toward that
 ## side (Q left, E right); turning the other way is normal speed.
 @export_range(1.0, 5.0, 0.1) var quick_turn_look_scale := 2.5
+## Holding boost (Shift) in the air or on a wall, moving the mouse left and
+## right rolls you instead of turning: a side flip in the air, rolling your
+## path round on a wall. This scales how far (1 = as far as it would turn).
+@export_range(0.1, 4.0, 0.05) var mouse_roll_scale := 1.0
 ## While quick turning, your speed turns with your view: all of it on the
 ## ground, this share of it in the air.
 @export_range(0.0, 1.0, 0.01) var quick_turn_air_carry := 0.35
