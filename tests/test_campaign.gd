@@ -508,6 +508,9 @@ func test_route_missions_can_be_finished() -> void:
 		var path: String = all[i].get("file", "")
 		if path == "" or not Campaign.load_mission_file(path).has("bot"):
 			continue
+		# ROUTE_ONLY=m08 runs just the matching missions (while tuning one).
+		if OS.has_environment("ROUTE_ONLY") and not String(all[i].id).contains(OS.get_environment("ROUTE_ONLY")):
+			continue
 		for alt: bool in [false, true]:
 			if alt and not Campaign.load_mission_file(path).has("bot_alt"):
 				continue
@@ -530,6 +533,10 @@ func _bot_run(label: String, alt := false) -> void:
 	await _step(10)
 	var bot: Array = run.mission.bot_alt if alt else run.mission.bot
 	var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
+	if OS.has_environment("ROUTE_ONLY"):
+		print("  %s: %d m, %d legs, %d checkpoints, %d encounters, %d enemies" % [label, int(run.mission.route_length),
+			run.mission.route_legs.size(), level.builder.spawns.size() - 1, level.builder.encounters.size(),
+			level.builder.encounters.reduce(func(n: int, e: Node) -> int: return n + e.enemies.size(), 0)])
 	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []))
 	check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [label, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
 	check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])

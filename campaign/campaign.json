@@ -45,7 +45,8 @@
    "missions": [
     {"id": "m08_storm_channels", "number": 8, "title": "Storm Channels", "place": "Dry flood channels",
      "beat": "The city starts rooting for Parker. Listeners leave orange marks and open shortcuts.",
-     "moves": "Banks and half-pipes", "enemies": "Brutes"},
+     "moves": "Banks and half-pipes", "enemies": "Ward troopers and shields; brutes",
+     "file": "res://campaign/missions/m08_storm_channels.json"},
     {"id": "m09_rail_bridge", "number": 9, "title": "Rail Bridge", "place": "Elevated train line",
      "beat": "The Host changes the route live, sending everything he has.",
      "moves": "Long speed run", "enemies": "Mixed squads"},

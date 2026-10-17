@@ -1,0 +1,137 @@
+{
+ "id": "m08_storm_channels",
+ "title": "Storm Channels",
+ "runner": "",
+ "par_seconds": 150,
+ "start": {"at": [0, 6, 2]},
+ "clutter": ["debris_pile", "tire_stack", "barrel_rust", "generator", "crate_wood", "barricade_jersey", "pallet", "vent_stack"],
+ "objectives": [
+  {"type": "reach", "name": "the sluice gate", "text": "Follow the storm channels west", "at": "@Sluice gate"},
+  {"type": "shoot", "count": 4, "text": "Break the Ward squad at the sluice"},
+  {"type": "reach", "name": "the pumping station", "text": "Climb over the Ward's pumping station", "at": "@Pumping station"},
+  {"type": "shoot", "count": 6, "text": "Clear the pumping station"},
+  {"type": "reach", "name": "the west side", "text": "Get out of the channels", "at": "end"}
+ ],
+ "route": [
+  {"roof": 70, "do": [
+   {"label": "STORM CHANNELS", "at": 5, "size": 1.3},
+   {"mark": "#f57320", "at": 8},
+   {"prop": "street_sign", "x": -5, "at": 12, "yaw": 90},
+   {"hurdles": true, "at": 22},
+   {"prop": "car_wreck", "x": 4.6, "at": 34, "yaw": 100},
+   {"slide": true, "at": 48}
+  ]},
+  {"ramp_down": 0, "length": 26},
+  {"roof": 96, "y": 0, "do": [
+   {"checkpoint": "Channel floor", "at": 6, "objective": 0},
+   {"mark": "#ff8a1f", "at": 14},
+   {"prop": "chalk_arrow", "x": 0, "at": 16},
+   {"radio": {"who": "mags", "line": "Fresh orange. That's not mine. Somebody out there's marking you a route."}, "at": 14, "radius": 8},
+   {"encounter": "channel brutes", "at": 28, "length": 50, "mutants": [[-4, 14], [4, 26], [-3.5, 40]]},
+   {"radio": {"who": "mags", "line": "The big Hollow's armoured on the front. Get behind it."}, "at": 30, "radius": 8},
+   {"hurdles": true, "at": 84}
+  ]},
+  {"roof": 40, "y": 3, "do": [
+   {"window": 3.3, "at": 20}
+  ]},
+  {"roof": 62, "y": 6, "do": [
+   {"checkpoint": "Sluice gate", "at": 4, "objective": 1},
+   {"encounter": "sluice squad", "at": 10, "length": 48, "troopers": [[-3.6, 18, 0], [3.6, 24, 0.6], [-3.6, 34, 1.2], [3.6, 40, 1.8]]},
+   {"tape": "m08_tape_sluice", "x": -4.8, "at": 56}
+  ]},
+  {"gap": 5},
+  {"roof": 52, "y": 6, "do": [
+   {"hurdles": true, "at": 22}
+  ]},
+  {"turn": "left", "size": 24},
+  {"fork": [
+   {"roof": 40, "do": [
+    {"mark": "#ff8a1f", "at": 4},
+    {"prop": "chalk_arrow", "x": 0, "at": 6},
+    {"label": "Listener line", "at": 6},
+    {"hurdles": "railing", "at": 24}
+   ]},
+   {"wallrun": 12, "side": 1},
+   {"roof": 50, "do": [
+    {"encounter": "pipeline squad", "at": 8, "length": 36, "troopers": [[3.6, 20, 0], [-3.6, 28, 0.8]]},
+    {"tape": "m08_tape_pipeline", "x": 4.6, "at": 44}
+   ]},
+   {"gap": 5},
+   {"roof": 40}
+  ], "side": 1},
+  {"ramp_down": 0, "length": 24},
+  {"roof": 70, "y": 0, "do": [
+   {"mark": "#f57320", "at": 4},
+   {"encounter": "spillway hollows", "at": 12, "length": 44, "mutants": [[-4, 12], [4, 22], [-4, 34]]},
+   {"slide": true, "at": 54}
+  ]},
+  {"ramp_up": 6, "length": 18},
+  {"join": true},
+  {"roof": 40, "y": 6, "do": [
+   {"checkpoint": "Pipeline", "at": 4, "objective": 2}
+  ]},
+  {"roof": 40, "y": 9, "do": [
+   {"prop": "generator", "x": -4.6, "at": 20, "yaw": 90}
+  ]},
+  {"roof": 72, "y": 12, "do": [
+   {"checkpoint": "Pumping station", "at": 4, "objective": 3},
+   {"label": "WARD PUMPING STATION 3", "at": 6, "size": 1.0},
+   {"encounter": "pumping station", "at": 10, "length": 58, "troopers": [[-3.6, 16, 0], [3.6, 20, 0.4], [-3.6, 30, 0.9], [3.6, 34, 1.3], [-3.6, 46, 1.8], [3.6, 50, 2.2]], "drones": [[0, 26, 6], [0, 44, 6]]},
+   {"prop": "water_tank", "x": -4.4, "at": 66}
+  ]},
+  {"gap": 6},
+  {"roof": 52, "y": 8, "do": [
+   {"hurdles": true, "at": 26}
+  ]},
+  {"turn": "right", "size": 24},
+  {"ramp_down": 0, "length": 28},
+  {"roof": 92, "y": 0, "do": [
+   {"checkpoint": "Outflow", "at": 6, "objective": 4},
+   {"mark": "#ff8a1f", "at": 10},
+   {"prop": "chalk_arrow", "x": 0, "at": 12},
+   {"encounter": "outflow hollows", "at": 14, "length": 52, "mutants": [[-4, 12], [4, 20], [-4, 32], [4, 44]]},
+   {"slide": true, "at": 76}
+  ]},
+  {"ramp_up": 4, "length": 14},
+  {"roof": 50, "y": 4, "do": [
+   {"encounter": "outflow squad", "at": 6, "length": 38, "troopers": [[-3.6, 18, 0], [3.6, 26, 0.6], [-3.6, 32, 1.2]]}
+  ]},
+  {"roof": 62, "y": 7, "do": [
+   {"hurdles": true, "at": 20},
+   {"label": "WEST SIDE", "at": 50, "size": 1.4},
+   {"mark": "#f57320", "at": 52}
+  ]}
+ ],
+ "radio": [
+  {"on": "start", "who": "mags", "line": "The channels run straight to the west side. The Ward owns them. The Ward owns the water. Be quick."},
+  {"on": "go", "who": "host", "line": "Back on the air, Port Calder, with our generous sponsors watching. Parker, darling, please die quietly."},
+  {"on": "objective:1", "who": "vell", "line": "Courier sighted. Squad two, close the sluice line."},
+  {"on": "objective:1", "who": "mags", "line": "They work in teams and they don't miss twice. Don't stand still for them."},
+  {"on": "checkpoint:3", "who": "host", "line": "Folks, a reminder from our sponsor that water is a privilege. Parker is drinking it right now. Without paying."},
+  {"on": "complete", "who": "vell", "line": "The courier is not to reach the tower. Whatever it costs."},
+  {"on": "complete", "who": "host", "line": "You heard the man. Whatever it costs. I'll send him the bill."}
+ ],
+ "chatter": {
+  "headshot": [
+   {"who": "mags", "line": "Helmets. First shot knocks it off, the second one counts."},
+   {"who": "mags", "line": "Clean."}
+  ],
+  "bail": [
+   {"who": "host", "line": "Careful, Parker. The sponsor bills for damage to the concrete."}
+  ],
+  "combo": [
+   {"who": "host", "line": "Lovely line, Parker. I'm told the Ward finds it very irritating."},
+   {"who": "mags", "line": "That's it. Keep the speed through the banks."}
+  ],
+  "kill": [
+   {"who": "host", "line": "Oh, that's one of the sponsor's. Somebody start the paperwork."}
+  ],
+  "down": [
+   {"who": "mags", "line": "Up. Don't trade with a squad. Move, then shoot."},
+   {"who": "host", "line": "Down he goes, on the Ward's dime. Commercial break!"}
+  ],
+  "tape": [
+   {"who": "echo", "line": "...the Ward closed the channels the year the rain stopped. Nobody asked who opened them."}
+  ]
+ }
+}
