@@ -418,8 +418,9 @@ func _place_root(pitch: float, offset: Vector3, roll: float, delta: float) -> vo
 	local.origin.y += _ground_offset
 	model.transform = local
 	if player:
-		var frame := player.global_basis.orthonormalized()
-		global_transform = Transform3D(frame * Basis(Vector3.UP, _heading), player.global_position)
+		# Interpolated between ticks in slow-mo, so the body doesn't step.
+		var vt := player.visual_transform()
+		global_transform = Transform3D(vt.basis.orthonormalized() * Basis(Vector3.UP, _heading), vt.origin)
 
 
 # ---------------------------------------------------------------- helpers

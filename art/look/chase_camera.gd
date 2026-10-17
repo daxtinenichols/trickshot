@@ -53,13 +53,14 @@ func _snap() -> void:
 
 
 func _desired() -> Vector3:
-	# The player's frame tilts on ramps and loops; follow it.
-	var frame := player.global_basis.orthonormalized()
-	return player.global_position + frame * Vector3(0, height, distance)
+	# The player's frame tilts on ramps and loops; follow it (smoothed in slow-mo).
+	var vt := player.visual_transform()
+	return vt.origin + vt.basis.orthonormalized() * Vector3(0, height, distance)
 
 
 func _look() -> void:
-	var up := player.global_basis.y.normalized()
-	var target := player.global_position + up * look_height
+	var vt := player.visual_transform()
+	var up := vt.basis.y.normalized()
+	var target := vt.origin + up * look_height
 	if global_position.distance_to(target) > 0.05:
 		look_at(target, up)
