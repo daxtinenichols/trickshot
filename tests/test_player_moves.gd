@@ -420,6 +420,61 @@ func test_small_drop_is_a_normal_landing() -> void:
 	check(p.state == Player.State.GROUND, "standing")
 
 
+func _tuck_drop(tuck_degrees: float) -> Player:
+	w.add_floor()
+	var p := w.spawn_player(Vector3(0, 12, 0))
+	p.velocity = Vector3(0, 0, -8)
+	await w.step(2, _fwd())
+	var steps := 10
+	for i in steps:
+		p._look(0.0, deg_to_rad(-tuck_degrees) / steps)
+		await w.step(1, _fwd())
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 200, _fwd())
+	return p
+
+
+func test_tucked_landing_rolls_and_keeps_speed() -> void:
+	var p := await _tuck_drop(110.0)
+	check(p.state == Player.State.ROLL, "landing tucked forward rolls (%s)" % Player.State.keys()[p.state])
+	check(&"flip_roll" in w.tricks_seen, "flip roll reported")
+	check(p.horizontal_speed() >= 7.5, "no speed lost from a big drop (%.2f)" % p.horizontal_speed())
+	check(p.roll_spin() < deg_to_rad(-100.0) and p.roll_spin() > -PI, "camera carries on turning from where the flip was (%.0f deg)" % rad_to_deg(p.roll_spin()))
+	await w.step(40, _fwd())
+	check(p.state == Player.State.GROUND, "back up and running")
+	check_near(p.roll_spin(), 0.0, 0.001, "camera level again")
+
+
+func test_untucked_big_drop_still_lands_hard() -> void:
+	var p := await _tuck_drop(20.0)
+	check(p.state == Player.State.STUN, "looking ahead on a big drop is a hard landing (%s)" % Player.State.keys()[p.state])
+
+
+func test_flick_down_on_the_ground_rolls() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await _run_to(7.0)
+	var before := p.horizontal_speed()
+	p._look(0.0, deg_to_rad(-89.0))
+	p._look(0.0, deg_to_rad(-50.0))
+	await w.step(1, _fwd())
+	check(p.state == Player.State.ROLL, "flicking past your feet rolls (%s)" % Player.State.keys()[p.state])
+	check(&"ground_roll" in w.tricks_seen, "ground roll reported")
+	check(p.horizontal_speed() >= before * 0.95, "keeps speed (%.2f -> %.2f)" % [before, p.horizontal_speed()])
+	await w.step(40, _fwd())
+	check(p.state == Player.State.GROUND, "running again")
+
+
+func test_slowly_looking_down_does_not_roll() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await _run_to(7.0)
+	p._look(0.0, deg_to_rad(-89.0))
+	for i in 40:
+		p._look(0.0, deg_to_rad(-2.0))
+		await w.step(1, _fwd())
+	check(not (&"ground_roll" in w.tricks_seen), "a slow look down past your feet isn't a roll")
+
+
 # ------------------------------------------------------------------ kick-off
 
 func test_kick_off_wall() -> void:
@@ -662,6 +717,38 @@ func test_wall_hop_off_plain_wall() -> void:
 	await w.press(InputFrame.make(Vector2.ZERO, true))
 	check(&"wall_hop" in w.tricks_seen, "jump off a touched wall is a wall hop")
 	check(p.velocity.z > 4.0, "pushed off the wall")
+
+
+func _lean_frame(amount: float) -> InputFrame:
+	var f := InputFrame.new()
+	f.lean = amount
+	return f
+
+
+func test_side_flip_by_holding_lean() -> void:
+	var p := await _airborne(6.0)
+	var turn := int(ceil(360.0 / p.tuning.side_flip_speed * 60.0))
+	await w.step(turn, _lean_frame(1.0))
+	check(&"sideflip" in w.tricks_seen, "a full roll is a side flip (roll %.0f deg)" % rad_to_deg(p.air_roll()))
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
+	check(not (&"crash" in w.tricks_seen), "let go near level: lands clean")
+
+
+func test_half_side_flip_crashes() -> void:
+	var p := await _airborne(6.0)
+	var half := int(180.0 / p.tuning.side_flip_speed * 60.0)
+	await w.step(half, _lean_frame(-1.0))
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
+	check(&"crash" in w.tricks_seen, "landing on your side is a crash")
+
+
+func test_lean_on_the_ground_peeks() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await w.step(20, _lean_frame(1.0))
+	check_near(p.lean, 1.0, 0.01, "leaning right")
+	check(p.state == Player.State.GROUND, "still standing")
+	check(not (&"sideflip" in w.tricks_seen), "no flip on the ground")
 
 
 # ------------------------------------------------------------------ doors and windows

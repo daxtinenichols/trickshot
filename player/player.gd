@@ -62,8 +62,17 @@ var _diving := false
 # Rotation done in the air since takeoff (radians, unwrapped).
 var _air_yaw := 0.0
 var _air_pitch := 0.0
+## Side-flip roll (radians, unwrapped, + = to the right).
+var _air_roll := 0.0
 var _spins_done := 0
 var _flips_done := 0
+var _sideflips_done := 0
+## Lean, -1 (left) .. 1 (right), eased toward the input.
+var lean := 0.0
+## How far you've pulled the view down past straight down on the ground.
+var _ground_flick := 0.0
+## Where the roll's visual forward spin starts (radians, view pitch).
+var _roll_spin_from := 0.0
 var _spawn := Transform3D.IDENTITY
 
 # Scripted vault / mantle path (quadratic bezier).
@@ -81,6 +90,8 @@ var _turn_rate := 0.0
 var _bob_phase := 0.0
 var _dip := 0.0
 var _roll := 0.0
+var _air_roll_view := 0.0
+var _peek := 0.0
 var _eye_height := 1.66
 # Weapon recoil: a visual view kick on top of the aim, so flips/spins
 # (which read `pitch`) are never affected by shooting.
@@ -171,7 +182,10 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		_air_yaw += d_yaw
 		_air_pitch += d_pitch
 	else:
-		pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
+		var raw := pitch + d_pitch
+		if raw < deg_to_rad(-89.0) and d_pitch < 0.0:
+			_ground_flick += deg_to_rad(-89.0) - raw
+		pitch = clampf(raw, deg_to_rad(-89.0), deg_to_rad(89.0))
 
 
 ## Point the view somewhere (used by spawns and tests).
@@ -201,7 +215,14 @@ func simulate(f: InputFrame, delta: float) -> void:
 		_quick_turn()
 	_apply_auto_turn(delta)
 	rotation = Vector3(0.0, yaw, 0.0)
+	lean = move_toward(lean, clampf(f.lean, -1.0, 1.0), tuning.lean_speed * delta)
 	var wish := wish_direction(f)
+	if _ground_flick >= deg_to_rad(tuning.ground_roll_flick) and state in [State.GROUND, State.CROUCH, State.SLIDE] \
+			and horizontal_speed() > 1.0 and _can_stand():
+		_ground_flick = 0.0
+		pitch = 0.0
+		_start_roll(1.0, &"ground_roll", deg_to_rad(-89.0), MovementMath.horizontal(velocity), 0.0)
+	_ground_flick = maxf(_ground_flick - tuning.ground_roll_flick_decay * delta, 0.0)
 
 	match state:
 		State.GROUND: _tick_ground(f, wish, delta)
@@ -260,8 +281,10 @@ func _change_state(to: State) -> void:
 	if to == State.AIR:
 		_air_yaw = 0.0
 		_air_pitch = 0.0
+		_air_roll = 0.0
 		_spins_done = 0
 		_flips_done = 0
+		_sideflips_done = 0
 	elif from == State.AIR:
 		_settle_pitch()
 		# A dive ends when you touch anything (landing reads it before this).
@@ -281,6 +304,31 @@ func _landing_crashed() -> bool:
 	return absf(_air_pitch) >= deg_to_rad(90.0) and absf(wrapf(pitch, -PI, PI)) > deg_to_rad(tuning.crash_pitch)
 
 
+## Rolled over sideways (a side flip let go of halfway)?
+func _landing_tipped() -> bool:
+	return absf(wrapf(_air_roll, -PI, PI)) > deg_to_rad(tuning.side_crash_degrees)
+
+
+## Landing tucked forward (view pointing down or further over, partway
+## into a front flip) turns into a roll that keeps your speed.
+func _landing_tucked(fall: float) -> bool:
+	var p := rad_to_deg(wrapf(pitch, -PI, PI))
+	if p > -50.0 or p < -175.0 or _air_pitch >= 0.0:
+		return false
+	return fall >= tuning.flip_roll_min_fall or _air_pitch <= deg_to_rad(-90.0)
+
+
+## Side flips: hold lean in the air to roll. Let go near level and you
+## settle upright; let go halfway and you land tipped (a crash).
+func _tick_air_roll(f: InputFrame, delta: float) -> void:
+	if absf(f.lean) > 0.3:
+		_air_roll += signf(f.lean) * deg_to_rad(tuning.side_flip_speed) * delta
+		return
+	var level := roundf(_air_roll / TAU) * TAU
+	if absf(_air_roll - level) <= deg_to_rad(tuning.side_settle_degrees):
+		_air_roll = move_toward(_air_roll, level, deg_to_rad(tuning.side_flip_speed) * 0.5 * delta)
+
+
 func _check_air_rotation() -> void:
 	var full := TAU - deg_to_rad(tuning.rotation_tolerance)
 	while absf(_air_yaw) >= full + TAU * _spins_done:
@@ -289,6 +337,9 @@ func _check_air_rotation() -> void:
 	while absf(_air_pitch) >= full + TAU * _flips_done:
 		_flips_done += 1
 		_trick(&"backflip" if _air_pitch > 0.0 else &"frontflip", {"flips": _flips_done})
+	while absf(_air_roll) >= full + TAU * _sideflips_done:
+		_sideflips_done += 1
+		_trick(&"sideflip", {"flips": _sideflips_done, "side": &"right" if _air_roll > 0.0 else &"left"})
 
 
 func _trick(trick_name: StringName, info := {}) -> void:
@@ -454,6 +505,7 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_set_height(tuning.crouch_height)
 	elif _can_stand():
 		_set_height(tuning.stand_height)
+	_tick_air_roll(f, delta)
 	_check_air_rotation()
 
 	# Coyote jump: just ran off a ledge.
@@ -501,7 +553,8 @@ func _land(f: InputFrame) -> void:
 	_dip = minf(fall * tuning.landing_dip, 0.4)
 	landed.emit(fall)
 	var crouch_age := _since_crouch_press
-	if _landing_crashed():
+	var tucked := _landing_tucked(fall) and not _landing_tipped()
+	if _landing_tipped() or (_landing_crashed() and not tucked):
 		_diving = false
 		trick.emit(&"crash", {"speed": horizontal_speed()})
 		_start_stun()
@@ -510,9 +563,15 @@ func _land(f: InputFrame) -> void:
 		_diving = false
 		_change_state(State.PRONE_SLIDE)
 		return
+	if tucked:
+		var p := wrapf(pitch, -PI, PI)
+		var q := timing_quality(absf(rad_to_deg(p) + 100.0), 20.0, 75.0)
+		pitch = 0.0
+		_start_roll(q, &"flip_roll", p, MovementMath.horizontal(_pre_move_velocity), fall)
+		return
 	if fall >= tuning.hard_landing_speed:
 		if crouch_age <= tuning.roll_window:
-			_start_roll(timing_quality(crouch_age, 0.05, tuning.roll_window))
+			_start_roll(timing_quality(crouch_age, 0.05, tuning.roll_window), &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
 		else:
 			_start_stun()
 		return
@@ -583,14 +642,23 @@ func _tick_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 
 # ---------------------------------------------------------------- landing
 
-func _start_roll(quality: float) -> void:
+## A forward roll: from a landing (crouch timed, or tucked forward out of a
+## flip) or on the ground (flick the view down past your feet). Keeps your
+## speed; the camera does a full forward turn. `spin_from` is the view pitch
+## the camera's turn starts from.
+func _start_roll(quality: float, trick_name: StringName, spin_from: float, h: Vector3, fall: float) -> void:
 	_set_height(tuning.crouch_height)
-	var h := MovementMath.horizontal(_pre_move_velocity)
 	var dir := h.normalized() if h.length() > 0.5 else forward()
-	var speed := maxf(h.length() * lerpf(0.8, 1.0, quality), tuning.run_speed * 0.8) + tuning.roll_boost * quality
+	var speed := h.length()
+	if fall > 0.0:
+		speed = maxf(speed * lerpf(0.8, 1.0, quality), tuning.run_speed * 0.8) + tuning.roll_boost * quality
 	velocity = dir * speed
+	_roll_spin_from = spin_from
 	_change_state(State.ROLL)
-	_trick(&"landing_roll", {"fall_speed": -_pre_move_velocity.y, "quality": quality})
+	var info := {"quality": quality}
+	if fall > 0.0:
+		info["fall_speed"] = fall
+	_trick(trick_name, info)
 
 
 func _tick_roll(f: InputFrame, wish: Vector3, delta: float) -> void:
@@ -1194,8 +1262,12 @@ func respawn(t: Variant = null) -> void:
 	_kick_yaw = 0.0
 	_air_yaw = 0.0
 	_air_pitch = 0.0
+	_air_roll = 0.0
 	_spins_done = 0
 	_flips_done = 0
+	_sideflips_done = 0
+	_ground_flick = 0.0
+	lean = 0.0
 	_turn_left = 0.0
 	_jump_buffer = 999.0
 	state_time = 0.0
@@ -1217,7 +1289,7 @@ func _process(delta: float) -> void:
 	var settle := exp(-_kick_recovery * delta)
 	_kick_pitch *= settle
 	_kick_yaw *= settle
-	head.rotation = Vector3(pitch + _kick_pitch, 0.0, 0.0)
+	head.rotation = Vector3(pitch + _kick_pitch + roll_spin(), 0.0, 0.0)
 
 	var speed := horizontal_speed()
 	var target_eye := _height - EYE_OFFSET
@@ -1238,8 +1310,16 @@ func _process(delta: float) -> void:
 		target_roll = deg_to_rad(tuning.wallrun_tilt_degrees) * side
 	elif state == State.SLIDE:
 		target_roll = deg_to_rad(-2.5)
+	# Lean peeks on the ground; in the air it's a side flip instead.
+	_peek = lerpf(_peek, 0.0 if state == State.AIR else lean, 1.0 - exp(-14.0 * delta))
+	target_roll -= _peek * deg_to_rad(tuning.lean_tilt_degrees)
 	_roll = lerpf(_roll, target_roll, 1.0 - exp(-10.0 * delta))
-	camera.rotation = Vector3(0.0, _kick_yaw, _roll)
+	if state == State.AIR:
+		_air_roll_view = wrapf(_air_roll, -PI, PI)
+	else:
+		_air_roll_view = lerp_angle(_air_roll_view, 0.0, 1.0 - exp(-12.0 * delta))
+	camera.rotation = Vector3(0.0, _kick_yaw, _roll - _air_roll_view)
+	camera.position = Vector3(_peek * tuning.lean_offset, 0.0, 0.0)
 
 	var over := clampf((speed - tuning.run_speed) / maxf(tuning.top_speed + 4.0 - tuning.run_speed, 0.1), 0.0, 1.0)
 	var target_fov := lerpf(tuning.base_fov + tuning.speed_fov_bonus * over, aim_fov, aim_zoom)
@@ -1252,6 +1332,32 @@ func add_view_kick(pitch_amount: float, yaw_amount: float, recovery: float) -> v
 	_kick_pitch = minf(_kick_pitch + pitch_amount, deg_to_rad(8.0))
 	_kick_yaw = clampf(_kick_yaw + yaw_amount, deg_to_rad(-3.0), deg_to_rad(3.0))
 	_kick_recovery = recovery
+
+
+## The roll's forward camera turn (radians, added to the view pitch).
+func roll_spin() -> float:
+	if state != State.ROLL:
+		return 0.0
+	var t := clampf(state_time / tuning.roll_time, 0.0, 1.0)
+	return lerpf(_roll_spin_from, -TAU, t * t * (3.0 - 2.0 * t))
+
+
+## 0..1 through the current roll (0 when not rolling).
+func roll_progress() -> float:
+	return clampf(state_time / tuning.roll_time, 0.0, 1.0) if state == State.ROLL else 0.0
+
+
+## Side-flip roll done in the air since takeoff (radians, + = right).
+func air_roll() -> float:
+	return _air_roll
+
+
+func wall_normal() -> Vector3:
+	return _wall_normal
+
+
+func is_diving() -> bool:
+	return _diving
 
 
 ## Seconds since last on the ground (wallruns and climbs count as off it).
@@ -1294,7 +1400,9 @@ func shot_tags() -> Array[StringName]:
 			tags.append(&"flipping")
 		if absf(_air_yaw) > deg_to_rad(180.0):
 			tags.append(&"spinning")
-	if cos(pitch) < 0.0:
+		if absf(_air_roll) > deg_to_rad(90.0):
+			tags.append(&"side_flipping")
+	if cos(pitch) < 0.0 or cos(_air_roll) < 0.0:
 		tags.append(&"upside_down")
 	if horizontal_speed() >= tuning.top_speed * 0.9:
 		tags.append(&"fast")

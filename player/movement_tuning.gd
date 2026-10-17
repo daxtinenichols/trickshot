@@ -161,6 +161,19 @@ extends Resource
 ## In the air, once the view tips past 75 degrees it turns this much faster,
 ## so a committed flick carries you over into a flip.
 @export_range(1.0, 4.0, 0.05) var flip_look_gain := 1.75
+## Landing tucked forward (view down or further over) rolls instead of
+## landing hard. Needs at least this fall speed, or a half-done front flip.
+@export_range(0.0, 30.0, 0.5) var flip_roll_min_fall := 9.5
+## On the ground, pull the view this many degrees past straight down to roll.
+@export_range(5.0, 120.0, 1.0) var ground_roll_flick := 40.0
+## How fast that pull fades (radians per second), so it has to be a flick.
+@export_range(0.0, 20.0, 0.1) var ground_roll_flick_decay := 3.0
+## Side flip roll speed while lean is held in the air (degrees per second).
+@export_range(90.0, 1440.0, 10.0) var side_flip_speed := 540.0
+## Let go of lean within this many degrees of level and you settle upright.
+@export_range(0.0, 90.0, 1.0) var side_settle_degrees := 40.0
+## Landing rolled over further than this (degrees) is a crash.
+@export_range(10.0, 120.0, 1.0) var side_crash_degrees := 50.0
 ## Seconds for the quick 180 turn.
 @export_range(0.05, 0.6, 0.01) var quick_turn_time := 0.18
 
@@ -182,6 +195,11 @@ extends Resource
 ## Extra FOV at top speed.
 @export_range(0.0, 40.0, 1.0) var speed_fov_bonus := 10.0
 @export_range(0.0, 30.0, 0.5) var wallrun_tilt_degrees := 9.0
+## Lean on the ground: how far the camera moves sideways and tilts.
+@export_range(0.0, 1.0, 0.01) var lean_offset := 0.4
+@export_range(0.0, 30.0, 0.5) var lean_tilt_degrees := 12.0
+## How fast lean eases in and out (full lean per second).
+@export_range(1.0, 20.0, 0.5) var lean_speed := 7.0
 ## Head bob amplitude in meters at run speed (0 = off).
 @export_range(0.0, 0.2, 0.005) var head_bob := 0.035
 ## Camera dip on landing, meters per m/s of fall speed.

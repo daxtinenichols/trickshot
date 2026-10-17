@@ -167,7 +167,7 @@ func _zone_kick_yard(o: Vector3) -> void:
 
 func _zone_breach(o: Vector3) -> void:
 	_spawn(o + Vector3(0, 0, 5), "9 · DOORS AND WINDOWS")
-	_label("Kick (F) doors open. Sprint + prone (Z) to dive through windows", o + Vector3(0, 3.2, 1), 0.9)
+	_label("Kick (F) doors open. Run + dive (Z) through windows", o + Vector3(0, 3.2, 1), 0.9)
 	# A wall with a door, a low window to dive through, and a high window.
 	var z := -14.0
 	_box(o + Vector3(-6.05, 1.5, z), Vector3(8.0, 3.0, 0.3), Kind.NEUTRAL)   # left of door: x -10.05..-2.05

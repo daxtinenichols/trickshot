@@ -41,7 +41,10 @@ const TRICK_NAMES := {
 	&"wall_jump": "WALL JUMP",
 	&"wall_climb": "WALL CLIMB",
 	&"wall_climb_kick": "CLIMB KICK",
-	&"landing_roll": "ROLL",
+	&"landing_roll": "ROLL LANDING",
+	&"ground_roll": "ROLL",
+	&"flip_roll": "FLIP ROLL",
+	&"sideflip": "SIDE FLIP",
 	&"kick_off": "KICK-OFF",
 	&"hard_landing": "HARD LANDING",
 	&"wall_impact": "BONK",
@@ -257,6 +260,9 @@ static func rotation_text(p: Player) -> String:
 	var spin := absf(r.x)
 	if spin > deg_to_rad(120.0):
 		parts.append("SPIN %d%%" % roundi(fmod(spin, TAU) / TAU * 100.0))
+	var side := absf(p.air_roll())
+	if side > deg_to_rad(60.0):
+		parts.append("SIDE FLIP %d%%" % roundi(fmod(side, TAU) / TAU * 100.0))
 	return "   ".join(parts)
 
 

@@ -34,6 +34,8 @@ const POINTS := {
 	&"wall_climb": 100,
 	&"wall_climb_kick": 150,
 	&"landing_roll": 100,
+	&"ground_roll": 75,
+	&"flip_roll": 250,
 	&"kick_off": 150,         # 250 when kicking off a target
 	&"dolphin_dive": 100,
 	&"kick": 50,
@@ -42,6 +44,7 @@ const POINTS := {
 	&"window_smash": 150,
 	&"backflip": 300,
 	&"frontflip": 300,
+	&"sideflip": 300,
 	&"spin_360": 200,
 	&"spin_720": 500,
 	&"spin_1080": 900,
@@ -160,7 +163,7 @@ func on_hit(info: Dictionary) -> void:
 		style.append(&"wallrun_shot")
 	if &"sliding" in tags or &"diving" in tags:
 		style.append(&"slide_shot")
-	if &"flipping" in tags or &"upside_down" in tags:
+	if &"flipping" in tags or &"side_flipping" in tags or &"upside_down" in tags:
 		style.append(&"flip_shot")
 	if &"spinning" in tags:
 		style.append(&"spin_shot")
