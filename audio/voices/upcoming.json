@@ -1,0 +1,407 @@
+[
+	{
+		"who": "mags",
+		"line": "Gap's too wide to jump. Run the wall.",
+		"where": "brief: Replacements in built missions (obstacles are now real objects)"
+	},
+	{
+		"who": "mags",
+		"line": "High roof's up that wall. Straight at it, and jump.",
+		"where": "brief: Replacements in built missions (obstacles are now real objects)"
+	},
+	{
+		"who": "mags",
+		"line": "Two walls ahead. Run the first one, then jump and kick off the second. That's a wall hop.",
+		"where": "brief: Replacements in built missions (obstacles are now real objects)"
+	},
+	{
+		"who": "mags",
+		"line": "Higher roof. Run at the ledge and jump. You'll climb it.",
+		"where": "brief: Replacements in built missions (obstacles are now real objects)"
+	},
+	{
+		"who": "mags",
+		"line": "Wall hop ahead. Run the first wall, jump to the second.",
+		"where": "brief: Replacements in built missions (obstacles are now real objects)"
+	},
+	{
+		"who": "mags",
+		"line": "The scrap dummies. Hit them on the move: still targets are for still people.",
+		"where": "brief: Replacements in built missions (obstacles are now real objects)"
+	},
+	{
+		"who": "host",
+		"line": "That was a very expensive drone, Parker. I'm adding it to your tab.",
+		"where": "brief: Replacements in built missions (obstacles are now real objects)"
+	},
+	{
+		"who": "host",
+		"line": "Welcome, welcome, welcome to the Meridian Mall! Tonight's main event: one courier, one atrium, and a whole lot of hungry neighbours.",
+		"where": "brief: m05 Atrium"
+	},
+	{
+		"who": "mags",
+		"line": "It's an arena, Parker. Don't fight it. Run through it.",
+		"where": "brief: m05 Atrium"
+	},
+	{
+		"who": "host",
+		"line": "Release the Hollows!",
+		"where": "brief: m05 Atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Those ones jump. Watch the ledges above you, not the floor.",
+		"where": "brief: m05 Atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Every shot rings the dinner bell. Make them count.",
+		"where": "brief: m05 Atrium"
+	},
+	{
+		"who": "host",
+		"line": "And he's into the food court, folks. Sadly, the food court is closed. Permanently.",
+		"where": "brief: m05 Atrium"
+	},
+	{
+		"who": "host",
+		"line": "This segment is brought to you by the Ward. Clean water, for people who know their place.",
+		"where": "brief: m05 Atrium"
+	},
+	{
+		"who": "host",
+		"line": "He made it to the anchor store! Ladies and gentlemen, I have never been so annoyed to be entertained.",
+		"where": "brief: m05 Atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Department store. Roof hatch is on the top floor, back corner. Go up.",
+		"where": "brief: m06 Anchor Store"
+	},
+	{
+		"who": "mags",
+		"line": "Big ones with the scrap shields. Get round them, or hit them where the shield isn't.",
+		"where": "brief: m06 Anchor Store"
+	},
+	{
+		"who": "mags",
+		"line": "That drone's painting you for the shooters. Knock it down.",
+		"where": "brief: m06 Anchor Store"
+	},
+	{
+		"who": "host",
+		"line": "Now, Parker, while you're browsing, a word from our... what is that? Who's on my frequency?",
+		"where": "brief: m06 Anchor Store"
+	},
+	{
+		"who": "echo",
+		"line": "Keep the porch light on, courier. I'm coming home.",
+		"where": "brief: m06 Anchor Store"
+	},
+	{
+		"who": "host",
+		"line": "Technical difficulties, folks. Nobody touch anything.",
+		"where": "brief: m06 Anchor Store"
+	},
+	{
+		"who": "parker",
+		"line": "That was her.",
+		"where": "brief: m06 Anchor Store"
+	},
+	{
+		"who": "mags",
+		"line": "That was her. She's alive, and she's in his wires. Now run.",
+		"where": "brief: m06 Anchor Store"
+	},
+	{
+		"who": "host",
+		"line": "Our courier's on the roof. And guess who's waiting for him on the car park? An old friend.",
+		"where": "brief: m06 Anchor Store"
+	},
+	{
+		"who": "mags",
+		"line": "Juno. She ran the Line with you, Parker. She knows every trick you've got.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Hey, Parker. Long time. Still running for other people?",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "parker",
+		"line": "Still running.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "mags",
+		"line": "Those ones run like you do. They'll come at you from the side. Keep moving.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "juno",
+		"line": "You were always the fast one. I was always the one who got paid.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "host",
+		"line": "Folks, it's the rematch nobody asked for and everybody wants!",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Come on, then. Show the city.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Go on. Get her. Before I change my mind.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "mags",
+		"line": "...She was one of ours, once. Keep going.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "host",
+		"line": "Well. Our ratings are through the roof, and every single one of you is cheering for the wrong man.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "host",
+		"line": "Let's take a short break for a word from our sponsor.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "vell",
+		"line": "Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "mags",
+		"line": "Parker. Those aren't raiders.",
+		"where": "brief: m07 Parking Spiral"
+	},
+	{
+		"who": "mags",
+		"line": "The channels run straight to the west side. The Ward owns them. The Ward owns the water. Be quick.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "host",
+		"line": "Back on the air, Port Calder, with our generous sponsors watching. Parker, darling, please die quietly.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "mags",
+		"line": "Fresh orange. That's not mine. Somebody out there's marking you a route.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "vell",
+		"line": "Courier sighted. Squad two, close the sluice line.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "mags",
+		"line": "They work in teams and they don't miss twice. Don't stand still for them.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "mags",
+		"line": "Helmets. First shot knocks it off, the second one counts.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "mags",
+		"line": "The big Hollow's armoured on the front. Get behind it.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "host",
+		"line": "Folks, a reminder from our sponsor that water is a privilege. Parker is drinking it right now. Without paying.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "vell",
+		"line": "The courier is not to reach the tower. Whatever it costs.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "host",
+		"line": "You heard the man. Whatever it costs. I'll send him the bill.",
+		"where": "brief: m08 Storm Channels"
+	},
+	{
+		"who": "mags",
+		"line": "The old train line. It's the last straight road to the tower.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "New rules tonight, Port Calder! I'll be changing the route live. Let's see how our courier likes improv.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "Oh dear. Section nine. Gone. What a shame.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Drones with guns. They flash before they fire. One hit drops them.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "echo",
+		"line": "Left at the junction, courier. Left. The right line ends in the sky.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "Who keeps doing that?",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "vell",
+		"line": "Host, you were paid to end this.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "And I was paid to make it entertaining, Commander. I'm doing both.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "mags",
+		"line": "There's the tower. Go up it, kid.",
+		"where": "brief: m09 Rail Bridge"
+	},
+	{
+		"who": "host",
+		"line": "Ten minutes, Port Calder. Ten minutes until our courier runs out of tower, and his wife runs out of luck.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "parker",
+		"line": "I'm coming, Echo.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "mags",
+		"line": "Don't look down. Do look up. That's where they're shooting from.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "echo",
+		"line": "Hi, Port Calder. This is Echo. He's lying to you. He's been lying to you for twenty years.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "echo",
+		"line": "Cameras are mine now. Look at him go.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "host",
+		"line": "Get her off my uplink! GET HER OFF!",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "mags",
+		"line": "The gun drones just went dark. She did that. Climb, Parker!",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "host",
+		"line": "Three minutes! Two! I'm not even counting properly anymore!",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "host",
+		"line": "Fine. Come in. The studio's open. Mind the step.",
+		"where": "brief: m10 The Climb"
+	},
+	{
+		"who": "mags",
+		"line": "The studio's on the top floor. Everything he's got is between you and her.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "host",
+		"line": "Port Calder, this is it. The final segment. Please hold your applause until he's dead.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "mags",
+		"line": "The armoured ones are slow. Don't trade with them. Get past.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "echo",
+		"line": "Parker, the vents. Behind the transmitter. I left them open for you.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "vell",
+		"line": "All units to the studio. This ends tonight.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "parker",
+		"line": "Echo.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "echo",
+		"line": "You're late.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "parker",
+		"line": "Traffic.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "host",
+		"line": "Oh, I do love a reunion. Here's my favourite part.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "host",
+		"line": "Port Calder, I give you: the grand finale.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "echo",
+		"line": "Parker! Parker, you're pinned. The whole floor's on fire.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "parker",
+		"line": "Draw him off me. Run. I'll talk you down.",
+		"where": "brief: m11 Dead Air"
+	},
+	{
+		"who": "mags",
+		"line": "Line camp to anyone listening. They're home. Both of them.",
+		"where": "brief: Ending (after m12)"
+	},
+	{
+		"who": "echo",
+		"line": "Port Calder, this is Echo and Parker on the tower frequency. The show's over.",
+		"where": "brief: Ending (after m12)"
+	},
+	{
+		"who": "parker",
+		"line": "Go outside. It's a nice day.",
+		"where": "brief: Ending (after m12)"
+	},
+	{
+		"who": "juno",
+		"line": "Not bad, courier. Not bad.",
+		"where": "brief: Ending (after m12)"
+	}
+]

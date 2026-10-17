@@ -1,4 +1,85 @@
 who,file,where,line
+echo,echo/9683fed05a38.ogg,brief: Ending (after m12),"Port Calder, this is Echo and Parker on the tower frequency. The show's over."
+juno,juno/10ec5191ae01.ogg,brief: Ending (after m12),"Not bad, courier. Not bad."
+mags,mags/fa7d7d743b5c.ogg,brief: Ending (after m12),Line camp to anyone listening. They're home. Both of them.
+parker,parker/8597ccba91c4.ogg,brief: Ending (after m12),Go outside. It's a nice day.
+host,host/fe416dee49a5.ogg,brief: Replacements in built missions (obstacles are now real objects),"That was a very expensive drone, Parker. I'm adding it to your tab."
+mags,mags/16bb45f50b4a.ogg,brief: Replacements in built missions (obstacles are now real objects),Higher roof. Run at the ledge and jump. You'll climb it.
+mags,mags/2cfaa97f394a.ogg,brief: Replacements in built missions (obstacles are now real objects),"Two walls ahead. Run the first one, then jump and kick off the second. That's a wall hop."
+mags,mags/a2b3ba834a1c.ogg,brief: Replacements in built missions (obstacles are now real objects),Gap's too wide to jump. Run the wall.
+mags,mags/a8b1f8140cee.ogg,brief: Replacements in built missions (obstacles are now real objects),"High roof's up that wall. Straight at it, and jump."
+mags,mags/ea27b9c35539.ogg,brief: Replacements in built missions (obstacles are now real objects),"Wall hop ahead. Run the first wall, jump to the second."
+mags,mags/fc69b797552e.ogg,brief: Replacements in built missions (obstacles are now real objects),The scrap dummies. Hit them on the move: still targets are for still people.
+host,host/0b0d37182ddd.ogg,brief: m05 Atrium,"Welcome, welcome, welcome to the Meridian Mall! Tonight's main event: one courier, one atrium, and a whole lot of hungry neighbours."
+host,host/acb41f3aa912.ogg,brief: m05 Atrium,"And he's into the food court, folks. Sadly, the food court is closed. Permanently."
+host,host/b1e39bd5d2e1.ogg,brief: m05 Atrium,"This segment is brought to you by the Ward. Clean water, for people who know their place."
+host,host/dc926fa57b9e.ogg,brief: m05 Atrium,"He made it to the anchor store! Ladies and gentlemen, I have never been so annoyed to be entertained."
+host,host/e12ba332ae93.ogg,brief: m05 Atrium,Release the Hollows!
+mags,mags/1f0393a669f4.ogg,brief: m05 Atrium,"It's an arena, Parker. Don't fight it. Run through it."
+mags,mags/53097b3c07a0.ogg,brief: m05 Atrium,Every shot rings the dinner bell. Make them count.
+mags,mags/a88e167acfa9.ogg,brief: m05 Atrium,"Those ones jump. Watch the ledges above you, not the floor."
+echo,echo/345909eec15a.ogg,brief: m06 Anchor Store,"Keep the porch light on, courier. I'm coming home."
+host,host/155a1ba155d0.ogg,brief: m06 Anchor Store,"Technical difficulties, folks. Nobody touch anything."
+host,host/b17ca60e00ca.ogg,brief: m06 Anchor Store,Our courier's on the roof. And guess who's waiting for him on the car park? An old friend.
+host,host/cb16264e78cf.ogg,brief: m06 Anchor Store,"Now, Parker, while you're browsing, a word from our... what is that? Who's on my frequency?"
+mags,mags/1161a1688e84.ogg,brief: m06 Anchor Store,That drone's painting you for the shooters. Knock it down.
+mags,mags/87a55f1e8447.ogg,brief: m06 Anchor Store,"Big ones with the scrap shields. Get round them, or hit them where the shield isn't."
+mags,mags/d39b3981b95d.ogg,brief: m06 Anchor Store,"That was her. She's alive, and she's in his wires. Now run."
+mags,mags/da7cdbd72a85.ogg,brief: m06 Anchor Store,"Department store. Roof hatch is on the top floor, back corner. Go up."
+parker,parker/01016cdfc25b.ogg,brief: m06 Anchor Store,That was her.
+host,host/252fe66197de.ogg,brief: m07 Parking Spiral,"Folks, it's the rematch nobody asked for and everybody wants!"
+host,host/5d8424a22176.ogg,brief: m07 Parking Spiral,Let's take a short break for a word from our sponsor.
+host,host/d16292297c4b.ogg,brief: m07 Parking Spiral,"Well. Our ratings are through the roof, and every single one of you is cheering for the wrong man."
+juno,juno/0302603c8a15.ogg,brief: m07 Parking Spiral,"Come on, then. Show the city."
+juno,juno/54318d797ce8.ogg,brief: m07 Parking Spiral,You were always the fast one. I was always the one who got paid.
+juno,juno/b3206fff7eeb.ogg,brief: m07 Parking Spiral,Go on. Get her. Before I change my mind.
+juno,juno/d2f018acaa8b.ogg,brief: m07 Parking Spiral,"Hey, Parker. Long time. Still running for other people?"
+mags,mags/5934990935cc.ogg,brief: m07 Parking Spiral,"Juno. She ran the Line with you, Parker. She knows every trick you've got."
+mags,mags/88ee06369b0c.ogg,brief: m07 Parking Spiral,"...She was one of ours, once. Keep going."
+mags,mags/cf6015bb75bc.ogg,brief: m07 Parking Spiral,Those ones run like you do. They'll come at you from the side. Keep moving.
+mags,mags/d2cebe619243.ogg,brief: m07 Parking Spiral,Parker. Those aren't raiders.
+parker,parker/5a94878ac718.ogg,brief: m07 Parking Spiral,Still running.
+vell,vell/72d50fc862b7.ogg,brief: m07 Parking Spiral,Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it.
+host,host/6e85c2e2c280.ogg,brief: m08 Storm Channels,"Folks, a reminder from our sponsor that water is a privilege. Parker is drinking it right now. Without paying."
+host,host/cd57b8fb8463.ogg,brief: m08 Storm Channels,You heard the man. Whatever it costs. I'll send him the bill.
+host,host/dc4dbf9a5726.ogg,brief: m08 Storm Channels,"Back on the air, Port Calder, with our generous sponsors watching. Parker, darling, please die quietly."
+mags,mags/1ae6e3f4cc46.ogg,brief: m08 Storm Channels,They work in teams and they don't miss twice. Don't stand still for them.
+mags,mags/40cc59244b29.ogg,brief: m08 Storm Channels,The channels run straight to the west side. The Ward owns them. The Ward owns the water. Be quick.
+mags,mags/7ba476b3e4be.ogg,brief: m08 Storm Channels,"Helmets. First shot knocks it off, the second one counts."
+mags,mags/a0ab5a67742e.ogg,brief: m08 Storm Channels,Fresh orange. That's not mine. Somebody out there's marking you a route.
+mags,mags/b10b2d3f61b8.ogg,brief: m08 Storm Channels,The big Hollow's armoured on the front. Get behind it.
+vell,vell/440c9fc2d1b4.ogg,brief: m08 Storm Channels,The courier is not to reach the tower. Whatever it costs.
+vell,vell/d2a855d3a372.ogg,brief: m08 Storm Channels,"Courier sighted. Squad two, close the sluice line."
+echo,echo/2518b0322319.ogg,brief: m09 Rail Bridge,"Left at the junction, courier. Left. The right line ends in the sky."
+host,host/212a253cf537.ogg,brief: m09 Rail Bridge,Who keeps doing that?
+host,host/40139f7d17f1.ogg,brief: m09 Rail Bridge,"And I was paid to make it entertaining, Commander. I'm doing both."
+host,host/90bce7e2f91f.ogg,brief: m09 Rail Bridge,"New rules tonight, Port Calder! I'll be changing the route live. Let's see how our courier likes improv."
+host,host/a99cc1295ee6.ogg,brief: m09 Rail Bridge,Oh dear. Section nine. Gone. What a shame.
+mags,mags/2e7c342a1e4e.ogg,brief: m09 Rail Bridge,Drones with guns. They flash before they fire. One hit drops them.
+mags,mags/6293d4896888.ogg,brief: m09 Rail Bridge,"There's the tower. Go up it, kid."
+mags,mags/f713859edb65.ogg,brief: m09 Rail Bridge,The old train line. It's the last straight road to the tower.
+vell,vell/e2ebc330a2a8.ogg,brief: m09 Rail Bridge,"Host, you were paid to end this."
+echo,echo/44706a48d982.ogg,brief: m10 The Climb,Cameras are mine now. Look at him go.
+echo,echo/84754736e0e4.ogg,brief: m10 The Climb,"Hi, Port Calder. This is Echo. He's lying to you. He's been lying to you for twenty years."
+host,host/2e5919cf257b.ogg,brief: m10 The Climb,Three minutes! Two! I'm not even counting properly anymore!
+host,host/7e53e9859211.ogg,brief: m10 The Climb,"Ten minutes, Port Calder. Ten minutes until our courier runs out of tower, and his wife runs out of luck."
+host,host/839a40713562.ogg,brief: m10 The Climb,Get her off my uplink! GET HER OFF!
+host,host/f37eeaed285f.ogg,brief: m10 The Climb,Fine. Come in. The studio's open. Mind the step.
+mags,mags/16cc7749ad82.ogg,brief: m10 The Climb,"The gun drones just went dark. She did that. Climb, Parker!"
+mags,mags/6a058a0139ba.ogg,brief: m10 The Climb,Don't look down. Do look up. That's where they're shooting from.
+parker,parker/1919a410c0da.ogg,brief: m10 The Climb,"I'm coming, Echo."
+echo,echo/52ca824682d4.ogg,brief: m11 Dead Air,You're late.
+echo,echo/8a32654ab48d.ogg,brief: m11 Dead Air,"Parker! Parker, you're pinned. The whole floor's on fire."
+echo,echo/c5316fa4a5c7.ogg,brief: m11 Dead Air,"Parker, the vents. Behind the transmitter. I left them open for you."
+host,host/61e15f390139.ogg,brief: m11 Dead Air,"Oh, I do love a reunion. Here's my favourite part."
+host,host/cf18b320032f.ogg,brief: m11 Dead Air,"Port Calder, I give you: the grand finale."
+host,host/e4587397bc66.ogg,brief: m11 Dead Air,"Port Calder, this is it. The final segment. Please hold your applause until he's dead."
+mags,mags/546d2c7bc8b8.ogg,brief: m11 Dead Air,The studio's on the top floor. Everything he's got is between you and her.
+mags,mags/6877222f4e94.ogg,brief: m11 Dead Air,The armoured ones are slow. Don't trade with them. Get past.
+parker,parker/38374530ec51.ogg,brief: m11 Dead Air,Draw him off me. Run. I'll talk you down.
+parker,parker/4da3fc7a75d1.ogg,brief: m11 Dead Air,Traffic.
+parker,parker/bd9cb607c7ad.ogg,brief: m11 Dead Air,Echo.
+vell,vell/22df3d263b74.ogg,brief: m11 Dead Air,All units to the studio. This ends tonight.
 host,host/4482187d2eb1.ogg,m00_dawn_run,Today's show: a courier comes home to an empty camp. His lovely wife? Gone. Tragic. Riveting.
 host,host/4a7c27fa2869.ogg,m00_dawn_run,"Echo's with me, fixing my tower. Parker, darling, come and get her. The whole city's listening."
 host,host/d77455611575.ogg,m00_dawn_run,"Goooood morning, Port Calder! This is the Host, on the only frequency you've got left."

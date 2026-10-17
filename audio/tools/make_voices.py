@@ -13,6 +13,12 @@ where <key> is the first 12 hex digits of the md5 of the line's text, so
 audio/voice_lines.gd finds a clip from the text alone. Clips are clean
 speech; the game puts them through the radio band at runtime.
 
+Lines written ahead of the missions (the story director's mission briefs)
+can be voiced early: --briefs PATH reads every `- [cue] WHO: "line"` bullet
+from that Markdown file into audio/voices/upcoming.json, which is voiced
+like the mission lines, so the clips are ready when the words land in a
+mission file verbatim.
+
 A recorded take beats the synthetic one: save it as
 audio/voices/recorded/<who>/<key>.ogg (the name is in script.csv) and the
 game plays it instead. Nothing here touches recorded/.
@@ -20,7 +26,7 @@ game plays it instead. Nothing here touches recorded/.
 Only new or changed lines are spoken; clips for lines that no longer exist
 are deleted. Re-run after editing missions or the cast:
 
-    python3 audio/tools/make_voices.py [--force WHO ...] [--models DIR]
+    python3 audio/tools/make_voices.py [--briefs MD] [--force WHO ...] [--models DIR]
 
 Needs `pip install kokoro-onnx soundfile`, ffmpeg, and the Kokoro v1.0 model
 files (kokoro-v1.0.onnx, voices-v1.0.bin from
@@ -41,6 +47,7 @@ import tempfile
 
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 VOICES = os.path.join(ROOT, "audio", "voices")
+UPCOMING = os.path.join(VOICES, "upcoming.json")
 TTS = os.path.join(VOICES, "tts")
 SAMPLE_RATE = 24000
 
@@ -68,6 +75,10 @@ def collect():
         if name.endswith(".json"):
             with open(os.path.join(missions, name), encoding="utf-8") as f:
                 walk(json.load(f), found, name[:-5])
+    if os.path.exists(UPCOMING):
+        with open(UPCOMING, encoding="utf-8") as f:
+            for u in json.load(f):
+                found.setdefault((u["who"], u["line"]), u["where"])
     with open(os.path.join(ROOT, "enemies", "raider.gd"), encoding="utf-8") as f:
         src = f.read()
     m = re.search(r"const TAUNTS := \[(.*?)\]", src, re.S)
@@ -76,6 +87,25 @@ def collect():
             for who in ("raider", "raider2"):
                 found.setdefault((who, taunt), "raider taunt")
     return found
+
+
+def read_briefs(path):
+    """[{who, line, where}] for every spoken bullet in a briefs file."""
+    out = []
+    where = ""
+    with open(path, encoding="utf-8") as f:
+        text = f.read()
+    # A bullet can wrap over several lines; a new bullet or heading ends it.
+    for item in re.split(r"\n(?=\s*- |\s*#)", text):
+        flat = " ".join(l.strip() for l in item.splitlines()).strip()
+        h = re.match(r"\s*#+\s+(.*)", item.strip().splitlines()[0] if item.strip() else "")
+        if h:
+            where = "brief: " + h.group(1)
+            continue
+        m = re.match(r'-\s+(?:m\d+\s+)?(?:\[[^\]]*\]\s+)?([A-Z]+):\s+"(.*)"\s*$', flat)
+        if m:
+            out.append({"who": m.group(1).lower(), "line": m.group(2), "where": where})
+    return out
 
 
 def speakable(line):
@@ -116,9 +146,14 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument("--force", nargs="*", default=[], help="re-speak every line of these speakers (all if none named)")
     ap.add_argument("--models", default=os.path.expanduser("~/.cache/kokoro"))
+    ap.add_argument("--briefs", help="also voice the lines in this mission-briefs Markdown file (saved to audio/voices/upcoming.json)")
     ap.add_argument("--dry-run", action="store_true", help="list what would change")
     args = ap.parse_args()
 
+    if args.briefs and not args.dry_run:
+        with open(UPCOMING, "w", encoding="utf-8") as f:
+            json.dump(read_briefs(args.briefs), f, indent="\t", ensure_ascii=False)
+            f.write("\n")
     with open(os.path.join(VOICES, "cast.json"), encoding="utf-8") as f:
         cast = {k: v for k, v in json.load(f).items() if not k.startswith("_")}
     lines = collect()
