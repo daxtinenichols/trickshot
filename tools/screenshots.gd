@@ -55,6 +55,21 @@ func _run() -> void:
 		await process_frame
 	root.get_texture().get_image().save_png(out.path_join("range_headshot.png"))
 	print("saved range_headshot")
+	# A combo in progress (scripted tricks, player held mid-air so it doesn't bank).
+	level.go_to_zone(3)
+	for i in 10:
+		await physics_frame
+	player.set_physics_process(false)
+	player.global_position += Vector3(0, 3, 0)
+	player.velocity = Vector3(0, 0, -9)
+	player.state = Player.State.AIR
+	for t in [&"slide", &"vault", &"wallrun", &"wall_jump", &"backflip", &"backflip"]:
+		level.combo.on_trick(t, {"speed": 8.5, "quality": 0.8})
+	for i in 4:
+		await process_frame
+	root.get_texture().get_image().save_png(out.path_join("combo.png"))
+	print("saved combo")
+	player.set_physics_process(true)
 	# Pause menu tabs.
 	gun.aim_held = false
 	for tab in 3:

@@ -11,6 +11,7 @@ const SUITES := [
 	"res://tests/test_sandbox_level.gd",
 	"res://tests/test_weapons.gd",
 	"res://tests/test_settings.gd",
+	"res://tests/test_combo.gd",
 ]
 
 
