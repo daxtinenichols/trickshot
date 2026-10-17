@@ -71,8 +71,9 @@ func build() -> void:
 		var script: Script = load(base_path)
 		base = script.new()
 		base.name = "Base"
-		if mission.has("route") and "open_exit" in base:
-			# The route carries on past the base's exit.
+		if (mission.has("route") or mission.get("open_exit", false)) and "open_exit" in base:
+			# The route (or the mission's own pieces) carries on past the
+			# base's exit.
 			base.open_exit = true
 		add_child(base)  # builds itself in _ready
 	for piece: Dictionary in mission.get("pieces", []):
@@ -323,6 +324,9 @@ func _encounter(p: Dictionary) -> void:
 	# A mission's encounter stays cleared; the sandbox arena's restarts.
 	enc.restart_time = p.get("restart", INF)
 	enc.max_aiming = p.get("max_aiming", enc.max_aiming)
+	for k: String in ["hear_shots", "hearing_radius", "wake_distance"]:
+		if p.has(k):
+			enc.set(k, p[k])
 	for c: Dictionary in p.get("cover", []):
 		enc.add_cover_wall(vec(c.get("at", [0, 0, 0])), c.get("length", 2.0), c.get("thickness", 0.55),
 				deg_to_rad(c.get("yaw", 0.0)), c.get("spacing", 2.2))
