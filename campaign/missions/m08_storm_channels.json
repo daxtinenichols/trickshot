@@ -23,12 +23,16 @@
   ]},
   {"ramp_down": 0, "length": 26},
   {"roof": 96, "y": 0, "do": [
+   {"piece": {"box": [-6.9, 1.75, -48.0], "size": [0.6, 3.5, 96], "kind": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [6.9, 1.75, -48.0], "size": [0.6, 3.5, 96], "kind": "NEUTRAL"}, "at": 0},
    {"checkpoint": "Channel floor", "at": 6, "objective": 0},
    {"mark": "#ff8a1f", "at": 14},
    {"prop": "chalk_arrow", "x": 0, "at": 16},
    {"radio": {"who": "mags", "line": "Fresh orange. That's not mine. Somebody out there's marking you a route."}, "at": 14, "radius": 8},
-   {"encounter": "channel brutes", "at": 28, "length": 50, "mutants": [[-4, 14], [4, 26], [-3.5, 40]]},
+   {"encounter": "channel brutes", "at": 28, "length": 50, "enemies": [{"type": "crawler", "x": -4, "d": 12}, {"type": "crawler", "x": 4, "d": 16}, {"type": "brute", "x": 0, "d": 30}, {"type": "crawler", "x": -3.5, "d": 40}]},
    {"radio": {"who": "mags", "line": "The big Hollow's armoured on the front. Get behind it."}, "at": 30, "radius": 8},
+   {"piece": {"bank": [3.2, 0, 0], "length": 30, "side": 1}, "at": 44, "length": 30},
+   {"piece": {"bank": [-3.2, 0, 0], "length": 30, "side": -1}, "at": 44, "length": 30},
    {"hurdles": true, "at": 84}
   ]},
   {"roof": 40, "y": 3, "do": [
@@ -36,7 +40,7 @@
   ]},
   {"roof": 62, "y": 6, "do": [
    {"checkpoint": "Sluice gate", "at": 4, "objective": 1},
-   {"encounter": "sluice squad", "at": 10, "length": 48, "troopers": [[-3.6, 18, 0], [3.6, 24, 0.6], [-3.6, 34, 1.2], [3.6, 40, 1.8]]},
+   {"encounter": "sluice squad", "at": 10, "length": 48, "troopers": [[-3.6, 18, 0], [3.6, 24, 0.6], [-3.6, 36, 1.2]], "enemies": [{"type": "shield", "x": 3.6, "d": 40, "wake": 1.0}]},
    {"tape": "m08_tape_sluice", "x": -4.8, "at": 56}
   ]},
   {"gap": 5},
@@ -49,7 +53,7 @@
     {"mark": "#ff8a1f", "at": 4},
     {"prop": "chalk_arrow", "x": 0, "at": 6},
     {"label": "Listener line", "at": 6},
-    {"hurdles": "railing", "at": 24}
+    {"hurdles": true, "at": 24}
    ]},
    {"wallrun": 12, "side": 1},
    {"roof": 50, "do": [
@@ -61,8 +65,12 @@
   ], "side": 1},
   {"ramp_down": 0, "length": 24},
   {"roof": 70, "y": 0, "do": [
+   {"piece": {"box": [-6.9, 1.75, -35.0], "size": [0.6, 3.5, 70], "kind": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [6.9, 1.75, -35.0], "size": [0.6, 3.5, 70], "kind": "NEUTRAL"}, "at": 0},
    {"mark": "#f57320", "at": 4},
-   {"encounter": "spillway hollows", "at": 12, "length": 44, "mutants": [[-4, 12], [4, 22], [-4, 34]]},
+   {"encounter": "spillway hollows", "at": 12, "length": 44, "enemies": [{"type": "crawler", "x": -4, "d": 12}, {"type": "crawler", "x": 4, "d": 18}, {"type": "brute", "x": -3, "d": 32}]},
+   {"piece": {"bank": [3.2, 0, 0], "length": 40, "side": 1}, "at": 6, "length": 40},
+   {"piece": {"bank": [-3.2, 0, 0], "length": 40, "side": -1}, "at": 6, "length": 40},
    {"slide": true, "at": 54}
   ]},
   {"ramp_up": 6, "length": 18},
@@ -76,7 +84,7 @@
   {"roof": 72, "y": 12, "do": [
    {"checkpoint": "Pumping station", "at": 4, "objective": 3},
    {"label": "WARD PUMPING STATION 3", "at": 6, "size": 1.0},
-   {"encounter": "pumping station", "at": 10, "length": 58, "troopers": [[-3.6, 16, 0], [3.6, 20, 0.4], [-3.6, 30, 0.9], [3.6, 34, 1.3], [-3.6, 46, 1.8], [3.6, 50, 2.2]], "drones": [[0, 26, 6], [0, 44, 6]]},
+   {"encounter": "pumping station", "at": 10, "length": 58, "troopers": [[-3.6, 16, 0], [3.6, 20, 0.4], [-3.6, 34, 1.3], [3.6, 50, 2.2]], "enemies": [{"type": "shield", "x": 3.6, "d": 30, "wake": 0.9}, {"type": "shield", "x": -3.6, "d": 46, "wake": 1.8}]},
    {"prop": "water_tank", "x": -4.4, "at": 66}
   ]},
   {"gap": 6},
@@ -86,10 +94,14 @@
   {"turn": "right", "size": 24},
   {"ramp_down": 0, "length": 28},
   {"roof": 92, "y": 0, "do": [
+   {"piece": {"box": [-6.9, 1.75, -46.0], "size": [0.6, 3.5, 92], "kind": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [6.9, 1.75, -46.0], "size": [0.6, 3.5, 92], "kind": "NEUTRAL"}, "at": 0},
    {"checkpoint": "Outflow", "at": 6, "objective": 4},
    {"mark": "#ff8a1f", "at": 10},
    {"prop": "chalk_arrow", "x": 0, "at": 12},
-   {"encounter": "outflow hollows", "at": 14, "length": 52, "mutants": [[-4, 12], [4, 20], [-4, 32], [4, 44]]},
+   {"encounter": "outflow hollows", "at": 14, "length": 52, "enemies": [{"type": "crawler", "x": -4, "d": 10}, {"type": "crawler", "x": 4, "d": 14}, {"type": "brute", "x": -3, "d": 28}, {"type": "crawler", "x": 4, "d": 38}, {"type": "brute", "x": 3, "d": 46}]},
+   {"piece": {"bank": [3.2, 0, 0], "length": 44, "side": 1}, "at": 20, "length": 44},
+   {"piece": {"bank": [-3.2, 0, 0], "length": 44, "side": -1}, "at": 20, "length": 44},
    {"slide": true, "at": 76}
   ]},
   {"ramp_up": 4, "length": 14},

@@ -8,7 +8,7 @@ extends TestCase
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
-	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter"]
+	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab"]
 
 var level: Node3D
 var player: Player
@@ -125,9 +125,11 @@ func test_every_built_mission_loads_and_spawns_are_standable() -> void:
 			await _step(40)
 			check(player.state == Player.State.GROUND, "%s spawn %d: standing (%s)" % [title, s + 1, Player.State.keys()[player.state]])
 			check_near(player.global_position.y, b.spawns[s].origin.y, 0.08, "%s spawn %d: at its height" % [title, s + 1])
-			var z0 := player.global_position.z
+			# Forward is the way the spawn faces (routes turn, so not always -Z).
+			var p0 := player.global_position
+			var fwd := -b.spawns[s].basis.z
 			await _step(25, TestWorld.forward_input())
-			check(z0 - player.global_position.z > 1.5, "%s spawn %d: free to run forward" % [title, s + 1])
+			check((player.global_position - p0).dot(fwd) > 1.5, "%s spawn %d: free to run forward" % [title, s + 1])
 		level.queue_free()
 		await tree.process_frame
 
@@ -279,7 +281,7 @@ func test_standing_still_in_the_chase_gets_you_caught() -> void:
 	check(run.pursuer != null, "the finale has a pursuer")
 	check(player.get_meta("runner") == "echo", "played as Echo")
 	await _step(5)
-	player.global_position = Vector3(0, 40.05, -6)
+	player.global_position = level.builder.spawns[0].origin + Vector3(0, 0.05, -8)
 	await _step(1)
 	check(run.phase == MissionRun.Phase.RUNNING, "the chase starts when you move")
 	var caught := false
@@ -479,19 +481,13 @@ func test_on_air_lookouts_are_raiders() -> void:
 	check(enc.alive_count() == 0, "a cleared encounter stays cleared")
 
 
-const SIGNAL_OUT_ROUTE := [
-	[-10.4, "jump", 0.0], [-19.5, "crouch", 0.0], [-26.8, "jump", 0.0],
-	[-36.0, "", 3.3], [-54.0, "", 5.4], [-63.3, "jump", 7.0],
-	[-78.0, "", 0.3], [-84.4, "jump", 0.3], [-98.0, "roll", 0.3], [-106.0, "", 1.5],
-	[-114.6, "jump", 3.75], [-124.6, "jump", 3.75], [-140.0, "", 1.5], [-149.3, "jump", 1.5],
-]
-
-
 func test_signal_out_can_be_escaped() -> void:
 	await _load(_index("m12_signal_out"))
 	await _step(10)
-	var done := await _run_route(SIGNAL_OUT_ROUTE)
+	var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
+	var done := await _run_route(run.mission.bot, frames, -INF, run.mission.route_legs)
 	check(done, "a scripted run outruns the Host (stopped at %s)" % player.global_position)
+	check(run.mission.route_length >= 900.0, "a long chase (%d m)" % int(run.mission.route_length))
 	check(run.catches == 0, "without being caught (%d)" % run.catches)
 	check(run.falls == 0, "without falling (%d)" % run.falls)
 	check(Campaign.echo_unlocked(), "Echo unlocked")
@@ -534,9 +530,9 @@ func _bot_run(label: String, alt := false) -> void:
 	var bot: Array = run.mission.bot_alt if alt else run.mission.bot
 	var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
 	if OS.has_environment("ROUTE_ONLY"):
-		print("  %s: %d m, %d legs, %d checkpoints, %d encounters, %d enemies" % [label, int(run.mission.route_length),
+		print("  %s: %d m, %d legs, %d checkpoints, %d encounters, %d enemies, legs %s" % [label, int(run.mission.route_length),
 			run.mission.route_legs.size(), level.builder.spawns.size() - 1, level.builder.encounters.size(),
-			level.builder.encounters.reduce(func(n: int, e: Node) -> int: return n + e.enemies.size(), 0)])
+			level.builder.encounters.reduce(func(n: int, e: Node) -> int: return n + e.enemies.size(), 0), run.mission.route_legs])
 	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []))
 	check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [label, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
 	check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])

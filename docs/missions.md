@@ -15,8 +15,9 @@ later".
   **Mission Path** to the file, and tick **Rebuild** after saving the JSON
   to see the layout. Run the scene (F6) to play it.
 - Tests: `tests/test_campaign.gd` loads every mission, checks every spawn is
-  safe to stand on, and runs a bot through missions 0 and 12 and through every mission built from a `route`.
-  A route mission is tested automatically.
+  safe to stand on, and runs a bot through mission 0 and through every mission built from a `route`
+  (mission 12's bot must also stay ahead of the Host). A route mission is tested automatically;
+  `ROUTE_ONLY=m09` runs just the matching missions and prints their length, legs and enemy count.
 - Pictures: `xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/mission_shots.gd -- <out_dir>`.
 
 ## The file
