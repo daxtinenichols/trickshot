@@ -15,7 +15,7 @@ extends Enemy
 ## headshot. Up close it winds up a swipe you can back out of. A kick
 ## knocks it back and cancels either attack.
 
-enum State { CHASE, LEAP_WINDUP, LEAP, LAND, SWIPE_WINDUP, SWIPE_RECOVER, RETURN }
+enum State { CHASE, LEAP_WINDUP, LEAP, LAND, SWIPE_WINDUP, SWIPE_RECOVER, RETURN, CHARGE_WINDUP, CHARGE, DAZED }
 
 @export_group("Chase")
 ## Just below your boosted sprint, above a plain run.
@@ -68,6 +68,10 @@ const HEAD_HEIGHT := 1.38
 const HEAD_FORWARD := -0.28
 const BODY_SIZE := Vector3(0.78, 1.05, 0.6)
 
+## Bigger or smaller kinds of mutant (brute, leaper) scale everything:
+## body, hit zones, reach. Set before it enters the tree.
+var size_scale := 1.0
+
 var state := State.CHASE
 var state_time := 0.0
 var leaps := 0
@@ -90,28 +94,33 @@ func _ready() -> void:
 
 
 func _body_radius() -> float:
-	return 0.45
+	return 0.45 * size_scale
 
 
 func _body_height() -> float:
-	return 1.7
+	return 1.7 * size_scale
 
 
 func _head_height() -> float:
-	return HEAD_HEIGHT
+	return HEAD_HEIGHT * size_scale
 
 
 func _bar_height() -> float:
-	return 1.95
+	return 1.95 * size_scale
 
 
 func head_position() -> Vector3:
-	return global_position + Basis(Vector3.UP, yaw) * Vector3(0, HEAD_HEIGHT, HEAD_FORWARD)
+	return global_position + Basis(Vector3.UP, yaw) * (Vector3(0, HEAD_HEIGHT, HEAD_FORWARD) * size_scale)
 
 
 func _build() -> void:
-	_hitbox(&"body", box_shape(BODY_SIZE), Vector3(0, BODY_SIZE.y * 0.5 + 0.2, 0.05))
-	_hitbox(&"head", sphere_shape(HEAD_RADIUS), Vector3(0, HEAD_HEIGHT, HEAD_FORWARD))
+	var k := size_scale
+	_hitbox(&"body", box_shape(BODY_SIZE * k), Vector3(0, BODY_SIZE.y * 0.5 + 0.2, 0.05) * k)
+	_hitbox(&"head", sphere_shape(HEAD_RADIUS * k), Vector3(0, HEAD_HEIGHT, HEAD_FORWARD) * k)
+
+
+func _build_placeholder() -> void:
+	_pose.scale = Vector3.ONE * size_scale
 	var skin := _material(Color(0.55, 0.62, 0.3))
 	var dark := _material(Color(0.3, 0.22, 0.2))
 	var head := _material(Color(1.0, 0.82, 0.28))
@@ -130,6 +139,8 @@ func _telegraph_color() -> Color:
 
 
 func _on_reset() -> void:
+	if body == null and _pose:
+		_pose.scale = Vector3.ONE * size_scale
 	state = State.CHASE
 	state_time = 0.0
 	_leap_ready = 0.8
@@ -198,7 +209,7 @@ func _think(delta: float) -> void:
 		State.LEAP:
 			if not _leap_hit:
 				var axis := EnemyMath.player_axis(player)
-				var center := global_position + Vector3.UP * 0.85
+				var center := global_position + Vector3.UP * 0.85 * size_scale
 				if EnemyMath.point_segment_distance(center, axis[0], axis[1]) <= leap_hit_radius + Player.RADIUS:
 					_leap_hit = true
 					hits_landed += 1
@@ -268,8 +279,40 @@ func _swipe(to_player: Vector3, dy: float) -> void:
 
 # ---------------------------------------------------------------- presentation
 
+func _model_path() -> String:
+	return "res://enemies/models/mutant.glb"
+
+
+func _on_model() -> void:
+	body.scale = Vector3.ONE * size_scale
+	body.show_part("Armor", false)
+
+
+func _animate_body(delta: float) -> void:
+	var speed := EnemyMath.horizontal(velocity).length()
+	body.step(speed, 2.2, delta)
+	var pose: Dictionary
+	body.grounded = state != State.LEAP
+	match state:
+		State.LEAP_WINDUP:
+			pose = Poses.coil(telegraph)
+		State.LEAP:
+			pose = Poses.pounce()
+		State.LAND:
+			pose = Poses.winded(sin(state_time * 9.0))
+		State.SWIPE_WINDUP:
+			pose = Poses.swipe(telegraph)
+		State.SWIPE_RECOVER:
+			pose = Poses.swipe(-clampf(state_time / 0.12, 0.0, 1.0))
+		_:
+			pose = Poses.blend(Poses.hunch(), Poses.lope(body.phase, speed / run_speed), clampf(speed, 0.0, 1.0))
+	if is_staggered():
+		pose = Poses.add(pose, Poses.flinch())
+	body.show_pose(pose, delta, 22.0 if state in [State.SWIPE_RECOVER, State.LEAP] else 14.0)
+
+
 func _animate(_delta: float) -> void:
-	if is_dead:
+	if is_dead or body != null:
 		return
 	var crouch := 0.0
 	var lean := 0.25
