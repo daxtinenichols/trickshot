@@ -20,18 +20,18 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Look | Mouse | Right stick |
 | Jump / vault / climb | Space | A |
 | Crouch / slide / roll (double-tap to roll) | Ctrl or C | B |
-| Dolphin dive (prone jump) | Z | D-pad down |
-| Kick | F | RB or R3 |
-| Boost (short burst of speed, 2 s cooldown) | Shift | LB or L3 |
-| Lean / quick turn (side flip in the air, angle a wallrun) | Q / E | D-pad left / right |
+| Dolphin dive (prone jump) | Z | Y |
+| Kick | F | R3 |
+| Boost (short burst of speed, 2 s cooldown) | Shift | L3 (click the left stick) |
+| Lean / quick turn (side flip in the air, angle a wallrun) | Q / E | LB / RB |
 | Fire | Left mouse | Right trigger |
 | Aim down sights | Right mouse | Left trigger |
 | Reload | R | X |
-| Semi / full auto | B or V | Y |
+| Semi / full auto | B or V | D-pad left |
 | Respawn | Backspace | Back |
 | Menu (maps, moves, settings, controls) | Esc | Start |
 | Jump to zone | 1–9, 0 = shooting range, - = ramps and loop | |
-| Slow motion (down to 10%, back up to normal) | Mouse wheel down / up, or F3 for 30% | |
+| Slow motion (down to 10%, back up to normal) | Mouse wheel down / up, or F3 for 30% | D-pad down / up |
 | HUD / tuning / speed trail | F1 / F2 / F4 | |
 | Art look / chase camera / next level / corner view | F9 / F10 / F11 / F12 | |
 

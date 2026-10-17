@@ -1,6 +1,7 @@
 extends Node
-## Autoload "SlowMo": scroll the wheel down to slow time (down to 10%), up to
-## speed it back up, never past normal speed. F3 toggles 30%. A vignette
+## Autoload "SlowMo": scroll the wheel down (D-pad down on a controller) to
+## slow time, down to 10%; up to speed it back up, never past normal speed.
+## F3 toggles 30%. A vignette
 ## darkens the screen edges while time is slowed.
 ##
 ## The simulation always ticks 1/60 s. Slow motion runs those ticks less
@@ -67,6 +68,12 @@ func _unhandled_input(event: InputEvent) -> void:
 		elif mb.button_index == MOUSE_BUTTON_WHEEL_UP:
 			set_speed(speed + STEP)
 			get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("slow_down"):
+		set_speed(speed - STEP)
+		get_viewport().set_input_as_handled()
+	elif event.is_action_pressed("speed_up"):
+		set_speed(speed + STEP)
+		get_viewport().set_input_as_handled()
 	elif event.is_action_pressed("debug_slowmo") and not event.is_echo():
 		set_speed(DEBUG_SPEED if speed >= 1.0 else 1.0)
 		get_viewport().set_input_as_handled()

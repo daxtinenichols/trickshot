@@ -45,6 +45,19 @@ func test_wheel_up_only_returns_to_normal_speed() -> void:
 	check(Engine.time_scale == 1.0 and Engine.physics_ticks_per_second == 60, "never faster than normal")
 
 
+func test_dpad_slows_and_speeds_up() -> void:
+	var pad := InputEventJoypadButton.new()
+	pad.button_index = JOY_BUTTON_DPAD_DOWN
+	pad.pressed = true
+	SlowMo._unhandled_input(pad)
+	SlowMo._unhandled_input(pad)
+	check_near(SlowMo.speed, 0.8, 0.001, "D-pad down slows time")
+	pad.button_index = JOY_BUTTON_DPAD_UP
+	for i in 4:
+		SlowMo._unhandled_input(pad)
+	check_near(SlowMo.speed, 1.0, 0.001, "D-pad up brings it back, no faster")
+
+
 func test_f3_toggles_slow_motion() -> void:
 	var f3 := InputEventKey.new()
 	f3.physical_keycode = KEY_F3

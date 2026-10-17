@@ -48,14 +48,18 @@ const MOUSE_BUTTONS := {
 const PAD_BUTTONS := {
 	"jump": [JOY_BUTTON_A],
 	"crouch": [JOY_BUTTON_B],
-	"prone": [JOY_BUTTON_DPAD_DOWN],
-	"kick": [JOY_BUTTON_RIGHT_SHOULDER, JOY_BUTTON_RIGHT_STICK],
+	"prone": [JOY_BUTTON_Y],
+	"kick": [JOY_BUTTON_RIGHT_STICK],
 	"reload": [JOY_BUTTON_X],
-	"fire_mode": [JOY_BUTTON_Y],
+	"fire_mode": [JOY_BUTTON_DPAD_LEFT],
 	"reset": [JOY_BUTTON_BACK],
-	"boost": [JOY_BUTTON_LEFT_SHOULDER, JOY_BUTTON_LEFT_STICK],
-	"lean_left": [JOY_BUTTON_DPAD_LEFT],
-	"lean_right": [JOY_BUTTON_DPAD_RIGHT],
+	# Bumpers lean and quick turn; clicking the left stick boosts, like a
+	# sprint button. The D-pad is for things you don't press mid-move.
+	"boost": [JOY_BUTTON_LEFT_STICK],
+	"lean_left": [JOY_BUTTON_LEFT_SHOULDER],
+	"lean_right": [JOY_BUTTON_RIGHT_SHOULDER],
+	"slow_down": [JOY_BUTTON_DPAD_DOWN],
+	"speed_up": [JOY_BUTTON_DPAD_UP],
 	"pause": [JOY_BUTTON_START],
 }
 
