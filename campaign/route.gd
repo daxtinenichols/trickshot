@@ -11,10 +11,11 @@ extends RefCounted
 ##
 ## Segments are laid out in a running frame: x across the run (right +),
 ## z along it (decreasing as you go, so -z is the distance run). Each
-## corner starts a new leg, a frame turned 90 degrees about the corner's
-## center; at the end every piece is moved from its leg's frame into the
-## world. Corners are always 90 degrees, so roofs, checkpoints and enemy
-## areas stay axis-aligned boxes.
+## corner starts a new leg, a frame turned 45 or 90 degrees about the
+## corner's center; at the end every piece is moved from its leg's frame
+## into the world. On a leg at 45 degrees to the grid, roofs are turned
+## boxes and checkpoints turned regions (`area_yaw`); enemy areas stay
+## axis-aligned boxes around their turned area.
 ##
 ## Loaded by path (no class_name).
 
@@ -30,9 +31,15 @@ const PLAZA := 28.0
 const CLUTTER := ["ac_unit", "vent_stack", "satellite_dish", "generator", "barrel_rust",
 	"crate_wood", "tire_stack", "crate_stack", "antenna_mast", "loudspeaker_pole"]
 ## Piece fields that hold a position.
-const POINT_KEYS := ["box", "building", "mark", "window", "ramp", "to", "from", "tape", "at", "fire", "spawn"]
+const POINT_KEYS := ["box", "building", "mark", "window", "ramp", "to", "from", "tape", "at", "fire", "spawn",
+	"bank", "quarter_pipe", "loop", "door", "target"]
 ## Pieces that turn with their leg (they take a yaw).
-const TURNING_KEYS := ["box", "building", "prop", "row", "mark", "window"]
+const TURNING_KEYS := ["box", "building", "prop", "row", "mark", "window", "bank", "quarter_pipe", "loop", "door"]
+## Enemy types that fight from behind cover: the route puts sandbags in
+## front of them (any enemy can say "cover": true or false instead).
+const COVER_TYPES := ["raider", "trooper", "marksman"]
+## Enemy types that keep to their patch (leashed like mutants).
+const LEASHED_TYPES := ["mutant", "crawler", "leaper", "brute"]
 
 
 ## Expands mission["route"] in place. Returns the mission.
@@ -69,7 +76,7 @@ static func expand(mission: Dictionary) -> Dictionary:
 	var cps: Array = []
 	for e: Array in st.checkpoints:
 		var c: Dictionary = _place(st, e[0], e[1], e[2])
-		c.size = _turn_size(c.size, st.legs[e[1]].yaw)
+		_turn_region(c, st.legs[e[1]].yaw)
 		c.yaw = rad_to_deg(st.legs[e[1]].yaw)
 		cps.append(c)
 	cps.append_array(mission.get("checkpoints", []))
@@ -121,16 +128,22 @@ static func _origin(mission: Dictionary) -> Dictionary:
 		if xf is Transform3D:
 			# Spawns face -Z at yaw 0, like legs: the yaw of the exit's facing.
 			var fwd: Vector3 = -(xf as Transform3D).basis.z
-			return {"origin": (xf as Transform3D).origin, "yaw": _quarter(atan2(-fwd.x, -fwd.z))}
+			return {"origin": (xf as Transform3D).origin, "yaw": _eighth(atan2(-fwd.x, -fwd.z))}
 		push_error("Route: base %s has no EXIT" % mission.base)
 	var o: Dictionary = mission.get("route_origin", {})
 	var at: Array = o.get("at", [0, 0, 0])
-	return {"origin": Vector3(at[0], at[1], at[2]), "yaw": _quarter(deg_to_rad(float(o.get("yaw", 0.0))))}
+	return {"origin": Vector3(at[0], at[1], at[2]), "yaw": _eighth(deg_to_rad(float(o.get("yaw", 0.0))))}
 
 
-## Snaps a yaw to the nearest quarter turn.
-static func _quarter(yaw: float) -> float:
-	return roundf(yaw / (PI * 0.5)) * PI * 0.5
+## Snaps a yaw to the nearest eighth of a turn (45 degrees).
+static func _eighth(yaw: float) -> float:
+	return roundf(yaw / (PI * 0.25)) * PI * 0.25
+
+
+## True when yaw is a whole number of quarter turns (the leg is square to
+## the grid).
+static func _square(yaw: float) -> bool:
+	return absf(yaw / (PI * 0.5) - roundf(yaw / (PI * 0.5))) < 0.01
 
 
 static func _resolve(o: Dictionary, mission: Dictionary, st: Dictionary) -> void:
@@ -140,13 +153,16 @@ static func _resolve(o: Dictionary, mission: Dictionary, st: Dictionary) -> void
 		var e := _world(st, last, 0.0, st.z + 4.0, st.y + 2.0)
 		o.at = [e.x, e.y, e.z]
 		if not o.has("size") and not o.has("radius"):
-			o.size = _turn_size([WIDTH + 2.0, 8.0, 8.0], st.legs[last].yaw)
+			o.size = [WIDTH + 2.0, 8.0, 8.0]
+			_turn_region(o, st.legs[last].yaw)
 		return
 	for c: Dictionary in mission.checkpoints:
 		if "@" + String(c.get("name", "")) == ref:
 			o.at = c.at
 			if not o.has("size") and not o.has("radius"):
 				o.size = c.size
+				if c.has("area_yaw"):
+					o.area_yaw = c.area_yaw
 			return
 	push_error("Route: unknown place %s" % ref)
 	o.at = [0, -1000, 0]
@@ -161,11 +177,22 @@ static func _world(st: Dictionary, leg: int, x: float, z: float, y: float) -> Ve
 	return Vector3(l.o.x + v.x, y, l.o.z + v.z)
 
 
-## Size [x, y, z] of an axis-aligned box after turning by yaw.
+## Size [x, y, z] of the axis-aligned box around a box turned by yaw
+## (exact on legs square to the grid).
 static func _turn_size(size: Array, yaw: float) -> Array:
-	if posmod(roundi(yaw / (PI * 0.5)), 2) == 1:
-		return [size[2], size[1], size[0]]
-	return size
+	var c := absf(cos(yaw))
+	var s := absf(sin(yaw))
+	return [snappedf(c * size[0] + s * size[2], 0.001), size[1], snappedf(s * size[0] + c * size[2], 0.001)]
+
+
+## Turns a region ({"at", "size"} in its leg's frame) with its leg: square
+## legs swap the size; diagonal ones keep it and set `area_yaw` (degrees),
+## which MissionRun.inside() reads.
+static func _turn_region(r: Dictionary, yaw: float) -> void:
+	if _square(yaw):
+		r.size = _turn_size(r.size, yaw)
+	else:
+		r.area_yaw = rad_to_deg(yaw)
 
 
 ## A copy of a piece (or checkpoint, radio line, enemy) moved from its
@@ -178,6 +205,12 @@ static func _place(st: Dictionary, p: Dictionary, leg: int, dx: float) -> Dictio
 		if a is Array and a.size() >= 3:
 			var w := _world(st, leg, float(a[0]) + dx, float(a[2]), float(a[1]))
 			out[k] = [w.x, w.y, w.z]
+	if out.has("slab"):
+		var pts: Array = []
+		for a: Array in out.slab:
+			var w := _world(st, leg, float(a[0]) + dx, float(a[1]), 0.0)
+			pts.append([w.x, w.z])
+		out.slab = pts
 	if yaw != 0.0:
 		for k: String in TURNING_KEYS:
 			if out.has(k):
@@ -276,9 +309,11 @@ static func _set_low(st: Dictionary, y: float) -> void:
 	st.lowest = minf(st.lowest, y)
 
 
-## A corner: a square roof `size` m across where the run turns 90 degrees
-## left or right. Everything after it is laid out in a new leg turned about
-## the corner's center.
+## A corner where the run turns left or right by `angle` degrees (90 or
+## 45): a roof `size` m long. A 90 degree corner is a square roof; any
+## other is a slab joining the roof before it to the one after, with
+## straight outer edges. Everything after it is laid out in a new leg
+## turned about the corner's center.
 static func _turn(st: Dictionary, seg: Dictionary) -> void:
 	if st.fork != null:
 		push_error("Route: no corners inside a fork")
@@ -286,17 +321,29 @@ static func _turn(st: Dictionary, seg: Dictionary) -> void:
 	var size: float = seg.get("size", 20.0)
 	var dir: Variant = seg.turn
 	var left: bool = dir == "left" if dir is String else float(dir) > 0.0
+	var angle := deg_to_rad(clampf(float(seg.get("angle", 90.0)), 15.0, 90.0))
 	var z0: float = st.z
 	var pivot := z0 - size * 0.5
+	var turn := angle if left else -angle
 	if st.y > 0.5:
-		_add(st, {"building": [0, st.y, pivot], "size": [size, size], "look": seg.get("look", "FACADE")})
+		if is_equal_approx(angle, PI * 0.5):
+			_add(st, {"building": [0, st.y, pivot], "size": [size, size], "look": seg.get("look", "FACADE")})
+		else:
+			# The near edge of the corner (where the last roof ends) and its
+			# far edge (where the next one starts), turned by the corner.
+			var h := maxf(WIDTH, size) * 0.5
+			var b := Basis(Vector3.UP, turn)
+			var far_c := Vector3(0, 0, pivot) + b * Vector3(0, 0, -size * 0.5)
+			var far_r := b * Vector3(h, 0, 0)
+			_add(st, {"slab": [[-h, z0], [h, z0], [far_c.x + far_r.x, far_c.z + far_r.z], [far_c.x - far_r.x, far_c.z - far_r.z]],
+				"top": st.y, "look": seg.get("look", "FACADE")})
 	_height(st, z0, z0 - size)
 	_set_low(st, st.y)
 	# The bot heads for the middle of the corner; it turns there.
 	st.bot.append([z0 + 6.0, "", 0.0])
 	var o := _world(st, st.leg, 0.0, pivot, 0.0)
 	st.legs[st.leg].end = pivot
-	st.legs.append({"o": o, "yaw": wrapf(st.legs[st.leg].yaw + (PI * 0.5 if left else -PI * 0.5), -PI, PI), "z0": pivot, "start": pivot})
+	st.legs.append({"o": o, "yaw": wrapf(st.legs[st.leg].yaw + turn, -PI, PI), "z0": pivot, "start": pivot})
 	st.leg += 1
 	st.z = z0 - size
 	st.roof_end = st.z
@@ -467,6 +514,17 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 	if f.has("mark"):
 		_add(st, {"mark": [0, y, z], "size": [WIDTH, 0.8], "color": f.mark})
 		return [d, d]
+	if f.has("piece"):
+		# Any mission piece in the roof's frame: x across, y up from the
+		# roof, z from this spot (negative is further along the run).
+		var piece: Dictionary = (f.piece as Dictionary).duplicate(true)
+		for k: String in POINT_KEYS:
+			var a: Variant = piece.get(k, null)
+			if a is Array and a.size() >= 3:
+				piece[k] = [float(a[0]), y + float(a[1]), z + float(a[2])]
+		_add(st, piece)
+		var reach: float = f.get("length", 6.0)
+		return [d - 2.0, d + reach]
 	if f.has("lane"):
 		# Where the bot should run from here (the player can go anywhere).
 		st.bot.append([z, "", float(f.lane)])
@@ -501,7 +559,30 @@ static func _encounter(st: Dictionary, f: Dictionary, d: float, z: float, y: flo
 	for m: Array in f.get("mutants", []):
 		mutants.append({"at": [m[0], y, z - float(m[1])], "yaw": 180, "leash_radius": 14, "aggro_radius": 12})
 	for dr: Array in f.get("drones", []):
-		others.append({"type": "drone", "at": [dr[0], y + (float(dr[2]) if dr.size() > 2 else 6.0), z - float(dr[1])], "yaw": 180})
+		others.append({"type": "drone", "at": [dr[0], y, z - float(dr[1])], "yaw": 180,
+			"hover_height": float(dr[2]) if dr.size() > 2 else 4.0})
+	# Any type: {"type", "x", "d", "wake", "height"} plus enemy settings.
+	for spec: Dictionary in f.get("enemies", []):
+		var type: String = spec.get("type", "raider")
+		var ez := z - float(spec.get("d", 0.0))
+		var ex: float = spec.get("x", 0.0)
+		var e := {"type": type, "at": [ex, y, ez], "yaw": 180, "wake": spec.get("wake", 0.0)}
+		for k: String in spec:
+			if k not in ["type", "x", "d", "wake", "height", "cover"]:
+				e[k] = spec[k]
+		if type.ends_with("drone"):
+			e.hover_height = float(spec.get("height", 4.0))
+		if type in LEASHED_TYPES:
+			if not e.has("leash_radius"):
+				e.leash_radius = 14
+			if not e.has("aggro_radius"):
+				e.aggro_radius = 12
+		if spec.get("cover", type in COVER_TYPES):
+			cover.append({"at": [ex, y, ez + 3.0], "length": 2.0})
+			_add(st, {"prop": "sandbag_wall", "at": [ex, y, ez + 3.0]})
+			if absf(ex) < 2.5:
+				st.bot.append([ez + 4.6, "jump", NAN])
+		others.append(e)
 	var length: float = f.get("length", 40.0)
 	var piece := {"encounter": f.encounter, "area": {"at": [0, y + 4.0, z - length * 0.5], "size": [WIDTH, 10, length]},
 		"raiders": raiders, "mutants": mutants, "cover": cover}
@@ -576,6 +657,11 @@ static func _footprints(pieces: Array) -> Array[Rect2]:
 			var s: Array = _turn_size([p.size[0], 0, p.size[1]], deg_to_rad(float(p.get("yaw", 0.0))))
 			var c: Array = p.building
 			out.append(Rect2(c[0] - s[0] * 0.5, c[2] - s[2] * 0.5, s[0], s[2]))
+		elif p.has("slab"):
+			var r := Rect2(p.slab[0][0], p.slab[0][1], 0, 0)
+			for a: Array in p.slab:
+				r = r.expand(Vector2(a[0], a[1]))
+			out.append(r)
 		elif p.has("ramp"):
 			var r := Rect2(p.ramp[0], p.ramp[2], 0, 0).expand(Vector2(p.to[0], p.to[2]))
 			out.append(r.grow(3.0))
