@@ -16,8 +16,15 @@ signal reset_done
 ## A raider bullet passed close without hitting (distance from your body, m).
 signal near_miss(distance: float)
 signal player_hurt(enemy: Node, amount: float, kind: StringName)
+## Gunshots woke sleeping enemies ("shots draw more Hollows").
+signal drew_enemies(count: int)
 
 enum Phase { WAITING, ACTIVE, CLEARED }
+
+## Enemy types are scripts in enemies/ named after the type: raider,
+## mutant, trooper, shield, marksman, heavy, drone, gun_drone, camera_drone,
+## spotter_drone, brute, leaper (enemies/<type>.gd, loaded by path).
+const TYPE_DIR := "res://enemies/"
 
 ## How many raiders may be aiming at you at the same time.
 @export var max_aiming := 2
@@ -25,6 +32,12 @@ enum Phase { WAITING, ACTIVE, CLEARED }
 @export var leave_reset_time := 4.0
 ## Seconds after clearing before it restarts.
 @export var restart_time := 6.0
+## Listen for the player's shots: each one wakes the sleepers (enemies with
+## `sleeper` set) within hearing_radius of you.
+@export var hear_shots := false
+@export var hearing_radius := 30.0
+## A sleeper also wakes when you come this close (m).
+@export var wake_distance := 5.0
 
 var player: Player
 var player_health: PlayerHealth
@@ -41,6 +54,8 @@ var kills := 0
 var clears := 0
 
 var _aiming: Array[Node] = []
+## Seconds left on a spotter drone's mark (gunners lock on faster).
+var _spotted := 0.0
 var _claims := {}
 var _outside := 0.0
 var _phase_time := 0.0
@@ -51,11 +66,17 @@ func setup(p: Player) -> void:
 	player_health = PlayerHealth.ensure(p)
 	if not player_health.died.is_connected(_on_player_died):
 		player_health.died.connect(_on_player_died)
+	var gun: Node = p.get("weapon")
+	if gun and gun.has_signal("fired") and not gun.fired.is_connected(_on_player_fired):
+		gun.fired.connect(_on_player_fired)
 
 
 func _exit_tree() -> void:
 	if player_health and is_instance_valid(player_health) and player_health.died.is_connected(_on_player_died):
 		player_health.died.disconnect(_on_player_died)
+	var gun: Node = player.get("weapon") if player and is_instance_valid(player) else null
+	if gun and gun.has_signal("fired") and gun.fired.is_connected(_on_player_fired):
+		gun.fired.disconnect(_on_player_fired)
 
 
 func add_enemy(e: Enemy, at: Transform3D) -> Enemy:
@@ -67,6 +88,37 @@ func add_enemy(e: Enemy, at: Transform3D) -> Enemy:
 	e.reset_to_home()
 	enemies.append(e)
 	return e
+
+
+## The script for an enemy type ("trooper", "gun_drone"...). Plural list
+## names ("raiders", "drones") work too. null if there's no such enemy.
+static func script_for(type: String) -> Script:
+	for t: String in [type, type.trim_suffix("s")]:
+		var path := TYPE_DIR + t + ".gd"
+		if t != "" and not t.begins_with("enemy") and ResourceLoader.exists(path):
+			return load(path)
+	return null
+
+
+## Adds an enemy of a type from its spec: "wake" delays it, and any other
+## key that names one of its settings (leash_radius, hover_height,
+## preferred_range...) sets it. Returns null for an unknown type.
+func add_from_spec(type: String, spec: Dictionary, at: Transform3D) -> Enemy:
+	var script := script_for(type)
+	var made: Object = script.new() if script and script.can_instantiate() else null
+	var e := made as Enemy
+	if e == null:
+		if made is Node:
+			(made as Node).free()
+		push_warning("unknown enemy type: %s" % type)
+		return null
+	e.wake_delay = spec.get("wake", 0.0)
+	for k: String in spec:
+		if k in ["at", "yaw", "wake", "type"]:
+			continue
+		if k in e:
+			e.set(k, spec[k])
+	return add_enemy(e, at)
 
 
 func add_cover(pos: Vector3, protect: Vector3) -> void:
@@ -91,7 +143,8 @@ func add_cover_wall(center: Vector3, length: float, thickness: float, yaw := 0.0
 func alive_count() -> int:
 	var n := 0
 	for e in enemies:
-		if not e.is_dead:
+		# Sleepers nobody woke don't hold up a clear.
+		if not e.is_dead and not (e.sleeper and not e.active):
 			n += 1
 	return n
 
@@ -120,11 +173,29 @@ func find_cover(r: Node) -> Dictionary:
 		if to_player.normalized().dot(c.protect) < 0.5:
 			continue
 		var walk := EnemyMath.horizontal(c.pos - r.global_position).length()
-		var score := absf(d - r.preferred_range) + walk * 0.6
+		var score := absf(d - r.preferred_range) + walk * 0.6 + _crowding(r, c.pos)
 		if score < best_score:
 			best_score = score
 			best = c
 	return best
+
+
+## Squads (enemies with a squad_spread) avoid cover in the same direction
+## from you as a squadmate, so they spread out around you.
+func _crowding(r: Node, pos: Vector3) -> float:
+	var spread: float = r.get("squad_spread") if "squad_spread" in r else 0.0
+	if spread <= 0.0:
+		return 0.0
+	var dir := EnemyMath.horizontal(pos - player.global_position).normalized()
+	var penalty := 0.0
+	for e in enemies:
+		if e == r or e.is_dead or not ("squad_spread" in e):
+			continue
+		var other := EnemyMath.horizontal(e.global_position - player.global_position).normalized()
+		var angle := rad_to_deg(dir.angle_to(other))
+		if angle < 45.0:
+			penalty += spread * (1.0 - angle / 45.0)
+	return penalty
 
 
 func claim_cover(r: Node, c: Dictionary) -> void:
@@ -141,6 +212,15 @@ func request_aim(r: Node) -> bool:
 		return false
 	_aiming.append(r)
 	return true
+
+
+## A spotter drone sees you: marks you for a moment.
+func spot(seconds := 0.25) -> void:
+	_spotted = maxf(_spotted, seconds)
+
+
+func is_spotted() -> bool:
+	return _spotted > 0.0
 
 
 func release_aim(r: Node) -> void:
@@ -185,8 +265,27 @@ func start() -> void:
 	if player_health:
 		player_health.respawn_point = entry
 	for e in enemies:
-		e.activate(player)
+		if not e.sleeper:
+			e.activate(player)
 	started.emit()
+
+
+## Wakes sleepers within `radius` of a point. Returns how many woke.
+func wake_sleepers(at: Vector3, radius: float) -> int:
+	var n := 0
+	for e in enemies:
+		if e.sleeper and not e.active and not e.is_dead and e.global_position.distance_to(at) <= radius:
+			e.wake_delay = 0.0
+			e.activate(player)
+			n += 1
+	return n
+
+
+func _on_player_fired(_ammo: int) -> void:
+	if hear_shots and phase == Phase.ACTIVE and player:
+		var n := wake_sleepers(player.global_position, hearing_radius)
+		if n > 0:
+			drew_enemies.emit(n)
 
 
 func reset() -> void:
@@ -198,6 +297,7 @@ func reset() -> void:
 		e.reset_to_home()
 	_aiming.clear()
 	_claims.clear()
+	_spotted = 0.0
 	kills = 0
 	phase = Phase.WAITING
 	_phase_time = 0.0
@@ -217,11 +317,13 @@ func tick(delta: float) -> void:
 	if player == null:
 		return
 	_phase_time += delta
+	_spotted = maxf(_spotted - delta, 0.0)
 	match phase:
 		Phase.WAITING:
 			if player_inside():
 				start()
 		Phase.ACTIVE:
+			wake_sleepers(player.global_position, wake_distance)
 			_outside = 0.0 if player_inside() else _outside + delta
 			if _outside >= leave_reset_time:
 				if player_health:

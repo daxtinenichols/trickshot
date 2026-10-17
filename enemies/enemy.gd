@@ -8,9 +8,10 @@ extends CharacterBody3D
 ## or anything rendered, so a run plays out the same every time.
 ##
 ## The node origin is at the feet. Faces -Z at yaw 0, like the player.
-## Placeholder look: red body, yellow head (the sandbox's "yellow head =
-## headshot" color language). Real models come later and only need to read
-## the state, like the runner body does for the player.
+## Looks: a skinned model from enemies/models (built by
+## enemies/source/build_enemies.py) posed from the state by EnemyBody, like
+## the runner's body. If the model can't load, a placeholder of boxes
+## stands in (red body, yellow head).
 
 signal damaged(info: Dictionary)
 signal killed(info: Dictionary)
@@ -20,6 +21,12 @@ signal killed(info: Dictionary)
 const BODY_LAYER := 8
 const GRAVITY := 22.0
 const HEALTH_BAR_SHADER := preload("res://enemies/health_bar.gdshader")
+# By path, not class name (see the project rule on stale class caches).
+const BODY_SCRIPT := preload("res://enemies/enemy_body.gd")
+const Poses := preload("res://enemies/enemy_poses.gd")
+
+## Off: every enemy uses the placeholder look (tools, comparisons).
+static var use_models := true
 
 @export var max_health := 100.0
 ## Turn speed when facing the player (degrees per second).
@@ -32,6 +39,10 @@ const HEALTH_BAR_SHADER := preload("res://enemies/health_bar.gdshader")
 @export var headshot_flinch := 0.45
 ## Seconds it waits after its encounter starts before joining in.
 @export var wake_delay := 0.0
+## Asleep: it stays put when its encounter starts and only joins in when
+## woken by noise (gunshots, if the encounter listens for them) or when you
+## come very close.
+@export var sleeper := false
 ## Seconds a body stays down after a kill.
 @export var corpse_time := 3.0
 
@@ -60,6 +71,8 @@ var _hit_root: Node3D
 var _hitboxes: Array[EnemyHitbox] = []
 var _visual: Node3D
 var _pose: Node3D
+## The posed model (EnemyBody), or null when the placeholder is shown.
+var body: Node3D
 var _materials: Array[StandardMaterial3D] = []
 var _bar: MeshInstance3D
 var _bar_mat: ShaderMaterial
@@ -93,6 +106,7 @@ func _ready() -> void:
 	_pose = Node3D.new()
 	_visual.add_child(_pose)
 	_build()
+	_build_look()
 	_build_health_bar()
 	_prev_xform = global_transform
 	_visual.global_transform = global_transform
@@ -111,6 +125,36 @@ func _body_height() -> float:
 ## Build hit zones (with _hitbox) and the placeholder look.
 func _build() -> void:
 	pass
+
+
+## Placeholder meshes, used when the model can't load.
+func _build_placeholder() -> void:
+	pass
+
+
+## The model file for this enemy ("" = placeholder only).
+func _model_path() -> String:
+	return ""
+
+
+## Called once the model has loaded (attach rifles, shields...).
+func _on_model() -> void:
+	pass
+
+
+## Poses the model from the state each frame (alive only).
+func _animate_body(_delta: float) -> void:
+	pass
+
+
+## Whether the body tips over backward when killed.
+func _falls_over() -> bool:
+	return true
+
+
+## Gravity while alive (flyers return 0).
+func _gravity() -> float:
+	return GRAVITY
 
 
 ## Where the health bar floats (local, standing).
@@ -256,7 +300,7 @@ func tick(delta: float) -> void:
 			visible = false
 		return
 	if not is_on_floor():
-		velocity.y -= GRAVITY * delta
+		velocity.y -= _gravity() * delta
 	if _stagger > 0.0:
 		_stagger -= delta
 		telegraph = 0.0
@@ -316,6 +360,20 @@ func _set_alive_collision(on: bool) -> void:
 
 
 # ---------------------------------------------------------------- building helpers
+
+func _build_look() -> void:
+	var path := _model_path() if use_models else ""
+	if path != "":
+		body = BODY_SCRIPT.new()
+		body.name = "Body"
+		_pose.add_child(body)
+		if body.load_model(path):
+			_on_model()
+			return
+		body.free()
+		body = null
+	_build_placeholder()
+
 
 func _hitbox(zone: StringName, shape: Shape3D, pos: Vector3, parent: Node3D = null) -> EnemyHitbox:
 	var body := EnemyHitbox.new(self, zone)
@@ -401,6 +459,8 @@ func _process(delta: float) -> void:
 	var glow := _telegraph_color() * telegraph
 	for m in _materials:
 		m.emission = Color(1, 1, 1) * _flash + glow
+	if body:
+		body.set_glow(_flash, _telegraph_color() * telegraph)
 	_bar_show = maxf(_bar_show - delta, 0.0)
 	_bar.visible = not is_dead and _bar_show > 0.0 and health < max_health
 	if _bar.visible:
@@ -408,7 +468,14 @@ func _process(delta: float) -> void:
 		_bar_mat.set_shader_parameter("alpha", clampf(_bar_show, 0.0, 1.0))
 		_bar.position.y = _bar_height() * (1.0 - 0.3 * duck)
 	_animate(delta)
-	if is_dead:
+	if body:
+		if not is_dead:
+			body.grounded = true
+			_animate_body(delta)
+		elif body.has_bones():
+			body.grounded = false
+			body.show_pose(Poses.dead(), delta, 8.0)
+	if is_dead and _falls_over():
 		_pose.rotation.x = lerpf(_pose.rotation.x, -PI * 0.5, 1.0 - exp(-10.0 * delta))
 		_pose.position.y = lerpf(_pose.position.y, 0.25, 1.0 - exp(-10.0 * delta))
 
