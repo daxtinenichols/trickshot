@@ -147,3 +147,18 @@ func test_motion_trails_follow_the_runner() -> void:
 	for b: String in ["LeftFoot", "RightHand"]:
 		var p := body.bone_world_position(b)
 		check(aabb.grow(0.3).has_point(p), "%s trail is at the body (%s not in %s)" % [b, p, aabb])
+
+
+func test_chase_camera_looks_down_on_the_runner() -> void:
+	ArtLook.ensure_body(player)
+	var cam: Camera3D = preload("res://art/look/chase_camera.gd").new()
+	level.add_child(cam)
+	cam.setup(player)
+	cam.set_active(true)
+	await tree.process_frame
+	var rel := player.global_basis.inverse() * (cam.global_position - player.global_position)
+	check(rel.y > 2.5 and rel.z > 3.5, "up and behind (%s)" % rel)
+	var down := rad_to_deg(asin(-(-cam.global_basis.z).y))
+	check_between(down, 18.0, 35.0, "looks down on the runner (%.0f degrees)" % down)
+	cam.set_active(false)
+	cam.queue_free()
