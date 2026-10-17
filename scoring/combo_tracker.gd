@@ -66,6 +66,7 @@ const POINTS := {
 	&"spin_shot": 400,
 	&"kill": 100,
 	&"combo_kill": 500,
+	&"feed_cut": 400,         # shooting down one of the Host's camera drones
 }
 const KICK_OFF_TARGET_POINTS := 250
 const WALLRUN_PER_SECOND := 100.0
@@ -179,6 +180,10 @@ func on_hit(info: Dictionary) -> void:
 	if &"spinning" in tags:
 		style.append(&"spin_shot")
 	if info.get("killed", false):
+		# Cut the Feed: the target is a camera drone (it has the feed_cut signal).
+		var target: Object = info.get("target")
+		if target.has_signal(&"feed_cut"):
+			style.append(&"feed_cut")
 		style.append(&"combo_kill" if is_active() else &"kill")
 	if style.is_empty():
 		style.append(&"hit")

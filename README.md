@@ -94,7 +94,7 @@ Scoring works like Skate. Every move and every stylish hit adds points to a runn
 - **Banking:** the combo's points times its multiplier go to your score when you come to rest or go 2 s without a new trick. Sliding, wallrunning, climbing and vaulting hold the clock.
 - **Kill finish:** a kill ends the combo on the spot. A card shows the whole chain ending in COMBO KILL, then the points count into your score.
 - **Bailing:** a crash, a hard landing, slamming into a wall or falling out loses the combo.
-- **Shots count too:** headshot, air shot (0.4 s+ off the ground), long shot (40 m+), slide shot, wallrun shot, flip shot, spin shot and kills each add a trick.
+- **Shots count too:** headshot, air shot (0.4 s+ off the ground), long shot (40 m+), slide shot, wallrun shot, flip shot, spin shot and kills each add a trick; shooting down one of the Host's camera drones adds CUT THE FEED.
 - **Damage:** shots hit harder in a combo: 1 + 0.2 per different trick, times the speed bonus, capped at 3x.
 
 Point values are in `scoring/combo_tracker.gd`.

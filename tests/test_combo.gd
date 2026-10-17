@@ -194,6 +194,26 @@ func test_kill_finishes_and_banks_the_combo() -> void:
 		check(summaries[0].entries.back().name == &"combo_kill", "the chain ends on the kill")
 
 
+class FakeCameraDrone extends Node:
+	signal feed_cut
+
+
+func test_shooting_down_a_camera_drone_cuts_the_feed() -> void:
+	await _setup()
+	var drone := FakeCameraDrone.new()
+	w.add_child(drone)
+	var names: Array[StringName] = []
+	c.added.connect(func(n: StringName, _p: int) -> void: names.append(n))
+	c.on_trick(&"slide", {})
+	c.on_hit({"target": drone, "zone": &"body", "killed": true, "tags": [], "distance": 10.0})
+	check(&"feed_cut" in names, "camera drone kill scores Cut the Feed (%s)" % [names])
+	check(&"combo_kill" in names, "and still counts as a kill")
+	check(not c.is_active(), "the kill banks the combo")
+	names.clear()
+	c.on_hit(_kill_hit())
+	check(not (&"feed_cut" in names), "other kills don't")
+
+
 func test_hud_shows_tricks_then_the_kill_card_then_points() -> void:
 	await _setup()
 	var hud := ComboHud.new()
