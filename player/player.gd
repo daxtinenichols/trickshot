@@ -37,6 +37,10 @@ var _since_floor := 999.0
 var _jumped_since_floor := false
 var _jump_buffer := 999.0
 var _since_crouch_press := 999.0
+## This tick's crouch press came right after another one.
+var _crouch_double := false
+var _crouch_released := true
+var _air_dive_used := false
 var _slide_cooldown := 0.0
 var _slide_flat_time := 0.0
 var _wall_normal := Vector3.ZERO
@@ -64,6 +68,13 @@ var _air_yaw := 0.0
 var _air_pitch := 0.0
 ## Side-flip roll (radians, unwrapped, + = to the right).
 var _air_roll := 0.0
+## Side-flip spin: direction (locked once started) and speed (rad/s).
+var _roll_dir := 0.0
+var _roll_rate := 0.0
+## View turned by the player since the last tick, and the spin carried on
+## from it in the air (yaw, pitch, rad/s).
+var _look_acc := Vector2.ZERO
+var _spin_vel := Vector2.ZERO
 var _spins_done := 0
 var _flips_done := 0
 var _sideflips_done := 0
@@ -96,9 +107,15 @@ var _path_to := Vector3.ZERO
 var _path_time := 0.3
 var _path_exit_velocity := Vector3.ZERO
 
-# Smooth automatic turn (quick turn).
-var _turn_left := 0.0
-var _turn_rate := 0.0
+# Quick turn: held lean speeds up turning and carries your speed round.
+var _turn_mod := false
+## View yaw turned while quick turning since the last tick (radians).
+var _turn_carry := 0.0
+var _boost_cooldown := 0.0
+## Seconds left of the boost's raised top speed.
+var _boost_time := 0.0
+## Speed into a wall hit this tick (a bonk unless the hit becomes a move).
+var _pending_impact := 0.0
 
 # Visual-only camera state.
 var _bob_phase := 0.0
@@ -189,9 +206,14 @@ func capture_mouse(on: bool) -> void:
 ## pitch is clamped as usual.
 func _look(d_yaw: float, d_pitch: float) -> void:
 	if state == State.SURFACE:
+		if _turn_mod:
+			d_yaw *= tuning.quick_turn_look_scale
 		_surface_look_yaw = wrapf(_surface_look_yaw + d_yaw, -PI, PI)
 		pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
 		return
+	if _turn_mod:
+		d_yaw *= tuning.quick_turn_look_scale
+		_turn_carry += d_yaw
 	yaw = wrapf(yaw + d_yaw, -PI, PI)
 	if state == State.AIR:
 		if absf(wrapf(pitch, -PI, PI)) > deg_to_rad(75.0):
@@ -199,6 +221,7 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		pitch += d_pitch
 		_air_yaw += d_yaw
 		_air_pitch += d_pitch
+		_look_acc += Vector2(d_yaw, d_pitch)
 	else:
 		var raw := pitch + d_pitch
 		if raw < deg_to_rad(-89.0) and d_pitch < 0.0:
@@ -229,9 +252,10 @@ func _physics_process(delta: float) -> void:
 func simulate(f: InputFrame, delta: float) -> void:
 	state_time += delta
 	_update_timers(f, delta)
-	if f.turn_pressed:
-		_quick_turn()
-	_apply_auto_turn(delta)
+	_turn_mod = absf(f.lean) > 0.3
+	_carry_turn()
+	if f.boost_pressed:
+		_boost(f)
 	if state != State.SURFACE:
 		rotation = Vector3(0.0, yaw, 0.0)
 	lean = move_toward(lean, clampf(f.lean, -1.0, 1.0), tuning.lean_speed * delta)
@@ -242,6 +266,10 @@ func simulate(f: InputFrame, delta: float) -> void:
 		pitch = 0.0
 		_start_roll(1.0, &"ground_roll", deg_to_rad(-89.0), MovementMath.horizontal(velocity), 0.0)
 	_ground_flick = maxf(_ground_flick - tuning.ground_roll_flick_decay * delta, 0.0)
+	if _crouch_double and state in [State.GROUND, State.CROUCH, State.SLIDE] and horizontal_speed() > 2.0:
+		# Double-tap crouch while running: a forward roll.
+		_since_crouch_press = 999.0
+		_start_roll(1.0, &"ground_roll", 0.0, MovementMath.horizontal(velocity), 0.0)
 
 	match state:
 		State.GROUND: _tick_ground(f, wish, delta)
@@ -257,6 +285,7 @@ func simulate(f: InputFrame, delta: float) -> void:
 		State.PRONE_SLIDE: _tick_prone_slide(f, wish, delta)
 		State.SURFACE: _tick_surface(f, delta)
 
+	_resolve_wall_impact()
 	_update_momentum(delta)
 	if global_position.y < -40.0:
 		respawn()
@@ -264,9 +293,13 @@ func simulate(f: InputFrame, delta: float) -> void:
 
 func _update_timers(f: InputFrame, delta: float) -> void:
 	_jump_buffer = 0.0 if f.jump_pressed else _jump_buffer + delta
+	_crouch_double = f.crouch_pressed and _crouch_released and _since_crouch_press <= tuning.double_tap_window
+	_crouch_released = not f.crouch_held
 	_since_crouch_press = 0.0 if f.crouch_pressed else _since_crouch_press + delta
 	_slide_cooldown = maxf(_slide_cooldown - delta, 0.0)
 	_wall_jump_lock = maxf(_wall_jump_lock - delta, 0.0)
+	_boost_cooldown = maxf(_boost_cooldown - delta, 0.0)
+	_boost_time = maxf(_boost_time - delta, 0.0)
 	_since_wall += delta
 	_crouch_hold = _crouch_hold + delta if f.crouch_held else 0.0
 	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.PRONE, State.PRONE_SLIDE, State.SURFACE]:
@@ -305,7 +338,11 @@ func _change_state(to: State) -> void:
 		_spins_done = 0
 		_flips_done = 0
 		_sideflips_done = 0
+		_roll_dir = 0.0
+		_roll_rate = 0.0
+		_look_acc = Vector2.ZERO
 	elif from == State.AIR:
+		_spin_vel = Vector2.ZERO
 		_settle_pitch()
 		# A dive ends when you touch anything (landing reads it before this).
 		_diving = false
@@ -338,15 +375,70 @@ func _landing_tucked(fall: float) -> bool:
 	return fall >= tuning.flip_roll_min_fall or _air_pitch <= deg_to_rad(-90.0)
 
 
-## Side flips: hold lean in the air to roll. Let go near level and you
-## settle upright; let go halfway and you land tipped (a crash).
+## Side flips: lean in the air to start rolling that way. The direction is
+## then set until you land; what you control is the speed, like curling up
+## or opening out: hold lean (or crouch) to tuck and spin fast, let go to
+## open up and slow down. Opened up near level you settle upright; land
+## on your side and you crash.
 func _tick_air_roll(f: InputFrame, delta: float) -> void:
-	if absf(f.lean) > 0.3:
-		_air_roll += signf(f.lean) * deg_to_rad(tuning.side_flip_speed) * delta
-		return
+	if _roll_dir == 0.0:
+		if absf(f.lean) <= 0.3:
+			return
+		_roll_dir = signf(f.lean)
+	var tucked := absf(f.lean) > 0.3 or f.crouch_held
+	var target := deg_to_rad(tuning.side_flip_speed) * (1.0 if tucked else tuning.spin_open_share)
+	_roll_rate = move_toward(_roll_rate, target, deg_to_rad(tuning.spin_accel) * delta)
 	var level := roundf(_air_roll / TAU) * TAU
-	if absf(_air_roll - level) <= deg_to_rad(tuning.side_settle_degrees):
-		_air_roll = move_toward(_air_roll, level, deg_to_rad(tuning.side_flip_speed) * 0.5 * delta)
+	if not tucked and absf(_air_roll - level) <= deg_to_rad(tuning.side_settle_degrees):
+		_air_roll = move_toward(_air_roll, level, maxf(_roll_rate, deg_to_rad(tuning.side_flip_speed) * 0.5) * delta)
+		if is_equal_approx(_air_roll, level):
+			_roll_rate = 0.0
+		return
+	_air_roll += _roll_dir * _roll_rate * delta
+
+
+## Would `step` take `total` round past the next whole turn?
+static func _comes_round(total: float, step: float) -> bool:
+	if step == 0.0 or signf(step) != signf(total):
+		return false
+	return fmod(absf(total), TAU) + absf(step) >= TAU
+
+
+## Flips and turns have momentum: past halfway round, let go of the view
+## and the spin carries on, fading out (tucking with crouch keeps it going)
+## and stopping when you come round level. Slow aiming never carries on.
+func _tick_spin_carry(f: InputFrame, delta: float) -> void:
+	var turned := _look_acc
+	_look_acc = Vector2.ZERO
+	if turned.length() > 0.0001:
+		var rate := turned / delta
+		_spin_vel = _spin_vel.lerp(rate, 0.5) if _spin_vel.dot(rate) > 0.0 else rate
+		return
+	if _spin_vel.length() < deg_to_rad(tuning.spin_carry_min):
+		_spin_vel = Vector2.ZERO
+		return
+	# Only a flip or spin past halfway round carries on, so looking around
+	# (aiming, tucking for a landing, overshooting a finished flip) never
+	# runs away from you.
+	if fmod(absf(_air_pitch), TAU) < PI:
+		_spin_vel.y = 0.0
+	if fmod(absf(_air_yaw), TAU) < PI:
+		_spin_vel.x = 0.0
+	var step := _spin_vel * delta
+	# A flip or spin that carries round to level stops there, so letting go
+	# just before you come round lands you straight.
+	if _comes_round(_air_pitch, step.y):
+		step.y = 0.0
+		_spin_vel.y = 0.0
+	if _comes_round(_air_yaw, step.x):
+		step.x = 0.0
+		_spin_vel.x = 0.0
+	yaw = wrapf(yaw + step.x, -PI, PI)
+	pitch += step.y
+	_air_yaw += step.x
+	_air_pitch += step.y
+	if not f.crouch_held:
+		_spin_vel *= exp(-delta / maxf(tuning.spin_carry_time, 0.01))
 
 
 func _check_air_rotation() -> void:
@@ -398,16 +490,26 @@ func _smash_breakables() -> void:
 				return
 
 
+## Notes a hard hit on a wall. It only counts as a bonk at the end of the
+## tick, if the hit didn't turn into a wallrun, climb or vault.
 func _check_wall_impact() -> void:
 	if state not in [State.GROUND, State.AIR] or not _runnable_contact().is_empty():
 		return
 	var n := MovementMath.horizontal(_wall_normal).normalized()
 	var into := -MovementMath.horizontal(_pre_move_velocity).dot(n)
 	if into > tuning.wall_impact_speed:
-		momentum *= 1.0 - tuning.wall_impact_loss
-		var h := MovementMath.horizontal(velocity) * (1.0 - tuning.wall_impact_loss * 0.5)
-		velocity = Vector3(h.x, velocity.y, h.z)
-		trick.emit(&"wall_impact", {"speed": into})
+		_pending_impact = maxf(_pending_impact, into)
+
+
+func _resolve_wall_impact() -> void:
+	var into := _pending_impact
+	_pending_impact = 0.0
+	if into <= 0.0 or state not in [State.GROUND, State.AIR]:
+		return
+	momentum *= 1.0 - tuning.wall_impact_loss
+	var h := MovementMath.horizontal(velocity) * (1.0 - tuning.wall_impact_loss * 0.5)
+	velocity = Vector3(h.x, velocity.y, h.z)
+	trick.emit(&"wall_impact", {"speed": into})
 
 
 func _update_momentum(delta: float) -> void:
@@ -460,6 +562,8 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# at something. Backpedalling caps at run speed; momentum only carries
 	# forward and sideways.
 	var top := MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) if f.move.y > -0.3 else tuning.run_speed
+	# A boost lifts your top speed for a moment, fading back down.
+	top += tuning.boost_speed * _boost_time / maxf(tuning.boost_time, 0.01)
 	var wish_speed := top * wish.length()
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), wish_speed, tuning.ground_accel, delta)
 	velocity.y -= tuning.gravity * delta
@@ -528,11 +632,15 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 	elif _can_stand():
 		_set_height(tuning.stand_height)
 	_tick_air_roll(f, delta)
+	_tick_spin_carry(f, delta)
 	_check_air_rotation()
 
 	# Coyote jump: just ran off a ledge.
 	if _jump_buffer <= tuning.jump_buffer and not _jumped_since_floor and _since_floor <= tuning.coyote_time:
 		_jump()
+	elif f.prone_pressed and not _diving and not _air_dive_used:
+		_air_dive_used = true
+		_start_dive()
 	elif f.kick_pressed and _try_kick_off():
 		pass
 	elif _try_obstacle(f, _jump_buffer <= tuning.jump_buffer):
@@ -571,6 +679,7 @@ func _land(f: InputFrame) -> void:
 	_kicked_ids.clear()
 	_wallrun_used_normal = Vector3.ZERO
 	_climb_used = false
+	_air_dive_used = false
 	_jumped_since_floor = false
 	_ground_time = 0.0
 	_land_press_age = _jump_buffer if _jump_buffer <= tuning.jump_buffer else -1.0
@@ -578,6 +687,8 @@ func _land(f: InputFrame) -> void:
 	landed.emit(fall)
 	var crouch_age := _since_crouch_press
 	var tucked := _landing_tucked(fall) and not _landing_tipped()
+	if _tuck_roll(f, fall, crouch_age):
+		return
 	if _landing_tipped() or (_landing_crashed() and not tucked):
 		_diving = false
 		trick.emit(&"crash", {"speed": horizontal_speed()})
@@ -613,6 +724,30 @@ func _land(f: InputFrame) -> void:
 		_start_slide()
 		return
 	_change_state(State.CROUCH if f.crouch_held else State.GROUND)
+
+
+## Crouch held in the air is a tuck: you land in a roll whatever angle
+## you're at. A crouch pressed just before landing is a slide landing
+## instead (unless you'd otherwise crash or the drop is hard).
+func _tuck_roll(f: InputFrame, fall: float, crouch_age: float) -> bool:
+	if _diving or not f.crouch_held or _crouch_hold < tuning.tuck_hold_time or fall < tuning.tuck_roll_min_fall:
+		return false
+	var bad_angle := _landing_tipped() or _landing_crashed()
+	if not bad_angle and crouch_age <= tuning.slide_land_window and fall < tuning.hard_landing_speed:
+		return false
+	var p := wrapf(pitch, -PI, PI)
+	var off := maxf(absf(rad_to_deg(wrapf(_air_roll, -PI, PI))), maxf(absf(rad_to_deg(p)) - 60.0, 0.0))
+	var q := timing_quality(off, 25.0, 160.0)
+	var flipped := _flips_done > 0 or _sideflips_done > 0
+	_air_roll = 0.0
+	pitch = 0.0
+	_start_roll(q, &"flip_roll" if flipped else &"landing_roll", p if p < 0.0 else 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
+	return true
+
+
+## Tucked in the air (crouch held): you'll land in a roll.
+func is_tucked() -> bool:
+	return state == State.AIR and _crouch_hold >= tuning.tuck_hold_time
 
 
 # ---------------------------------------------------------------- slide
@@ -757,7 +892,9 @@ func _start_dive() -> void:
 	var h := MovementMath.horizontal(velocity)
 	var dir := h.normalized() if h.length() > 0.5 else forward()
 	h += dir * tuning.dive_boost
-	velocity = Vector3(h.x, tuning.dive_up, h.z)
+	# From the ground it's a low leap; in the air it's a lunge forward.
+	var up := tuning.dive_up if state != State.AIR else maxf(velocity.y, tuning.dive_air_up)
+	velocity = Vector3(h.x, up, h.z)
 	_diving = true
 	_jumped_since_floor = true
 	_jump_buffer = 999.0
@@ -1426,35 +1563,46 @@ func _can_stand() -> bool:
 	return _shape_fits(_stand_shape, global_position)
 
 
-# ---------------------------------------------------------------- auto turn
+# ---------------------------------------------------------------- quick turn / boost
 
-func _start_auto_turn(target_yaw: float, duration: float) -> void:
-	_turn_left = duration
-	_turn_rate = angle_difference(yaw, target_yaw) / duration
-
-
-## Quick 180. On a wall it turns you to face away from it, ready to jump off.
-## Doesn't count toward 360s (only turning with the mouse or stick does).
-func _quick_turn() -> void:
-	if _turn_left > 0.0:
+## Quick turn: while a lean button is held the view turns faster and your
+## speed swings round with it, so a hard turn doesn't cost you speed.
+func _carry_turn() -> void:
+	var turned := _turn_carry
+	_turn_carry = 0.0
+	if is_zero_approx(turned):
 		return
-	var target := yaw + PI
-	if state in [State.WALLRUN, State.WALLCLIMB]:
-		var n := MovementMath.horizontal(_wall_normal).normalized()
-		target = atan2(-n.x, -n.z)
-	_start_auto_turn(target, tuning.quick_turn_time)
-	_trick_feedback(&"quick_turn")
-
-
-func _apply_auto_turn(delta: float) -> void:
-	if _turn_left <= 0.0:
+	var share := 0.0
+	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.PRONE_SLIDE]:
+		share = 1.0
+	elif state == State.AIR:
+		share = tuning.quick_turn_air_carry
+	if share <= 0.0:
 		return
-	var step := minf(delta, _turn_left)
-	if state == State.SURFACE:
-		_surface_look_yaw = wrapf(_surface_look_yaw + _turn_rate * step, -PI, PI)
-	else:
-		yaw = wrapf(yaw + _turn_rate * step, -PI, PI)
-	_turn_left -= step
+	var h := MovementMath.horizontal(velocity).rotated(Vector3.UP, turned * share)
+	velocity = Vector3(h.x, velocity.y, h.z)
+
+
+## Shift: a short burst of speed where you're going, then a cooldown. Only
+## with your feet on something (no air dash).
+func _boost(f: InputFrame) -> void:
+	if _boost_cooldown > 0.0 or state not in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.SURFACE, State.WALLRUN]:
+		return
+	var h := MovementMath.horizontal(velocity)
+	var dir := h.normalized() if h.length() > 1.0 else wish_direction(f).normalized()
+	if dir == Vector3.ZERO:
+		dir = forward()
+	var speed := minf(h.length() + tuning.boost_speed, maxf(h.length(), tuning.top_speed + tuning.boost_speed))
+	h = dir * speed
+	velocity = Vector3(h.x, velocity.y, h.z)
+	_boost_cooldown = tuning.boost_cooldown
+	_boost_time = tuning.boost_time
+	_trick_feedback(&"boost")
+
+
+## 0 = boost ready, 1 = just used.
+func boost_cooldown() -> float:
+	return _boost_cooldown / maxf(tuning.boost_cooldown, 0.01)
 
 
 # ---------------------------------------------------------------- respawn
@@ -1489,9 +1637,17 @@ func respawn(t: Variant = null) -> void:
 	_spins_done = 0
 	_flips_done = 0
 	_sideflips_done = 0
+	_roll_dir = 0.0
+	_roll_rate = 0.0
+	_spin_vel = Vector2.ZERO
+	_look_acc = Vector2.ZERO
+	_air_dive_used = false
+	_pending_impact = 0.0
 	_ground_flick = 0.0
 	lean = 0.0
-	_turn_left = 0.0
+	_turn_carry = 0.0
+	_boost_cooldown = 0.0
+	_boost_time = 0.0
 	_jump_buffer = 999.0
 	state_time = 0.0
 	respawned.emit()

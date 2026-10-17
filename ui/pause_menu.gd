@@ -367,7 +367,8 @@ func _refresh_pads() -> void:
 	for d in pads:
 		names[d] = Input.get_joy_name(d)
 	var setup := get_node_or_null("/root/InputSetup")
-	_pads_label.text = pads_detail(pads, names, setup.pad_activity if setup else {})
+	var activity: Dictionary = setup.pad_activity if setup and "pad_activity" in setup else {}
+	_pads_label.text = pads_detail(pads, names, activity)
 
 
 func _refresh() -> void:

@@ -63,6 +63,8 @@ extends Resource
 @export_range(0.0, 10.0, 0.1) var dive_up := 3.6
 @export_range(0.0, 10.0, 0.1) var dive_boost := 1.5
 @export_range(0.0, 20.0, 0.1) var prone_slide_friction := 1.6
+## Diving in the air (once per jump): at least this much upward speed.
+@export_range(0.0, 10.0, 0.1) var dive_air_up := 1.5
 
 @export_group("Vault and mantle")
 ## Highest obstacle (above feet) you vault over or step onto without jumping.
@@ -139,6 +141,12 @@ extends Resource
 ## Fraction of horizontal speed kept after a hard landing.
 @export_range(0.0, 1.0, 0.01) var hard_landing_keep := 0.35
 @export_range(0.0, 2.0, 0.01) var hard_landing_stun := 0.35
+## Two crouch presses this close together (seconds) while running: a roll.
+@export_range(0.1, 0.6, 0.01) var double_tap_window := 0.3
+## Crouch held this long in the air is a tuck: you land in a roll from any
+## angle, as long as the fall is at least tuck_roll_min_fall (m/s).
+@export_range(0.0, 1.0, 0.01) var tuck_hold_time := 0.2
+@export_range(0.0, 20.0, 0.1) var tuck_roll_min_fall := 4.0
 
 @export_group("Kick-off")
 @export_range(0.5, 4.0, 0.05) var kick_range := 1.7
@@ -191,13 +199,33 @@ extends Resource
 ## How fast that pull fades (radians per second), so it has to be a flick.
 @export_range(0.0, 20.0, 0.1) var ground_roll_flick_decay := 3.0
 ## Side flip roll speed while lean is held in the air (degrees per second).
-@export_range(90.0, 1440.0, 10.0) var side_flip_speed := 540.0
+@export_range(90.0, 1440.0, 10.0) var side_flip_speed := 480.0
 ## Let go of lean within this many degrees of level and you settle upright.
 @export_range(0.0, 90.0, 1.0) var side_settle_degrees := 40.0
 ## Landing rolled over further than this (degrees) is a crash.
 @export_range(10.0, 120.0, 1.0) var side_crash_degrees := 50.0
-## Seconds for the quick 180 turn.
-@export_range(0.05, 0.6, 0.01) var quick_turn_time := 0.18
+## Side flips keep their direction once started. Tucked (lean or crouch
+## held) you spin at side_flip_speed; opened up, at this share of it.
+@export_range(0.0, 1.0, 0.01) var spin_open_share := 0.35
+## How fast the side-flip spin speeds up or slows down (degrees/s per s).
+@export_range(100.0, 5000.0, 10.0) var spin_accel := 2400.0
+## Flips and turns carry on after you stop moving the view, if you were
+## turning faster than spin_carry_min (degrees/s). The spin fades over
+## about spin_carry_time seconds; tucking (crouch) keeps it going.
+@export_range(0.0, 2000.0, 10.0) var spin_carry_min := 270.0
+@export_range(0.0, 2.0, 0.01) var spin_carry_time := 0.3
+
+@export_group("Quick turn and boost")
+## Holding a lean button turns the view this many times faster.
+@export_range(1.0, 5.0, 0.1) var quick_turn_look_scale := 2.5
+## While quick turning, your speed turns with your view: all of it on the
+## ground, this share of it in the air.
+@export_range(0.0, 1.0, 0.01) var quick_turn_air_carry := 0.35
+## Speed added by a boost (m/s), and seconds before the next one.
+@export_range(0.0, 10.0, 0.1) var boost_speed := 3.5
+@export_range(0.0, 10.0, 0.1) var boost_cooldown := 2.0
+## Seconds the boost holds your top speed up, fading back over this time.
+@export_range(0.0, 3.0, 0.05) var boost_time := 0.8
 
 @export_group("Breakables")
 ## Speed at which running, sliding or diving into a window smashes it.

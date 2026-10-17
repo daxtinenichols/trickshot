@@ -13,9 +13,11 @@ var crouch_held := false
 var kick_pressed := false
 var prone_pressed := false
 var prone_held := false
-## Quick 180 turn.
-var turn_pressed := false
-## -1 = lean left, 1 = lean right. In the air it rolls you (side flip).
+## Short speed boost (with a cooldown).
+var boost_pressed := false
+## -1 = lean left, 1 = lean right. Held, it's also a quick turn (the view
+## turns faster and your speed follows it). In the air it rolls you (side
+## flip); on a wall it angles your run.
 var lean := 0.0
 
 
@@ -32,7 +34,7 @@ static func from_devices() -> InputFrame:
 	f.kick_pressed = Input.is_action_just_pressed("kick")
 	f.prone_pressed = Input.is_action_just_pressed("prone")
 	f.prone_held = Input.is_action_pressed("prone")
-	f.turn_pressed = Input.is_action_just_pressed("quick_turn")
+	f.boost_pressed = Input.is_action_just_pressed("boost")
 	f.lean = Input.get_action_strength("lean_right") - Input.get_action_strength("lean_left")
 	return f
 

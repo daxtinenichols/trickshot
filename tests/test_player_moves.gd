@@ -23,6 +23,12 @@ func _fwd_jump() -> InputFrame:
 	return InputFrame.make(Vector2(0, 1), true)
 
 
+func _fwd_crouch_hold() -> InputFrame:
+	var f := InputFrame.make(Vector2(0, 1), false, true)
+	f.crouch_pressed = false
+	return f
+
+
 func _fwd_crouch() -> InputFrame:
 	return InputFrame.make(Vector2(0, 1), false, true)
 
@@ -311,6 +317,22 @@ func test_wall_jump_from_wallrun() -> void:
 	check(&"wall_jump" in w.tricks_seen, "wall jump trick reported")
 
 
+func test_wall_to_wall_chain_is_not_a_bonk() -> void:
+	# A second wall on the left, 4 m across: face at x = -2.5.
+	w.add_box(Vector3(-3.0, 3.0, -30.0), Vector3(1.0, 6.0, 60.0))
+	var ok := await _enter_wallrun()
+	check(ok, "wallrun starts on the right wall")
+	if not ok:
+		return
+	var p := w.player
+	await w.step(8, _fwd())
+	p.set_view(0.5)  # look forward-left, at the other wall
+	await w.press(_fwd_jump())
+	var other := await w.step_until(func() -> bool: return p.state == Player.State.WALLRUN and p.wall_normal().x > 0.5, 90, _fwd())
+	check(other, "chained onto the left wall")
+	check(not (&"wall_impact" in w.tricks_seen), "hitting the next wall to run on it isn't a bonk")
+
+
 func test_crouch_drops_off_wallrun() -> void:
 	var ok := await _enter_wallrun()
 	check(ok, "wallrun starts")
@@ -442,6 +464,57 @@ func test_tucked_landing_rolls_and_keeps_speed() -> void:
 	await w.step(40, _fwd())
 	check(p.state == Player.State.GROUND, "back up and running")
 	check_near(p.roll_spin(), 0.0, 0.001, "camera level again")
+
+
+func test_holding_crouch_in_the_air_rolls_from_any_angle() -> void:
+	w.add_floor()
+	var p := w.spawn_player(Vector3(0, 8, 0))
+	p.velocity = Vector3(0, 0, -8)
+	await w.step(2, _fwd())
+	# Half a side flip: on your side, which would be a crash...
+	await w.step_until(func() -> bool: return p.air_roll() > deg_to_rad(120.0), 60, _lean_frame(1.0))
+	# ...but tucked (crouch held) you roll out of it.
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 200, _fwd_crouch_hold())
+	check(p.state == Player.State.ROLL, "tucked landing rolls (%s)" % Player.State.keys()[p.state])
+	check(not (&"crash" in w.tricks_seen), "no crash")
+	check(p.horizontal_speed() > 6.0, "speed kept (%.2f)" % p.horizontal_speed())
+
+
+func test_crouch_pressed_just_before_landing_still_slides() -> void:
+	w.add_floor()
+	var p := w.spawn_player(Vector3(0, 3, 0))
+	p.velocity = Vector3(0, 0, -8)
+	await w.step_until(func() -> bool: return p.global_position.y < 0.6, 120, _fwd())
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 30, _fwd_crouch())
+	check(p.state == Player.State.SLIDE, "a late crouch is a slide landing (%s)" % Player.State.keys()[p.state])
+
+
+func test_double_tap_crouch_rolls() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await _run_to(7.0)
+	await w.press(_fwd_crouch())
+	await w.step(3, _fwd())
+	await w.press(_fwd_crouch())
+	check(p.state == Player.State.ROLL, "double-tap crouch while running rolls (%s)" % Player.State.keys()[p.state])
+	check(&"ground_roll" in w.tricks_seen, "roll reported")
+
+
+func test_dive_in_the_air() -> void:
+	var p := await _airborne(6.0)
+	p.velocity = Vector3(0, 0, -7)
+	await w.step(5)
+	var f := InputFrame.new()
+	f.prone_pressed = true
+	f.prone_held = true
+	await w.step(1, f)
+	check(p.is_diving(), "dive works in the air")
+	check(&"dolphin_dive" in w.tricks_seen, "dive reported")
+	check(p.horizontal_speed() > 7.5, "lunges forward (%.2f)" % p.horizontal_speed())
+	await w.step(1, f)
+	var tricks := w.tricks_seen.count(&"dolphin_dive")
+	await w.step(1, f)
+	check(w.tricks_seen.count(&"dolphin_dive") == tricks, "once per jump")
 
 
 func test_untucked_big_drop_still_lands_hard() -> void:
@@ -692,9 +765,37 @@ func test_landing_upside_down_crashes() -> void:
 	for i in 12:
 		p._look(0.0, PI / 12.0)
 		await w.step(1)
+	p._look(0.0, -0.01)  # stop the spin dead, upside down
+	await w.step(1)
 	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
 	check(&"crash" in w.tricks_seen, "half-finished flip crashes")
 	check(p.state == Player.State.STUN, "crash stuns")
+
+
+func test_flip_momentum_carries_round_to_level() -> void:
+	var p := await _airborne(6.0)
+	# Flick 200 degrees over fast and let go: the flip finishes itself and
+	# stops level.
+	for i in 10:
+		p._look(0.0, deg_to_rad(20.0))
+		await w.step(1)
+	await w.step(30)
+	check(&"backflip" in w.tricks_seen, "the spin carried on into a full backflip (air pitch %.0f)" % rad_to_deg(p.air_rotation().y))
+	check(absf(wrapf(p.pitch, -PI, PI)) < deg_to_rad(40.0), "and stopped near level (%.0f deg)" % rad_to_deg(wrapf(p.pitch, -PI, PI)))
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
+	check(not (&"crash" in w.tricks_seen), "lands clean")
+
+
+func test_aiming_in_the_air_has_no_momentum() -> void:
+	var p := await _airborne(6.0)
+	for i in 6:
+		p._look(deg_to_rad(15.0), deg_to_rad(-10.0))  # a fast flick at a target
+		await w.step(1)
+	var yaw0 := p.yaw
+	var pitch0 := p.pitch
+	await w.step(10)
+	check_near(p.yaw, yaw0, 0.0001, "the view stops where you stop it (yaw)")
+	check_near(p.pitch, pitch0, 0.0001, "the view stops where you stop it (pitch)")
 
 
 func test_no_flip_on_ground() -> void:
@@ -726,18 +827,39 @@ func _lean_frame(amount: float) -> InputFrame:
 
 
 func test_side_flip_by_holding_lean() -> void:
-	var p := await _airborne(6.0)
-	var turn := int(ceil(360.0 / p.tuning.side_flip_speed * 60.0))
-	await w.step(turn, _lean_frame(1.0))
+	var p := await _airborne(10.0)
+	await w.step_until(func() -> bool: return &"sideflip" in w.tricks_seen, 120, _lean_frame(1.0))
 	check(&"sideflip" in w.tricks_seen, "a full roll is a side flip (roll %.0f deg)" % rad_to_deg(p.air_roll()))
 	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
 	check(not (&"crash" in w.tricks_seen), "let go near level: lands clean")
 
 
+func test_side_flip_keeps_its_direction() -> void:
+	var p := await _airborne(8.0)
+	await w.step(15, _lean_frame(1.0))
+	var roll0 := p.air_roll()
+	check(roll0 > 0.2, "leaning right rolls right (%.0f deg)" % rad_to_deg(roll0))
+	await w.step(15, _lean_frame(-1.0))
+	check(p.air_roll() > roll0 + 0.5, "leaning left mid-roll speeds it up, never reverses it (%.0f -> %.0f deg)" % [rad_to_deg(roll0), rad_to_deg(p.air_roll())])
+
+
+func test_side_flip_opened_up_spins_slower() -> void:
+	var p := await _airborne(10.0)
+	await w.step_until(func() -> bool: return p.air_roll() > deg_to_rad(80.0), 60, _lean_frame(1.0))
+	var a := p.air_roll()
+	await w.step(6, _lean_frame(1.0))
+	var tucked := p.air_roll() - a
+	await w.step(20)  # let go: opens up
+	a = p.air_roll()
+	await w.step(6)
+	var open := p.air_roll() - a
+	check(open > 0.0, "still rolling after letting go (%.1f deg)" % rad_to_deg(open))
+	check(open < tucked * 0.6, "but slower than tucked (%.1f vs %.1f deg)" % [rad_to_deg(open), rad_to_deg(tucked)])
+
+
 func test_half_side_flip_crashes() -> void:
-	var p := await _airborne(6.0)
-	var half := int(180.0 / p.tuning.side_flip_speed * 60.0)
-	await w.step(half, _lean_frame(-1.0))
+	var p := await _airborne(4.0)
+	await w.step_until(func() -> bool: return p.air_roll() < deg_to_rad(-150.0), 90, _lean_frame(-1.0))
 	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
 	check(&"crash" in w.tricks_seen, "landing on your side is a crash")
 
@@ -800,33 +922,61 @@ func test_dive_through_window() -> void:
 
 # ------------------------------------------------------------------ quick turn / strafe sprint / flip feel
 
-func test_quick_turn_is_180_and_not_a_spin() -> void:
-	var p := await _airborne(6.0)
-	var yaw0 := p.yaw
-	var f := InputFrame.new()
-	f.turn_pressed = true
-	await w.step(1, f)
-	await w.step(int(p.tuning.quick_turn_time * 60.0) + 2)
-	check_near(absf(angle_difference(yaw0, p.yaw)), PI, 0.02, "turned around")
-	await w.step(1, f)
-	await w.step(int(p.tuning.quick_turn_time * 60.0) + 2)
-	check(not (&"spin_360" in w.tricks_seen), "two quick turns don't count as a 360")
-
-
-func test_quick_turn_on_wallrun_faces_away_from_wall() -> void:
-	var ok := await _enter_wallrun()
-	check(ok, "wallrun starts")
-	if not ok:
-		return
-	var p := w.player
+func _turn_run(lean: float) -> Player:
+	w.add_floor()
+	var p := await _settle()
+	await _run_to(9.0)
 	var f := _fwd()
-	f.turn_pressed = true
+	f.lean = lean
 	await w.step(1, f)
-	await w.step(int(p.tuning.quick_turn_time * 60.0) + 1, _fwd())
-	# Wall is on +X, so facing away means looking toward -X.
-	check(p.forward().x < -0.9, "facing away from the wall (forward %s)" % p.forward())
-	await w.press(_fwd_jump())
-	check(p.velocity.x < -5.0, "jump launches straight off the wall (vx %.2f)" % p.velocity.x)
+	for i in 12:
+		p._look(deg_to_rad(3.0), 0.0)
+		await w.step(1, f)
+	return p
+
+
+func test_quick_turn_turns_faster_and_keeps_speed() -> void:
+	var p := await _turn_run(1.0)
+	var turned := rad_to_deg(absf(angle_difference(0.0, p.yaw)))
+	check(turned > 80.0, "holding lean turns the view faster (%.0f deg)" % turned)
+	var h := MovementMath.horizontal(p.velocity)
+	check(h.length() > 8.5, "speed kept round the turn (%.2f m/s)" % h.length())
+	check(h.normalized().dot(p.forward()) > 0.95, "and going where you look")
+
+
+func test_plain_turn_is_normal_speed() -> void:
+	var p := await _turn_run(0.0)
+	check_near(rad_to_deg(absf(angle_difference(0.0, p.yaw))), 36.0, 0.5, "without lean the view turns as you move it")
+
+
+func test_boost() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await _run_to(7.0)
+	var before := p.horizontal_speed()
+	var f := _fwd()
+	f.boost_pressed = true
+	await w.step(1, f)
+	await w.step(9, _fwd())
+	check(p.horizontal_speed() > before + p.tuning.boost_speed * 0.6, "shift boosts your speed (%.2f -> %.2f)" % [before, p.horizontal_speed()])
+	var boosted := p.horizontal_speed()
+	await w.step(1, f)
+	check(p.horizontal_speed() < boosted + 0.5, "cooldown: no second boost right away")
+	await w.step(60, _fwd())
+	check(p.horizontal_speed() < boosted - 1.0, "the boost fades (%.2f)" % p.horizontal_speed())
+	await w.step(int(p.tuning.boost_cooldown * 60.0) + 2, _fwd())
+	before = p.horizontal_speed()
+	await w.step(1, f)
+	check(p.horizontal_speed() > before + 1.0, "boost is back after the cooldown")
+
+
+func test_no_boost_in_the_air() -> void:
+	var p := await _airborne(6.0)
+	p.velocity = Vector3(0, 0, -6)
+	var f := InputFrame.new()
+	f.boost_pressed = true
+	await w.step(1, f)
+	check(p.horizontal_speed() < 6.5, "no air dash")
 
 
 func test_strafing_is_sprinting() -> void:

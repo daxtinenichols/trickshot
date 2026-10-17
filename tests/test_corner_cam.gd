@@ -1,6 +1,6 @@
 extends TestCase
 ## The runner body in the corner camera: building, render layers, poses per
-## state, the kick overlay, aiming and the F5 toggle. Presentation only.
+## state, the kick overlay, aiming and the F12 toggle. Presentation only.
 
 const SANDBOX := preload("res://levels/sandbox.tscn")
 
@@ -233,17 +233,17 @@ func test_every_state_poses_without_errors() -> void:
 	check(_root().get_rotation_quaternion().is_normalized(), "unknown state is fine")
 
 
-func test_f5_toggles_corner_view() -> void:
+func test_f12_toggles_corner_view() -> void:
 	var p := _make()
 	check(InputMap.has_action("toggle_corner_cam"), "action registered")
-	check(not GameSettings.is_bindable(_f5(), false), "F5 is reserved")
+	check(not GameSettings.is_bindable(_f12(), false), "F12 is reserved")
 	check(_cam.is_enabled() and _cam.rig.visible, "on by default")
-	_cam._unhandled_input(_f5())
-	check(not _cam.is_enabled() and not _cam.frame.visible, "F5 hides it")
+	_cam._unhandled_input(_f12())
+	check(not _cam.is_enabled() and not _cam.frame.visible, "F12 hides it")
 	check(not _cam.rig.visible, "body hidden too")
 	check(_cam.viewport.render_target_update_mode == SubViewport.UPDATE_DISABLED, "stops rendering")
-	_cam._unhandled_input(_f5())
-	check(_cam.is_enabled() and _cam.rig.visible, "F5 brings it back")
+	_cam._unhandled_input(_f12())
+	check(_cam.is_enabled() and _cam.rig.visible, "F12 brings it back")
 	check(p.camera.cull_mask & RunnerBody.LAYER == 0, "first-person still hides the body")
 
 
@@ -279,8 +279,8 @@ func test_sandbox_has_corner_cam_and_survives_pause() -> void:
 	await tree.process_frame
 
 
-func _f5() -> InputEventKey:
+func _f12() -> InputEventKey:
 	var k := InputEventKey.new()
-	k.physical_keycode = KEY_F5
+	k.physical_keycode = KEY_F12
 	k.pressed = true
 	return k

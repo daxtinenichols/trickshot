@@ -1,7 +1,7 @@
 class_name CornerCam
 extends CanvasLayer
 ## Picture-in-picture third-person view in the lower-left corner, so you can
-## watch the body's animations while playing in first person. F5 toggles it.
+## watch the body's animations while playing in first person. F12 toggles it.
 ##
 ## A SubViewport sharing the main world renders a chase camera that sees the
 ## RunnerBody (render layer 2) and the level, but not the first-person pistol.
@@ -35,7 +35,7 @@ var _placed := false
 
 func _ready() -> void:
 	layer = 8
-	# Keeps rendering (and F5 keeps working) while the game is paused.
+	# Keeps rendering (and F12 keeps working) while the game is paused.
 	process_mode = Node.PROCESS_MODE_ALWAYS
 	frame = PanelContainer.new()
 	frame.set_anchors_preset(Control.PRESET_BOTTOM_LEFT)
