@@ -5,9 +5,12 @@
 // Light band thresholds on N.L (after shadows) and their softness.
 uniform float band_high = 0.55;
 uniform float band_low = 0.08;
-uniform float band_soft = 0.03;
+uniform float band_soft = 0.07;
 // How bright the middle band is, between shadow (0) and full light (1).
 uniform float mid_level = 0.55;
+// Blend from pure bands (0) toward smooth Lambert light (1): a little keeps
+// the stylized read while surfaces round off more naturally.
+uniform float realism = 0.35;
 // Rim light reads well on characters but makes flat floors glow at grazing
 // angles, so it is off unless a material turns it on.
 uniform float rim_strength = 0.0;
@@ -19,8 +22,9 @@ void light() {
 	float lo = smoothstep(band_low - band_soft, band_low + band_soft, ndl);
 	// Shadows are their own hard band, so soft shadow edges and the shadow
 	// fade-out distance don't smear the bands.
-	float lit = smoothstep(0.15, 0.35, ATTENUATION);
-	float level = mix(lo * mid_level, 1.0, hi) * lit;
+	float lit = smoothstep(0.1, 0.45, ATTENUATION);
+	float bands = mix(lo * mid_level, 1.0, hi);
+	float level = mix(bands, clamp(ndl, 0.0, 1.0), realism) * lit;
 	// Unlit areas get the tint via ambient (environment); lit areas add on top.
 	DIFFUSE_LIGHT += LIGHT_COLOR / PI * level;
 	// Rim: thin bright edge on the side facing the light.
