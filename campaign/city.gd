@@ -84,7 +84,7 @@ static func build(mission: Dictionary, lanes: Array, ground: Rect2, seed_text: S
 		base_y += float(l.top)
 	base_y = base_y / maxf(1.0, lanes.size())
 	_blocks(g, mission, rng, base_y)
-	_horizon(mission, rng, ground, base_y)
+	_horizon(mission, rng, ground, base_y, g.get("base", Rect2()))
 	_streets(g, mission, rng, lanes)
 	_ground(g, mission, rng)
 
@@ -194,6 +194,7 @@ static func _exclude_base(g: Dictionary, mission: Dictionary) -> void:
 		return
 	var rect: Rect2 = r
 	rect = rect.grow_individual(10.0, 0.0, 10.0, 10.0)
+	g.base = rect
 	var flags: PackedByteArray = g.flags
 	for j in int(g.nz):
 		for i in int(g.nx):
@@ -289,19 +290,26 @@ static func _blocks(g: Dictionary, mission: Dictionary, rng: RandomNumberGenerat
 
 ## A band of big blocks just past the edge of the ground, so the city runs
 ## on to the haze when you look over the near rooftops.
-static func _horizon(mission: Dictionary, rng: RandomNumberGenerator, ground: Rect2, base_y: float) -> void:
+## (Not over the base map, which can reach past the ground.)
+static func _horizon(mission: Dictionary, rng: RandomNumberGenerator, ground: Rect2, base_y: float, base: Rect2) -> void:
 	var size := CELL * BLOCK * BIG
 	var outer := ground.grow(size)
+	var spots: Array[Vector2] = []
 	var x := outer.position.x
 	while x < outer.end.x:
 		for z: float in [outer.position.y + size * 0.5, outer.end.y - size * 0.5]:
-			_building(mission, rng, Vector2(x + size * 0.5, z), Vector2(size - 6.0, size - 6.0), _far_height(rng, base_y) + 10.0, true)
+			spots.append(Vector2(x + size * 0.5, z))
 		x += size
 	var z := ground.position.y
 	while z < ground.end.y:
 		for xx: float in [outer.position.x + size * 0.5, outer.end.x - size * 0.5]:
-			_building(mission, rng, Vector2(xx, z + size * 0.5), Vector2(size - 6.0, size - 6.0), _far_height(rng, base_y) + 10.0, true)
+			spots.append(Vector2(xx, z + size * 0.5))
 		z += size
+	for c: Vector2 in spots:
+		var s := Vector2(size - 6.0, size - 6.0)
+		if base.has_area() and base.intersects(Rect2(c - s * 0.5, s)):
+			continue
+		_building(mission, rng, c, s, _far_height(rng, base_y) + 10.0, true)
 
 
 static func _far_height(rng: RandomNumberGenerator, base_y: float) -> float:

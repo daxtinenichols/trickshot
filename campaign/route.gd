@@ -730,15 +730,19 @@ static func _bounds(pieces: Array, st: Dictionary) -> Rect2:
 
 ## With streets on the route, falls only count below the street, so a fall
 ## off a high roof into the slot beside it would leave you stuck down
-## there: "pits" makes anywhere below `y` off the streets (and the base
+## there: "pits" makes anywhere below `y` (1.2 m, or under the lowest
+## roof) off the streets (and the base
 ## map's ground) count as a fall too. MissionRun reads it.
 static func _pits(st: Dictionary, mission: Dictionary) -> void:
 	var fail: float = mission.get("fail_y", -50.0)
 	var streets: Array = []
 	var high := false
+	# Below every roof: a floor at 1 m (inside a warehouse) is no pit.
+	var pit_y := 1.2
 	for l: Array in st.lanes:
 		if float(l[6]) > City.STREET_TOP:
 			high = true
+			pit_y = minf(pit_y, float(l[6]) - 0.4)
 			continue
 		var leg: int = l[0]
 		var c := _world(st, leg, l[1], (float(l[2]) + float(l[3])) * 0.5, 0.0)
@@ -753,7 +757,7 @@ static func _pits(st: Dictionary, mission: Dictionary) -> void:
 		if f is Rect2:
 			var rect: Rect2 = f
 			streets.append({"at": [rect.get_center().x, 0.0, rect.get_center().y], "size": [rect.size.x, 6.0, rect.size.y]})
-	mission.pits = {"y": 1.2, "streets": streets}
+	mission.pits = {"y": pit_y, "streets": streets}
 
 
 ## The course's stretches as areas in the world, for the city.
