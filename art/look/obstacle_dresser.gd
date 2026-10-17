@@ -11,6 +11,7 @@ extends RefCounted
 ##   concrete, brick, crates, rails, sandbags = vault, mantle, climb (PARKOUR)
 ##   pipes and girders at head height = slide under (thin PARKOUR bars)
 ##   bent sheet metal = slide down (SLIDE)
+##   escalators (a map asks for them) = steps over a ramp you run or slide on
 ##
 ## ArtLook calls dress() for every PARKOUR, WALLRUN and SLIDE body that has no
 ## "look" meta of its own. A map can pick the style with the body meta
@@ -20,13 +21,13 @@ extends RefCounted
 
 ## Every style dress() knows.
 const STYLES := ["barrier", "brick", "rail", "sandbags", "pipe", "crates", "planter",
-	"brick_wall", "concrete_wall", "hoarding", "billboard", "container", "sheet"]
+	"brick_wall", "concrete_wall", "hoarding", "billboard", "container", "sheet", "escalator"]
 
 ## Paints, muted so nothing shouts. Hoardings keep a faded blue-green and
 ## crates and rails a little color, so the language still reads.
 const CONCRETE := Color(0.57, 0.54, 0.50)
 const CONCRETE_DARK := Color(0.46, 0.44, 0.41)
-const BRICK := Color(0.50, 0.32, 0.26)
+const BRICK := Color(0.42, 0.24, 0.19)
 const MORTAR := Color(0.66, 0.62, 0.55)
 const TIMBER := Color(0.56, 0.42, 0.29)
 const SACK := Color(0.58, 0.51, 0.38)
@@ -56,6 +57,7 @@ static func dress(body: Node3D, core: MeshInstance3D, look: Object) -> Node3D:
 	var root := Node3D.new()
 	root.name = "Dress"
 	var d := _Dress.new(root, core, look, size, _hash(body.global_position))
+	d.body = body
 	match style:
 		"barrier": d.barrier()
 		"brick": d.brick_low()
@@ -70,6 +72,7 @@ static func dress(body: Node3D, core: MeshInstance3D, look: Object) -> Node3D:
 		"billboard": d.billboard()
 		"container": d.container()
 		"sheet": d.sheet()
+		"escalator": d.escalator()
 	root.set_meta("style", style)
 	body.add_child(root)
 	return root
@@ -118,6 +121,7 @@ static func _hash(p: Vector3) -> float:
 ## centered on it. "Along" is the box's long horizontal axis.
 class _Dress:
 	var root: Node3D
+	var body: Node3D
 	var core: MeshInstance3D
 	var look: Object
 	var s: Vector3
@@ -382,3 +386,46 @@ class _Dress:
 			mi.position = Vector3(z, 0, 0)
 			mi.material_override = edge
 			root.add_child(mi)
+
+	## A stopped escalator: horizontal steps down the ramp, their noses on
+	## its slope (so feet never sink into them), and a sloped underside.
+	## Built in world space, since the ramp's own frame is tilted.
+	func escalator() -> void:
+		hide_core()
+		root.top_level = true
+		root.transform = Transform3D.IDENTITY
+		var bt := body.global_transform
+		var along := bt.basis.z.normalized()
+		var up := bt.basis.y.normalized()
+		var a := bt.origin + along * s.z * 0.5 + up * s.y * 0.5
+		var b := bt.origin - along * s.z * 0.5 + up * s.y * 0.5
+		var low := a if a.y < b.y else b
+		var high := b if a.y < b.y else a
+		var flat := Vector3(high.x - low.x, 0, high.z - low.z)
+		var run := flat.length()
+		var rise := high.y - low.y
+		if run < 0.1:
+			return
+		var dir := flat / run
+		var across := dir.cross(Vector3.UP).normalized()
+		var basis := Basis(across, Vector3.UP, -dir)
+		var n := maxi(1, roundi(rise / 0.2))
+		var step := run / n
+		var tread := mat("CORRUGATED", STEEL)
+		for i in n:
+			var y := low.y + rise * i / n
+			var c := low + dir * (step * (i + 0.5))
+			var mi := MeshInstance3D.new()
+			var bm := BoxMesh.new()
+			bm.size = Vector3(s.x, 0.3, step - 0.01)
+			mi.mesh = bm
+			mi.transform = Transform3D(basis, Vector3(c.x, y - 0.15, c.z))
+			mi.material_override = tread
+			root.add_child(mi)
+		var under := MeshInstance3D.new()
+		var ub := BoxMesh.new()
+		ub.size = Vector3(s.x, 0.25, s.z)
+		under.mesh = ub
+		under.transform = Transform3D(bt.basis, bt.origin - up * 0.3)
+		under.material_override = mat("RUST")
+		root.add_child(under)

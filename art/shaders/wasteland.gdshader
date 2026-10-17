@@ -292,12 +292,16 @@ void fragment() {
 	} else if (surface == 8) {
 		tex = brick(p, col);
 	} else if (surface == 9) {
-		float rib = top ? 0.0 : corrugation(uv.x);
+		// Ribs fade out where they get finer than a few pixels, so distant
+		// sheets don't shimmer into moire.
+		float ribs_px = fwidth(uv.x) / (0.15 * max(tex_scale, 0.01));
+		float rib_fade = 1.0 - smoothstep(0.15, 0.45, ribs_px);
+		float rib = top ? 0.0 : corrugation(uv.x) * rib_fade;
 		tex = corrugated(p, col, n, rib);
-		if (!top) {
+		if (!top && rib_fade > 0.0) {
 			// Bend the normal across the ribs so the light catches them.
 			vec3 t = an.x > an.z ? vec3(0.0, 0.0, 1.0) : vec3(1.0, 0.0, 0.0);
-			float slope = cos(uv.x / (0.15 * max(tex_scale, 0.01)) * 6.2832);
+			float slope = cos(uv.x / (0.15 * max(tex_scale, 0.01)) * 6.2832) * rib_fade;
 			vec3 wn = normalize(n + t * slope * 0.45);
 			NORMAL = normalize((VIEW_MATRIX * vec4(wn, 0.0)).xyz);
 		}

@@ -361,7 +361,7 @@ func test_rooftops_finish_time_formats() -> void:
 func test_park_spawns_are_standable() -> void:
 	await _load(PARK)
 	var b: ComboParkBuilder = level.builder
-	check(b.spawns.size() == 9, "nine spawns (%d)" % b.spawns.size())
+	check(b.spawns.size() == 10, "ten spawns, one per number key (%d)" % b.spawns.size())
 	check(b.spawns[0] == ComboParkBuilder.ENTRY, "spawns[0] is ENTRY")
 	for i in b.spawns.size():
 		level.go_to_zone(i)
@@ -434,6 +434,74 @@ func test_park_zigzag_wallrun() -> void:
 
 
 # ---------------------------------------------------------------- switcher
+
+## The high road along the park's east side runs end to end above the
+## ground: slab up, hurdle, pipe, gap, crates, climb, hurdle, wallrun gap,
+## hurdles, slide down.
+func test_park_high_road() -> void:
+	await _load(PARK)
+	var x := ComboParkBuilder.HIGH_ROAD_X
+	player.respawn(Transform3D(Basis.IDENTITY, Vector3(x, 0, -62)))
+	await _step(10)
+	var path := PackedVector3Array([Vector3(x, 0, -60), Vector3(x, 0, -330)])
+	var route := [
+		[34.6, "jump", 0.0],     # hurdle at -96
+		[45.5, "crouch", 0.0],   # pipe at -110
+		[69.3, "jump", 0.0],     # gap at -130
+		[87.9, "jump", 0.0],     # crates at -150
+		[117.9, "jump", 0.0],    # climb face at -180
+		[133.6, "jump", 0.0],    # hurdle at -195
+		[155.0, "", 5.4],        # toward the wall
+		[169.3, "jump", 7.0],    # gap at -230: into the wallrun wall
+		[185.0, "", 0.0],
+		[194.6, "jump", 0.0],    # hurdles at -256, -270
+		[208.6, "jump", 0.0],
+		[229.0, "crouch", 0.0],  # slide down at -290
+	]
+	var low := [INF]
+	var watch := func() -> void:
+		var p := player.global_position
+		if p.z < -86.0 and p.z > -288.0:
+			low[0] = minf(low[0], p.y)
+	tree.physics_frame.connect(watch)
+	var done := await _run_path(path, route, 258.0, 1800, OS.has_environment("BOT_LOG"))
+	tree.physics_frame.disconnect(watch)
+	check(done, "runs the high road to the end (stopped at %s)" % player.global_position)
+	check(low[0] > 3.9, "never drops off it (lowest %.2f)" % low[0])
+	check_near(player.global_position.y, 0.0, 0.1, "back on the ground")
+
+
+## The overpass: up the ramp, round the 45 degree bend over a barrier or
+## two, across the gap, and down the slab toward the exit.
+func test_park_overpass() -> void:
+	await _load(PARK)
+	level.go_to_zone(9)
+	await _step(10)
+	var path := PackedVector3Array([Vector3(0, 0, -414), Vector3(0, 0, -470)])
+	for i in range(1, 13):
+		path.append(ComboParkBuilder.curve_at(ComboParkBuilder.CURVE_ANGLE * i / 12.0).origin)
+	var end := ComboParkBuilder.curve_at(ComboParkBuilder.CURVE_ANGLE)
+	path.append(end.origin - end.basis.z * 60.0)
+	# s: 0 at z -414; the bend runs from s 56 to 84.3.
+	var route := [
+		[44.6, "jump", 0.0],     # barrier at -460
+		[68.7, "jump", 0.0],     # barrier halfway round the bend
+		[93.6, "jump", 0.0],     # the gap
+		[115.0, "crouch", 0.0],  # slide down the slab
+	]
+	var high := [true]
+	var watch := func() -> void:
+		var p := player.global_position
+		# On the deck: past the ramp up, before the slab down.
+		if p.z < -451.0 and p.x > -32.0 and player.state != Player.State.AIR and p.y < ComboParkBuilder.DECK_Y - 0.5:
+			high[0] = false
+	tree.physics_frame.connect(watch)
+	var done := await _run_path(path, route, 132.0, 1500, OS.has_environment("BOT_LOG"))
+	tree.physics_frame.disconnect(watch)
+	check(done, "runs the overpass to the slab (stopped at %s)" % player.global_position)
+	check(high[0], "stays up on the deck until the slab")
+	check(player.global_position.y < 1.0, "slides down to the ground (%s)" % player.global_position)
+
 
 func test_level_keys() -> void:
 	check(InputMap.has_action(Levels.ACTION), "next_level action registered")
@@ -626,6 +694,48 @@ func test_mall_roof_access() -> void:
 		if best > MallBuilder.ROOF_Y + 0.3:
 			break
 	check(best > MallBuilder.ROOF_Y + 0.3, "reached the roof (best y %.2f, at %s)" % [best, player.global_position])
+
+
+## The old parking-lot kerb used to cross the north wing's concourse at
+## z -100: the floor there is clear now.
+func test_mall_concourse_floor_clear() -> void:
+	await _load(MALL)
+	var space := level.get_world_3d().direct_space_state
+	for x: float in [-12.0, -6.0, 0.0, 6.0, 12.0]:
+		var q := PhysicsRayQueryParameters3D.create(Vector3(x, 0.5, -94), Vector3(x, 0.5, -106), 1)
+		var hit := space.intersect_ray(q)
+		check(hit.is_empty(), "nothing across the floor at x %.0f (%s)" % [x, hit.get("position", "")])
+
+
+## The well through the store's sales floor (for the campaign's m06): the
+## high line goes up the display stacks, along the partition wall and out
+## onto the back of the sales floor; the escalators beside it climb there too.
+func test_mall_store_well() -> void:
+	await _load(MALL)
+	player.respawn(Transform3D(Basis.IDENTITY, Vector3(-2.65, 0, -341)))
+	await _step(10)
+	var path := PackedVector3Array([Vector3(-2.65, 0, -340), Vector3(-2.65, 0, -400)])
+	var route := [
+		[8.4, "jump", 0.0],      # mantle the 1.5 m stack at -350
+		[13.0, "jump", 0.0],     # mantle the 3 m stack at -355
+		[16.5, "", -1.8],        # toward the wall
+		[20.5, "jump", -3.2],    # into the wall
+	]
+	var done := await _run_path(path, route, 40.0, 900, OS.has_environment("BOT_LOG"))
+	check(done, "gets through the well (stopped at %s)" % player.global_position)
+	check(player.global_position.y > MallBuilder.UPPER_Y - 0.1, "up on the sales floor (%s)" % player.global_position)
+	# The escalators run straight up to the same edge.
+	for x: float in MallBuilder.WELL_ESCALATORS:
+		player.respawn(Transform3D(Basis.IDENTITY, Vector3(x, 0, MallBuilder.WELL_Z.y + 18.0)))
+		await _step(5)
+		var best := 0.0
+		player.scripted_input = TestWorld.forward_input()
+		for i in 240:
+			await tree.physics_frame
+			best = maxf(best, player.global_position.y)
+			if player.global_position.z < MallBuilder.WELL_Z.y - 3.0:
+				break
+		check(best > MallBuilder.UPPER_Y - 0.1 and player.global_position.z < MallBuilder.WELL_Z.y - 1.0, "escalator at x %.1f reaches the sales floor (%s)" % [x, player.global_position])
 
 
 func test_rooftops_edges_closed() -> void:

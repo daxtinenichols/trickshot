@@ -45,7 +45,7 @@ const PALETTE := {
 	"TILE": Color(0.66, 0.62, 0.55),
 	"RUST": Color(0.44, 0.38, 0.32),
 	"SIGN": Color(0.62, 0.30, 0.24),
-	"BRICK": Color(0.56, 0.33, 0.25),
+	"BRICK": Color(0.42, 0.24, 0.19),
 	"CORRUGATED": Color(0.40, 0.47, 0.48),
 	"WOOD": Color(0.56, 0.42, 0.29),
 }
