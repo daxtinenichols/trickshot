@@ -70,8 +70,17 @@ const PAD_AXES := {
 
 func _enter_tree() -> void:
 	register_actions()
-	Input.joy_connection_changed.connect(func(device: int, connected: bool) -> void:
-		print("Controller %d %s: %s" % [device, "connected" if connected else "disconnected", Input.get_joy_name(device)]))
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+
+
+# A method (not a lambda) and disconnected on exit: a lambda left connected
+# to the Input singleton aborts the engine on shutdown.
+func _exit_tree() -> void:
+	Input.joy_connection_changed.disconnect(_on_joy_connection_changed)
+
+
+func _on_joy_connection_changed(device: int, connected: bool) -> void:
+	print("Controller %d %s: %s" % [device, "connected" if connected else "disconnected", Input.get_joy_name(device)])
 
 
 ## Right-stick look, from whichever connected controller is pushing it most.

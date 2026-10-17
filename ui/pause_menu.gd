@@ -27,7 +27,21 @@ func _ready() -> void:
 	_build()
 	_root.visible = false
 	Settings.changed.connect(_refresh)
-	Input.joy_connection_changed.connect(func(_id: int, _on: bool) -> void: _refresh_pads())
+
+
+# Connected while in the tree only: a callable left on the Input singleton
+# aborts the engine on shutdown.
+func _enter_tree() -> void:
+	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+
+
+func _exit_tree() -> void:
+	Input.joy_connection_changed.disconnect(_on_joy_connection_changed)
+
+
+func _on_joy_connection_changed(_device: int, _connected: bool) -> void:
+	if _pads_label:
+		_refresh_pads()
 
 
 func setup(p: Player) -> void:
