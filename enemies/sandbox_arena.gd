@@ -1,5 +1,5 @@
 class_name SandboxArena
-extends EnemyEncounter
+extends "res://enemies/enemy_encounter.gd"
 ## The sandbox's enemy test arena, behind the run track's start (turn around
 ## at zone 1). Three raiders behind low walls, then two mutants guarding the
 ## back half. Low walls are vaultable, the side and back walls are blue
@@ -9,8 +9,11 @@ extends EnemyEncounter
 ## look restyles it like the rest of the sandbox.
 
 const SHADER := preload("res://levels/graybox.gdshader")
+# By path, not class name: the sandbox loads first, and a stale class cache
+# in the editor must not stop it loading.
+const RaiderScript := preload("res://enemies/raider.gd")
+const MutantScript := preload("res://enemies/mutant.gd")
 const COLORS := {
-	"FLOOR": Color(0.56, 0.58, 0.62),
 	"NEUTRAL": Color(0.76, 0.77, 0.80),
 	"WALLRUN": Color(0.27, 0.6, 0.98),
 	"PARKOUR": Color(0.98, 0.78, 0.26),
@@ -33,12 +36,12 @@ func _ready() -> void:
 	bounds = AABB(origin + Vector3(-26, -6, -26), Vector3(52, 30, 78))
 	entry = Transform3D(Basis(Vector3.UP, PI), origin + Vector3(0, 0.1, -34))
 	# Raiders: two up front, one deep. Mutants wake a moment later.
-	add_enemy(Raider.new(), _at(Vector3(-4, 0, 7.0)))
-	add_enemy(Raider.new(), _at(Vector3(14, 0, 23.0)))
-	add_enemy(Raider.new(), _at(Vector3(-16, 0, 23.0)))
+	add_enemy(RaiderScript.new(), _at(Vector3(-4, 0, 7.0)))
+	add_enemy(RaiderScript.new(), _at(Vector3(14, 0, 23.0)))
+	add_enemy(RaiderScript.new(), _at(Vector3(-16, 0, 23.0)))
 	# Mutants guard the back half: they rush you there, not across the arena.
 	for spot: Array in [[Vector3(8, 0, 32), 2.0], [Vector3(-8, 0, 32), 3.5]]:
-		var m := Mutant.new()
+		var m := MutantScript.new()
 		m.wake_delay = spot[1]
 		m.leash_radius = 24.0
 		m.aggro_radius = 18.0
@@ -65,8 +68,6 @@ func _set_status(text: String) -> void:
 
 func _build_geometry() -> void:
 	var o := origin
-	# The sandbox floor ends at z = 90: extend it under the back of the arena.
-	_box(Vector3(o.x, -0.5, 101), Vector3(56, 1, 22), "FLOOR")
 	# Back and side walls (wallrun).
 	_box(o + Vector3(0, 3, 52), Vector3(56, 6, 1), "WALLRUN")
 	_box(o + Vector3(-27, 3, 12), Vector3(1, 6, 80), "WALLRUN")
