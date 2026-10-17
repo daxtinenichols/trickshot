@@ -121,6 +121,9 @@ var _surface_look_yaw := 0.0
 var _surface_looped := false
 ## Direction the track under you runs (from its "flow" meta), or zero.
 var _surface_flow := Vector3.ZERO
+## Sliding (crouch held) rather than running on the surface: gravity has
+## its full pull along the slope and holding forward doesn't push you.
+var _surface_slide := false
 ## Flying off a ramp or loop: how far round you are (as a flip), how tilted
 ## (as a side flip), and how fast the surface was turning you (yaw, pitch
 ## and roll rates), all carried into the air.
@@ -937,6 +940,11 @@ func _tuck_roll(f: InputFrame, fall: float, crouch_age: float) -> bool:
 	return true
 
 
+## Sliding, on the ground or on a ramp or loop.
+func is_sliding() -> bool:
+	return state == State.SLIDE or (state == State.SURFACE and _surface_slide)
+
+
 ## Tucked in the air (crouch held): you'll land in a roll.
 func is_tucked() -> bool:
 	return state == State.AIR and _crouch_hold >= tuning.tuck_hold_time and not _crouch_from_ground
@@ -963,15 +971,16 @@ func _tick_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_trick(&"slide_jump")
 		_tick_air(f, wish, delta)
 		return
-	# Friction only ramps up while the slide isn't going downhill, so flat
-	# slides fade out but a slope can carry you as far as it goes.
-	var downhill := false
+	# Friction only ramps up on the flat, so flat slides fade out but a
+	# slope carries you as far as it goes: gravity speeds you up going down
+	# and is all that slows you going up.
+	var flat := true
 	if is_on_floor():
 		var n := get_floor_normal()
 		var down_slope := Vector3.DOWN - n * Vector3.DOWN.dot(n)
-		downhill = down_slope.length() > 0.07 and down_slope.dot(velocity) > 0.0
+		flat = down_slope.length() <= 0.07
 		velocity += down_slope * tuning.gravity * tuning.slide_slope_gain * delta
-	if not downhill:
+	if flat:
 		_slide_flat_time += delta
 	var friction := tuning.slide_friction + tuning.slide_friction_ramp * _slide_flat_time
 	velocity = MovementMath.apply_friction(velocity, friction, 0.0, delta)
@@ -1354,6 +1363,7 @@ func _try_enter_surface() -> bool:
 	var view_before := Basis.from_euler(Vector3(pitch, yaw, -_air_roll if state == State.AIR else 0.0))
 	if state != State.GROUND:
 		_ground_time = 0.0
+	var state_before := state
 	_touch_ground()
 	_change_state(State.SURFACE)
 	_surface_n = n
@@ -1363,6 +1373,8 @@ func _try_enter_surface() -> bool:
 	basis = Basis(Vector3.UP, travel_yaw)  # start upright, facing the run
 	_surface_looped = false
 	_surface_flow = _flow_of(c.collider)
+	# Sliding onto it (or landing on it crouched) keeps you sliding.
+	_surface_slide = state_before in [State.SLIDE, State.AIR] and _crouch_hold > 0.0
 	_orient_to_surface(0.0)
 	# Landing partway round a flip settles the view; ease into it rather
 	# than snapping.
@@ -1386,11 +1398,22 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 		_leave_surface()
 		_change_state(State.AIR)
 		return
+	# Crouch slides on the surface like on the ground: a fresh press starts
+	# it, letting go stands you back up and runs.
+	if not _surface_slide and f.crouch_held and (f.crouch_pressed or _since_crouch_press < 0.2):
+		_surface_slide = true
+		_slide_flat_time = 0.0
+		_trick(&"slide")
+	elif _surface_slide and not f.crouch_held:
+		_surface_slide = false
+	_set_height(tuning.crouch_height if _surface_slide else tuning.stand_height)
 	# Gravity along the surface slows you going up and speeds you coming
-	# down; holding forward keeps running, up to your top speed.
+	# down; holding forward keeps running, up to your top speed. Sliding,
+	# gravity pulls as hard as on a ground slide and only friction slows you.
 	var v := velocity - n * velocity.dot(n)
 	var down := Vector3.DOWN - n * Vector3.DOWN.dot(n)
-	var g := down * tuning.gravity * tuning.surface_gravity_scale * delta
+	var g_scale := tuning.slide_slope_gain if _surface_slide else tuning.surface_gravity_scale
+	var g := down * tuning.gravity * g_scale * delta
 	var heading := v.normalized() if v.length() > 0.01 else -global_basis.z
 	# The part of gravity along your path slows or speeds you; the part
 	# across it (running sideways along a slope) pulls you down the slope
@@ -1423,7 +1446,12 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 		var assist := tuning.surface_flow_assist * (1.0 - clampf(absf(f.move.x), 0.0, 1.0))
 		if dir.dot(flow) > 0.5:
 			dir = dir.slerp(flow, 1.0 - exp(-assist * delta)).normalized()
-	if f.move.y > 0.3:
+	if _surface_slide:
+		# Same friction as a ground slide (it only builds up on the flat).
+		if down.length() <= 0.07:
+			_slide_flat_time += delta
+		speed = maxf(speed - (tuning.slide_friction + tuning.slide_friction_ramp * _slide_flat_time) * delta, 0.0)
+	elif f.move.y > 0.3:
 		speed = minf(speed + tuning.surface_accel * delta, maxf(speed, tuning.top_speed))
 	elif f.move.y < -0.3:
 		speed = maxf(speed - tuning.surface_accel * delta, 0.0)
@@ -1459,10 +1487,12 @@ func _tick_surface(f: InputFrame, delta: float) -> void:
 		return
 	if nn.y > tuning.surface_exit_flatness or (not runnable and nn.y >= cos(floor_max_angle)):
 		var keep := velocity - Vector3.UP * velocity.dot(Vector3.UP)
+		var sliding := _surface_slide
 		_leave_surface(true)
 		velocity = keep.normalized() * speed if keep.length() > 0.01 else Vector3.ZERO
 		_touch_ground()
-		_change_state(State.GROUND)
+		# A slide off the bottom (or over the top) carries on as a slide.
+		_change_state(State.SLIDE if sliding and speed >= tuning.slide_exit_speed else State.GROUND)
 		return
 	_surface_n = nn
 	_surface_flow = floor_hit.flow
@@ -1535,6 +1565,7 @@ func _orient_to_surface(delta: float) -> void:
 ## body's tilt at the bottom of a loop doesn't leave you staring at the
 ## floor), and the tilt eases out.
 func _leave_surface(onto_ground := false) -> void:
+	_surface_slide = false
 	var view := (global_basis * Basis.from_euler(Vector3(pitch, _surface_look_yaw, 0.0))).orthonormalized()
 	var spin := _body_spin
 	var look_pitch := pitch
@@ -2087,7 +2118,7 @@ func _process(delta: float) -> void:
 		var right := Vector3(-fwd.z, 0.0, fwd.x)
 		var side := right.dot(-MovementMath.horizontal(_wall_normal).normalized())
 		target_roll = deg_to_rad(tuning.wallrun_tilt_degrees) * side
-	elif state == State.SLIDE:
+	elif is_sliding():
 		target_roll = deg_to_rad(-2.5)
 	# Lean peeks on the ground; in the air it's a side flip instead.
 	# (On a wall, lean angles the run instead.)
@@ -2207,6 +2238,8 @@ func shot_tags() -> Array[StringName]:
 			tags.append(&"vaulting")
 		State.SURFACE:
 			tags.append(&"surface")
+			if _surface_slide:
+				tags.append(&"sliding")
 	if state == State.AIR:
 		if absf(_air_pitch) > deg_to_rad(90.0):
 			tags.append(&"flipping")

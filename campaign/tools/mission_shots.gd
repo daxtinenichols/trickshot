@@ -3,6 +3,7 @@ extends SceneTree
 ## each built mission, a first-person shot with the radio and objective up,
 ## and a results card.
 ##   xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/mission_shots.gd -- <out_dir>
+## Add a second argument to render only shots whose name contains it.
 ## Scripts run with -s load before the autoloads, so nothing here is typed
 ## with classes that need them.
 
@@ -21,6 +22,13 @@ const SHOTS := [
 	["m04_silt_line", Vector3(-14, 14, -215), Vector3(0, 6, -260), "m04_overpass"],
 	["m12_signal_out", Vector3(-14, 48, 10), Vector3(0, 38, -30), "m12_tower"],
 	["m12_signal_out", Vector3(-16, 35, -100), Vector3(2, 26, -140), "m12_roofs"],
+	# The route generator's test route: corners, a fork, climbs and ramps.
+	["res://tests/fixtures/route_twists.json", Vector3(-150, 300, 120), Vector3(-260, 0, -130), "twists_overview"],
+	["res://tests/fixtures/route_twists.json", Vector3(10, 22, -40), Vector3(-30, 10, -66), "twists_corner"],
+	["res://tests/fixtures/route_twists.json", Vector3(-160, 30, -40), Vector3(-260, 9, -76), "twists_fork"],
+	# 45 degree corners.
+	["res://tests/fixtures/route_angles.json", Vector3(-30, 140, 60), Vector3(-60, 0, -120), "angles_overview"],
+	["res://tests/fixtures/route_angles.json", Vector3(12, 18, -28), Vector3(-6, 10, -60), "angles_corner"],
 ]
 
 var out := "user://mission_shots"
@@ -34,11 +42,16 @@ func _run() -> void:
 	var args := OS.get_cmdline_user_args()
 	if args.size() > 0:
 		out = args[0]
+	var only := args[1] if args.size() > 1 else ""
 	DirAccess.make_dir_recursive_absolute(out)
 	root.size = Vector2i(1280, 720)
 	var campaign: Script = load("res://campaign/campaign.gd")
 	campaign.persist = false
 
+	if only != "":
+		await _shots(campaign, only)
+		quit()
+		return
 	var menu: Node = load("res://campaign/campaign.tscn").instantiate()
 	root.add_child(menu)
 	await _frames(4)
@@ -48,9 +61,35 @@ func _run() -> void:
 	menu.queue_free()
 	await _frames(2)
 
+	await _shots(campaign, "")
+
+	# First person, a few seconds in, with the radio and objective up.
+	var level: Node = await _load_mission(campaign, "m02_on_air")
+	var p: Node = level.get_node("Player")
+	p.set_physics_process(false)
+	p.global_position = Vector3(0, 8, -40)
+	p.set_view(0.15, -0.05)
+	level.radio.say("host", "Ladies, gentlemen and whatever's left of you: our courier has left the building!")
+	level.radio.advance(0.0)
+	_hide_ui(level, false)
+	await _frames(10)
+	_save("m02_first_person_radio")
+	# The results card.
+	level.mission_hud.show_results({"seconds": 52.4, "score": 18450, "best_combo": 6200, "par_seconds": 60.0,
+		"total_tapes": 1, "tapes": ["x"], "falls": 1, "catches": 0, "practice": false, "records": {"time": true}},
+		"On Air", true)
+	await _frames(6)
+	_save("results")
+	quit()
+
+
+## The overview shots (those whose name contains `only`).
+func _shots(campaign: Script, only: String) -> void:
 	var current := ""
 	var level: Node = null
 	for s: Array in SHOTS:
+		if not String(s[3]).contains(only):
+			continue
 		if s[0] != current:
 			if level != null:
 				level.queue_free()
@@ -72,32 +111,17 @@ func _run() -> void:
 		level.queue_free()
 		await _frames(2)
 
-	# First person, a few seconds in, with the radio and objective up.
-	level = await _load_mission(campaign, "m02_on_air")
-	var p: Node = level.get_node("Player")
-	p.set_physics_process(false)
-	p.global_position = Vector3(0, 8, -40)
-	p.set_view(0.15, -0.05)
-	level.radio.say("host", "Ladies, gentlemen and whatever's left of you: our courier has left the building!")
-	level.radio.advance(0.0)
-	_hide_ui(level, false)
-	await _frames(10)
-	_save("m02_first_person_radio")
-	# The results card.
-	level.mission_hud.show_results({"seconds": 52.4, "score": 18450, "best_combo": 6200, "par_seconds": 60.0,
-		"total_tapes": 1, "tapes": ["x"], "falls": 1, "catches": 0, "practice": false, "records": {"time": true}},
-		"On Air", true)
-	await _frames(6)
-	_save("results")
-	quit()
 
-
+## A mission by id, or any mission data file by its res:// path.
 func _load_mission(campaign: Script, id: String) -> Node:
 	var all: Array = campaign.missions()
 	for i in all.size():
 		if all[i].id == id:
 			campaign.current = i
 	var level: Node = load("res://campaign/mission.tscn").instantiate()
+	if id.begins_with("res://"):
+		campaign.current = -1
+		level.get_node("Builder").mission_path = id
 	root.add_child(level)
 	var p: Node = level.get_node("Player")
 	p.use_device_input = false

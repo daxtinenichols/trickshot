@@ -209,6 +209,8 @@ func _targets(delta: float) -> Dictionary:
 	_phase = fposmod(_phase + speed * delta / cycle_len * _run_direction(), 1.0)
 
 	match player.state:
+		Player.State.SURFACE when player.is_sliding():
+			t["slide"] = 1.0
 		Player.State.GROUND, Player.State.SURFACE:
 			var moving := clampf(speed / 2.0, 0.0, 1.0)
 			t["run"] = moving

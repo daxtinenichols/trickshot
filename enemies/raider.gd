@@ -15,6 +15,8 @@ extends Enemy
 
 enum State { HOLD, MOVE, AIM, RECOVER, RELOAD }
 
+const Voices := preload("res://audio/voice_lines.gd")
+
 ## The dark-humour crew of the warlord on the radio: a line when they tag you.
 const TAUNTS := [
 	"SMILE, PARKER, YOU'RE ON AIR!",
@@ -316,6 +318,9 @@ func _on_bullet_hit(amount: float) -> void:
 		encounter.on_player_hurt(self, amount, &"bullet")
 	_taunt.text = TAUNTS[(shots_fired + seed_value) % TAUNTS.size()]
 	_taunt_time = 1.6
+	var audio := get_node_or_null(^"/root/GameAudio")
+	if audio != null:
+		audio.play_voice_on(self, Voices.stream_for("raider2" if seed_value % 2 else "raider", _taunt.text))
 
 
 # ---------------------------------------------------------------- positioning

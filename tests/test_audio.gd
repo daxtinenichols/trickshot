@@ -222,3 +222,64 @@ func test_built_sounds_are_cached_for_next_launch() -> void:
 	check(back.music.size() == 1 and back.music[0].data == layers[0].data, "and so does the music")
 	DirAccess.remove_absolute(GameAudio.cache_path)
 	GameAudio.cache_path = saved
+
+
+# ---------------------------------------------------------------- voices
+
+const Voices := preload("res://audio/voice_lines.gd")
+
+
+static func _lines_in(node: Variant, out: Array) -> void:
+	if node is Dictionary:
+		if node.get("who") is String and node.get("line") is String:
+			out.append([node.who, node.line])
+		for v: Variant in node.values():
+			_lines_in(v, out)
+	elif node is Array:
+		for v: Variant in node:
+			_lines_in(v, out)
+
+
+func test_radio_lines_have_voices() -> void:
+	var lines := []
+	for f in DirAccess.get_files_at("res://campaign/missions"):
+		if f.ends_with(".json"):
+			_lines_in(JSON.parse_string(FileAccess.get_file_as_string("res://campaign/missions/" + f)), lines)
+	check(lines.size() > 50, "found the mission lines (%d)" % lines.size())
+	var silent := []
+	var speakers := {}
+	for l: Array in lines:
+		var s := Voices.stream_for(l[0], l[1])
+		if s == null:
+			silent.append("%s: %s" % l)
+			continue
+		speakers[l[0]] = true
+		check(s.get_length() > 0.4 and s.get_length() < 12.0, "%s clip length %.2f s" % [l[0], s.get_length()])
+	for who: String in ["host", "mags", "echo", "parker"]:
+		check(speakers.has(who), "%s has a voice" % who)
+	# New lines stay subtitle-only until audio/tools/make_voices.py runs.
+	if not silent.is_empty():
+		print("    %d radio lines not voiced yet, e.g. %s" % [silent.size(), silent[0]])
+	check(Voices.stream_for("mags", "A line nobody has written.") == null, "unvoiced lines are just silent")
+	for t: String in Raider.TAUNTS:
+		check(Voices.stream_for("raider", t) != null and Voices.stream_for("raider2", t) != null, "taunt voiced: %s" % t)
+
+
+func test_radio_feed_speaks_and_holds_the_line_until_said() -> void:
+	var line := ""
+	var m: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/missions/m00_dawn_run.json"))
+	for r: Dictionary in m.radio:
+		if r.who == "mags" and Voices.stream_for("mags", r.line) != null:
+			line = r.line
+			break
+	check(line != "", "found a voiced Mags line")
+	var feed := RadioFeed.new()
+	tree.root.add_child(feed)
+	GameAudio.heard.clear()
+	feed.say("mags", line)
+	feed.advance(0.0)
+	var clip := Voices.stream_for("mags", line).get_length()
+	check(feed._show_time >= clip, "subtitle stays up for the whole clip (%.2f >= %.2f)" % [feed._show_time, clip])
+	check(GameAudio.heard.has("radio_key"), "keyed onto the radio")
+	feed.queue_free()
+	await tree.process_frame

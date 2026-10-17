@@ -8,7 +8,7 @@ const MOVES := [
 	["Jump / hop", "{jump}.", "Jump right as you land to keep all your speed and add a little, with no cap: perfect chains keep getting faster. Early or late jumps bleed it."],
 	["Hurdle / vault", "Press {jump} at a waist-high yellow wall, on the ground or in the air. It's never automatic, so you can always just jump over.", "A vault never slows you. Take off close to the wall for a clean vault that adds speed."],
 	["Mantle", "Jump into a ledge that's too high to vault.", "You keep your run through it. A clean grab adds a little speed, even off a wall climb."],
-	["Slide", "Press {crouch} while sprinting.", "Faster entries slide further. Slopes add speed."],
+	["Slide", "Press {crouch} while sprinting.", "Faster entries slide further. Works on any slope or ramp: down speeds you up, up trades speed for height."],
 	["Slide landing", "Press {crouch} just before you land from a jump or fall.", "Turns part of your fall into forward speed."],
 	["Roll", "Double-tap {crouch} while running, or flick the view down past your feet.", "A quick forward roll. Keeps your speed."],
 	["Landing roll", "Hold {crouch} in the air, from any angle (even mid-flip), or land looking down.", "You curl into a ball and roll out of big drops without losing speed instead of stumbling."],

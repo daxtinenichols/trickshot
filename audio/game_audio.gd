@@ -17,8 +17,9 @@ extends Node
 ## - Dead Air: the run goes out live on a raider warlord's radio show. With
 ##   no combo running the music plays "on air", band-limited with a crackle
 ##   under it; a combo opens it up to full sound. Combo milestones get a
-##   broadcast jingle, and play_radio() puts a voice line (later) on the
-##   radio, keyed with static, with the music ducked under it.
+##   broadcast jingle, and play_radio() puts a voice line on the radio,
+##   keyed with static, with the music ducked under it (RadioFeed voices
+##   each line it shows; clips come from audio/voice_lines.gd).
 ## - Slow-mo muffles and deepens everything, matching the vignette.
 ##
 ## Buses: Master > Music, SFX and Radio. set_music_volume()/set_sfx_volume()
@@ -401,6 +402,36 @@ func play_radio(stream: AudioStream, volume_db := 0.0, interference := false) ->
 		_radio.finished.connect(_on_radio_done)
 
 
+## Cuts the radio voice off (the mission it belonged to has gone).
+func stop_radio() -> void:
+	if _radio != null and _radio.playing:
+		_radio.stop()
+		_voice_duck = 0.0
+
+
+## A voice shouted out in the world by `node` (a raider's taunt), following
+## it around. Skipped while that node is still mid-line.
+func play_voice_on(node: Node3D, stream: AudioStream, volume_db := 0.0) -> void:
+	if not enabled or stream == null or node == null or not node.is_inside_tree():
+		return
+	var old := node.get_node_or_null(^"Voice") as AudioStreamPlayer3D
+	if old != null and old.playing:
+		return
+	if old != null:
+		old.free()
+	var p := AudioStreamPlayer3D.new()
+	p.name = &"Voice"
+	p.stream = stream
+	p.volume_db = volume_db
+	p.unit_size = 10.0
+	p.position = Vector3(0, 1.6, 0)
+	p.bus = &"SFX"
+	node.add_child(p)
+	p.finished.connect(p.queue_free)
+	if not _headless:
+		p.play()
+
+
 func _on_radio_done() -> void:
 	var p := play("radio_key", -12.0)
 	if p:
@@ -727,7 +758,7 @@ func _process(delta: float) -> void:
 	_set_loop(_wind_low, clampf(v, 0.0, 1.6) * 0.55, -26.0 + air, lerpf(0.8, 1.3, clampf(v, 0.0, 1.5) / 1.5))
 	_set_loop(_wind_high, clampf(v - 0.6, 0.0, 1.0), -30.0 + air, lerpf(0.9, 1.25, clampf(v - 0.6, 0.0, 1.0)))
 	# Slide scrape follows speed; fades out quickly when you stand up.
-	var sliding := not paused and player.state == Player.State.SLIDE
+	var sliding := not paused and player.is_sliding()
 	var want := clampf(player.horizontal_speed() / top, 0.2, 1.2) if sliding else 0.0
 	_slide_gain = move_toward(_slide_gain, want, real * (8.0 if want > _slide_gain else 4.0))
 	_set_loop(_slide, _slide_gain, -10.0, lerpf(0.8, 1.2, clampf(_slide_gain, 0.0, 1.0)))
