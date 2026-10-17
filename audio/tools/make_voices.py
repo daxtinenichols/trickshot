@@ -17,7 +17,9 @@ Lines written ahead of the missions (the story director's mission briefs)
 can be voiced early: --briefs PATH reads every `- [cue] WHO: "line"` bullet
 from that Markdown file into audio/voices/upcoming.json, which is voiced
 like the mission lines, so the clips are ready when the words land in a
-mission file verbatim.
+mission file verbatim. --pending DIR ... does the same for the mission JSON
+files in other checkouts (missions in PRs that haven't merged yet). Pass
+every source each time: upcoming.json is rebuilt from them.
 
 A recorded take beats the synthetic one: save it as
 audio/voices/recorded/<who>/<key>.ogg (the name is in script.csv) and the
@@ -26,7 +28,7 @@ game plays it instead. Nothing here touches recorded/.
 Only new or changed lines are spoken; clips for lines that no longer exist
 are deleted. Re-run after editing missions or the cast:
 
-    python3 audio/tools/make_voices.py [--briefs MD] [--force WHO ...] [--models DIR]
+    python3 audio/tools/make_voices.py [--briefs MD] [--pending DIR ...] [--force WHO ...] [--models DIR]
 
 Needs `pip install kokoro-onnx soundfile`, ffmpeg, and the Kokoro v1.0 model
 files (kokoro-v1.0.onnx, voices-v1.0.bin from
@@ -67,14 +69,17 @@ def walk(node, found, where):
             walk(v, found, where)
 
 
-def collect():
-    """{(who, line): where} for every line in the game."""
-    found = {}
-    missions = os.path.join(ROOT, "campaign", "missions")
+def mission_lines(missions, found):
     for name in sorted(os.listdir(missions)):
         if name.endswith(".json"):
             with open(os.path.join(missions, name), encoding="utf-8") as f:
                 walk(json.load(f), found, name[:-5])
+
+
+def collect():
+    """{(who, line): where} for every line in the game."""
+    found = {}
+    mission_lines(os.path.join(ROOT, "campaign", "missions"), found)
     if os.path.exists(UPCOMING):
         with open(UPCOMING, encoding="utf-8") as f:
             for u in json.load(f):
@@ -147,12 +152,19 @@ def main():
     ap.add_argument("--force", nargs="*", default=[], help="re-speak every line of these speakers (all if none named)")
     ap.add_argument("--models", default=os.path.expanduser("~/.cache/kokoro"))
     ap.add_argument("--briefs", help="also voice the lines in this mission-briefs Markdown file (saved to audio/voices/upcoming.json)")
+    ap.add_argument("--pending", nargs="+", default=[], help="also voice the mission JSONs in these folders (saved to audio/voices/upcoming.json)")
     ap.add_argument("--dry-run", action="store_true", help="list what would change")
     args = ap.parse_args()
 
-    if args.briefs and not args.dry_run:
+    if (args.briefs or args.pending) and not args.dry_run:
+        upcoming = read_briefs(args.briefs) if args.briefs else []
+        pending = {}
+        for d in args.pending:
+            mission_lines(d, pending)
+        seen = {(u["who"], u["line"]) for u in upcoming}
+        upcoming += [{"who": w, "line": l, "where": "pending: " + where} for (w, l), where in pending.items() if (w, l) not in seen]
         with open(UPCOMING, "w", encoding="utf-8") as f:
-            json.dump(read_briefs(args.briefs), f, indent="\t", ensure_ascii=False)
+            json.dump(upcoming, f, indent="\t", ensure_ascii=False)
             f.write("\n")
     with open(os.path.join(VOICES, "cast.json"), encoding="utf-8") as f:
         cast = {k: v for k, v in json.load(f).items() if not k.startswith("_")}
