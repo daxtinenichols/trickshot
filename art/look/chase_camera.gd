@@ -8,7 +8,7 @@ extends Camera3D
 ## player's yaw, up-down tilts it with the player's look pitch. It follows
 ## the player's interpolated transform rigidly (no positional lag), so the
 ## runner stays steady on screen at any frame rate; only zoom and wall
-## pull-in are smoothed. (The in-game corner camera is separate.)
+## pull-in are smoothed.
 ##
 ## Aiming: the camera sits over the right shoulder and always looks at the
 ## point the first-person view (which shots come from) is aimed at, so the

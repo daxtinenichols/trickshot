@@ -24,7 +24,7 @@ const MODEL := preload("res://art/characters/runner/runner.glb")
 const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
 const MotionTrails := preload("res://art/fx/motion_trails.gd")
 ## Render layer 2: the first-person camera skips it, third-person cameras
-## (corner cam, chase cam) see it.
+## (the chase cam, tool cameras) see it.
 const LAYER := 2
 
 ## Bones whose x angle is mirrored so that + always means "tip forward"

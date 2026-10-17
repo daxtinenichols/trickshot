@@ -117,11 +117,13 @@ Point values are in `scoring/combo_tracker.gd`.
 
 ## Levels
 
-Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbox, Rooftops, Combo Park.
+Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbox, Rooftops, Combo Park, Ruined Mall.
 
 **Rooftops** is a timed obstacle course across six rooftops. The clock starts at the green line and stops at the yellow finish. Hurdles and a slide bar, a gap, a door and a window wall, a wallrun across a 12 m gap, a 3 m climb, a low window to slide through, a 9 m drop to roll out of, a sideways ramp and an optional loop, more hurdles and a last gap. Falling to the street puts you back at the last checkpoint and the clock keeps running. Your best time is saved. Keys 1–4 jump to the start and each checkpoint (from a checkpoint it's practice and doesn't set a best time).
 
 **Combo Park** is an open yard with no set route, built for keeping a combo alive: a two-tier tower in the middle (mantle steps, a climb face, slide ramps down three sides, kick-off pillars), a half-pipe, a loop at the end of a long runway, a wallrun zigzag over a red floor, a hurdle field with slide bars, a door and window wall, sideways ramps along the west side (one gentle, one steep), blue fins and mantle blocks in between, long walls down both sides, and targets throughout. Keys 1–6 jump between areas.
+
+**Ruined Mall** is a two-floor mall gone to ruin, built for flow and later for fights: a skylit atrium with escalators, a bridge and hanging billboards to wallrun, shops with glass you can run or shoot through, a caved-in walkway beside a blue wall, and a food court under a collapsed roof with a debris ramp back up. Keys 1–6 jump between areas.
 
 Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide, purple is runnable ramps and loops, and red is targets (yellow heads are headshots).
 
@@ -160,7 +162,7 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `fx/` | Speed trail |
 | `tests/` | Test runner and suites |
 | `tools/` | Screenshot tool |
-| `maps/` | Rooftops course (with its timer), Combo Park, F11 level switcher |
+| `maps/` | Rooftops course (with its timer), Combo Park, Ruined Mall, F11 level switcher |
 | `art/` | Art look: runner character and its animation, cel shader, outlines, speed trails. See [docs/art-pipeline.md](docs/art-pipeline.md) |
 
 ## Art look

@@ -10,6 +10,7 @@ shader_type spatial;
 //   4 painted metal (the paint is base_color; chips show rust underneath)
 //   5 painted concrete (chips show concrete)
 //   6 building facade (concrete with a grid of dark, some broken, windows)
+//   7 floor tiles (60 cm, grout, cracked and missing tiles)
 
 render_mode specular_disabled;
 
@@ -186,6 +187,23 @@ vec3 facade(vec2 p, vec3 col, vec3 n) {
 	return col;
 }
 
+// 60 cm tiles in two faded tones, dark grout, some cracked, some gone
+// (bare screed underneath).
+vec3 tiles(vec2 p, vec3 col) {
+	vec2 cell = p / 0.6;
+	vec2 id = floor(cell);
+	float h = hash12(id + 21.0);
+	vec3 t = col * mix(0.9, 1.04, steps(h, 3.0));
+	t *= mix(0.94, 1.0, steps(fbm(p * 0.5), 3.0));
+	float grout = grid(p, 0.6, 0.012);
+	t = mix(t, col * 0.55, grout);
+	float c = 1.0 - cut(crack_lines(p * 1.4), 0.02);
+	t *= 1.0 - c * step(0.7, h) * 0.35;
+	// Missing tiles cluster in patches.
+	float gone = step(0.82, hash12(id + 5.0)) * cut(fbm(p * 0.2 + 3.0), 0.5);
+	return mix(t, concrete(p, under_color.rgb * 0.75), gone);
+}
+
 void fragment() {
 	vec3 n = normalize(world_normal);
 	vec3 an = abs(n);
@@ -207,6 +225,8 @@ void fragment() {
 		tex = painted(p, col, concrete(p, under_color.rgb));
 	} else if (surface == 6) {
 		tex = facade(uv, col, n);
+	} else if (surface == 7) {
+		tex = tiles(p, col);
 	}
 	col = mix(col, tex, tex_strength);
 	if (!top && surface != 0) {
