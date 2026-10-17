@@ -1,0 +1,74 @@
+{
+ "id": "m01_the_yard",
+ "title": "The Yard",
+ "runner": "",
+ "base": "res://maps/combo_park_builder.gd",
+ "fail_y": -20,
+ "par_seconds": 150,
+ "start": {"at": [0, 0, 30]},
+ "checkpoints": [],
+ "objectives": [
+  {"type": "combo", "multiplier": 3, "text": "Chain three different moves before you land: a x3 combo"},
+  {"type": "shoot", "count": 3, "text": "Shoot three of Mags's dummies"},
+  {"type": "shoot", "count": 2, "headshots": true, "text": "Two headshots: aim for the yellow heads"},
+  {"type": "score", "points": 6000, "text": "Score 6,000 points in the yard"},
+  {"type": "reach", "name": "the gate", "text": "Head out through the south gate", "at": [0, 0, 63], "size": [6, 6, 3]}
+ ],
+ "radio": [
+  {"on": "start", "who": "mags", "line": "Before you go running off after her, you're going through the yard. Once. For me."},
+  {"on": "objective:0", "who": "mags", "line": "Vault, slide, flip, wallrun. String three different ones together before your feet settle."},
+  {"on": "done:0", "who": "mags", "line": "That's the stuff. The Host's listeners eat that up, and right now you need them hungry."},
+  {"on": "objective:1", "who": "mags", "line": "Here. Your granddad's pistol. It's older than you and it still shoots straighter than you."},
+  {"on": "objective:1", "who": "mags", "line": "The red dummies. Hit them on the move: still targets are for still people."},
+  {"on": "objective:2", "who": "mags", "line": "Now the heads. The Static wear scrap on their chests, not their faces."},
+  {"on": "objective:3", "who": "mags", "line": "Last thing. Put it all together. Shots in the middle of a combo count for more."},
+  {"on": "done:3", "who": "mags", "line": "Alright. You're as ready as anyone's ever been for something this stupid."},
+  {"on": "objective:4", "who": "mags", "line": "South gate. The warehouses, then the city. I'll be in your ear the whole way."},
+  {"on": "complete", "who": "parker", "line": "Thanks, Mags."},
+  {"on": "complete", "who": "mags", "line": "Thank me by coming back. Both of you."},
+  {"on": "time:90", "who": "host", "line": "Still in the playground, Parker? Echo says you were always late. I'm starting to see it."}
+ ],
+ "chatter": {
+  "bail": [
+   {"who": "mags", "line": "Again. Smoother."},
+   {"who": "mags", "line": "Land it on your feet, not your face."},
+   {"who": "mags", "line": "Sloppy. The Static won't wait for you to get up."}
+  ],
+  "headshot": [
+   {"who": "mags", "line": "Clean."},
+   {"who": "mags", "line": "Ha! Right between the eyes."}
+  ],
+  "kill": [
+   {"who": "mags", "line": "Good. Keep moving while you shoot."}
+  ],
+  "combo": [
+   {"who": "mags", "line": "Now that's a courier."},
+   {"who": "mags", "line": "Don't let it go to your head."}
+  ]
+ },
+ "pieces": [
+  {"row": "fence_chainlink", "from": [-40.5, 0, 64.5], "to": [-4.5, 0, 64.5], "count": 13},
+  {"row": "fence_chainlink", "from": [4.5, 0, 64.5], "to": [40.5, 0, 64.5], "count": 13},
+  {"prop": "loudspeaker_pole", "at": [-3.6, 0, 63.6], "yaw": 180},
+  {"prop": "loudspeaker_pole", "at": [3.6, 0, 63.6], "yaw": 160},
+  {"label": "SOUTH GATE · TO THE WAREHOUSES", "at": [0, 4.2, 64], "size": 1.0},
+  {"mark": [0, 0, 63], "size": [6, 3], "color": "#f57320"},
+  {"prop": "chalk_arrow", "at": [0, 0, 58], "yaw": 180},
+  {"prop": "tarp_shelter", "at": [-12, 0, 56], "yaw": 180},
+  {"prop": "radio_set", "at": [-9.2, 0, 55.4], "yaw": 160},
+  {"prop": "planter_tub", "at": [-15.2, 0, 55]},
+  {"prop": "planter_tub", "at": [-15.6, 0, 57.1]},
+  {"prop": "crate_stack", "at": [12, 0, 56], "yaw": 15},
+  {"prop": "crate_wood", "at": [14.2, 0, 57.2], "yaw": -8},
+  {"prop": "pallet", "at": [16.6, 0, 55.5], "yaw": 30},
+  {"prop": "tire_stack", "at": [20, 0, 58]},
+  {"prop": "tire_stack", "at": [20.9, 0, 56.9]},
+  {"prop": "barrel_rust", "at": [-22, 0, 58]},
+  {"prop": "barrel_rust", "at": [-22.7, 0, 57.2], "yaw": 50},
+  {"prop": "car_wreck", "at": [28, 0, 56], "yaw": 80},
+  {"prop": "sandbag_wall", "at": [-28, 0, 56]},
+  {"prop": "generator", "at": [-6.5, 0, 59], "yaw": 90},
+  {"prop": "water_tank", "at": [36, 0, 58]},
+  {"tape": [36, 3.62, 58], "id": "m01_tape_tank"}
+ ]
+}

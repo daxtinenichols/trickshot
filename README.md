@@ -129,13 +129,24 @@ All enemy logic ticks in physics from game state and a seeded random number gene
 
 ## Levels
 
-Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbox, Rooftops, Combo Park, Ruined Mall.
+Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbox, Rooftops, Combo Park, Ruined Mall, Campaign.
 
 **Rooftops** is a timed obstacle course across six rooftops. The clock starts at the green line and stops at the yellow finish. Hurdles and a slide bar, a gap, a door and a window wall, a wallrun across a 12 m gap, a 3 m climb, a low window to slide through, a 9 m drop to roll out of, a sideways ramp and an optional loop, more hurdles and a last gap. Falling to the street puts you back at the last checkpoint and the clock keeps running. Your best time is saved. Keys 1–4 jump to the start and each checkpoint (from a checkpoint it's practice and doesn't set a best time).
 
 **Combo Park** is an open yard with no set route, built for keeping a combo alive: a two-tier tower in the middle (mantle steps, a climb face, slide ramps down three sides, kick-off pillars), a half-pipe, a loop at the end of a long runway, a wallrun zigzag over a red floor, a hurdle field with slide bars, a door and window wall, sideways ramps along the west side (one gentle, one steep), blue fins and mantle blocks in between, long walls down both sides, and targets throughout. Keys 1–6 jump between areas.
 
 **Ruined Mall** is a two-floor mall gone to ruin, built for flow and later for fights: a skylit atrium with escalators, a bridge and hanging billboards to wallrun, shops with glass you can run or shoot through, a caved-in walkway beside a blue wall, and a food court under a collapsed roof with a debris ramp back up. Keys 1–6 jump between areas.
+
+## Campaign
+
+**Campaign** (Esc menu or F11) opens *Dead Air*: all thirteen missions by act, each with its story beat, what it teaches and your best result. Four are playable so far:
+
+- **0 Dawn Run** (dock rooftops): deliver a parcel, run home, and hear the Host announce he has Echo.
+- **1 The Yard** (Combo Park): Mags's last lesson: a x3 combo, three dummies, two headshots, 6,000 points, then out the south gate.
+- **2 On Air** (warehouse roofs): the Host names you on air; wallruns, a wall hop and three Static lookouts to shoot.
+- **12 Signal Out** (the burning tower): you play Echo and the Host chases you. He follows your exact path, never drops more than about 22 m behind, and catches you if you slow down; Parker coaches you on the radio. Beating it unlocks Echo as a runner for every mission.
+
+Mags, the Host, Echo and Parker talk over the radio (subtitles low in the middle) while you run; nothing stops the game. The clock starts when you leave the start, the objective shows under it, falling sends you to the last checkpoint, and lost broadcast tapes hide on the harder routes. Number keys jump to checkpoints as practice runs. Missions are data files; how to write one is in [docs/missions.md](docs/missions.md).
 
 Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide, purple is runnable ramps and loops, and red is targets (yellow heads are headshots).
 
@@ -176,6 +187,8 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `tests/` | Test runner and suites |
 | `tools/` | Screenshot tool |
 | `maps/` | Rooftops course (with its timer), Combo Park, Ruined Mall, F11 level switcher |
+| `campaign/` | Campaign list, mission scene, mission data files (`missions/*.json`), mission rules, radio, chase, mission HUD, campaign menu. See [docs/missions.md](docs/missions.md) |
+| `art/props/` | Prop kit: crates, wrecks, barricades, containers, loudspeakers and more, built by `art/source/build_props.py` |
 | `art/` | Art look: runner character and its animation, cel shader, outlines, speed trails. See [docs/art-pipeline.md](docs/art-pipeline.md) |
 | `audio/` | Music and movement/world sounds (the `GameAudio` autoload), all synthesised in code. See [audio/SOURCES.md](audio/SOURCES.md) |
 
