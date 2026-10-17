@@ -162,3 +162,33 @@ func test_chase_camera_looks_down_on_the_runner() -> void:
 	check_between(down, 18.0, 35.0, "looks down on the runner (%.0f degrees)" % down)
 	cam.set_active(false)
 	cam.queue_free()
+
+
+func test_body_is_smooth_in_slow_motion() -> void:
+	# In slow-mo the sim ticks less often than frames are drawn; the body must
+	# follow the interpolated transform, moving a little every frame instead
+	# of jumping once per tick.
+	var body: RunnerBody = ArtLook.ensure_body(player)
+	player.scripted_input = TestWorld.forward_input()
+	for i in 60:
+		await tree.physics_frame
+	Engine.time_scale = 0.25
+	# Settle: the frames around the switch still carry a full-speed step.
+	for i in 6:
+		await tree.process_frame
+	var steps: Array[float] = []
+	var last := body.global_position
+	for i in 24:
+		await tree.process_frame
+		steps.append(body.global_position.distance_to(last))
+		last = body.global_position
+	Engine.time_scale = 1.0
+	var total := 0.0
+	var still := 0
+	for d in steps:
+		total += d
+		if d < 0.002:
+			still += 1
+	check(total > 0.3, "moving (%.2f m)" % total)
+	check(still <= 2, "moves on almost every frame (%d still frames of %d)" % [still, steps.size()])
+	check(steps.max() < total / steps.size() * 2.5, "no jumps (largest step %.3f, mean %.3f)" % [steps.max(), total / steps.size()])
