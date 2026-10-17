@@ -21,6 +21,12 @@ const SHOTS := [
 	["res://maps/mall.tscn", Vector3(14, 1.7, -14), Vector3(19, 1.6, -40), "mall_shops"],
 	["res://maps/mall.tscn", Vector3(-6, 3.2, -71), Vector3(8, 1.5, -86), "mall_food_court"],
 	["res://maps/mall.tscn", Vector3(4, 7.9, -71.5), Vector3(-20, 6.6, -73), "mall_camp"],
+	["res://maps/mall.tscn", Vector3(-3, 8.2, -99), Vector3(0, 3, -200), "mall_concourse"],
+	["res://maps/mall.tscn", Vector3(0, 1.7, -160), Vector3(3, 2.5, -230), "mall_concourse_ground"],
+	["res://maps/mall.tscn", Vector3(-12, 3, -343), Vector3(4, 3.5, -385), "mall_store"],
+	["res://maps/mall.tscn", Vector3(-6, 9, -342), Vector3(4, 6, -390), "mall_store_upper"],
+	["res://maps/mall.tscn", Vector3(-4, 3, -404), Vector3(2, 1, -450), "mall_dock"],
+	["res://maps/mall.tscn", Vector3(-20, 18, -340), Vector3(4, 13, -400), "mall_roof"],
 ]
 
 var out := "user://map_shots"

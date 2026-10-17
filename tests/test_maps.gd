@@ -338,7 +338,8 @@ func test_rooftops_banked_ramp() -> void:
 func test_mall_spawns_are_standable() -> void:
 	await _load(MALL)
 	var b: MallBuilder = level.builder
-	check(b.spawns.size() == 6, "six spawns (%d)" % b.spawns.size())
+	check(b.spawns.size() == 9, "nine spawns (%d)" % b.spawns.size())
+	check(b.spawns[0] == MallBuilder.ENTRY, "spawns[0] is ENTRY")
 	for i in b.spawns.size():
 		level.go_to_zone(i)
 		await _step(40)
@@ -417,3 +418,50 @@ func test_mall_edges_closed() -> void:
 func test_sandbox_edges_closed() -> void:
 	await _load(preload("res://levels/sandbox.tscn"))
 	_check_closed(Vector3(10, 0, -27.5), Vector2(320, 285))
+
+
+## The campaign's hand-off points: the exit and the store's roof are real
+## ground, and the far edge opens on request.
+func test_mall_campaign_points() -> void:
+	await _load(MALL)
+	var space := level.get_world_3d().direct_space_state
+	for xf: Transform3D in [MallBuilder.EXIT, MallBuilder.ANCHOR_ENTRY, MallBuilder.ANCHOR_EXIT]:
+		var q := PhysicsRayQueryParameters3D.create(xf.origin + Vector3(0, 1, 0), xf.origin + Vector3(0, -1, 0), 1)
+		var r := space.intersect_ray(q)
+		check(not r.is_empty() and absf(r.position.y - xf.origin.y) < 0.6, "ground under %s" % xf.origin)
+	# Open far edge: built standalone, nothing stands past the end of the road.
+	var open := (load("res://maps/mall_builder.gd") as GDScript).new() as Node3D
+	open.set("open_exit", true)
+	open.call("build")
+	var far := MallBuilder.GROUND_CENTER.z - MallBuilder.GROUND_SIZE.y * 0.5
+	var blocking := 0
+	for c in (open.get_child(0) as Node).get_children():
+		if c is StaticBody3D and (c as Node3D).position.z < far - 1.0:
+			blocking += 1
+	check(blocking == 0, "open_exit leaves the road open (%d pieces past it)" % blocking)
+	open.free()
+
+
+## The department store's roof access really climbs: mantle up the steps
+## from the sales floor onto the roof.
+func test_mall_roof_access() -> void:
+	await _load(MALL)
+	player.respawn(Transform3D(Basis.IDENTITY, Vector3(14, MallBuilder.UPPER_Y, -350)))
+	await _step(10)
+	var space := level.get_world_3d().direct_space_state
+	var best := -INF
+	for i in 400:
+		var f := _steer(14.0)
+		# Jump at each step face, like a person would.
+		var pos := player.global_position
+		var q := PhysicsRayQueryParameters3D.create(pos + Vector3(0, 0.6, 0), pos + Vector3(0, 0.6, -1.4), 1)
+		q.exclude = [player.get_rid()]
+		if player.state == Player.State.GROUND and not space.intersect_ray(q).is_empty():
+			f.jump_pressed = true
+		f.jump_held = true
+		player.scripted_input = f
+		await tree.physics_frame
+		best = maxf(best, player.global_position.y)
+		if best > MallBuilder.ROOF_Y + 0.3:
+			break
+	check(best > MallBuilder.ROOF_Y + 0.3, "reached the roof (best y %.2f, at %s)" % [best, player.global_position])
