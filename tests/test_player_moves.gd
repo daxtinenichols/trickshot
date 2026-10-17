@@ -391,7 +391,8 @@ func test_wall_climb_into_mantle() -> void:
 	await w.step_until(func() -> bool: return Player.State.MANTLE in w.states_seen and p.state != Player.State.MANTLE, 90, _fwd())
 	check(Player.State.MANTLE in w.states_seen, "climb ends in a mantle")
 	check(p.horizontal_speed() > run_in * 0.7, "the mantle gives back the speed you climbed with (%.2f of %.2f)" % [p.horizontal_speed(), run_in])
-	await w.step(20, _fwd())
+	# (The wall is 4 m deep, so don't run off its back.)
+	await w.step(8, _fwd())
 	check_near(p.global_position.y, 3.0, 0.08, "on top of the 3 m wall")
 
 

@@ -26,6 +26,11 @@ extends Resource
 @export_range(0.0, 1.0, 0.01) var wall_impact_loss := 0.5
 ## Speed into a wall that counts as a head-on impact.
 @export_range(0.0, 20.0, 0.1) var wall_impact_speed := 6.0
+## There is no top speed for moves: speed earned above top_speed (vault
+## bonuses, perfect hops, wall jumps, rolls, slopes) carries while you keep
+## running forward, bleeding this many m/s per second, so chaining clean
+## moves keeps stacking it. Let go of forward and friction stops you as usual.
+@export_range(0.0, 10.0, 0.05) var overspeed_decay := 1.0
 
 @export_group("Air")
 @export_range(0.0, 60.0, 0.1) var gravity := 19.0
@@ -61,19 +66,25 @@ extends Resource
 @export_range(0.0, 1.0, 0.05) var vault_min_height := 0.35
 ## Thickest obstacle that counts as vaultable; thicker ones are mantled onto.
 @export_range(0.2, 3.0, 0.05) var vault_max_depth := 1.4
+## Longest a vault takes; at speed it takes as long as running the same
+## distance would (never less than vault_min_time), so it never slows you.
 @export_range(0.05, 1.0, 0.01) var vault_time := 0.28
-## Speed gained by a clean vault (0.15 = 15%). A sloppy one still keeps
-## nearly all of it, so vaulting beats jumping over.
+@export_range(0.05, 1.0, 0.01) var vault_min_time := 0.15
+## Speed gained by a clean vault (0.15 = 15%). A sloppy one keeps all of
+## it, so vaulting beats jumping over.
 @export_range(0.0, 0.5, 0.01) var vault_speed_bonus := 0.15
 ## Extra momentum (raising your top speed) from a clean vault or mantle.
 @export_range(0.0, 1.0, 0.01) var clean_move_momentum := 0.15
 ## How far above your feet you can catch a ledge while airborne.
 @export_range(0.2, 3.0, 0.05) var mantle_air_reach := 1.55
+## How long a mantle takes at run speed; faster runs pull up quicker.
 @export_range(0.05, 1.0, 0.01) var mantle_time := 0.32
-## Fraction of horizontal speed kept after a sloppy mantle. A clean one
-## (quality at or above mantle_clean_quality) keeps all of it.
-@export_range(0.0, 1.0, 0.01) var mantle_speed_keep := 0.55
-@export_range(0.05, 1.0, 0.01) var mantle_clean_quality := 0.7
+## Speed gained by a clean mantle (0.05 = 5%), on top of keeping it all.
+@export_range(0.0, 0.5, 0.01) var mantle_speed_bonus := 0.05
+## Fraction of horizontal speed kept after a very sloppy mantle. A clean
+## one (quality at or above mantle_clean_quality) keeps all of it.
+@export_range(0.0, 1.0, 0.01) var mantle_speed_keep := 0.85
+@export_range(0.05, 1.0, 0.01) var mantle_clean_quality := 0.4
 @export_range(0.0, 10.0, 0.1) var mantle_min_exit_speed := 3.5
 
 @export_group("Wallrun")
@@ -168,6 +179,9 @@ extends Resource
 @export_range(0.0, 0.2, 0.005) var hop_perfect_window := 0.035
 ## Horizontal speed kept by a hop pressed at the very start of the buffer.
 @export_range(0.5, 1.0, 0.01) var hop_early_keep := 0.9
+## Speed (m/s) a perfect chained hop adds, scaled by its quality. No cap,
+## like bunny hopping: keep landing them and you keep getting faster.
+@export_range(0.0, 3.0, 0.05) var hop_speed_gain := 0.5
 ## Off = steering in the air can turn you but never adds speed (no bhop/surf
 ## strafe gains). On = Quake-style strafe acceleration.
 @export var air_strafe_gain := false

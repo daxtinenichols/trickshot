@@ -47,10 +47,10 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 
 | Move | How | What precision gets you |
 |---|---|---|
-| Run | Move in any direction (always a sprint) | Keeping your speed up builds momentum, which raises your top speed (7.5 to 11.5 m/s) |
-| Hop / bunny hop | Jump as you land | Jumping within ~2 frames of landing keeps all your speed; early jumps bleed it |
-| Hurdle / vault | Press jump at a waist-high (yellow) wall, on the ground or in the air. Never automatic: you can always just jump over | A vault keeps more speed than jumping over. Taking off at the right distance gives a faster, cleaner vault that adds speed and momentum |
-| Mantle | Jump into a ledge up to ~1.5 m above your reach | A clean grab keeps all your speed, even at the top of a wall climb; a sloppy one loses some |
+| Run | Move in any direction (always a sprint) | Keeping your speed up builds momentum, which raises your running speed (7.5 to 11.5 m/s). There is no top speed: speed you earn on top of that (clean vaults, perfect hops, wall jumps, rolls, slopes) carries while you keep running forward, bleeding slowly, so chaining clean moves keeps stacking it. Let go of forward and you stop as usual |
+| Hop / bunny hop | Jump as you land | Jumping within ~2 frames of landing keeps all your speed and adds a little, with no cap, so perfect chains keep getting faster; early jumps bleed it |
+| Hurdle / vault | Press jump at a waist-high (yellow) wall, on the ground or in the air. Never automatic: you can always just jump over | A vault never slows you: you cross at your running speed. Taking off at the right distance gives a cleaner vault that adds speed and momentum |
+| Mantle | Jump into a ledge up to ~1.5 m above your reach | You keep moving forward as you pull up, and come out at your running speed. A clean grab adds a little, even at the top of a wall climb; a sloppy one loses a little |
 | Slide | Crouch while sprinting | Faster entry slides further; slopes add speed |
 | Slide landing | Press crouch just before you land from a fall | Turns some of your fall into forward speed |
 | Wallrun | Jump into a blue wall at an angle, holding a direction | You keep the angle you hit the wall at, and gravity keeps bending your path down: nothing holds you up. Shallow angle + speed = a longer run. Lean (Q or E) to roll your path round on the wall like a roll: toward the wall turns it up, away turns it down. Running up the wall costs speed. Look and aim anywhere while running; crouch drops off |

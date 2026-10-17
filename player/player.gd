@@ -53,6 +53,11 @@ var _climb_start_speed := 0.0
 var _climb_entry_speed := 0.0
 var _climb_quality := 0.0
 var _ground_time := 0.0
+## Highest horizontal speed in the last moment (RECENT_SPEED_TIME), so a
+## vault or mantle caught a tick after brushing the wall keeps your run.
+var _recent_speed := 0.0
+var _recent_age := 0.0
+const RECENT_SPEED_TIME := 0.15
 ## Seconds between the jump press and touching down (-1 = no early press).
 var _land_press_age := -1.0
 var _wallrun_time_limit := 1.0
@@ -354,6 +359,12 @@ func _physics_process(delta: float) -> void:
 
 func simulate(f: InputFrame, delta: float) -> void:
 	state_time += delta
+	var h_now := horizontal_speed()
+	if h_now >= _recent_speed or _recent_age >= RECENT_SPEED_TIME:
+		_recent_speed = h_now
+		_recent_age = 0.0
+	else:
+		_recent_age += delta
 	_update_timers(f, delta)
 	_roll_tick = _roll_input if state in [State.AIR, State.WALLRUN] else 0.0
 	_roll_input = 0.0
@@ -727,13 +738,22 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_tick_crouch(f, wish, delta)
 		return
 
-	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.stop_speed, delta)
 	# Always sprinting, in any direction, so you can strafe-run while aiming
 	# at something. Backpedalling caps at run speed; momentum only carries
 	# forward and sideways.
 	var top := MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) if f.move.y > -0.3 else tuning.run_speed
-	var wish_speed := top * wish.length()
-	velocity = MovementMath.accelerate(velocity, wish.normalized(), wish_speed, tuning.ground_accel, delta)
+	if f.move.y > 0.3 and speed > top:
+		# Speed earned above top speed has no cap: it carries while you run
+		# on, bleeding slowly, and steers like running does.
+		var keep := maxf(speed - tuning.overspeed_decay * delta, top)
+		velocity = MovementMath.accelerate(velocity, wish.normalized(), speed, tuning.ground_accel, delta)
+		var h := MovementMath.horizontal(velocity)
+		h = h.normalized() * keep if h.length() > 0.01 else h
+		velocity = Vector3(h.x, velocity.y, h.z)
+	else:
+		velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.stop_speed, delta)
+		var wish_speed := top * wish.length()
+		velocity = MovementMath.accelerate(velocity, wish.normalized(), wish_speed, tuning.ground_accel, delta)
 	velocity.y -= tuning.gravity * delta
 	_move()
 	if _try_enter_surface():
@@ -772,9 +792,13 @@ func _hop() -> void:
 		var early := _land_press_age >= 0.0
 		var err := _land_press_age if early else _ground_time
 		var q := timing_quality(err, tuning.hop_perfect_window, tuning.jump_buffer)
+		var h := MovementMath.horizontal(velocity)
 		if early:
-			var h := MovementMath.horizontal(velocity) * lerpf(tuning.hop_early_keep, 1.0, q)
-			velocity = Vector3(h.x, velocity.y, h.z)
+			h *= lerpf(tuning.hop_early_keep, 1.0, q)
+		# Perfect hops stack speed with no cap (like bunny hopping).
+		var gain := tuning.hop_speed_gain * smoothstep(0.5, 1.0, q)
+		h += (h.normalized() if h.length() > 0.5 else forward()) * gain
+		velocity = Vector3(h.x, velocity.y, h.z)
 		trick.emit(&"hop", {"speed": horizontal_speed(), "quality": q})
 	_jump()
 
@@ -1117,8 +1141,12 @@ func _tick_wallrun(f: InputFrame, wish: Vector3, delta: float) -> void:
 	var leaving := f.crouch_pressed
 	if hit.is_empty() or leaving or state_time >= _wallrun_time_limit:
 		_since_wall = 0.0
+		# Drop the push that held you to the wall, so running off its end
+		# doesn't carry you sideways over where it was.
+		var nh := MovementMath.horizontal(_wall_normal).normalized()
+		velocity += nh * clampf(-velocity.dot(nh), 0.0, 1.5)
 		if leaving:
-			velocity += MovementMath.horizontal(_wall_normal).normalized() * 2.0
+			velocity += nh * 2.0
 		_change_state(State.AIR)
 		_tick_air(f, wish, delta)
 		return
@@ -1688,6 +1716,13 @@ func _path_clear(top_y: float, to: Vector3) -> bool:
 	return get_world_3d().direct_space_state.cast_motion(q)[0] >= 1.0
 
 
+## Is there floor within `depth` below `feet`?
+func _ground_below(feet: Vector3, depth: float) -> bool:
+	var q := PhysicsRayQueryParameters3D.create(feet + Vector3.UP * 0.1, feet - Vector3.UP * depth, 1)
+	q.exclude = [get_rid()]
+	return not get_world_3d().direct_space_state.intersect_ray(q).is_empty()
+
+
 func _face_distance(p: Vector3) -> float:
 	return maxf(MovementMath.horizontal(p - global_position).length() - RADIUS, 0.0)
 
@@ -1699,14 +1734,23 @@ func _distance_quality(info: Dictionary) -> float:
 
 func _start_vault(info: Dictionary) -> void:
 	var q := _distance_quality(info)
-	var speed := maxf(horizontal_speed(), tuning.run_speed * 0.75)
+	var speed := maxf(maxf(horizontal_speed(), _recent_speed), tuning.run_speed * 0.75)
 	var dir: Vector3 = -info.face_normal
 	_path_from = global_position
 	_path_to = info.land
+	# Cross it at your running speed: as long as running that far takes. At
+	# speed that's shorter than the quickest vault, so land further on
+	# (where there's room) to keep the pace.
+	var dist := MovementMath.horizontal(_path_to - _path_from).length()
+	_path_time = clampf(dist / speed, tuning.vault_min_time, tuning.vault_time)
+	var extra := speed * _path_time - dist
+	if extra > 0.05:
+		var further: Vector3 = _path_to + dir * extra
+		if _shape_fits(_stand_shape, further) and _path_clear(info.top, further) and _ground_below(further, 0.4):
+			_path_to = further
 	var mid := (_path_from + _path_to) * 0.5
 	_path_ctrl = Vector3(mid.x, info.top + 0.55 + (info.top - mid.y) * 0.3, mid.z)
-	_path_time = tuning.vault_time * lerpf(1.35, 0.85, q)
-	_path_exit_velocity = dir * speed * (1.0 + lerpf(-0.03, tuning.vault_speed_bonus, q))
+	_path_exit_velocity = dir * speed * (1.0 + tuning.vault_speed_bonus * q)
 	momentum = minf(momentum + tuning.clean_move_momentum * q, 1.0)
 	_jump_buffer = 999.0
 	_change_state(State.VAULT)
@@ -1721,23 +1765,52 @@ func _start_mantle(info: Dictionary) -> void:
 	# A clean mantle keeps all your speed; a sloppy one loses some. Off a
 	# climb, it's the speed you ran into the wall with, kept as well as you
 	# hit the climb.
-	var speed := maxf(horizontal_speed(), MovementMath.horizontal(_pre_move_velocity).length())
+	var speed := maxf(maxf(horizontal_speed(), MovementMath.horizontal(_pre_move_velocity).length()), _recent_speed)
 	if state == State.WALLCLIMB:
 		speed = _climb_entry_speed
 		q = _climb_quality
 	var share := lerpf(tuning.mantle_speed_keep, 1.0, smoothstep(0.0, tuning.mantle_clean_quality, q))
+	if q >= tuning.mantle_clean_quality:
+		share += tuning.mantle_speed_bonus * q
 	var keep := maxf(speed * share, tuning.mantle_min_exit_speed)
 	momentum = minf(momentum + tuning.clean_move_momentum * q, 1.0)
 	_path_from = global_position
 	_path_to = info.land
-	_path_ctrl = Vector3(_path_from.x, info.top + 0.35, _path_from.z)
-	_path_time = tuning.mantle_time * clampf(0.6 + info.height * 0.3, 0.6, 1.3) * lerpf(1.4, 0.8, q)
+	# Faster runs pull up quicker, so the climb doesn't stall a fast run.
+	var pace := clampf(tuning.run_speed / maxf(speed, 0.1), 0.5, 1.0)
+	_path_time = tuning.mantle_time * clampf(0.6 + info.height * 0.3, 0.6, 1.3) * lerpf(1.4, 0.8, q) * pace
+	# At speed, carry on further onto the top (where there's room) so the
+	# pull-up covers ground at your running pace.
+	var dist := MovementMath.horizontal(_path_to - _path_from).length()
+	var extra := minf(speed * _path_time - dist, 1.0)
+	if extra > 0.05:
+		var further: Vector3 = _path_to + dir * extra
+		var shape: Shape3D = _crouch_shape if info.get("crouch", false) else _stand_shape
+		if _shape_fits(shape, further) and _path_clear(info.top, further) and _ground_below(further, 0.4):
+			_path_to = further
+	# Keep moving forward as you pull up (not straight up, then over),
+	# unless that would drag your feet through the edge.
+	var clear: float = maxf(info.get("face_dist", 0.0), 0.0)
+	_path_ctrl = Vector3(_path_from.x, info.top + 0.6, _path_from.z) + dir * clear * 0.5
+	if not _mantle_path_clears(info.top, clear, dir):
+		_path_ctrl = Vector3(_path_from.x, info.top + 0.35, _path_from.z)
 	_path_exit_velocity = dir * keep
 	if info.get("crouch", false):
 		_set_height(tuning.crouch_height)
 	_jump_buffer = 999.0
 	_change_state(State.MANTLE)
 	_trick(&"mantle", {"height": info.height, "quality": q})
+
+
+## Do the feet stay above the top once the body is past the face (`clear`
+## metres ahead of the start, along `dir`)?
+func _mantle_path_clears(top: float, clear: float, dir: Vector3) -> bool:
+	for i in range(1, 20):
+		var t := i / 20.0
+		var p := _path_from.lerp(_path_ctrl, t).lerp(_path_ctrl.lerp(_path_to, t), t)
+		if (p - _path_from).dot(dir) > clear and p.y < top - 0.1:
+			return false
+	return true
 
 
 func _tick_scripted(_delta: float) -> void:
@@ -1962,6 +2035,8 @@ func respawn(t: Variant = null) -> void:
 	_jump_buffer = 999.0
 	_since_wall = 999.0
 	_wall_jump_lock = 0.0
+	_recent_speed = 0.0
+	_recent_age = 0.0
 	_view_offset = Quaternion.IDENTITY
 	_view_offset_start = Quaternion.IDENTITY
 	state_time = 0.0

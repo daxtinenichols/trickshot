@@ -4,10 +4,10 @@ extends RefCounted
 ## pause menu. `{action}` is replaced by the player's current binding.
 
 const MOVES := [
-	["Run", "Move in any direction. You're always sprinting; let go to stop.", "Keep moving fast to build momentum: your top speed climbs from 7.5 to 11.5 m/s."],
-	["Jump / hop", "{jump}.", "Jump right as you land to keep all your speed. Early or late jumps bleed it."],
-	["Hurdle / vault", "Press {jump} at a waist-high yellow wall, on the ground or in the air. It's never automatic, so you can always just jump over.", "A vault keeps more speed than jumping over. Take off close to the wall for a clean vault that adds speed."],
-	["Mantle", "Jump into a ledge that's too high to vault.", "A clean grab keeps all your speed, even off a wall climb."],
+	["Run", "Move in any direction. You're always sprinting; let go to stop.", "Keep moving fast to build momentum: your running speed climbs from 7.5 to 11.5 m/s. There's no top speed: clean vaults, perfect hops and wall jumps stack speed on top while you keep running."],
+	["Jump / hop", "{jump}.", "Jump right as you land to keep all your speed and add a little, with no cap: perfect chains keep getting faster. Early or late jumps bleed it."],
+	["Hurdle / vault", "Press {jump} at a waist-high yellow wall, on the ground or in the air. It's never automatic, so you can always just jump over.", "A vault never slows you. Take off close to the wall for a clean vault that adds speed."],
+	["Mantle", "Jump into a ledge that's too high to vault.", "You keep your run through it. A clean grab adds a little speed, even off a wall climb."],
 	["Slide", "Press {crouch} while sprinting.", "Faster entries slide further. Slopes add speed."],
 	["Slide landing", "Press {crouch} just before you land from a jump or fall.", "Turns part of your fall into forward speed."],
 	["Roll", "Double-tap {crouch} while running, or flick the view down past your feet.", "A quick forward roll. Keeps your speed."],

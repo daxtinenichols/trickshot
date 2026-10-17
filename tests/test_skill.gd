@@ -219,7 +219,8 @@ func test_clean_mantle_keeps_your_speed() -> void:
 	if clean.size() < 2 or sloppy.size() < 2:
 		return
 	check(clean[1] >= clean[0] * 0.98, "a clean mantle keeps your speed (%.2f -> %.2f)" % clean)
-	check(sloppy[1] < sloppy[0] * 0.85, "a sloppy one loses some (%.2f -> %.2f)" % sloppy)
+	check(sloppy[1] >= sloppy[0] * 0.95, "a rough one still keeps almost all of it (%.2f -> %.2f)" % sloppy)
+	check(clean[1] > sloppy[1] - 0.05 or clean[0] < sloppy[0], "clean comes out at least as fast as rough (%.2f vs %.2f)" % [clean[1], sloppy[1]])
 
 
 func _kick_push(run_in: float) -> float:
@@ -237,3 +238,78 @@ func test_kick_off_converts_incoming_speed() -> void:
 	var slow := await _kick_push(0.0)
 	var fast := await _kick_push(8.0)
 	check(fast > slow + 2.0, "kicking while moving into the wall pushes harder (%.2f vs %.2f)" % [fast, slow])
+
+
+## Runs up to full momentum on a long floor heading -z from z = 45.
+func _top_speed_runner(w: TestWorld) -> Player:
+	w.add_box(Vector3(0, -0.5, -100), Vector3(20, 1, 400))
+	var p := w.spawn_player(Vector3(0, 0.05, 45))
+	await w.step(20)
+	await w.step_until(func() -> bool: return p.momentum >= 0.99, 900, _fwd())
+	return p
+
+
+func test_speed_above_top_speed_carries_while_you_run() -> void:
+	var w := _world()
+	var p := await _top_speed_runner(w)
+	var top := p.tuning.top_speed
+	p.velocity = Vector3(0, p.velocity.y, -(top + 4.0))
+	await w.step(60, _fwd())
+	var after := p.horizontal_speed()
+	check(after > top + 2.5, "earned speed carries for a second of running (%.2f, top %.2f)" % [after, top])
+	check(after < top + 4.0, "and bleeds slowly (%.2f)" % after)
+	await w.step(90)
+	check(p.horizontal_speed() < 1.0, "letting go of forward still stops you (%.2f)" % p.horizontal_speed())
+
+
+func test_perfect_hops_stack_speed_with_no_cap() -> void:
+	var w := _world()
+	var p := await _top_speed_runner(w)
+	var top := p.tuning.top_speed
+	await w.press(_fwd_jump())
+	for i in 10:
+		await w.step_until(func() -> bool: return p.state != Player.State.AIR, 200, _fwd())
+		await w.press(_fwd_jump())
+	check(p.horizontal_speed() > top + 3.0, "ten perfect hops build well past top speed (%.2f, top %.2f)" % [p.horizontal_speed(), top])
+
+
+## Runs at full speed into `box` and jumps `press_dz` before its face.
+## Returns [speed before, slowest until back on the ground, speed just
+## after, the move it made (VAULT or MANTLE, else the last state)].
+func _move_at_speed(box_center: Vector3, box_size: Vector3, press_dz: float) -> Array:
+	var w := _world()
+	w.add_box(box_center, box_size)
+	var p := await _top_speed_runner(w)
+	var face_z := box_center.z + box_size.z * 0.5
+	await w.step_until(func() -> bool: return p.global_position.z < face_z + press_dz, 900, _fwd())
+	var before := p.horizontal_speed()
+	await w.press(_fwd_jump())
+	var seen := [INF, p.state]
+	await w.step_until(func() -> bool:
+		seen[0] = minf(seen[0], p.horizontal_speed())
+		if p.state == Player.State.VAULT or p.state == Player.State.MANTLE:
+			seen[1] = p.state
+		return p.state == Player.State.GROUND, 120, _fwd())
+	await w.step(3, _fwd())
+	return [before, seen[0], p.horizontal_speed(), seen[1]]
+
+
+func test_vault_keeps_your_run_speed() -> void:
+	var r := await _move_at_speed(Vector3(0, 0.5, -8), Vector3(6, 1.0, 0.4), 1.15)
+	check(r[3] == Player.State.VAULT, "vaulted (%s)" % Player.State.keys()[r[3]])
+	check(r[1] >= r[0] * 0.95, "no slowdown crossing it (%.2f, slowest %.2f)" % [r[0], r[1]])
+	check(r[2] >= r[0] - 0.05, "and comes out at least as fast (%.2f -> %.2f)" % [r[0], r[2]])
+
+
+func test_mantle_at_full_speed_keeps_your_run() -> void:
+	var r := await _move_at_speed(Vector3(0, 0.5, -10), Vector3(6, 1.0, 4), 1.15)
+	check(r[3] == Player.State.MANTLE, "mantled (%s)" % Player.State.keys()[r[3]])
+	check(r[1] >= r[0] * 0.3, "keeps moving forward while pulling up (%.2f, slowest %.2f)" % [r[0], r[1]])
+	check(r[2] >= r[0] * 0.95, "comes out at nearly full speed (%.2f -> %.2f)" % [r[0], r[2]])
+
+
+func test_mantle_from_the_air_keeps_your_run() -> void:
+	var r := await _move_at_speed(Vector3(0, 0.8, -10), Vector3(6, 1.6, 4), 2.6)
+	check(r[3] == Player.State.MANTLE, "caught the ledge (%s)" % Player.State.keys()[r[3]])
+	check(r[1] >= r[0] * 0.3, "keeps moving forward while pulling up (%.2f, slowest %.2f)" % [r[0], r[1]])
+	check(r[2] >= r[0] * 0.95, "comes out at nearly full speed (%.2f -> %.2f)" % [r[0], r[2]])
