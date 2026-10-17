@@ -136,3 +136,8 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `fx/` | Speed trail |
 | `tests/` | Test runner and suites |
 | `tools/` | Screenshot tool |
+| `art/` | Art look: runner character and its animation, cel shader, outlines, speed trails. See [docs/art-pipeline.md](docs/art-pipeline.md) |
+
+## Art look
+
+The sandbox runs with the cel-shaded look on: toon shading, ink outlines, and speed lines at the screen edges when you're fast. **F6** switches between the art look and plain graybox. **F7** switches to a third-person chase camera so you can watch the runner animate (motion trails stream from the hands and feet above run speed). How the art, animation and maps are made is in [docs/art-pipeline.md](docs/art-pipeline.md).
