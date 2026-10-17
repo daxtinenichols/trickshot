@@ -1,0 +1,149 @@
+{
+ "id": "m05_atrium",
+ "title": "Atrium",
+ "runner": "",
+ "base": "res://maps/mall_builder.gd",
+ "fail_y": -5,
+ "par_seconds": 75,
+ "objectives": [
+  {"type": "reach", "name": "the food court", "text": "Run the Host's arena to the food court", "at": [0, 4, -82], "size": [60, 12, 10]},
+  {"type": "reach", "name": "the walkways", "text": "The concourse is shuttered. Up the escalator, onto the walkways", "at": [0, 7.5, -140], "size": [48, 4, 6]},
+  {"type": "reach", "name": "the anchor store", "text": "Get to the anchor store", "at": [0, 4, -344], "size": [48, 10, 4]}
+ ],
+ "checkpoints": [
+  {"name": "Atrium", "at": [0, 4, -6], "size": [60, 12, 4], "spawn": [0, 0, -4], "objective": 0},
+  {"name": "Food court", "at": [0, 4, -80], "size": [60, 12, 6], "spawn": [-3, 0, -77], "objective": 1},
+  {"name": "Walkways", "at": [0, 7.5, -142], "size": [48, 4, 4], "spawn": [-10.5, 6, -140], "objective": 2},
+  {"name": "Concourse", "at": [0, 5, -238], "size": [48, 12, 4], "spawn": [0, 0, -236], "objective": 2}
+ ],
+ "radio": [
+  {"on": "start", "who": "host", "line": "Welcome, welcome, welcome to the Meridian Mall! Tonight's main event: one courier, one atrium, and a whole lot of hungry neighbours."},
+  {"on": "start", "who": "mags", "line": "It's an arena, Parker. Don't fight it. Run through it."},
+  {"on": "go", "who": "host", "line": "Release the Hollows!"},
+  {"on": "checkpoint:0", "who": "mags", "line": "Every shot rings the dinner bell. Make them count."},
+  {"at": [0, 3, -36], "size": [60, 12, 6], "who": "mags", "line": "Those ones jump. Watch the ledges above you, not the floor."},
+  {"on": "checkpoint:1", "who": "host", "line": "And he's into the food court, folks. Sadly, the food court is closed. Permanently."},
+  {"at": [0, 3, -104], "size": [48, 8, 6], "who": "mags", "line": "He's shuttered the concourse. Escalator on your left, then the walkways."},
+  {"at": [0, 7.5, -146], "size": [48, 4, 4], "who": "mags", "line": "Cross the bridge. The walkway's caved in past the shops: drop through, or run the hoarding."},
+  {"at": [0, 5, -180], "size": [48, 12, 6], "who": "host", "line": "This segment is brought to you by the Ward. Clean water, for people who know their place."},
+  {"on": "complete", "who": "host", "line": "He made it to the anchor store! Ladies and gentlemen, I have never been so annoyed to be entertained."}
+ ],
+ "chatter": {
+  "kill": [
+   {"who": "host", "line": "And down goes another one! The crowd goes mild."},
+   {"who": "mags", "line": "Good. Now keep moving."}
+  ],
+  "headshot": [
+   {"who": "host", "line": "Right between the eyes! Somebody get me a replay."}
+  ],
+  "down": [
+   {"who": "host", "line": "Ooh! That one's going in the highlights."},
+   {"who": "mags", "line": "Up. You don't stand still in an arena."}
+  ],
+  "bail": [
+   {"who": "host", "line": "He's down! No, he's up. Disappointing."}
+  ],
+  "combo": [
+   {"who": "host", "line": "Folks, I hate to say it, but that was beautiful."},
+   {"who": "mags", "line": "That's it. Give them something to watch."}
+  ],
+  "tape": [
+   {"who": "echo", "line": "...this mall was the last place in Port Calder with clean taps. Ask who turned them off."}
+  ]
+ },
+ "pieces": [
+  {"label": "MERIDIAN MALL: TONIGHT'S ARENA", "at": [0, 9.2, 10.8], "size": 1.4},
+  {"prop": "loudspeaker_pole", "at": [-6.5, 0, 17], "yaw": 200},
+  {"fire": [5.2, 0.2, 18], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [5.2, 0, 18]},
+  {"prop": "chalk_arrow", "at": [0, 0, 20]},
+  {"prop": "chalk_arrow", "at": [0, 0, 4]},
+
+  {"box": [-15.5, 2.75, -10.6], "size": [9, 5.5, 0.4], "look": "RUST"},
+  {"box": [15.5, 2.75, -10.6], "size": [9, 5.5, 0.4], "look": "RUST"},
+  {"prop": "barricade_scrap", "at": [-15, 0, -9.6], "yaw": 0},
+  {"prop": "barricade_scrap", "at": [15, 0, -9.6], "yaw": 0},
+  {"prop": "loudspeaker_pole", "at": [-9.6, 0, -12.5], "yaw": 160},
+  {"prop": "loudspeaker_pole", "at": [9.6, 0, -68.5], "yaw": -20},
+  {"fire": [-9.4, 0.2, -50], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [-9.4, 0, -50]},
+  {"fire": [9.4, 0.2, -27], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [9.4, 0, -27]},
+  {"prop": "chalk_arrow", "at": [-5, 0, -32]},
+  {"prop": "chalk_arrow", "at": [0, 0, -60]},
+
+  {"prop": "sandbag_wall", "at": [-17, 6, -62], "yaw": 90},
+  {"prop": "sandbag_wall", "at": [18, 6, -26], "yaw": 90},
+  {"prop": "sandbag_wall", "at": [-14, 6, -70.9], "yaw": 0},
+  {"prop": "sandbag_wall", "at": [14, 6, -9.4], "yaw": 0},
+
+  {"mark": [6, 6, -14], "size": [2.4, 0.3], "color": "#b98a62"},
+  {"mark": [16, 6, -34], "size": [6, 0.3], "color": "#b98a62"},
+  {"mark": [0, 6, -76], "size": [5, 0.3], "color": "#b98a62"},
+  {"tape": [19.0, 6.6, -42], "id": "m05_tape_collapse"},
+
+  {"encounter": "arena", "area": {"at": [0, 6, -40], "size": [60, 14, 62]},
+   "mutants": [
+    {"at": [6, 0, -20], "leash_radius": 14, "aggro_radius": 10},
+    {"at": [-8, 0, -24], "leash_radius": 14, "aggro_radius": 10, "wake": 1.0},
+    {"at": [7, 0, -46], "leash_radius": 14, "aggro_radius": 10, "wake": 1.5},
+    {"at": [-6, 0, -60], "leash_radius": 14, "aggro_radius": 10, "wake": 2.0},
+    {"at": [5, 0, -68], "leash_radius": 14, "aggro_radius": 10, "wake": 2.5}
+   ],
+   "enemies": [
+    {"type": "leaper", "at": [-16, 6, -42], "yaw": 180},
+    {"type": "leaper", "at": [16, 6, -56], "yaw": 180, "wake": 1.0},
+    {"type": "leaper", "at": [0, 6, -50], "yaw": 180, "wake": 2.0}
+   ],
+   "raiders": [
+    {"at": [-20, 6, -62], "yaw": -90},
+    {"at": [21, 6, -26], "yaw": 90, "wake": 1.0},
+    {"at": [-14, 6, -72.3], "yaw": 180, "wake": 1.5},
+    {"at": [14, 6, -7.8], "yaw": 0, "wake": 0.5}
+   ],
+   "cover": [
+    {"at": [-17, 6, -62], "length": 2.0, "yaw": 90},
+    {"at": [18, 6, -26], "length": 2.0, "yaw": 90},
+    {"at": [-14, 6, -70.9], "length": 2.0, "yaw": 0},
+    {"at": [14, 6, -9.4], "length": 2.0, "yaw": 0}
+   ]},
+
+  {"box": [0, 2.75, -132], "size": [48, 5.5, 0.4], "look": "RUST"},
+  {"label": "CLOSED FOR THE SHOW", "at": [0, 4.2, -131.6], "size": 1.0},
+  {"prop": "barricade_scrap", "at": [-9, 0, -130.6], "yaw": 0},
+  {"prop": "barricade_scrap", "at": [9, 0, -130.6], "yaw": 0},
+  {"fire": [2.5, 0.2, -129.5], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [2.5, 0, -129.5]},
+  {"prop": "chalk_arrow", "at": [-4.5, 0, -104]},
+  {"prop": "chalk_arrow", "at": [-10.5, 6, -132]},
+  {"prop": "chalk_arrow", "at": [10.5, 6, -160]},
+  {"prop": "loudspeaker_pole", "at": [-5.6, 0, -178], "yaw": 180},
+  {"prop": "sandbag_wall", "at": [-19, 6, -155.5], "yaw": 0},
+  {"prop": "sandbag_wall", "at": [16.5, 6, -140], "yaw": 90},
+  {"encounter": "concourse", "area": {"at": [0, 6, -117], "size": [60, 14, 86]},
+   "mutants": [
+    {"at": [-20, 0, -80], "leash_radius": 12, "aggro_radius": 10},
+    {"at": [10, 0, -80], "leash_radius": 12, "aggro_radius": 10, "wake": 1.0},
+    {"at": [2, 0, -120], "leash_radius": 12, "aggro_radius": 10},
+    {"at": [8, 0, -126], "leash_radius": 12, "aggro_radius": 10, "wake": 1.0}
+   ],
+   "enemies": [
+    {"type": "leaper", "at": [0, 6, -152], "yaw": 180, "wake": 1.5}
+   ],
+   "raiders": [
+    {"at": [-19, 6, -158], "yaw": 180},
+    {"at": [19, 6, -140], "yaw": 90, "wake": 1.0}
+   ],
+   "cover": [
+    {"at": [-19, 6, -155.5], "length": 2.0, "yaw": 0},
+    {"at": [16.5, 6, -140], "length": 2.0, "yaw": 90}
+   ]},
+  {"prop": "chalk_arrow", "at": [0, 0, -300]},
+  {"label": "HARGROVE & SONS: SHOW CONTINUES INSIDE", "at": [0, 4.4, -338.6], "size": 0.9}
+ ],
+ "bot_path": [
+  [0, 20], [0, -28], [-5, -33], [-5, -44], [0, -48], [0, -66], [-3, -76], [-3, -86],
+  [-4.5, -97.6, "jump"], [-4.5, -124], [-6.5, -126.2], [-10.5, -127], [-10.5, -149], [-6, -152], [6, -152], [10.5, -154],
+  [10.5, -203, "roll"], [10.5, -214], [1, -226], [0.6, -250], [0, -345]
+ ]
+}

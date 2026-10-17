@@ -20,6 +20,14 @@ const SHOTS := [
 	["m03_glass_district", Vector3(-50, 75, 30), Vector3(0, 10, -280), "m03_overview"],
 	["m04_silt_line", Vector3(-10, 6, 8), Vector3(0, 0, -40), "m04_silt"],
 	["m04_silt_line", Vector3(-14, 14, -215), Vector3(0, 6, -260), "m04_overpass"],
+	# Act 2: the mall.
+	["m05_atrium", Vector3(-8, 9, -6), Vector3(2, 2, -40), "act2_m05_arena"],
+	["m05_atrium", Vector3(-6, 10, -112), Vector3(4, 5, -150), "act2_m05_walkways"],
+	["m06_anchor_store", Vector3(9, 9, -343), Vector3(-3, 3, -368), "act2_m06_well"],
+	["m06_anchor_store", Vector3(-8, 9.5, -380), Vector3(-22, 7, -360), "act2_m06_electronics"],
+	["m07_parking_spiral", Vector3(10, 22, -405), Vector3(0, 17, -460), "act2_m07_skybridge"],
+	["m07_parking_spiral", Vector3(60, 55, -440), Vector3(0, 8, -520), "act2_m07_car_park"],
+	["m07_parking_spiral", Vector3(8, 4, -486), Vector3(-2, 2, -530), "act2_m07_core"],
 	["m12_signal_out", Vector3(-14, 48, 10), Vector3(0, 38, -30), "m12_tower"],
 	["m12_signal_out", Vector3(-16, 35, -100), Vector3(2, 26, -140), "m12_roofs"],
 	# The route generator's test route: corners, a fork, climbs and ramps.

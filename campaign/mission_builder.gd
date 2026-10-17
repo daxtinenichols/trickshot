@@ -21,6 +21,7 @@ const MUTANT_SCRIPT := preload("res://enemies/mutant.gd")
 ## Kinds enemies/ hasn't made yet, and what stands in for them meanwhile
 ## (drones of every kind are left out until they exist).
 const STAND_INS := {"trooper": "raider", "shield": "raider", "marksman": "raider", "heavy": "raider",
+	"bruiser": "raider", "hunter": "raider", "juno": "raider",
 	"brute": "mutant", "leaper": "mutant", "crawler": "mutant"}
 
 @export_file("*.json") var mission_path := ""
@@ -71,8 +72,9 @@ func build() -> void:
 		var script: Script = load(base_path)
 		base = script.new()
 		base.name = "Base"
-		if mission.has("route") and "open_exit" in base:
-			# The route carries on past the base's exit.
+		if (mission.has("route") or mission.get("open_exit", false)) and "open_exit" in base:
+			# The route (or the mission's own pieces) carries on past the
+			# base's exit.
 			base.open_exit = true
 		add_child(base)  # builds itself in _ready
 	for piece: Dictionary in mission.get("pieces", []):

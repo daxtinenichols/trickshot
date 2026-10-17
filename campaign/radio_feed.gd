@@ -27,6 +27,7 @@ const SPEAKERS := {
 	"echo": ["ECHO", Color(0.45, 0.9, 1.0)],
 	"parker": ["PARKER", Color(0.92, 0.92, 0.88)],
 	"juno": ["JUNO", Color(0.75, 0.6, 1.0)],
+	"vell": ["COMMANDER VELL", Color(0.78, 0.86, 0.95)],
 }
 ## Seconds between two chatter lines.
 const CHATTER_COOLDOWN := 7.0

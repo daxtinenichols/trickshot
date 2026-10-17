@@ -125,9 +125,10 @@ func test_every_built_mission_loads_and_spawns_are_standable() -> void:
 			await _step(40)
 			check(player.state == Player.State.GROUND, "%s spawn %d: standing (%s)" % [title, s + 1, Player.State.keys()[player.state]])
 			check_near(player.global_position.y, b.spawns[s].origin.y, 0.08, "%s spawn %d: at its height" % [title, s + 1])
-			var z0 := player.global_position.z
+			var p0 := player.global_position
 			await _step(25, TestWorld.forward_input())
-			check(z0 - player.global_position.z > 1.5, "%s spawn %d: free to run forward" % [title, s + 1])
+			var ahead := -b.spawns[s].basis.z
+			check((player.global_position - p0).dot(ahead) > 1.5, "%s spawn %d: free to run forward" % [title, s + 1])
 		level.queue_free()
 		await tree.process_frame
 
@@ -137,8 +138,10 @@ func test_menu_lists_every_mission() -> void:
 	tree.root.add_child(menu)
 	await tree.process_frame
 	check(menu._buttons.size() == Campaign.mission_count(), "a button per mission")
-	menu._select(_index("m05_atrium"))
-	check(menu._play.disabled, "an unbuilt mission can't be played")
+	var unbuilt := range(Campaign.mission_count()).filter(func(i: int) -> bool: return not Campaign.is_built(i))
+	if not unbuilt.is_empty():
+		menu._select(unbuilt[0])
+		check(menu._play.disabled, "an unbuilt mission can't be played")
 	menu._select(0)
 	check(not menu._play.disabled, "mission 0 can")
 	menu.queue_free()
@@ -628,3 +631,108 @@ func test_route_45_degree_corners() -> void:
 	var hit := player.get_world_3d().direct_space_state.intersect_ray(q)
 	check(not hit.is_empty() and absf(hit.position.y - 10.0) < 0.01, "the corner slab is a roof at 10 m (%s)" % [hit.get("position", null)])
 	await _bot_run("45 degree corners", false)
+
+
+# ---------------------------------------------------------------- hand-made levels
+
+## Missions laid out by hand on a base map (the mall missions) can't use a
+## route's bot, so they carry a "bot_path": waypoints [x, z, action] the
+## bot runs through in order ("jump", "crouch" or "roll" when it reaches
+## one), and "bot_path_alt" for a second line if there is one. Enemies can't take it down and any shooting objective is done for
+## it, like the route bots.
+func test_hand_made_missions_can_be_finished() -> void:
+	var all := Campaign.missions()
+	var ran := 0
+	for i in all.size():
+		var path: String = all[i].get("file", "")
+		if path == "" or not Campaign.load_mission_file(path).has("bot_path"):
+			continue
+		for key: String in ["bot_path", "bot_path_alt"]:
+			if not Campaign.load_mission_file(path).has(key):
+				continue
+			var label: String = all[i].id + (" (high line)" if key == "bot_path_alt" else "")
+			await _load(i)
+			var health := PlayerHealth.ensure(player)
+			health.can_die = false
+			_auto_shoot_objectives()
+			await _step(10)
+			var done := await _run_path(run.mission[key])
+			check(done, "%s: a bot finishes it (stopped at %s, objective %d)" % [label, player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
+			check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])
+			level.queue_free()
+			level = null
+			await tree.process_frame
+			ran += 1
+	check(ran >= 1, "hand-made missions were run (%d)" % ran)
+
+
+func _auto_shoot_objectives() -> void:
+	run.event.connect(func(e: String) -> void:
+		if e.begins_with("objective:") and run.current_objective().get("type", "") == "shoot":
+			for enc: Node3D in level.builder.encounters:
+				for en: Node in enc.enemies:
+					if not en.is_dead:
+						en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position}))
+
+
+## Runs through waypoints [x, z, action?] in order, turning its view toward
+## the next one while on its feet. Returns true once the mission is
+## complete.
+func _run_path(path: Array, max_frames := 6000) -> bool:
+	var next := 0
+	var roll_armed := false
+	var crouch_until := -1
+	for i in max_frames:
+		if run.phase == MissionRun.Phase.COMPLETE:
+			return true
+		var pos := player.global_position
+		var here := Vector2(pos.x, pos.z)
+		var f := InputFrame.new()
+		# Reached a waypoint (or passed it along its leg): act, move on.
+		while next < path.size():
+			var w: Array = path[next]
+			var p := Vector2(w[0], w[1])
+			var prev := Vector2(path[next - 1][0], path[next - 1][1]) if next > 0 else here
+			var leg := (p - prev).normalized()
+			if here.distance_to(p) > 1.2 and (here - p).dot(leg) < 0.0:
+				break
+			match w[2] if w.size() > 2 else "":
+				"jump":
+					f.jump_pressed = true
+					f.jump_held = true
+				"crouch":
+					f.crouch_pressed = true
+					f.crouch_held = true
+					crouch_until = i + 30
+				"roll":
+					roll_armed = true
+			next += 1
+		if OS.has_environment("ROUTE_LOG") and i % 10 == 0:
+			print("  t%4d pos %s wp %d state %s speed %.1f obj %d falls %d" % [i, pos.snapped(Vector3.ONE * 0.01), next, Player.State.keys()[player.state], player.horizontal_speed(), run.objective, run.falls])
+		var target := Vector2(path[mini(next, path.size() - 1)][0], path[mini(next, path.size() - 1)][1])
+		var to := target - here
+		var dir := Vector3(to.x, 0.0, to.y).normalized() if to.length() > 0.01 else -Basis(Vector3.UP, player.yaw).z
+		if player.state not in [Player.State.AIR, Player.State.WALLRUN]:
+			var want := atan2(-dir.x, -dir.z)
+			var turn := clampf(angle_difference(player.yaw, want), -TURN_RATE / 60.0, TURN_RATE / 60.0)
+			if absf(turn) > 0.0001:
+				player._look(turn, 0.0)
+		var face := Basis(Vector3.UP, player.yaw)
+		var move := Vector2(dir.dot(face.x), dir.dot(-face.z))
+		if move.y > 0.0:
+			move /= move.y
+		f.move = Vector2(clampf(move.x, -0.6, 0.6), 1.0)
+		if roll_armed and player.state == Player.State.AIR and player.velocity.y < 0.0:
+			var q := PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 1.2, 1)
+			q.exclude = [player.get_rid()]
+			if not player.get_world_3d().direct_space_state.intersect_ray(q).is_empty():
+				f.crouch_pressed = true
+				f.crouch_held = true
+				roll_armed = false
+		if i < crouch_until:
+			f.crouch_held = true
+		if player.state == Player.State.WALLRUN and player.wallrun_angle() < 0.05:
+			f.lean = 1.0 if player._lean_toward_wall(1.0) > 0.0 else -1.0
+		player.scripted_input = f
+		await tree.physics_frame
+	return false
