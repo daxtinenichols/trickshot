@@ -22,7 +22,7 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Crouch / slide / roll (double-tap to roll) | Ctrl or C | B |
 | Kick | F | R3 |
 | Boost (short burst of speed, 2 s cooldown) | Shift | L3 (click the left stick) |
-| Mouse roll (test): hold Shift in the air or on a wall and move the mouse left/right to roll instead of turn | Shift + mouse | |
+| Mouse lean and roll (test): hold Shift and move the mouse left/right. Running, you lean into the turn (faster turn = more lean = harder turn, speed kept); in the air or on a wall you roll instead of turn | Shift + mouse | |
 | Lean / quick turn (side flip in the air, steer a wallrun) | Q / E | LB / RB |
 | Fire | Left mouse | Right trigger |
 | Aim down sights | Right mouse | Left trigger |

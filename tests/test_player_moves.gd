@@ -881,6 +881,36 @@ func test_lean_on_the_ground_peeks() -> void:
 	check(not (&"sideflip" in w.tricks_seen), "no flip on the ground")
 
 
+## Runs up to speed, then turns right with the mouse lean (boost held) at
+## `deg_per_tick` for 20 ticks. Returns [lean, yaw turned, speed after].
+func _mouse_lean_turn(deg_per_tick: float) -> Array:
+	w.add_floor()
+	var p := await _settle()
+	await _run_to(9.0)
+	var yaw0 := p.yaw
+	var turned := 0.0
+	for i in 20:
+		p.lean_look(-deg_to_rad(deg_per_tick), 0.0)
+		await w.step(1, _fwd())
+		turned += absf(wrapf(p.yaw - yaw0, -PI, PI))
+		yaw0 = p.yaw
+	return [p.lean, turned, p.horizontal_speed()]
+
+
+func test_mouse_lean_turns_harder_the_more_you_lean() -> void:
+	var slow := await _mouse_lean_turn(0.5)  # 30 degrees a second
+	w.queue_free()
+	await tree.process_frame
+	w = TestWorld.new()
+	tree.root.add_child(w)
+	var fast := await _mouse_lean_turn(4.0)  # 240 degrees a second
+	check(slow[0] > 0.0 and slow[0] < 0.15, "a slow turn barely leans (%.2f)" % slow[0])
+	check(fast[0] > 0.5, "a fast turn leans you right into it (%.2f)" % fast[0])
+	check(slow[1] < deg_to_rad(0.5 * 20 * 1.2), "a slow turn is about as far as the mouse moved (%.1f deg)" % rad_to_deg(slow[1]))
+	check(fast[1] > deg_to_rad(4.0 * 20 * 1.4), "a fast one turns harder than the mouse moved (%.1f deg)" % rad_to_deg(fast[1]))
+	check(fast[2] > 8.0, "and keeps your speed round the turn (%.2f m/s)" % fast[2])
+
+
 func test_lean_peeks_less_while_running() -> void:
 	w.add_floor()
 	var p := await _settle()

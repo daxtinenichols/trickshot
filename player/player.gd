@@ -148,6 +148,10 @@ var _mouse_rolled := false
 # radians gathered since the last tick, and what this tick uses.
 var _roll_input := 0.0
 var _roll_tick := 0.0
+# Mouse lean (boost held + turning on your feet): turn gathered since the
+# last tick (radians, + = left), and the lean it gives (-1 left .. 1 right).
+var _mouse_turn := 0.0
+var _mouse_lean := 0.0
 ## View yaw turned while quick turning since the last tick (radians).
 var _turn_carry := 0.0
 var _boost_cooldown := 0.0
@@ -229,6 +233,9 @@ func _unhandled_input(event: InputEvent) -> void:
 			# Holding boost, left and right rolls you instead of turning.
 			roll_look(m.relative.x * sens)
 			_look(0.0, d_pitch)
+		elif Input.is_action_pressed("boost"):
+			# On your feet it leans you into the turn.
+			lean_look(-m.relative.x * sens, d_pitch)
 		else:
 			_look(-m.relative.x * sens, d_pitch)
 	elif event is InputEventMouseButton and event.pressed and not is_mouse_captured():
@@ -252,9 +259,15 @@ func capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE
 
 
-## Is this turn toward the side of the lean held? (Positive yaw turns left.)
-func _quick_turning(d_yaw: float) -> bool:
-	return _turn_side != 0.0 and d_yaw * _turn_side < 0.0
+## How much faster this turn goes: quick_turn_look_scale toward the side of
+## a held lean button, scaled by the mouse lean toward its side, else 1.
+## (Positive yaw turns left.)
+func _quick_turn_scale(d_yaw: float) -> float:
+	if _turn_side != 0.0 and d_yaw * _turn_side < 0.0:
+		return tuning.quick_turn_look_scale
+	if d_yaw * _mouse_lean < 0.0:
+		return lerpf(1.0, tuning.quick_turn_look_scale, absf(_mouse_lean))
+	return 1.0
 
 
 ## Turns the view. In the air the pitch is free, so pulling the view all the
@@ -262,8 +275,7 @@ func _quick_turning(d_yaw: float) -> bool:
 ## pitch is clamped as usual.
 func _look(d_yaw: float, d_pitch: float) -> void:
 	if state == State.SURFACE:
-		if _quick_turning(d_yaw):
-			d_yaw *= tuning.quick_turn_look_scale
+		d_yaw *= _quick_turn_scale(d_yaw)
 		_surface_look_yaw = wrapf(_surface_look_yaw + d_yaw, -PI, PI)
 		pitch = clampf(pitch + d_pitch, deg_to_rad(-89.0), deg_to_rad(89.0))
 		return
@@ -276,8 +288,9 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		var dy := d_yaw * sin(r) + d_pitch * cos(r)
 		d_yaw = -dx if cos(pitch) < 0.0 else dx
 		d_pitch = dy
-	if _quick_turning(d_yaw):
-		d_yaw *= tuning.quick_turn_look_scale
+	var scale := _quick_turn_scale(d_yaw)
+	if scale > 1.0:
+		d_yaw *= scale
 		_turn_carry += d_yaw
 	yaw = wrapf(yaw + d_yaw, -PI, PI)
 	if state == State.AIR:
@@ -292,6 +305,13 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		if raw < deg_to_rad(-89.0) and d_pitch < 0.0:
 			_ground_flick += deg_to_rad(-89.0) - raw
 		pitch = clampf(raw, deg_to_rad(-89.0), deg_to_rad(89.0))
+
+
+## Mouse lean (boost held on your feet): turns the view like _look, and
+## the turn's speed leans you into it, turning harder the more you lean.
+func lean_look(d_yaw: float, d_pitch: float) -> void:
+	_mouse_turn += d_yaw
+	_look(d_yaw, d_pitch)
 
 
 ## Mouse roll: + rolls right. In the air it's a side flip you steer
@@ -328,6 +348,10 @@ func simulate(f: InputFrame, delta: float) -> void:
 	_update_timers(f, delta)
 	_roll_tick = _roll_input if state in [State.AIR, State.WALLRUN] else 0.0
 	_roll_input = 0.0
+	var feet := state not in [State.AIR, State.WALLRUN]
+	var lean_to := clampf(-_mouse_turn / delta / deg_to_rad(tuning.mouse_lean_full_rate), -1.0, 1.0) if feet else 0.0
+	_mouse_turn = 0.0
+	_mouse_lean = move_toward(_mouse_lean, lean_to, tuning.lean_speed * delta)
 	# On a wall, lean angles your run instead.
 	_turn_side = signf(f.lean) if absf(f.lean) > 0.3 and state != State.WALLRUN else 0.0
 	_carry_turn()
@@ -335,7 +359,7 @@ func simulate(f: InputFrame, delta: float) -> void:
 		_boost(f)
 	if state != State.SURFACE:
 		rotation = Vector3(0.0, yaw, 0.0)
-	lean = move_toward(lean, clampf(f.lean, -1.0, 1.0), tuning.lean_speed * delta)
+	lean = move_toward(lean, clampf(f.lean + _mouse_lean, -1.0, 1.0), tuning.lean_speed * delta)
 	var wish := wish_direction(f)
 	if _ground_flick >= deg_to_rad(tuning.ground_roll_flick) and state in [State.GROUND, State.CROUCH, State.SLIDE] \
 			and horizontal_speed() > 1.0 and _can_stand():
@@ -1899,6 +1923,8 @@ func respawn(t: Variant = null) -> void:
 	_roll_input = 0.0
 	_roll_tick = 0.0
 	_mouse_rolled = false
+	_mouse_turn = 0.0
+	_mouse_lean = 0.0
 	_jump_buffer = 999.0
 	state_time = 0.0
 	respawned.emit()

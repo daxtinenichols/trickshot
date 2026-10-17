@@ -237,6 +237,11 @@ extends Resource
 ## right rolls you instead of turning: a side flip in the air, rolling your
 ## path round on a wall. This scales how far (1 = as far as it would turn).
 @export_range(0.1, 4.0, 0.05) var mouse_roll_scale := 1.0
+## Holding boost on your feet, turning the mouse leans you that way: the
+## faster you turn, the more you lean (full lean at this many degrees per
+## second), and the more you lean, the harder the turn (up to
+## quick_turn_look_scale), with your speed swinging round like a quick turn.
+@export_range(60.0, 1440.0, 10.0) var mouse_lean_full_rate := 400.0
 ## While quick turning, your speed turns with your view: all of it on the
 ## ground, this share of it in the air.
 @export_range(0.0, 1.0, 0.01) var quick_turn_air_carry := 0.35
