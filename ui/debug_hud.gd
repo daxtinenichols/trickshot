@@ -14,8 +14,6 @@ const STATE_COLORS := {
 	Player.State.WALLCLIMB: Color(0.75, 0.5, 1.0),
 	Player.State.ROLL: Color(0.4, 1.0, 0.9),
 	Player.State.STUN: Color(1.0, 0.35, 0.3),
-	Player.State.PRONE: Color(0.7, 0.55, 0.4),
-	Player.State.PRONE_SLIDE: Color(0.9, 0.6, 0.3),
 }
 
 const TRICK_NAMES := {
@@ -26,7 +24,6 @@ const TRICK_NAMES := {
 	&"backflip": "BACKFLIP",
 	&"frontflip": "FRONT FLIP",
 	&"wall_hop": "WALL HOP",
-	&"dolphin_dive": "DOLPHIN DIVE",
 	&"door_kick": "DOOR KICK",
 	&"window_kick": "WINDOW KICK",
 	&"window_smash": "WINDOW SMASH",
@@ -75,8 +72,6 @@ const SHOT_TAG_NAMES := {
 	&"airborne": "AIRBORNE",
 	&"wallrun": "WALLRUN",
 	&"sliding": "SLIDING",
-	&"diving": "DIVING",
-	&"prone": "PRONE",
 	&"climbing": "CLIMBING",
 	&"vaulting": "VAULTING",
 	&"flipping": "MID-FLIP",

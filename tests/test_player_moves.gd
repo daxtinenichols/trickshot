@@ -503,23 +503,6 @@ func test_double_tap_crouch_rolls() -> void:
 	check(&"ground_roll" in w.tricks_seen, "roll reported")
 
 
-func test_dive_in_the_air() -> void:
-	var p := await _airborne(6.0)
-	p.velocity = Vector3(0, 0, -7)
-	await w.step(5)
-	var f := InputFrame.new()
-	f.prone_pressed = true
-	f.prone_held = true
-	await w.step(1, f)
-	check(p.is_diving(), "dive works in the air")
-	check(&"dolphin_dive" in w.tricks_seen, "dive reported")
-	check(p.horizontal_speed() > 7.5, "lunges forward (%.2f)" % p.horizontal_speed())
-	await w.step(1, f)
-	var tricks := w.tricks_seen.count(&"dolphin_dive")
-	await w.step(1, f)
-	check(w.tricks_seen.count(&"dolphin_dive") == tricks, "once per jump")
-
-
 func test_untucked_big_drop_still_lands_hard() -> void:
 	var p := await _tuck_drop(20.0)
 	check(p.state == Player.State.STUN, "looking ahead on a big drop is a hard landing (%s)" % Player.State.keys()[p.state])
@@ -636,7 +619,7 @@ func test_simulation_is_deterministic() -> void:
 	check(results[0].is_equal_approx(results[1]), "identical runs end in the same place (%s vs %s)" % [results[0], results[1]])
 
 
-# ------------------------------------------------------------------ sprint / dive
+# ------------------------------------------------------------------ sprint
 
 func test_always_sprinting_and_can_stop() -> void:
 	w.add_floor()
@@ -648,83 +631,11 @@ func test_always_sprinting_and_can_stop() -> void:
 	check(p.state == Player.State.GROUND, "standing still is possible")
 
 
-func test_crouch_never_goes_prone() -> void:
+func test_holding_crouch_stays_crouched() -> void:
 	w.add_floor()
 	var p := await _settle()
 	await w.press(InputFrame.make(Vector2.ZERO, false, true), 120)
 	check(p.state == Player.State.CROUCH, "holding crouch still stays crouched (%s)" % Player.State.keys()[p.state])
-
-
-func _prone_frame(pressed: bool, move := Vector2.ZERO) -> InputFrame:
-	var f := InputFrame.make(move)
-	f.prone_pressed = pressed
-	f.prone_held = true
-	return f
-
-
-func test_prone_press_is_always_a_dive() -> void:
-	w.add_floor()
-	var p := await _settle()
-	await w.step(1, _prone_frame(true))
-	check(p.state == Player.State.AIR, "prone from standing is a dive (%s)" % Player.State.keys()[p.state])
-	check(&"dolphin_dive" in w.tricks_seen, "dive reported")
-	var seen := []
-	await w.step_until(func() -> bool:
-		seen.append(p.state)
-		return p.state == Player.State.GROUND, 120, _prone_frame(false))
-	check(p.state == Player.State.GROUND, "gets back up by itself (%s)" % Player.State.keys()[p.state])
-	check(not (Player.State.PRONE in seen), "never lies there prone")
-
-
-func test_dolphin_dive_from_sprint() -> void:
-	w.add_floor()
-	var p := await _settle()
-	await _run_to(7.0)
-	var dive := _fwd()
-	dive.prone_pressed = true
-	dive.prone_held = true
-	var hold := _fwd()
-	hold.prone_held = true
-	await w.step(1, dive)
-	check(p.state == Player.State.AIR, "dive leaves the ground")
-	check(&"dolphin_dive" in w.tricks_seen, "dive reported")
-	var landed := await w.step_until(func() -> bool: return p.state == Player.State.PRONE_SLIDE, 60, hold)
-	check(landed, "lands into a prone slide")
-	var seen := []
-	var up := await w.step_until(func() -> bool:
-		seen.append(p.state)
-		return p.state == Player.State.GROUND, 300, hold)
-	check(up, "held: slide runs out and you get up (%s)" % Player.State.keys()[p.state])
-	check(not (Player.State.PRONE in seen), "no crawling")
-
-
-func test_dive_slide_stopping_under_low_ceiling_gets_out() -> void:
-	w.add_floor()
-	# A 0.9 m gap from z -12 to -20: prone fits, crouching doesn't.
-	w.add_box(Vector3(0, 1.4, -16), Vector3(6, 1.0, 8))
-	var p := await _settle()
-	await w.step_until(func() -> bool: return p.global_position.z < -6.0, 300, _fwd())
-	await w.step(1, _prone_frame(true, Vector2(0, 1)))
-	await w.step_until(func() -> bool: return p.state == Player.State.PRONE, 400, _prone_frame(false))
-	check(p.state == Player.State.PRONE, "stopped prone under the gap (%s, z %.1f)" % [Player.State.keys()[p.state], p.global_position.z])
-	var out := await w.step_until(func() -> bool: return p.state == Player.State.GROUND, 600, _fwd())
-	check(out, "shuffles out and stands up (%s, z %.1f)" % [Player.State.keys()[p.state], p.global_position.z])
-
-
-func test_dive_tap_pops_up_into_slide() -> void:
-	w.add_floor()
-	var p := await _settle()
-	await _run_to(8.0)
-	var dive := _fwd()
-	dive.prone_pressed = true
-	dive.prone_held = true
-	await w.step(1, dive)
-	var seen := []
-	await w.step_until(func() -> bool:
-		seen.append(p.state)
-		return p.state == Player.State.SLIDE, 90, _fwd())
-	check(Player.State.PRONE_SLIDE in seen, "landed into the prone slide first")
-	check(p.state == Player.State.SLIDE, "released prone: pops up into a slide (%s)" % Player.State.keys()[p.state])
 
 
 # ------------------------------------------------------------------ flips / spins / wall hop
@@ -970,6 +881,20 @@ func test_lean_on_the_ground_peeks() -> void:
 	check(not (&"sideflip" in w.tricks_seen), "no flip on the ground")
 
 
+func test_lean_peeks_less_while_running() -> void:
+	w.add_floor()
+	var p := await _settle()
+	await w.step(30, _lean_frame(1.0))
+	var standing := p.camera.position.x
+	check(standing > p.tuning.lean_offset * 0.8, "standing, lean peeks fully (%.2f m)" % standing)
+	var f := _fwd()
+	f.lean = 1.0
+	await w.step(90, f)
+	var running := p.camera.position.x
+	check(p.horizontal_speed() > p.tuning.run_speed - 0.5, "running")
+	check(running < standing * 0.3, "running, the view barely shifts (%.2f vs %.2f m)" % [running, standing])
+
+
 # ------------------------------------------------------------------ doors and windows
 
 func test_kick_door_open() -> void:
@@ -996,24 +921,24 @@ func test_kick_window() -> void:
 	check(win.is_broken, "kick breaks the window")
 
 
-func test_dive_through_window() -> void:
+func test_slide_through_low_window() -> void:
 	w.add_floor()
+	# A low window from the floor up to 1.4 m, in a wall: too low to run
+	# through standing, room to slide under.
 	var win := BreakableWindow.new()
 	win.size = Vector2(2.0, 1.4)
 	w.add_child(win)
-	win.global_position = Vector3(0, 0.5, -14)
+	win.global_position = Vector3(0, 0, -14)
+	w.add_box(Vector3(0, 2.2, -14), Vector3(2.0, 1.6, 0.3))
 	var p := await _settle()
 	await _run_to(7.0)
-	var dive := _fwd()
-	dive.prone_pressed = true
-	dive.prone_held = true
-	var hold := _fwd()
-	hold.prone_held = true
-	await w.step_until(func() -> bool: return p.global_position.z < -11.5, 300, _fwd())
-	await w.step(1, dive)
-	await w.step(50, hold)
-	check(win.is_broken, "dove through the window")
-	check(p.global_position.z < -14.5, "came out the other side")
+	await w.step_until(func() -> bool: return p.global_position.z < -10.5, 300, _fwd())
+	await w.press(_fwd_crouch())
+	var slide := _fwd_crouch()
+	slide.crouch_pressed = false
+	await w.step_until(func() -> bool: return p.global_position.z < -15.0, 60, slide)
+	check(win.is_broken, "slid through the window")
+	check(p.global_position.z < -14.5, "came out the other side (z %.2f)" % p.global_position.z)
 	check(&"window_smash" in w.tricks_seen, "smash reported")
 
 
@@ -1113,13 +1038,6 @@ func test_landing_crouched_under_low_ceiling_stays_crouched() -> void:
 	check(p.state == Player.State.CROUCH, "stays crouched under the ceiling (%s)" % Player.State.keys()[p.state])
 	check_near(p._height, p.tuning.crouch_height, 0.01, "crouch height kept")
 	check(p.global_position.y < 0.2, "not pushed through the ceiling (y %.2f)" % p.global_position.y)
-
-
-func test_dive_ends_when_you_touch_a_wall() -> void:
-	var p := await _airborne(3.0)
-	p._diving = true
-	p._change_state(Player.State.WALLRUN)
-	check(not p._diving, "dive flag cleared when the dive turns into something else")
 
 
 func test_respawn_clears_air_rotation() -> void:

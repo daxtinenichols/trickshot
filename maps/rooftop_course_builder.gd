@@ -88,11 +88,10 @@ func _section_breach() -> void:
 	_door(Vector3(-2.2, y, z))                                              # panel x -2.2..-1.1
 	_box(Vector3(-1.65, y + 2.6, z), Vector3(1.1, 0.8, 0.3), Kind.NEUTRAL)  # over the door
 	_box(Vector3(0.55, y + 1.5, z), Vector3(3.3, 3.0, 0.3), Kind.NEUTRAL)   # x -1.1..2.2
-	_window(Vector3(3.3, y + 0.2, z), Vector2(2.2, 1.2))                    # x 2.2..4.4
-	_box(Vector3(3.3, y + 0.1, z), Vector3(2.2, 0.2, 0.3), Kind.NEUTRAL)    # sill
+	_window(Vector3(3.3, y, z), Vector2(2.2, 1.4))                          # x 2.2..4.4, slide under
 	_box(Vector3(3.3, y + 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)    # over the window
 	_box(Vector3(5.2, y + 1.5, z), Vector3(1.6, 3.0, 0.3), Kind.NEUTRAL)    # x 4.4..6
-	_label("Kick the door (F) or dive through the window (Z)", Vector3(0, y + 3.6, z + 0.4), 0.8)
+	_label("Kick the door (F) or slide through the window (Ctrl)", Vector3(0, y + 3.6, z + 0.4), 0.8)
 	_label("Wallrun the blue wall across the gap", Vector3(0, y + 3, -68), 0.8)
 
 
@@ -111,15 +110,14 @@ func _section_climb() -> void:
 	_label("Run straight at the wall and jump to climb it", Vector3(0, 13.8, -100), 0.8)
 	# Hurdle on the way so it isn't just running.
 	_box(Vector3(0, 10.5, -92), Vector3(12, 1.0, 0.4), Kind.PARKOUR)
-	# Up top: a dive window in a short wall, and the edge.
+	# Up top: a low window to slide through in a short wall, and the edge.
 	var z := -114.0
 	var y := 13.0
 	_box(Vector3(-3.4, y + 1.5, z), Vector3(5.2, 3.0, 0.3), Kind.NEUTRAL)   # x -6..-0.8
-	_window(Vector3(0.3, y + 0.2, z), Vector2(2.2, 1.2))                    # x -0.8..1.4
-	_box(Vector3(0.3, y + 0.1, z), Vector3(2.2, 0.2, 0.3), Kind.NEUTRAL)
+	_window(Vector3(0.3, y, z), Vector2(2.2, 1.4))                          # x -0.8..1.4, slide under
 	_box(Vector3(0.3, y + 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)
 	_box(Vector3(3.7, y + 1.5, z), Vector3(4.6, 3.0, 0.3), Kind.NEUTRAL)    # x 1.4..6
-	_label("Dive through (Z), or smash it at full speed", Vector3(0.3, y + 3.6, z + 0.4), 0.8)
+	_label("Slide through it (Ctrl)", Vector3(0.3, y + 3.6, z + 0.4), 0.8)
 	_label("9 m drop: press crouch just before you land to roll", Vector3(0, y + 2.5, -121), 0.8)
 
 

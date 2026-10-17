@@ -170,19 +170,18 @@ func _zone_kick_yard(o: Vector3) -> void:
 
 func _zone_breach(o: Vector3) -> void:
 	_spawn(o + Vector3(0, 0, 5), "9 · DOORS AND WINDOWS")
-	_label("Kick (F) doors open. Run + dive (Z) through windows", o + Vector3(0, 3.2, 1), 0.9)
-	# A wall with a door, a low window to dive through, and a high window.
+	_label("Kick (F) doors open. Slide (Ctrl) through low windows", o + Vector3(0, 3.2, 1), 0.9)
+	# A wall with a door, a low window to slide through, and a high window.
 	var z := -14.0
 	_box(o + Vector3(-6.05, 1.5, z), Vector3(8.0, 3.0, 0.3), Kind.NEUTRAL)   # left of door: x -10.05..-2.05
 	_box(o + Vector3(-1.5, 2.6, z), Vector3(1.1, 0.8, 0.3), Kind.NEUTRAL)    # above door
 	_door(o + Vector3(-2.05, 0, z))
 	_box(o + Vector3(0.975, 1.5, z), Vector3(3.85, 3.0, 0.3), Kind.NEUTRAL)  # between door and window
 	_box(o + Vector3(4.0, 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)     # above low window
-	_window(o + Vector3(4.0, 0.2, z), Vector2(2.2, 1.2))
-	_box(o + Vector3(4.0, 0.1, z), Vector3(2.2, 0.2, 0.3), Kind.NEUTRAL)     # sill
+	_window(o + Vector3(4.0, 0.0, z), Vector2(2.2, 1.4))                    # from the floor: slide under
 	_box(o + Vector3(7.05, 1.5, z), Vector3(3.9, 3.0, 0.3), Kind.NEUTRAL)
 	_label("Door", o + Vector3(-1.5, 3.4, z + 0.3), 0.8)
-	_label("Dive through", o + Vector3(4.0, 3.4, z + 0.3), 0.8)
+	_label("Slide through", o + Vector3(4.0, 3.4, z + 0.3), 0.8)
 	# Second wall: a window to vault and smash through at speed.
 	var z2 := -30.0
 	_box(o + Vector3(-5.1, 1.5, z2), Vector3(10.0, 3.0, 0.3), Kind.NEUTRAL)

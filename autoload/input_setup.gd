@@ -13,7 +13,6 @@ const KEYS := {
 	"move_right": [KEY_D],
 	"jump": [KEY_SPACE],
 	"crouch": [KEY_CTRL, KEY_C],
-	"prone": [KEY_Z],
 	"kick": [KEY_F],
 	"boost": [KEY_SHIFT],
 	"lean_left": [KEY_Q],
@@ -49,7 +48,6 @@ const MOUSE_BUTTONS := {
 const PAD_BUTTONS := {
 	"jump": [JOY_BUTTON_A],
 	"crouch": [JOY_BUTTON_B],
-	"prone": [JOY_BUTTON_Y],
 	"kick": [JOY_BUTTON_RIGHT_STICK],
 	"reload": [JOY_BUTTON_X],
 	"fire_mode": [JOY_BUTTON_DPAD_LEFT],

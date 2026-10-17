@@ -17,7 +17,6 @@ const REBINDABLE := [
 	["move_right", "Move right"],
 	["jump", "Jump / vault / climb"],
 	["crouch", "Crouch / slide / roll"],
-	["prone", "Dive"],
 	["kick", "Kick"],
 	["boost", "Boost"],
 	["lean_left", "Lean left / quick turn / side flip"],

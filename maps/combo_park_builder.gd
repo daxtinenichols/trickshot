@@ -126,22 +126,21 @@ func _hurdle_field(o: Vector3) -> void:
 			_box(Vector3(o.x + shift + (i - 1) * 6.0, 0.5, z), Vector3(3, 1, 0.6), Kind.PARKOUR)
 
 
-## A wall with a door to kick, a window to dive through and one to smash.
+## A wall with a door to kick, a window to slide through and one to smash.
 func _breach_wall(o: Vector3) -> void:
 	var z := o.z
 	_box(Vector3(o.x - 5.6, 1.5, z), Vector3(2.8, 3.0, 0.3), Kind.NEUTRAL)   # x -7..-4.2
 	_door(Vector3(o.x - 4.2, 0, z))                                          # -4.2..-3.1
 	_box(Vector3(o.x - 3.65, 2.6, z), Vector3(1.1, 0.8, 0.3), Kind.NEUTRAL)
 	_box(Vector3(o.x - 2.1, 1.5, z), Vector3(2.0, 3.0, 0.3), Kind.NEUTRAL)   # -3.1..-1.1
-	_window(Vector3(o.x, 0.2, z), Vector2(2.2, 1.2))                         # -1.1..1.1
-	_box(Vector3(o.x, 0.1, z), Vector3(2.2, 0.2, 0.3), Kind.NEUTRAL)
+	_window(Vector3(o.x, 0.0, z), Vector2(2.2, 1.4))                         # -1.1..1.1, slide under
 	_box(Vector3(o.x, 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)
 	_box(Vector3(o.x + 2.1, 1.5, z), Vector3(2.0, 3.0, 0.3), Kind.NEUTRAL)   # 1.1..3.1
 	_window(Vector3(o.x + 4.2, 1.0, z), Vector2(2.2, 1.4))                   # 3.1..5.3, sill 1 m
 	_box(Vector3(o.x + 4.2, 0.5, z), Vector3(2.2, 1.0, 0.3), Kind.PARKOUR)
 	_box(Vector3(o.x + 4.2, 2.7, z), Vector3(2.2, 0.6, 0.3), Kind.NEUTRAL)
 	_box(Vector3(o.x + 6.15, 1.5, z), Vector3(1.7, 3.0, 0.3), Kind.NEUTRAL)  # 5.3..7
-	_label("Kick (F) · dive (Z) · smash at speed", Vector3(o.x, 3.5, z + 0.4), 0.8)
+	_label("Kick (F) · slide (Ctrl) · smash at speed", Vector3(o.x, 3.5, z + 0.4), 0.8)
 
 
 ## Sideways ramps along the west side: run along them tilted, like a

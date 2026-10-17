@@ -95,7 +95,6 @@ func _body_shots(level: Node3D, player: Node3D, out: String) -> void:
 		[0, Vector3(0, 2.2, -16), "AIR", Vector3(0, 1.0, -8.0), "body_backflip"],
 		[0, Vector3(0, 1.4, -16), "AIR", Vector3(0, -1.0, -9.0), "body_sideflip"],
 		[3, Vector3(-2.1, 1.2, -15), "WALLRUN", Vector3(0, 0.5, -9.5), "body_wallrun"],
-		[0, Vector3(0, 1.0, -16), "AIR", Vector3(0, 0.0, -10.0), "body_dive"],
 	]
 	for s in shots:
 		level.go_to_zone(s[0])
@@ -107,7 +106,6 @@ func _body_shots(level: Node3D, player: Node3D, out: String) -> void:
 		player.velocity = s[3]
 		player._air_pitch = 0.0
 		player._air_roll = 0.0
-		player._diving = false
 		match s[4]:
 			"body_backflip":
 				player._air_pitch = 2.2
@@ -116,13 +114,10 @@ func _body_shots(level: Node3D, player: Node3D, out: String) -> void:
 				player._air_roll = 1.9
 			"body_wallrun":
 				player._wall_normal = Vector3(1, 0, 0)
-			"body_dive":
-				player._diving = true
 		for i in 37:
 			await process_frame
 		root.get_texture().get_image().save_png(out.path_join("%s.png" % s[4]))
 		print("saved ", s[4])
-		player._diving = false
 		player.set_physics_process(true)
 
 

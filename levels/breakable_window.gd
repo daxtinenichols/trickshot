@@ -1,7 +1,7 @@
 class_name BreakableWindow
 extends StaticBody3D
-## A glass pane that shatters when kicked, shot, or hit at speed (run, slide or
-## dolphin dive through it). Re-forms after a few seconds.
+## A glass pane that shatters when kicked, shot, or hit at speed (run or slide
+## through it). Re-forms after a few seconds.
 ## The node origin is the bottom-center of the pane.
 
 const RESET_AFTER := 5.0

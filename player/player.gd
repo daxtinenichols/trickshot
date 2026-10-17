@@ -13,6 +13,8 @@ signal state_changed(from: State, to: State)
 signal landed(fall_speed: float)
 signal respawned
 
+## PRONE and PRONE_SLIDE are never entered any more (prone and the dive were
+## removed); they stay only until the runner body stops naming them.
 enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL, STUN, PRONE, PRONE_SLIDE, SURFACE }
 
 const RADIUS := 0.38
@@ -40,7 +42,6 @@ var _since_crouch_press := 999.0
 ## This tick's crouch press came right after another one.
 var _crouch_double := false
 var _crouch_released := true
-var _air_dive_used := false
 var _slide_cooldown := 0.0
 var _slide_flat_time := 0.0
 var _wall_normal := Vector3.ZERO
@@ -72,9 +73,7 @@ var _pre_move_velocity := Vector3.ZERO
 var _height := 1.8
 var _stand_shape: CapsuleShape3D
 var _crouch_shape: CapsuleShape3D
-var _prone_shape: CapsuleShape3D
 var _crouch_hold := 0.0
-var _diving := false
 # Rotation done in the air since takeoff (radians, unwrapped).
 var _air_yaw := 0.0
 var _air_pitch := 0.0
@@ -201,9 +200,6 @@ func _ready() -> void:
 	_crouch_shape = CapsuleShape3D.new()
 	_crouch_shape.radius = RADIUS
 	_crouch_shape.height = tuning.crouch_height
-	_prone_shape = CapsuleShape3D.new()
-	_prone_shape.radius = RADIUS
-	_prone_shape.height = tuning.prone_height
 	_set_height(tuning.stand_height)
 	_spawn = global_transform
 	yaw = rotation.y
@@ -362,8 +358,6 @@ func simulate(f: InputFrame, delta: float) -> void:
 		State.WALLCLIMB: _tick_wallclimb(f, wish, delta)
 		State.ROLL: _tick_roll(f, wish, delta)
 		State.STUN: _tick_stun(f, wish, delta)
-		State.PRONE: _tick_prone(f, wish, delta)
-		State.PRONE_SLIDE: _tick_prone_slide(f, wish, delta)
 		State.SURFACE: _tick_surface(f, delta)
 
 	_resolve_wall_impact()
@@ -383,7 +377,7 @@ func _update_timers(f: InputFrame, delta: float) -> void:
 	_boost_time = maxf(_boost_time - delta, 0.0)
 	_since_wall += delta
 	_crouch_hold = _crouch_hold + delta if f.crouch_held else 0.0
-	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.PRONE, State.PRONE_SLIDE, State.SURFACE]:
+	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.STUN, State.SURFACE]:
 		_since_floor = 0.0
 		_ground_time += delta
 	else:
@@ -440,8 +434,6 @@ func _change_state(to: State) -> void:
 		_carry_free = false
 		_roll_carry = false
 		_settle_pitch()
-		# A dive ends when you touch anything (landing reads it before this).
-		_diving = false
 	state_changed.emit(from, to)
 
 
@@ -609,7 +601,7 @@ func _move() -> void:
 		_check_wall_impact()
 
 
-## Running, sliding or diving into a window fast enough goes straight through.
+## Running or sliding into a window fast enough goes straight through.
 func _smash_breakables() -> void:
 	if _pre_move_velocity.length() < tuning.smash_speed:
 		return
@@ -656,7 +648,7 @@ func _update_momentum(delta: float) -> void:
 # ---------------------------------------------------------------- ground
 
 func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
-	# Arrived on the ground short (crouched, prone, diving) under something
+	# Arrived on the ground short (crouched) under something
 	# low: stay crouched instead of standing up into it.
 	if _height < tuning.stand_height - 0.01 and not _can_stand():
 		_change_state(State.CROUCH)
@@ -676,10 +668,6 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 	if f.kick_pressed:
 		_ground_kick()
 	var speed := horizontal_speed()
-	if f.prone_pressed:
-		_start_dive()
-		_tick_air(f, wish, delta)
-		return
 	if f.crouch_held and speed >= tuning.slide_min_speed and (f.crouch_pressed or _since_crouch_press < 0.2):
 		_start_slide()
 		_tick_slide(f, wish, delta)
@@ -717,10 +705,6 @@ func _tick_crouch(f: InputFrame, wish: Vector3, delta: float) -> void:
 		_change_state(State.GROUND)
 		_tick_ground(f, wish, delta)
 		return
-	if f.prone_pressed:
-		_start_dive()
-		_tick_air(f, wish, delta)
-		return
 	if f.kick_pressed:
 		_ground_kick()
 	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.stop_speed, delta)
@@ -757,9 +741,7 @@ func _jump() -> void:
 # ---------------------------------------------------------------- air
 
 func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
-	if _diving:
-		_set_height(tuning.prone_height)
-	elif f.crouch_held:
+	if f.crouch_held:
 		_set_height(tuning.crouch_height)
 	elif _can_stand():
 		_set_height(tuning.stand_height)
@@ -770,9 +752,6 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# Coyote jump: just ran off a ledge.
 	if _jump_buffer <= tuning.jump_buffer and not _jumped_since_floor and _since_floor <= tuning.coyote_time:
 		_jump()
-	elif f.prone_pressed and not _diving and not _air_dive_used:
-		_air_dive_used = true
-		_start_dive()
 	elif f.kick_pressed and _try_kick_off():
 		pass
 	elif _try_obstacle(f, _jump_buffer <= tuning.jump_buffer):
@@ -811,7 +790,6 @@ func _land(f: InputFrame) -> void:
 	_kicked_ids.clear()
 	_wallrun_used_normal = Vector3.ZERO
 	_climb_used = false
-	_air_dive_used = false
 	_jumped_since_floor = false
 	_ground_time = 0.0
 	_land_press_age = _jump_buffer if _jump_buffer <= tuning.jump_buffer else -1.0
@@ -821,7 +799,7 @@ func _land(f: InputFrame) -> void:
 	var tucked := _landing_tucked(fall) and not _landing_tipped()
 	if _tuck_roll(f, fall, crouch_age):
 		return
-	if _landing_tipped() and not _landing_crashed() and not _diving:
+	if _landing_tipped() and not _landing_crashed():
 		# Down on your side partway round a side flip: a shoulder roll that
 		# keeps you moving. The further off upright, the more speed it costs.
 		var off := absf(rad_to_deg(wrapf(_air_roll, -PI, PI)))
@@ -830,13 +808,8 @@ func _land(f: InputFrame) -> void:
 		_start_roll(timing_quality(off, 25.0, 160.0), &"flip_roll" if flipped else &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
 		return
 	if _landing_tipped() or (_landing_crashed() and not tucked):
-		_diving = false
 		trick.emit(&"crash", {"speed": horizontal_speed()})
 		_start_stun()
-		return
-	if _diving:
-		_diving = false
-		_change_state(State.PRONE_SLIDE)
 		return
 	if tucked:
 		var p := wrapf(pitch, -PI, PI)
@@ -870,7 +843,7 @@ func _land(f: InputFrame) -> void:
 ## you're at. A crouch pressed just before landing is a slide landing
 ## instead (unless you'd otherwise crash or the drop is hard).
 func _tuck_roll(f: InputFrame, fall: float, crouch_age: float) -> bool:
-	if _diving or not f.crouch_held or _crouch_hold < tuning.tuck_hold_time or fall < tuning.tuck_roll_min_fall:
+	if not f.crouch_held or _crouch_hold < tuning.tuck_hold_time or fall < tuning.tuck_roll_min_fall:
 		return false
 	var bad_angle := _landing_tipped() or _landing_crashed()
 	if not bad_angle and crouch_age <= tuning.slide_land_window and fall < tuning.hard_landing_speed:
@@ -909,10 +882,6 @@ func _tick_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
 	if _jump_buffer <= tuning.jump_buffer:
 		_jump()
 		_trick(&"slide_jump")
-		_tick_air(f, wish, delta)
-		return
-	if f.prone_pressed:
-		_start_dive()
 		_tick_air(f, wish, delta)
 		return
 	# Friction only ramps up while the slide isn't going downhill, so flat
@@ -993,79 +962,6 @@ func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
 	_move()
 	if state_time >= tuning.hard_landing_stun:
 		_change_state(State.GROUND if is_on_floor() else State.AIR)
-
-
-# ---------------------------------------------------------------- prone / dive
-
-## Only happens when a dive slide stops under something too low to get up
-## in. You get up by yourself as soon as there's room; until then you can
-## shuffle out slowly so you're never stuck. There's no crawling otherwise.
-func _tick_prone(f: InputFrame, wish: Vector3, delta: float) -> void:
-	_set_height(tuning.prone_height)
-	if _get_up_from_prone(f):
-		return
-	# Low stop speed so friction doesn't swamp the slow shuffle.
-	velocity = MovementMath.apply_friction(velocity, tuning.ground_friction, tuning.prone_speed * 0.5, delta)
-	velocity = MovementMath.accelerate(velocity, wish.normalized(), tuning.prone_speed * wish.length(), tuning.ground_accel, delta)
-	velocity.y -= tuning.gravity * delta
-	_move()
-	if not is_on_floor():
-		_change_state(State.AIR)
-
-
-## Up to crouch (and standing, unless crouch is held) if there's room.
-func _get_up_from_prone(f: InputFrame) -> bool:
-	if not _shape_fits(_crouch_shape, global_position):
-		return false
-	_set_height(tuning.crouch_height)
-	_crouch_hold = -999.0
-	_jump_buffer = 999.0  # the jump that got you up isn't also a jump
-	_change_state(State.CROUCH)
-	if not f.crouch_held and _can_stand():
-		_set_height(tuning.stand_height)
-		_change_state(State.GROUND)
-	return true
-
-
-## Dolphin dive (prone jump): a low forward leap that lands on your belly.
-func _start_dive() -> void:
-	var h := MovementMath.horizontal(velocity)
-	var dir := h.normalized() if h.length() > 0.5 else forward()
-	h += dir * tuning.dive_boost
-	# From the ground it's a low leap; in the air it's a lunge forward.
-	var up := tuning.dive_up if state != State.AIR else maxf(velocity.y, tuning.dive_air_up)
-	velocity = Vector3(h.x, up, h.z)
-	_diving = true
-	_jumped_since_floor = true
-	_jump_buffer = 999.0
-	_set_height(tuning.prone_height)
-	_change_state(State.AIR)
-	_trick(&"dolphin_dive")
-
-
-func _tick_prone_slide(f: InputFrame, wish: Vector3, delta: float) -> void:
-	_set_height(tuning.prone_height)
-	# Tap prone to dive and pop up into a slide; hold it to stay on your belly
-	# (under low gaps). You get up by yourself once the slide runs out.
-	if (f.jump_pressed or not f.prone_held) and _shape_fits(_crouch_shape, global_position):
-		_set_height(tuning.crouch_height)
-		_slide_flat_time = 0.0
-		if horizontal_speed() >= tuning.slide_min_speed:
-			_change_state(State.SLIDE)
-		else:
-			_change_state(State.CROUCH)
-		return
-	velocity = MovementMath.apply_friction(velocity, tuning.prone_slide_friction, 0.0, delta)
-	if is_on_floor():
-		var n := get_floor_normal()
-		velocity += (Vector3.DOWN - n * Vector3.DOWN.dot(n)) * tuning.gravity * tuning.slide_slope_gain * delta
-	velocity.y -= tuning.gravity * delta
-	_move()
-	if not is_on_floor():
-		_change_state(State.AIR)
-	elif horizontal_speed() < tuning.prone_speed:
-		_change_state(State.PRONE)
-		_get_up_from_prone(f)
 
 
 # ---------------------------------------------------------------- kicks (doors, windows)
@@ -1845,10 +1741,8 @@ func _set_height(h: float) -> void:
 	_height = h
 	if h >= tuning.stand_height - 0.01:
 		collision.shape = _stand_shape
-	elif h >= tuning.crouch_height - 0.01:
-		collision.shape = _crouch_shape
 	else:
-		collision.shape = _prone_shape
+		collision.shape = _crouch_shape
 	(collision.shape as CapsuleShape3D).height = h
 	collision.position = Vector3(0.0, h * 0.5, 0.0)
 
@@ -1881,7 +1775,7 @@ func _carry_turn() -> void:
 	if is_zero_approx(turned):
 		return
 	var share := 0.0
-	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL, State.PRONE_SLIDE]:
+	if state in [State.GROUND, State.CROUCH, State.SLIDE, State.ROLL]:
 		share = 1.0
 	elif state == State.AIR:
 		share = tuning.quick_turn_air_carry
@@ -1976,7 +1870,6 @@ func respawn(t: Variant = null) -> void:
 	_kicked_ids.clear()
 	_wallrun_used_normal = Vector3.ZERO
 	_climb_used = false
-	_diving = false
 	_since_floor = 999.0
 	_change_state(State.AIR)
 	pitch = 0.0
@@ -1997,7 +1890,6 @@ func respawn(t: Variant = null) -> void:
 	_roll_carry = false
 	_spin_vel = Vector2.ZERO
 	_look_acc = Vector2.ZERO
-	_air_dive_used = false
 	_pending_impact = 0.0
 	_ground_flick = 0.0
 	lean = 0.0
@@ -2058,7 +1950,8 @@ func _process(delta: float) -> void:
 		target_roll = deg_to_rad(-2.5)
 	# Lean peeks on the ground; in the air it's a side flip instead.
 	# (On a wall, lean angles the run instead.)
-	_peek = lerpf(_peek, 0.0 if state in [State.AIR, State.WALLRUN] else lean, 1.0 - exp(-14.0 * delta))
+	var peek_share := lerpf(1.0, tuning.lean_peek_running_share, clampf(horizontal_speed() / tuning.run_speed, 0.0, 1.0))
+	_peek = lerpf(_peek, 0.0 if state in [State.AIR, State.WALLRUN] else lean * peek_share, 1.0 - exp(-14.0 * delta))
 	target_roll -= _peek * deg_to_rad(tuning.lean_tilt_degrees)
 	_roll = lerpf(_roll, target_roll, 1.0 - exp(-10.0 * delta))
 	if state == State.AIR:
@@ -2141,8 +2034,10 @@ func vault_progress() -> float:
 	return clampf(state_time / _path_time, 0.0, 1.0)
 
 
+## Always false: the dive was removed. Kept until the runner body stops
+## asking.
 func is_diving() -> bool:
-	return _diving
+	return false
 
 
 ## Seconds since last on the ground (wallruns and climbs count as off it).
@@ -2170,18 +2065,12 @@ func shot_tags() -> Array[StringName]:
 			tags.append(&"wallrun")
 		State.SLIDE:
 			tags.append(&"sliding")
-		State.PRONE_SLIDE:
-			tags.append(&"diving")
-		State.PRONE:
-			tags.append(&"prone")
 		State.WALLCLIMB:
 			tags.append(&"climbing")
 		State.VAULT, State.MANTLE:
 			tags.append(&"vaulting")
 		State.SURFACE:
 			tags.append(&"surface")
-	if _diving and state == State.AIR:
-		tags.append(&"diving")
 	if state == State.AIR:
 		if absf(_air_pitch) > deg_to_rad(90.0):
 			tags.append(&"flipping")

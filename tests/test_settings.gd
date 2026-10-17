@@ -50,7 +50,6 @@ func test_default_slots() -> void:
 	check(GameSettings.event_label(GameSettings.slot_event("lean_left", true)) == "LB", "lean left is LB")
 	check(GameSettings.event_label(GameSettings.slot_event("lean_right", true)) == "RB", "lean right is RB")
 	check(GameSettings.event_label(GameSettings.slot_event("kick", true)) == "R3", "kick is R3")
-	check(GameSettings.event_label(GameSettings.slot_event("prone", true)) == "Y", "dive is Y")
 	check(GameSettings.event_label(GameSettings.slot_event("fire_mode", true)) == "D-pad left", "fire mode is D-pad left")
 
 
@@ -71,7 +70,6 @@ func test_rebind_takes_key_from_other_action() -> void:
 func test_rebind_controller_button() -> void:
 	Settings.rebind("kick", _pad(JOY_BUTTON_Y))
 	check(GameSettings.event_label(GameSettings.slot_event("kick", true)) == "Y", "kick on Y")
-	check(GameSettings.slot_event("prone", true) == null, "dive lost Y")
 	check(GameSettings.event_label(GameSettings.slot_event("kick", false)) == "F", "keyboard kick untouched")
 
 
@@ -151,8 +149,8 @@ func test_pause_menu_pauses_and_rebinds() -> void:
 
 
 func test_moves_list_names_current_bindings() -> void:
-	var text := MovesGuide.describe("{jump} to jump, {prone} to dive")
-	check(text == "Space / A to jump, Z / Y to dive", "placeholders filled (%s)" % text)
+	var text := MovesGuide.describe("{jump} to jump, {kick} to kick")
+	check(text == "Space / A to jump, F / R3 to kick", "placeholders filled (%s)" % text)
 	Settings.rebind("jump", _key(KEY_J))
 	check(MovesGuide.describe("{jump}").begins_with("J"), "follows rebinding")
 

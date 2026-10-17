@@ -43,7 +43,7 @@ func _steer(x: float) -> InputFrame:
 
 ## Runs forward along -Z, doing each step's action once when z passes its
 ## trigger. Steps: [trigger_z, action, lane_x]. Actions: "jump", "crouch",
-## "dive", "" (just change lane), "roll" (crouch just before landing).
+## "" (just change lane), "roll" (crouch just before landing).
 ## Returns false if it ran out of time before end_z.
 func _run_route(route: Array, end_z: float, max_frames := 1800, log := false) -> bool:
 	var lane := player.global_position.x
@@ -66,9 +66,6 @@ func _run_route(route: Array, end_z: float, max_frames := 1800, log := false) ->
 				"crouch":
 					f.crouch_pressed = true
 					f.crouch_held = true
-				"dive":
-					f.prone_pressed = true
-					f.prone_held = true
 				"roll":
 					roll_armed = true
 			next += 1
@@ -95,13 +92,13 @@ const COURSE_ROUTE := [
 	[-26.5, "crouch", 0.0],   # slide bar at -31
 	[-38.8, "jump", 0.0],     # gap to R2
 	[-42.0, "", 3.3],         # line up with the window
-	[-55.0, "dive", 3.3],     # window at -58
+	[-55.0, "crouch", 3.3],   # window at -58: slide through
 	[-62.0, "", 5.4],         # toward the wall
 	[-71.3, "jump", 7.0],     # gap: into the wallrun wall
 	[-86.0, "", 0.3],
 	[-90.6, "jump", 0.3],     # hurdle at -92
 	[-102.2, "jump", 0.3],    # climb face at -104
-	[-110.5, "dive", 0.3],    # window at -114
+	[-110.5, "crouch", 0.3],  # window at -114: slide through
 	[-122.0, "roll", 0.3],    # drop to R5
 	[-130.0, "", 1.5],
 	[-140.6, "jump", 1.5],    # hurdles at -142, -152, -162

@@ -55,17 +55,6 @@ extends Resource
 ## Friction grows by this much per second of sliding, so flat slides end.
 @export_range(0.0, 10.0, 0.05) var slide_friction_ramp := 1.0
 
-@export_group("Prone and dive")
-@export_range(0.76, 1.5, 0.01) var prone_height := 0.8
-## Below this a dive slide ends and you get up.
-@export_range(0.0, 5.0, 0.1) var prone_speed := 1.4
-## Dolphin dive: upward speed and forward boost.
-@export_range(0.0, 10.0, 0.1) var dive_up := 3.6
-@export_range(0.0, 10.0, 0.1) var dive_boost := 1.5
-@export_range(0.0, 20.0, 0.1) var prone_slide_friction := 1.6
-## Diving in the air (once per jump): at least this much upward speed.
-@export_range(0.0, 10.0, 0.1) var dive_air_up := 1.5
-
 @export_group("Vault and mantle")
 ## Highest obstacle (above feet) you vault over or step onto without jumping.
 @export_range(0.2, 2.0, 0.05) var vault_max_height := 1.25
@@ -258,7 +247,7 @@ extends Resource
 @export_range(0.0, 3.0, 0.05) var boost_time := 0.8
 
 @export_group("Breakables")
-## Speed at which running, sliding or diving into a window smashes it.
+## Speed at which running or sliding into a window smashes it.
 @export_range(0.0, 20.0, 0.1) var smash_speed := 5.0
 
 @export_group("Context")
@@ -278,6 +267,10 @@ extends Resource
 ## Lean on the ground: how far the camera moves sideways and tilts.
 @export_range(0.0, 1.0, 0.01) var lean_offset := 0.4
 @export_range(0.0, 30.0, 0.5) var lean_tilt_degrees := 12.0
+## Running, the lean is mostly a quick turn, so the view only peeks this
+## share of the way (full peek standing still, easing down to it at run
+## speed).
+@export_range(0.0, 1.0, 0.01) var lean_peek_running_share := 0.15
 ## How fast lean eases in and out (full lean per second).
 @export_range(1.0, 20.0, 0.5) var lean_speed := 7.0
 ## Head bob amplitude in meters at run speed (0 = off).

@@ -116,17 +116,6 @@ func test_flips_and_side_flips_turn_the_body() -> void:
 	check(_root().y.x < -0.5, "a right side flip tips the head right (%s)" % _root().y)
 
 
-func test_dive_is_horizontal() -> void:
-	var p := _make()
-	p.set_physics_process(false)
-	p.state = Player.State.AIR
-	p._diving = true
-	for i in 60:
-		await tree.process_frame
-	var up := _root().y
-	check(up.y < 0.4 and up.z > 0.8, "head out in front (%s)" % up)
-
-
 func test_wallrun_puts_feet_on_the_wall() -> void:
 	var p := _make()
 	p.set_physics_process(false)
@@ -164,7 +153,8 @@ func test_running_moves_legs_and_blends() -> void:
 	# Change state abruptly: the body must ease, never jump.
 	var before := _root().get_rotation_quaternion()
 	p.set_physics_process(false)
-	p.state = Player.State.PRONE
+	p.state = Player.State.AIR
+	p._air_roll = 1.5  # partway round a side flip
 	await tree.process_frame
 	await tree.process_frame
 	var jump := before.angle_to(_root().get_rotation_quaternion())

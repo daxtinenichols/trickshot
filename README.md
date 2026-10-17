@@ -20,7 +20,6 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Look | Mouse | Right stick |
 | Jump / vault / climb | Space | A |
 | Crouch / slide / roll (double-tap to roll) | Ctrl or C | B |
-| Dolphin dive (prone jump) | Z | Y |
 | Kick | F | R3 |
 | Boost (short burst of speed, 2 s cooldown) | Shift | L3 (click the left stick) |
 | Mouse roll (test): hold Shift in the air or on a wall and move the mouse left/right to roll instead of turn | Shift + mouse | |
@@ -55,7 +54,6 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 | Mantle | Jump into a ledge up to ~1.5 m above your reach | A clean grab keeps all your speed, even at the top of a wall climb; a sloppy one loses some |
 | Slide | Crouch while sprinting | Faster entry slides further; slopes add speed |
 | Slide landing | Press crouch just before you land from a fall | Turns some of your fall into forward speed |
-| Dolphin dive (prone jump) | Z, on the ground or once in the air. There's no lying prone or crawling | Tap to dive and pop up into a slide; hold to stay on your belly for low gaps. You get up by yourself when the slide runs out. Dive through low windows |
 | Wallrun | Jump into a blue wall at an angle, holding a direction | You keep the angle you hit the wall at, and gravity keeps bending your path down: nothing holds you up. Shallow angle + speed = a longer run. Lean (Q or E) to roll your path round on the wall like a roll: toward the wall turns it up, away turns it down. Running up the wall costs speed. Look and aim anywhere while running; crouch drops off |
 | Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; the steeper you're running up it, the harder. Chain wall to wall |
 | Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it (your view stays put; hold Q or E while turning to face away quickly) |
@@ -68,7 +66,7 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 | Boost | Shift | A short burst of speed on the ground, a ramp or a wall, then a 2 s cooldown |
 | Lean / quick turn | Hold Q or E | Leans you to peek. While held, turning the view toward that side (Q left, E right) is faster and your run follows it without losing speed (in the air, part of your speed follows) |
 | Side flip | Hold Q or E in the air | Rolls you sideways one way (the first one you press). Holding it, or crouch, tucks you in and spins you faster; let go to open up and slow down. Near level it settles; land on your side and you shoulder-roll, keeping your speed (the further off level, the more it costs). A lean you were holding on a wallrun doesn't flip you as you come off: let go and lean again |
-| Window smash | Run, slide or dive into glass fast enough | |
+| Window smash | Run or slide into glass fast enough | Low windows are too low to run through: slide under them |
 | Backflip / front flip | In the air, keep moving the view up and over (backflip) or down and over (front flip) until it comes back around | Past straight up/down the view turns faster, so commit to the flick. Flick hard past halfway and let go: momentum carries you round to level. Hold crouch to keep spinning. The HUD shows your flip progress. Land level or you crash |
 | 360 / 720 | In the air, turn a full circle | Momentum carries a fast spin round the same way as flips. Quick turn (Q/E) speeds the turn up |
 
@@ -114,7 +112,7 @@ Point values are in `scoring/combo_tracker.gd`.
 | 6 | Slide hill | Downhill slides |
 | 7 | Drop tower | Landing rolls, flips and 360s from height |
 | 8 | Kick-off yard | Air kicks off pillars and targets |
-| 9 | Doors and windows | Door kicks, dives and window smashes |
+| 9 | Doors and windows | Door kicks, slide-under windows and window smashes |
 | 0 | Shooting range | Static and moving targets, a wall to wallrun-and-shoot from, a platform for air shots |
 | - | Ramps and loop | A loop after a long run-up, a launch ramp, a tall steep ramp with height markers, a sideways ramp |
 
@@ -122,7 +120,7 @@ Point values are in `scoring/combo_tracker.gd`.
 
 Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbox, Rooftops, Combo Park.
 
-**Rooftops** is a timed obstacle course across six rooftops. The clock starts at the green line and stops at the yellow finish. Hurdles and a slide bar, a gap, a door and a window wall, a wallrun across a 12 m gap, a 3 m climb, a dive window, a 9 m drop to roll out of, a sideways ramp and an optional loop, more hurdles and a last gap. Falling to the street puts you back at the last checkpoint and the clock keeps running. Your best time is saved. Keys 1–4 jump to the start and each checkpoint (from a checkpoint it's practice and doesn't set a best time).
+**Rooftops** is a timed obstacle course across six rooftops. The clock starts at the green line and stops at the yellow finish. Hurdles and a slide bar, a gap, a door and a window wall, a wallrun across a 12 m gap, a 3 m climb, a low window to slide through, a 9 m drop to roll out of, a sideways ramp and an optional loop, more hurdles and a last gap. Falling to the street puts you back at the last checkpoint and the clock keeps running. Your best time is saved. Keys 1–4 jump to the start and each checkpoint (from a checkpoint it's practice and doesn't set a best time).
 
 **Combo Park** is an open yard with no set route, built for keeping a combo alive: a two-tier tower in the middle (mantle steps, a climb face, slide ramps down three sides, kick-off pillars), a half-pipe, a loop at the end of a long runway, a wallrun zigzag over a red floor, a hurdle field with slide bars, a door and window wall, sideways ramps along the west side (one gentle, one steep), blue fins and mantle blocks in between, long walls down both sides, and targets throughout. Keys 1–6 jump between areas.
 
