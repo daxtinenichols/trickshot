@@ -69,9 +69,35 @@ const PAD_AXES := {
 }
 
 
+## Last input seen from each controller (device -> "A", "Left stick up"...),
+## for the controller test in Settings and the log.
+var pad_activity := {}
+
+
 func _enter_tree() -> void:
+	process_mode = Node.PROCESS_MODE_ALWAYS  # the test works in the pause menu
 	register_actions()
 	Input.joy_connection_changed.connect(_on_joy_connection_changed)
+
+
+func _ready() -> void:
+	var pads := Input.get_connected_joypads()
+	print("Controllers at start: %d" % pads.size())
+	for d in pads:
+		print("  device %d: %s (guid %s)" % [d, Input.get_joy_name(d), Input.get_joy_guid(d)])
+
+
+func _input(event: InputEvent) -> void:
+	if event is InputEventJoypadButton and event.is_pressed():
+		_note_pad(event.device, GameSettings.event_label(event))
+	elif event is InputEventJoypadMotion and absf((event as InputEventJoypadMotion).axis_value) > 0.5:
+		_note_pad(event.device, GameSettings.event_label(event))
+
+
+func _note_pad(device: int, what: String) -> void:
+	if not pad_activity.has(device):
+		print("Controller %d first input: %s" % [device, what])
+	pad_activity[device] = what
 
 
 # A method (not a lambda) and disconnected on exit: a lambda left connected
@@ -82,6 +108,8 @@ func _exit_tree() -> void:
 
 func _on_joy_connection_changed(device: int, connected: bool) -> void:
 	print("Controller %d %s: %s" % [device, "connected" if connected else "disconnected", Input.get_joy_name(device)])
+	if not connected:
+		pad_activity.erase(device)
 
 
 ## Right-stick look, from whichever connected controller is pushing it most.
@@ -98,8 +126,19 @@ static func look_stick() -> Vector2:
 static func controller_names() -> Array[String]:
 	var out: Array[String] = []
 	for d in Input.get_connected_joypads():
-		out.append("%s (device %d)" % [Input.get_joy_name(d), d])
+		out.append("%s (device %d)" % [pad_name(Input.get_joy_name(d)), d])
 	return out
+
+
+## Steam Input's stand-in controllers report names like "#controller_xbox360".
+static func is_steam_virtual(joy_name: String) -> bool:
+	return joy_name.begins_with("#controller") or joy_name.containsn("steam virtual")
+
+
+static func pad_name(joy_name: String) -> String:
+	if joy_name.begins_with("#controller_"):
+		return "Steam Input controller (%s)" % joy_name.trim_prefix("#controller_")
+	return joy_name if joy_name != "" else "Controller"
 
 
 ## (Re)creates every action with its default bindings.

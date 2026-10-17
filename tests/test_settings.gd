@@ -196,6 +196,35 @@ func test_escape_and_start_open_the_menu_for_real() -> void:
 func test_settings_tab_lists_controllers() -> void:
 	check(PauseMenu.pads_text([]).begins_with("Controllers: none detected"), "says when none are found")
 	check(PauseMenu.pads_text(["Xbox 360 Controller (device 0)"] as Array[String]) == "Controllers: Xbox 360 Controller (device 0)", "names the pad")
+	var silent := PauseMenu.pads_detail([0], {0: "#controller_xbox360"}, {})
+	check(silent.contains("Steam Input controller (xbox360) (device 0): no input yet"), "names Steam's stand-in pad and says it's silent")
+	check(silent.contains("Disable Steam Input"), "explains how to turn Steam Input off")
+	var live := PauseMenu.pads_detail([1], {1: "Xbox 360 Controller"}, {1: "A"})
+	check(live.contains("Xbox 360 Controller (device 1): working, last input: A"), "shows the last button pressed")
+	check(not live.contains("Disable Steam Input"), "no Steam hint when the pad works")
+
+
+func test_menu_has_map_buttons() -> void:
+	var level: Node = load("res://levels/sandbox.tscn").instantiate()
+	tree.root.add_child(level)
+	await tree.process_frame
+	var names: Array[String] = []
+	for b in level.menu.find_children("*", "Button", true, false):
+		names.append((b as Button).text)
+	for m in ["Sandbox", "Rooftops", "Combo Park"]:
+		check(m in names, "menu has a %s button" % m)
+	level.queue_free()
+	await tree.process_frame
+
+
+func test_controller_test_records_input() -> void:
+	InputSetup.pad_activity.clear()
+	var a := _pad(JOY_BUTTON_A)
+	a.device = 2
+	Input.parse_input_event(a)
+	await tree.process_frame
+	check(InputSetup.pad_activity.get(2, "") == "A", "a button press on controller 2 is recorded (got %s)" % str(InputSetup.pad_activity))
+	InputSetup.pad_activity.clear()
 
 
 func test_controller_bindings_match_any_device() -> void:

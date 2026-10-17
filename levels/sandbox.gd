@@ -31,7 +31,7 @@ func _ready() -> void:
 	add_child(corner_cam)
 	corner_cam.setup(player)
 	go_to_zone(0)
-	hud.show_toast("Esc: moves list, settings and controls", 4.0)
+	hud.show_toast("Esc: maps, moves list, settings and controls", 4.0)
 
 
 func go_to_zone(index: int) -> void:

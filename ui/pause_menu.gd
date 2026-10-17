@@ -138,6 +138,7 @@ func _build() -> void:
 	title.add_theme_font_size_override("font_size", 26)
 	title.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	header.add_child(title)
+	_add_map_buttons(header)
 	var resume := Button.new()
 	resume.text = "Resume (Esc)"
 	resume.pressed.connect(close)
@@ -149,6 +150,26 @@ func _build() -> void:
 	_tabs.add_child(_build_moves())
 	_tabs.add_child(_build_settings())
 	_tabs.add_child(_build_controls())
+
+
+## One button per playable map (from the Levels autoload, when present).
+func _add_map_buttons(header: HBoxContainer) -> void:
+	var levels := get_node_or_null("/root/Levels")
+	if levels == null or not "LEVELS" in levels:
+		return
+	var l := Label.new()
+	l.text = "Map:"
+	header.add_child(l)
+	for i in levels.LEVELS.size():
+		var b := Button.new()
+		b.text = levels.LEVELS[i][1]
+		b.pressed.connect(func() -> void:
+			close()
+			levels.go_to(i))
+		header.add_child(b)
+	var spacer := Control.new()
+	spacer.custom_minimum_size = Vector2(24, 0)
+	header.add_child(spacer)
 
 
 func _scroll(tab_name: String) -> ScrollContainer:
@@ -308,15 +329,45 @@ func _build_controls() -> Control:
 	return sc
 
 
+const STEAM_HINT := "If pressing buttons doesn't show up here, Steam is taking over the controller. In Steam, right-click Godot Engine > Properties > Controller > Disable Steam Input, then restart Godot."
+
+
 ## "Controllers: Xbox 360 Controller" or a hint when none is detected.
 static func pads_text(names: Array[String]) -> String:
 	if names.is_empty():
-		return "Controllers: none detected. Plug it in (any USB port works); if it still doesn't show, close Steam's controller support for Godot (Steam > Godot > Properties > Controller > Disable Steam Input)."
+		return "Controllers: none detected. Plug it in (any USB port works). " + STEAM_HINT
 	return "Controllers: " + ", ".join(names)
 
 
+## One line per controller with a live button test, plus the Steam hint
+## when Steam Input is wrapping a controller.
+static func pads_detail(pads: Array, names: Dictionary, activity: Dictionary) -> String:
+	if pads.is_empty():
+		return pads_text([] as Array[String])
+	var lines: Array[String] = ["Controllers (press any button to test):"]
+	var steam := false
+	for d: int in pads:
+		var n: String = names.get(d, "")
+		steam = steam or InputSetup.is_steam_virtual(n)
+		var status := "working, last input: %s" % activity[d] if activity.has(d) else "no input yet"
+		lines.append("  %s (device %d): %s" % [InputSetup.pad_name(n), d, status])
+	if steam or activity.is_empty():
+		lines.append(STEAM_HINT)
+	return "\n".join(lines)
+
+
+func _process(_delta: float) -> void:
+	if is_open and _pads_label and _tabs.current_tab == 1:
+		_refresh_pads()
+
+
 func _refresh_pads() -> void:
-	_pads_label.text = pads_text(InputSetup.controller_names())
+	var pads := Input.get_connected_joypads()
+	var names := {}
+	for d in pads:
+		names[d] = Input.get_joy_name(d)
+	var setup := get_node_or_null("/root/InputSetup")
+	_pads_label.text = pads_detail(pads, names, setup.pad_activity if setup else {})
 
 
 func _refresh() -> void:
