@@ -80,12 +80,22 @@ func notify(event_name: String) -> void:
 	var story_found := false
 	for i in _story.size():
 		var s: Dictionary = _story[i]
-		if s.get("on", "") == event_name and not _played.has(i):
+		if s.get("on", "") == event_name and not _played.has(i) and _allowed(s):
 			_played[i] = true
 			say(s.get("who", "mags"), s.get("line", ""))
 			story_found = true
 	if not story_found and _chatter.has(event_name):
 		_chat(event_name)
+
+
+## A line with "if": "<mission id>.<key>=<value>" plays only when that
+## story choice was saved (e.g. the ending's line for a spared Juno).
+static func _allowed(s: Dictionary) -> bool:
+	if not s.has("if"):
+		return true
+	var cond: PackedStringArray = String(s["if"]).split("=")
+	var key: PackedStringArray = cond[0].split(".")
+	return cond.size() == 2 and key.size() == 2 and Campaign.choice(key[0], key[1]) == cond[1]
 
 
 ## Queues a line.

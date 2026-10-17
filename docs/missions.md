@@ -156,7 +156,9 @@ Story lines play once, queued, without ever stopping the game:
 `start` (mission loads), `go` (you leave the start), `objective:N` (objective
 N begins), `done:N`, `checkpoint:N`, `complete`, `time:SECONDS`, `fall`,
 `caught`, `down`, `tape`. Or use `at` with `radius`/`size` to play when you reach a
-spot.
+spot. `"if": "m07_parking_spiral.fate=spared"` plays a line only when an
+earlier mission saved that story choice (a boss's `fate:` event saves its
+mission's `fate`).
 
 `chatter` holds reactions to how you play, by event: `bail`, `combo` (a
 banked combo of x4 or more), `fall`, `kill`, `headshot`, `down` (enemies

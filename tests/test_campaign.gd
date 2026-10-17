@@ -274,6 +274,27 @@ func test_echo_chatter_waits_for_the_uplink() -> void:
 	check(heard, "and cheers him on after")
 
 
+func test_juno_fate_carries_to_the_ending() -> void:
+	# A boss's fate in a real (not practice) run is saved with its mission.
+	await _load(_index("m08_storm_channels"))
+	run.event.emit("fate:spared")
+	check(Campaign.choice("m08_storm_channels", "fate") == "spared", "a fate event is saved")
+	level.queue_free()
+	await tree.process_frame
+	for spared: bool in [false, true]:
+		Campaign.reset_progress()
+		if spared:
+			Campaign.save().set_value("m07_parking_spiral", "fate", "spared")
+		await _load(_index("m12_signal_out"))
+		var radio: RadioFeed = level.radio
+		radio.notify("complete")
+		var juno := radio.queue.any(func(l: Dictionary) -> bool: return l.who == "juno")
+		check(juno == spared, "Juno's ending line plays only if she was spared (spared %s, heard %s)" % [spared, juno])
+		check(radio.queue.any(func(l: Dictionary) -> bool: return l.line == "Go outside. It's a nice day."), "the ending plays")
+		level.queue_free()
+		await tree.process_frame
+
+
 # ---------------------------------------------------------------- the chase
 
 func test_pursuer_follows_your_path() -> void:
