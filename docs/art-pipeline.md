@@ -44,7 +44,7 @@ say so, since the script would overwrite those edits.
   `LeftUpperArm`...), T-pose rest. Any humanoid animation (mocap, CC0 packs,
   hand-keyed clips) retargets onto it in Godot with no renaming.
 - Shown on render layer 2. The first-person camera leaves that layer out;
-  the corner camera (F5) and the chase camera (F7) include it. The body
+  the corner camera (F5) and the chase camera (F10) include it. The body
   still casts its shadow in first person. The view-model pistol is on its
   own layer (`Pistol.VIEW_LAYER`), which only the first-person camera sees.
 
@@ -109,8 +109,10 @@ and the `landed` / `trick` / `respawned` signals.
 code-built sandbox it swaps the graybox materials; real maps use
 `ArtLook.world_material(color)` directly.
 
-In game: **F5** toggles the corner camera, **F6** toggles the art look
-(compare with graybox), **F7** toggles a full-screen chase camera.
+In game: **F5** toggles the corner camera, **F9** toggles the art look
+(compare with graybox), **F10** toggles a full-screen chase camera.
+F5-F8 are left alone because the Godot editor uses them to run, pause and
+stop the game.
 
 ## Maps
 
@@ -125,7 +127,11 @@ lets tests run the real map:
   start to finish without falling, so a change that breaks the route fails CI.
 - **Combo Park** (`maps/combo_park_builder.gd`): an open yard of features a
   few steps apart. Tests check each spawn and that the tower, half-pipe,
-  loop and zigzag work in place.
+  loop, zigzag and sideways ramps work in place.
+- **Sideways ramps** (`MapPieces.bank` in `maps/map_pieces.gd`): a quarter
+  pipe turned to rise beside the way you run, with its flow along the run.
+  The player rides them with the normal surface rules; steepness and radius
+  are constants at the top of each builder.
 
 Sizes used: vault obstacles 0.9–1 m, slide bars at 1.1 m clearance, mantle
 steps 1.5 m, climb faces 3 m, running-jump gaps 4–6 m, wallrun gaps 12 m

@@ -12,6 +12,7 @@ const SHOTS := [
 	["res://maps/combo_park.tscn", Vector3(-18, 9, 26), Vector3(0, 3, 0), "park_tower"],
 	["res://maps/combo_park.tscn", Vector3(-22, 6, 14), Vector3(-38, 3, -2), "park_half_pipe"],
 	["res://maps/combo_park.tscn", Vector3(16, 6, 20), Vector3(34, 3, -30), "park_loop"],
+	["res://maps/combo_park.tscn", Vector3(-26, 5, 50), Vector3(-36, 1, 10), "park_banks"],
 ]
 
 var out := "user://map_shots"

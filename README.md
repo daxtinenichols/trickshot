@@ -32,7 +32,7 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Menu (moves, settings, controls) | Esc | Start |
 | Jump to zone | 1–9, 0 = shooting range, - = ramps and loop | |
 | HUD / tuning / slow-mo / speed trail / corner view | F1 / F2 / F3 / F4 / F5 | |
-| Art look / chase camera / next level | F6 / F7 / F8 | |
+| Art look / chase camera / next level | F9 / F10 / F11 | |
 
 You always sprint: there's no walk or sprint key. Let go of the stick to stop.
 
@@ -113,11 +113,11 @@ Point values are in `scoring/combo_tracker.gd`.
 
 ## Levels
 
-**F8** cycles through the levels: Sandbox, Rooftops, Combo Park.
+**F11** cycles through the levels: Sandbox, Rooftops, Combo Park.
 
-**Rooftops** is a timed obstacle course across six rooftops. The clock starts at the green line and stops at the yellow finish. Hurdles and a slide bar, a gap, a door and a window wall, a wallrun across a 12 m gap, a 3 m climb, a dive window, a 9 m drop to roll out of, an optional loop, more hurdles and a last gap. Falling to the street puts you back at the last checkpoint and the clock keeps running. Your best time is saved. Keys 1–4 jump to the start and each checkpoint (from a checkpoint it's practice and doesn't set a best time).
+**Rooftops** is a timed obstacle course across six rooftops. The clock starts at the green line and stops at the yellow finish. Hurdles and a slide bar, a gap, a door and a window wall, a wallrun across a 12 m gap, a 3 m climb, a dive window, a 9 m drop to roll out of, a sideways ramp and an optional loop, more hurdles and a last gap. Falling to the street puts you back at the last checkpoint and the clock keeps running. Your best time is saved. Keys 1–4 jump to the start and each checkpoint (from a checkpoint it's practice and doesn't set a best time).
 
-**Combo Park** is an open yard with no set route, built for keeping a combo alive: a two-tier tower in the middle (mantle steps, a climb face, slide ramps down three sides, kick-off pillars), a half-pipe, a loop at the end of a long runway, a wallrun zigzag over a red floor, a hurdle field with slide bars, a door and window wall, blue fins and mantle blocks in between, long walls down both sides, and targets throughout. Keys 1–5 jump between areas.
+**Combo Park** is an open yard with no set route, built for keeping a combo alive: a two-tier tower in the middle (mantle steps, a climb face, slide ramps down three sides, kick-off pillars), a half-pipe, a loop at the end of a long runway, a wallrun zigzag over a red floor, a hurdle field with slide bars, a door and window wall, sideways ramps along the west side (one gentle, one steep), blue fins and mantle blocks in between, long walls down both sides, and targets throughout. Keys 1–6 jump between areas.
 
 Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide, purple is runnable ramps and loops, and red is targets (yellow heads are headshots).
 
@@ -156,9 +156,9 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `fx/` | Speed trail |
 | `tests/` | Test runner and suites |
 | `tools/` | Screenshot tool |
-| `maps/` | Rooftops course (with its timer), Combo Park, F8 level switcher |
+| `maps/` | Rooftops course (with its timer), Combo Park, F11 level switcher |
 | `art/` | Art look: runner character and its animation, cel shader, outlines, speed trails. See [docs/art-pipeline.md](docs/art-pipeline.md) |
 
 ## Art look
 
-The sandbox runs with the cel-shaded look on: toon shading, ink outlines, and speed lines at the screen edges when you're fast. **F6** switches between the art look and plain graybox. **F7** switches to a full-screen third-person chase camera (the F5 corner view shows the same runner) (motion trails stream from the hands and feet above run speed). How the art, animation and maps are made is in [docs/art-pipeline.md](docs/art-pipeline.md).
+The sandbox runs with the cel-shaded look on: toon shading, ink outlines, and speed lines at the screen edges when you're fast. **F9** switches between the art look and plain graybox. **F10** switches to a full-screen third-person chase camera (the F5 corner view shows the same runner) (motion trails stream from the hands and feet above run speed). How the art, animation and maps are made is in [docs/art-pipeline.md](docs/art-pipeline.md).

@@ -18,6 +18,10 @@ extends SandboxBuilder
 ## 1.5 m steps mantle, 3 m faces climb, 1 m blocks vault, 1.1 m bars slide.
 
 const HALF := 66.0  # yard is 132 x 132 m
+## Sideways ramps: curve radius and how steep they get (degrees).
+const BANK_RADIUS := 3.0
+const BANK_ANGLE := 60.0
+const BANK_STEEP_ANGLE := 75.0
 
 
 func build() -> void:
@@ -38,6 +42,7 @@ func build() -> void:
 	_wall_zigzag(Vector3(0, 0, -26))
 	_hurdle_field(Vector3(12, 0, 34))
 	_breach_wall(Vector3(-20, 0, 26))
+	_banks(Vector3(-34, 0, 0))
 	_stepping_stones()
 	_edges()
 	_targets()
@@ -73,8 +78,8 @@ func _half_pipe(c: Vector3) -> void:
 	var angle := 85.0
 	var straight := 1.5
 	var gap := 5.0
-	_surface(_turned(SurfaceShapes.quarter_pipe(c + Vector3(0, 0, -gap), radius, angle, straight, 12.0), c + Vector3(0, 0, -gap), 0.0))
-	_surface(_turned(SurfaceShapes.quarter_pipe(c + Vector3(0, 0, gap), radius, angle, straight, 12.0), c + Vector3(0, 0, gap), PI))
+	_surface(MapPieces.turned(SurfaceShapes.quarter_pipe(c + Vector3(0, 0, -gap), radius, angle, straight, 12.0), c + Vector3(0, 0, -gap), 0.0))
+	_surface(MapPieces.turned(SurfaceShapes.quarter_pipe(c + Vector3(0, 0, gap), radius, angle, straight, 12.0), c + Vector3(0, 0, gap), PI))
 	var h := SurfaceShapes.quarter_pipe_height(radius, angle, straight)
 	_label("HALF-PIPE: run up, flip at the top, land on the ramp", c + Vector3(0, h + 1.5, -gap - 4.0), 0.9)
 
@@ -139,6 +144,16 @@ func _breach_wall(o: Vector3) -> void:
 	_label("Kick (F) · dive (Z) · smash at speed", Vector3(o.x, 3.5, z + 0.4), 0.8)
 
 
+## Sideways ramps along the west side: run along them tilted, like a
+## wallrun on a slope. The gentle one first, then a steep one further on.
+func _banks(c: Vector3) -> void:
+	_spawn(c + Vector3(3, 0, 46), "6 · BANKED RAMPS")
+	_label("Sideways ramps: run along them at speed", c + Vector3(0, 4.5, 44), 0.8)
+	_surface(MapPieces.bank(c + Vector3(0, 0, 44), 28.0, -1.0, BANK_RADIUS, BANK_ANGLE, 1.0))
+	# Steeper and taller, beside the half-pipe and on toward the zigzag.
+	_surface(MapPieces.bank(c + Vector3(0, 0, -12), 26.0, -1.0, BANK_RADIUS, BANK_STEEP_ANGLE, 2.0))
+
+
 ## Long blue walls down the west and east sides, close enough to use.
 func _edges() -> void:
 	for x: float in [-42.0, 42.0]:
@@ -154,7 +169,7 @@ func _stepping_stones() -> void:
 			_box(Vector3(x, 0.75, z), Vector3(4, 1.5, 4), Kind.PARKOUR)
 		# Short blue fins to wallrun past.
 		_box(Vector3(x, 2, -30), Vector3(1, 4, 8), Kind.WALLRUN)
-		_box(Vector3(x * 1.8, 2, 30), Vector3(1, 4, 8), Kind.WALLRUN)
+	_box(Vector3(36, 2, 30), Vector3(1, 4, 8), Kind.WALLRUN)
 	# Low benches to vault on the tower's south lawn.
 	for x: float in [-6.0, 6.0]:
 		_box(Vector3(x, 0.5, 17), Vector3(3, 1, 0.8), Kind.PARKOUR)
@@ -171,24 +186,6 @@ func _targets() -> void:
 
 
 # ---------------------------------------------------------------- helpers
-
-## SurfaceShapes always run toward -Z; this turns a shape by `yaw` about the
-## vertical axis through `pivot`.
-func _turned(pieces: Array[Dictionary], pivot: Vector3, yaw: float) -> Array[Dictionary]:
-	if is_zero_approx(yaw):
-		return pieces
-	var r := Basis(Vector3.UP, yaw)
-	var xf := Transform3D(r, pivot) * Transform3D(Basis.IDENTITY, -pivot)
-	var out: Array[Dictionary] = []
-	for p in pieces:
-		out.append({
-			"transform": xf * (p.transform as Transform3D),
-			"size": p.size,
-			"flow": r * (p.flow as Vector3),
-			"face": r * (p.face as Vector3),
-		})
-	return out
-
 
 ## A flat ramp from `top` down to `bottom` in any direction.
 func _slope(top: Vector3, bottom: Vector3, width: float, kind: Kind) -> void:

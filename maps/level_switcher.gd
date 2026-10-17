@@ -1,5 +1,6 @@
 extends Node
-## Autoload "Levels": F8 cycles through the playable levels.
+## Autoload "Levels": F11 cycles through the playable levels (F5-F8 belong
+## to the Godot editor, which uses them to run, pause and stop the game).
 
 const LEVELS := [
 	["res://levels/sandbox.tscn", "Sandbox"],
@@ -10,11 +11,11 @@ const ACTION := "next_level"
 
 
 func _ready() -> void:
-	# Registered as an action so the rebind menu treats F8 as reserved.
+	# Registered as an action so the rebind menu treats F11 as reserved.
 	if not InputMap.has_action(ACTION):
 		InputMap.add_action(ACTION)
 		var k := InputEventKey.new()
-		k.physical_keycode = KEY_F8
+		k.physical_keycode = KEY_F11
 		InputMap.action_add_event(ACTION, k)
 
 

@@ -22,7 +22,11 @@ func setup(p: Player, runner: Node3D) -> void:
 
 
 func _ready() -> void:
+	# Points are in world space. top_level keeps the transform the node had
+	# when it was added (the spawn point), so reset it or every trail would
+	# be drawn offset by where the body was created.
 	top_level = true
+	global_transform = Transform3D.IDENTITY
 	_instance.mesh = _mesh
 	_instance.layers = RunnerBody.LAYER
 	_instance.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
