@@ -32,6 +32,7 @@ Mouse/keyboard and controller both work (any XInput pad, including a wired or wi
 | Menu (moves, settings, controls) | Esc | Start |
 | Jump to zone | 1–9, 0 = shooting range, - = ramps and loop | |
 | HUD / tuning / slow-mo / speed trail / corner view | F1 / F2 / F3 / F4 / F5 | |
+| Art look / chase camera / next level | F6 / F7 / F8 | |
 
 You always sprint: there's no walk or sprint key. Let go of the stick to stop.
 
@@ -110,6 +111,14 @@ Point values are in `scoring/combo_tracker.gd`.
 | 0 | Shooting range | Static and moving targets, a wall to wallrun-and-shoot from, a platform for air shots |
 | - | Ramps and loop | A loop after a long run-up, a launch ramp, a tall steep ramp with height markers |
 
+## Levels
+
+**F8** cycles through the levels: Sandbox, Rooftops, Combo Park.
+
+**Rooftops** is a timed obstacle course across six rooftops. The clock starts at the green line and stops at the yellow finish. Hurdles and a slide bar, a gap, a door and a window wall, a wallrun across a 12 m gap, a 3 m climb, a dive window, a 9 m drop to roll out of, an optional loop, more hurdles and a last gap. Falling to the street puts you back at the last checkpoint and the clock keeps running. Your best time is saved. Keys 1–4 jump to the start and each checkpoint (from a checkpoint it's practice and doesn't set a best time).
+
+**Combo Park** is an open yard with no set route, built for keeping a combo alive: a two-tier tower in the middle (mantle steps, a climb face, slide ramps down three sides, kick-off pillars), a half-pipe, a loop at the end of a long runway, a wallrun zigzag over a red floor, a hurdle field with slide bars, a door and window wall, blue fins and mantle blocks in between, long walls down both sides, and targets throughout. Keys 1–5 jump between areas.
+
 Color language: gray is plain, blue is wallrun, yellow is vault/mantle/climb, green is slide, purple is runnable ramps and loops, and red is targets (yellow heads are headshots).
 
 ## Tuning
@@ -147,6 +156,7 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `fx/` | Speed trail |
 | `tests/` | Test runner and suites |
 | `tools/` | Screenshot tool |
+| `maps/` | Rooftops course (with its timer), Combo Park, F8 level switcher |
 | `art/` | Art look: runner character and its animation, cel shader, outlines, speed trails. See [docs/art-pipeline.md](docs/art-pipeline.md) |
 
 ## Art look

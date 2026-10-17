@@ -112,21 +112,32 @@ code-built sandbox it swaps the graybox materials; real maps use
 In game: **F5** toggles the corner camera, **F6** toggles the art look
 (compare with graybox), **F7** toggles a full-screen chase camera.
 
-## Maps (proposal)
+## Maps
 
-Levels are built in two passes:
+Maps are built in code for now, like the sandbox: a builder script
+(`maps/*_builder.gd`, extending `SandboxBuilder`) places boxes, ramps,
+loops, doors, windows and targets, and the scene reuses the sandbox's
+player, HUD and menu. That keeps every size tied to the movement numbers and
+lets tests run the real map:
 
-1. **Blockout** on a 1 m grid from a modular kit whose sizes match the
-   movement numbers (vault walls ≤ 1.2 m, mantle ledges up to the climb
-   reach, wallrun walls tall enough for a full run, slide ramps at slide
-   angles). Collision comes from the blockout, so gameplay can be tested
-   before any art exists.
-2. **Art pass** swaps kit pieces for dressed versions with the same
-   collision, so the art can never break a route.
+- **Rooftops** (`maps/rooftop_course_builder.gd`, `maps/course_timer.gd`): a
+  timed course along -Z. `tests/test_maps.gd` runs a scripted player from
+  start to finish without falling, so a change that breaks the route fails CI.
+- **Combo Park** (`maps/combo_park_builder.gd`): an open yard of features a
+  few steps apart. Tests check each spawn and that the tower, half-pipe,
+  loop and zigzag work in place.
 
-The authoring tool is still open: Blender (import hints like `-col` give
-collision with no plugins, and the kit can be scripted) or TrenchBroom with
-the func_godot plugin (fast brush-based editing, like Hammer for CS maps).
+Sizes used: vault obstacles 0.9–1 m, slide bars at 1.1 m clearance, mantle
+steps 1.5 m, climb faces 3 m, running-jump gaps 4–6 m, wallrun gaps 12 m
+(too far to jump), quarter pipes radius 3.5–4.5 m.
+
+Later, for hand-made maps: build a blockout on a 1 m grid from a modular kit
+with these sizes, then an art pass that swaps kit pieces for dressed versions
+with the same collision, so the art can never break a route. The tool is
+still open: Blender (`-col` import hints give collision with no plugins) or
+TrenchBroom with func_godot (brush editing, like Hammer).
+
+Map overview shots: `xvfb-run godot --path . -s res://art/tools/map_shots.gd -- <out_dir>`.
 
 ## Checking visuals without a GPU
 
