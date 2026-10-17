@@ -158,8 +158,8 @@ func test_chase_camera_looks_down_on_the_runner() -> void:
 	await tree.process_frame
 	var rel := player.global_basis.inverse() * (cam.global_position - player.global_position)
 	check(rel.y > 2.5 and rel.z > 3.5, "up and behind (%s)" % rel)
-	var down := rad_to_deg(asin(-(-cam.global_basis.z).y))
-	check_between(down, 18.0, 35.0, "looks down on the runner (%.0f degrees)" % down)
+	var to_body := cam.global_position.y - (player.global_position.y + 1.0)
+	check(to_body > 1.0, "above the runner's head, looking past it (%.1f m)" % to_body)
 	cam.set_active(false)
 	cam.queue_free()
 
@@ -200,6 +200,33 @@ func test_chase_camera_tilts_with_the_view_and_zooms_to_first_person() -> void:
 	cam.queue_free()
 
 
+func test_chase_camera_crosshair_is_where_shots_go() -> void:
+	# Shots come from the first-person view; the third-person screen centre
+	# must sit on the same point, from over the shoulder.
+	ArtLook.ensure_body(player)
+	level.go_to_zone(9)  # shooting range
+	await tree.physics_frame
+	var cam: Camera3D = preload("res://art/look/chase_camera.gd").new()
+	level.add_child(cam)
+	cam.setup(player)
+	cam.set_active(true)
+	for yaw: float in [0.0, 0.5, -0.4]:
+		player.set_view(yaw, -0.05)
+		for i in 30:
+			await tree.process_frame
+		var eye := player.camera.global_transform
+		var q := PhysicsRayQueryParameters3D.create(eye.origin, eye.origin - eye.basis.z * 120.0, 1 | 4)
+		q.exclude = [player.get_rid()]
+		var r := player.get_world_3d().direct_space_state.intersect_ray(q)
+		var hit: Vector3 = eye.origin - eye.basis.z * 120.0 if r.is_empty() else r.position
+		var centre := cam.global_position - cam.global_basis.z * cam.global_position.distance_to(hit)
+		check(centre.distance_to(hit) < 0.3, "screen centre on the shot's landing point (off by %.2f m)" % centre.distance_to(hit))
+	var right := cam.global_basis.x.dot(cam.global_position - player.global_position)
+	check(right > 0.3, "over the right shoulder (%.2f m)" % right)
+	cam.set_active(false)
+	cam.queue_free()
+
+
 func test_chase_camera_can_follow_side_flips() -> void:
 	ArtLook.ensure_body(player)
 	var cam: Camera3D = preload("res://art/look/chase_camera.gd").new()
@@ -226,6 +253,33 @@ func test_chase_camera_can_follow_side_flips() -> void:
 	Settings.camera_follow_flips = false
 	cam.set_active(false)
 	cam.queue_free()
+
+
+func test_runner_holds_raises_and_reloads_the_gun() -> void:
+	var gun: Pistol = player.weapon
+	_look().attach_to_player(player)
+	var body: RunnerBody = player.get_node("RunnerBody")
+	level.go_to_zone(9)
+	for i in 40:
+		await tree.process_frame
+	var hand_y := func() -> float: return body.bone_world_position("RightHand").y - player.global_position.y
+	var low: float = hand_y.call()
+	gun.trigger_pressed = true
+	for i in 12:
+		await tree.process_frame
+	var raised: float = hand_y.call()
+	check(raised > low + 0.25, "hip fire raises the gun hand (%.2f -> %.2f m)" % [low, raised])
+	for i in 80:
+		await tree.process_frame
+	check(hand_y.call() < raised - 0.2, "and lowers it again after a moment (%.2f m)" % hand_y.call())
+	var apart := func() -> float: return body.bone_world_position("LeftHand").distance_to(body.bone_world_position("RightHand"))
+	var before: float = apart.call()
+	gun.reload_pressed = true
+	for i in 30:
+		await tree.process_frame
+	check(apart.call() < before - 0.15, "reload brings the hands together (%.2f -> %.2f m)" % [before, apart.call()])
+	var held: Node3D = player.get_node("GunLook").held_model
+	check(held.is_visible_in_tree(), "gun stays in hand")
 
 
 func test_gun_look_replaces_the_test_pistol_visuals() -> void:

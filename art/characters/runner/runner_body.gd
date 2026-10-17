@@ -71,6 +71,9 @@ var _last_yaw := 0.0
 ## The pose actually shown: eases toward the blended pose so state changes,
 ## overlays and noisy inputs never pop a joint.
 var _shown := {}
+## Hip fire raises the gun arm for a moment; each shot kicks it.
+var _fire_raise := 0.0
+var _recoil := 0.0
 var _turn_lean := 0.0
 var _wall_side := 1.0
 var _tuck := 0.0
@@ -112,6 +115,12 @@ func setup(p: Player) -> void:
 	p.respawned.connect(func() -> void:
 		_heading = PI
 		_last_yaw = p.yaw)
+	# The gun is read by name, not class, so the body works without one.
+	var gun: Node = p.get("weapon")
+	if gun and gun.has_signal("shot"):
+		gun.shot.connect(func(_a: Vector3, _b: Vector3, _r: Dictionary) -> void:
+			_fire_raise = 1.0
+			_recoil = 1.0)
 	trails = MotionTrails.new()
 	add_child(trails)
 	trails.setup(p, self)
@@ -169,6 +178,9 @@ func _process(delta: float) -> void:
 		_place_root(0.0, Vector3.ZERO, 0.0, 0.0)
 		return
 	delta = minf(delta, 0.1)
+	# Hold the raised arm a beat after a hip-fire shot, then lower it.
+	_fire_raise = maxf(_fire_raise - delta * 1.6, 0.0)
+	_recoil = maxf(_recoil - delta * 9.0, 0.0)
 	var targets := _targets(delta)
 	for k: String in _weights:
 		var rate: float = BLEND_RATE[k]
@@ -291,6 +303,7 @@ func _blend() -> Dictionary:
 			var base: Quaternion = out.get(bone, Quaternion.IDENTITY)
 			out[bone] = base.slerp(_to_quat(bone, kick.get(bone, Vector3.ZERO)), weight("kick"))
 	_add_lean(out)
+	_add_gun_hold(out)
 	_add_aim(out)
 	return out
 
@@ -337,13 +350,57 @@ func _add_aim(pose: Dictionary) -> void:
 	for part: Array in [["Spine", 0.25, 0.0], ["Chest", 0.35, 0.25], ["Neck", 0.2, 0.35], ["Head", 0.2, 0.4]]:
 		var extra := Quaternion.from_euler(Vector3(-look * part[2], twist * part[1], 0.0) * aim_weight)
 		pose[part[0]] = extra * pose.get(part[0], Quaternion.IDENTITY)
-	var ads := clampf(player.aim_zoom, 0.0, 1.0) * aim_weight
+	var fire := smoothstep(0.0, 0.35, _fire_raise)
+	var ads := maxf(clampf(player.aim_zoom, 0.0, 1.0), fire) * aim_weight * (1.0 - _reload_weight())
 	if ads > 0.001:
 		# The spine and chest already carry a quarter of the look pitch.
-		var raise := 90.0 + rad_to_deg(look) * 0.75
-		var arm := {"RightUpperArm": Vector3(raise, 0, -6), "RightLowerArm": Vector3(4, 0, 0), "RightHand": Vector3(0, 0, 0)}
+		var raise := 90.0 + rad_to_deg(look) * 0.75 + 7.0 * _recoil
+		var arm := {"RightUpperArm": Vector3(raise, 0, -6), "RightLowerArm": Vector3(4 + 14.0 * _recoil, 0, 0), "RightHand": Vector3(0, 0, 0)}
 		for bone: String in arm:
 			pose[bone] = (pose.get(bone, Quaternion.IDENTITY) as Quaternion).slerp(_to_quat(bone, arm[bone]), ads)
+
+
+## How much of the gun-arm pose applies: full when running, standing or in
+## the air; less while the hands are busy (climbing, mantling, vaulting).
+func _gun_hold_weight() -> float:
+	var busy := weight("climb") + weight("mantle_hang") + weight("mantle_push") + weight("vault") * 0.7 \
+		+ weight("stun") + weight("prone") + weight("tuck") * 0.4 + weight("wallrun") * 0.3
+	return clampf(1.0 - busy, 0.0, 1.0)
+
+
+## 0..1 through the middle of a reload (eased in and out), else 0.
+func _reload_weight() -> float:
+	var gun: Node = player.get("weapon")
+	if gun == null or not gun.has_method("reload_progress"):
+		return 0.0
+	var t: float = gun.reload_progress()
+	return 0.0 if t < 0.0 else smoothstep(0.0, 0.18, t) * (1.0 - smoothstep(0.82, 1.0, t))
+
+
+## The gun hand at low ready: forearm forward, muzzle a little down, with a
+## small swing in the run. A reload brings the gun up and the other hand to it.
+func _add_gun_hold(pose: Dictionary) -> void:
+	var hold := _gun_hold_weight()
+	if hold <= 0.001:
+		return
+	var swing := sin(TAU * _phase) * weight("run")
+	var ready := {
+		"RightUpperArm": Vector3(16 + 10 * swing, 0, -10),
+		"RightLowerArm": Vector3(68, 0, 0),
+		"RightHand": Vector3(-8, 0, 0),
+	}
+	var reload := _reload_weight()
+	if reload > 0.0:
+		var t: float = (player.get("weapon") as Node).reload_progress()
+		var jiggle := sin(t * TAU * 2.0) * 6.0
+		ready["RightUpperArm"] = ready["RightUpperArm"].lerp(Vector3(26, 0, -4), reload)
+		ready["RightLowerArm"] = ready["RightLowerArm"].lerp(Vector3(100 + jiggle, 0, 0), reload)
+		ready["RightHand"] = ready["RightHand"].lerp(Vector3(-24, 0, 0), reload)
+		for bone: String in ["LeftUpperArm", "LeftLowerArm", "LeftHand"]:
+			var to: Vector3 = {"LeftUpperArm": Vector3(34, 0, -24), "LeftLowerArm": Vector3(96 - jiggle, 0, 0), "LeftHand": Vector3(-10, 0, 0)}[bone]
+			pose[bone] = (pose.get(bone, Quaternion.IDENTITY) as Quaternion).slerp(_to_quat(bone, to), reload * hold)
+	for bone: String in ready:
+		pose[bone] = (pose.get(bone, Quaternion.IDENTITY) as Quaternion).slerp(_to_quat(bone, ready[bone]), hold)
 
 
 ## Leaning (the player's lean input) bends the upper body to the side.
