@@ -163,6 +163,23 @@ Add `-- <name>` to run only tests whose name contains `<name>`. GitHub Actions r
 | `tools/` | Screenshot tool |
 | `maps/` | Rooftops course (with its timer), Combo Park, F11 level switcher |
 | `art/` | Art look: runner character and its animation, cel shader, outlines, speed trails. See [docs/art-pipeline.md](docs/art-pipeline.md) |
+| `audio/` | Music and movement/world sounds (the `GameAudio` autoload), all synthesised in code. See [audio/SOURCES.md](audio/SOURCES.md) |
+
+## Sound
+
+Everything you hear is synthesised in code, so there are no audio files to license. The `GameAudio` autoload only listens to the player and the combo; it never changes the run.
+
+- **Footsteps** speed up with your pace and change with the ground: concrete, gritty asphalt (map floors) and ringing metal (wallrun panels, slide strips, ramps and loops). They follow you up walls on a wallrun or climb.
+- **Moves:** jumps and wall jumps, landings graded by how hard you hit (rolling it out softens them, big drops kick up debris), slide scrape, rolls, vault and mantle hand plants, flips and spins, kicks, wall bonks. Wind rises with speed, with a hiss near top speed.
+- **World:** glass shattering and doors slamming, however they break or open.
+- **Music:** an 8-bar wasteland loop. With no combo it plays "on air" through the warlord's radio, filtered with a crackle under it. A combo opens it to full sound with drums and bass; 3 tricks add percussion, 5 add the lead. Combo milestones (3, 5, 8 tricks) get a radio jingle, banking rings out and a bail stings.
+- **Slow-mo** muffles and deepens everything while it's on.
+
+The first launch builds the sounds in the background (the music fades in a few seconds later) and caches them in `user://audio_cache.bin`; later launches load the cache. To audition every sound as WAV files:
+
+```
+godot --headless --path . -s res://audio/tools/export_sounds.gd -- <out_dir>
+```
 
 ## Art look
 
