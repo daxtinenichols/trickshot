@@ -10,8 +10,9 @@ extends SceneTree
 const SHOTS := [
 	# [mission id, camera position, look at, name]
 	["m00_dawn_run", Vector3(-11, 17, 6), Vector3(0, 10, -30), "m00_start"],
-	["m00_dawn_run", Vector3(-12, 13, -180), Vector3(0, 4, -197), "m00_camp"],
-	["m01_the_yard", Vector3(-6, 7, 74), Vector3(0, 1, 50), "m01_gate"],
+	["m00_dawn_run", Vector3(-130, 12, -922), Vector3(-116.7, 4, -945), "m00_camp"],
+	["m00_dawn_run", Vector3(-186, 12, -790), Vector3(-176, 5, -830), "m00_docks"],
+	["m01_the_yard", Vector3(-104, 5, -700), Vector3(-96.9, 1, -725), "m01_gate"],
 	["m02_on_air", Vector3(-14, 18, 6), Vector3(0, 8, -40), "m02_start"],
 	["m02_on_air", Vector3(-12, 16, -150), Vector3(0, 8, -190), "m02_lookouts"],
 	["m02_on_air", Vector3(320, 260, 60), Vector3(120, 0, -380), "m02_overview"],
@@ -20,6 +21,7 @@ const SHOTS := [
 	["m03_glass_district", Vector3(-14, 22, 10), Vector3(0, 14, -40), "m03_start"],
 	["m03_glass_district", Vector3(-12, 18, -236), Vector3(0, 11, -275), "m03_toll_roof"],
 	["m03_glass_district", Vector3(-50, 75, 30), Vector3(0, 10, -280), "m03_overview"],
+	["m03_glass_district", Vector3(-60.1, 16, -250.1), Vector3(-88.4, 15.5, -278.4), "m03_offices"],
 	["m04_silt_line", Vector3(-10, 6, 8), Vector3(0, 0, -40), "m04_silt"],
 	["m04_silt_line", Vector3(-14, 14, -215), Vector3(0, 6, -260), "m04_overpass"],
 	["m12_signal_out", Vector3(-14, 48, 10), Vector3(0, 38, -30), "m12_tower"],

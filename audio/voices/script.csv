@@ -13,8 +13,8 @@ mags,mags/80864e356abf.ogg,m00_dawn_run,Low bar. Crouch and slide under it.
 mags,mags/853a21a8a03f.ogg,m00_dawn_run,Something's wrong. Move.
 mags,mags/949b035f78b5.ogg,m00_dawn_run,Parker. Don't you dare go alone. Come to the yard first.
 mags,mags/964515274c60.ogg,m00_dawn_run,"Jump into those rails, don't just hop them. A vault keeps your speed."
-mags,mags/c0de7144ff6a.ogg,m00_dawn_run,Gap's too wide to jump. Take the blue wall.
-mags,mags/d14ed48d461a.ogg,m00_dawn_run,"High roof's up that face. Straight at it, and jump."
+mags,mags/a2b3ba834a1c.ogg,m00_dawn_run,Gap's too wide to jump. Run the wall.
+mags,mags/a8b1f8140cee.ogg,m00_dawn_run,"High roof's up that wall. Straight at it, and jump."
 mags,mags/e428daab6715.ogg,m00_dawn_run,"Look at you, showing off for the pigeons."
 mags,mags/e4429eea88d1.ogg,m00_dawn_run,"That door's been stuck since the storm. Kick it, or slide under the window like a civilised person."
 mags,mags/f46641533597.ogg,m00_dawn_run,"Morning, Parker. One parcel, the high roof past the fish market. Don't let breakfast get cold."
@@ -27,7 +27,6 @@ mags,mags/2476023bc7e1.ogg,m01_the_yard,"Now the heads. The Static wear scrap on
 mags,mags/30d651da76a3.ogg,m01_the_yard,Again. Smoother.
 mags,mags/68a2be580995.ogg,m01_the_yard,Alright. You're as ready as anyone's ever been for something this stupid.
 mags,mags/6d1244854e55.ogg,m01_the_yard,"Vault, slide, flip, wallrun. String three different ones together before your feet settle."
-mags,mags/6fe7175ab785.ogg,m01_the_yard,The red dummies. Hit them on the move: still targets are for still people.
 mags,mags/79cd1caf7f38.ogg,m01_the_yard,"That's the stuff. The Host's listeners eat that up, and right now you need them hungry."
 mags,mags/a1dda251abf6.ogg,m01_the_yard,Good. Keep moving while you shoot.
 mags,mags/a82a0d6d117c.ogg,m01_the_yard,Don't let it go to your head.
@@ -38,6 +37,7 @@ mags,mags/e8fa883e7f16.ogg,m01_the_yard,"Land it on your feet, not your face."
 mags,mags/f5f3e080903a.ogg,m01_the_yard,Ha! Right between the eyes.
 mags,mags/f70f7d2f00ab.ogg,m01_the_yard,Sloppy. The Static won't wait for you to get up.
 mags,mags/f8597ee385cf.ogg,m01_the_yard,Thank me by coming back. Both of you.
+mags,mags/fc69b797552e.ogg,m01_the_yard,The scrap dummies. Hit them on the move: still targets are for still people.
 parker,parker/ed0027ce9a4f.ogg,m01_the_yard,"Thanks, Mags."
 host,host/09023f3fea80.ogg,m02_on_air,"His name is Parker, he runs for a living, and today he's running for love. Parker, darling, you're on the air."
 host,host/138ff1bd221e.ogg,m02_on_air,"Stay tuned. Next on the show: the Glass District, where the windows are sharp and my toll collectors are sharper."
@@ -57,8 +57,9 @@ host,host/ee6686ac9bf5.ogg,m02_on_air,Did everyone hear that? I think that was h
 host,host/f3e68b6d2520.ogg,m02_on_air,Somebody tell payroll.
 host,host/f70f627acf45.ogg,m02_on_air,"Look at him go! Echo, are you watching? Oh, you're tied up. Ha!"
 host,host/fb39caec6804.ogg,m02_on_air,And he's down! A quick dust bath in the Silt.
+host,host/fe416dee49a5.ogg,m02_on_air,"That was a very expensive drone, Parker. I'm adding it to your tab."
+mags,mags/2cfaa97f394a.ogg,m02_on_air,"Two walls ahead. Run the first one, then jump and kick off the second. That's a wall hop."
 mags,mags/3fa6a3552198.ogg,m02_on_air,"Gap's too wide. Wall on the right, same as home."
-mags,mags/5e9b2087c7da.ogg,m02_on_air,"Blue panels: wallrun one, then jump to kick off to the next. That's a wall hop."
 mags,mags/72432678acf5.ogg,m02_on_air,"Ignore him. Catch your breath, then we go."
 mags,mags/7c6ed61fef0e.ogg,m02_on_air,"Three gunners. Watch for the red laser: that's a shot coming, so move. Click the mouse wheel when it gets busy: time slows for a few seconds. Use it."
 mags,mags/93423324c7d4.ogg,m02_on_air,Back up you go. Don't give him the satisfaction.
@@ -80,12 +81,12 @@ host,host/fb3b98c1472d.ogg,m03_glass_district,Glass everywhere. Somebody sweep t
 mags,mags/03a1e47f95cc.ogg,m03_glass_district,Spotters on the toll roof. They call your position to the Host. Shut them up.
 mags,mags/06368a8a29be.ogg,m03_glass_district,"Don't trade shots standing still. Run, then shoot."
 mags,mags/16ac0e2d6fd7.ogg,m03_glass_district,"Back up. Same line, faster."
+mags,mags/16bb45f50b4a.ogg,m03_glass_district,Higher roof. Run at the ledge and jump. You'll climb it.
 mags,mags/8db5e0605523.ogg,m03_glass_district,"Parker, wait. Something's wrong with that bridge."
-mags,mags/971ccff1a5d3.ogg,m03_glass_district,Higher roof. Run at the yellow face and jump: you'll climb it.
-mags,mags/a1a3509db752.ogg,m03_glass_district,"Wall hop ahead. Wallrun the first, jump to the second."
 mags,mags/a92488b4b3ce.ogg,m03_glass_district,That bridge is the only way over the Silt. Get across before he thinks of something.
 mags,mags/c33b1358b5f8.ogg,m03_glass_district,That's it. Keep it flowing.
 mags,mags/d930eee8d82a.ogg,m03_glass_district,"Glass District. Office roofs all the way to the toll tower, then the bridge over the Silt."
+mags,mags/ea27b9c35539.ogg,m03_glass_district,"Wall hop ahead. Run the first wall, jump to the second."
 mags,mags/fc932a0ecbe7.ogg,m03_glass_district,Windows. Don't stop to open them: slide straight through.
 echo,echo/0f635e1d75e5.ogg,m04_silt_line,"...and the traffic on the overpass is one man, heading west, fast. Drive safe, darling."
 echo,echo/116562b5e71b.ogg,m04_silt_line,...the Silt isn't empty. The Hollows were people once. Don't let him tell you otherwise.
