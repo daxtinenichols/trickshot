@@ -27,7 +27,7 @@ const MOVES := [
 	["Front flip", "In the air, keep moving the view down and over.", "Same as the backflip, the other way."],
 	["360 / 720", "In the air, turn a full circle (or two).", "A fast spin carries on by itself once you're past halfway. Holding {lean_left} or {lean_right} spins you faster."],
 	["Combos", "Chain moves and stylish hits without stopping. Each different trick adds +1 to the multiplier.", "Faster and cleaner moves score more. The combo banks when you stop or go 2 s without a trick; a kill finishes it on the spot (COMBO KILL). Crashing, a hard landing or slamming into a wall loses it. Bigger combos make your shots hit harder (up to 3x)."],
-	["Shooting", "{fire} to fire, {aim} to aim, {fire_mode} switches semi/auto, {reload} reloads.", "The first shot always lands on the crosshair, even mid-flip. Headshots do 2.5x."],
+	["Shooting", "{fire} to fire, {aim} to aim, {fire_mode} switches semi/auto, {reload} reloads.", "The first shot always lands on the crosshair, even mid-flip. Headshots do 2.5x. Aim help in Settings bends near misses onto heads."],
 ]
 
 

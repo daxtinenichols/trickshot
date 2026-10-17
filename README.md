@@ -10,7 +10,7 @@ This repo is currently the **movement sandbox**: a graybox level for building an
 2. Open Godot, choose **Import**, and select `project.godot` in this folder.
 3. Press **F5** (or the play button). You spawn on the run track.
 
-Mouse/keyboard and controller both work (any XInput pad, including a wired or wireless Xbox 360 controller; the Settings tab lists the controllers it sees). Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, invert, third-person camera following flips, volume), and custom controls.
+Mouse/keyboard and controller both work (any XInput pad, including a wired or wireless Xbox 360 controller; the Settings tab lists the controllers it sees). Press **Esc** (or Start) for the menu: a list of every move and how to do it, settings (mouse and aim-down-sights sensitivity, controller look speed, field of view, aim help, invert, third-person camera following flips, volume), and custom controls.
 
 ## Controls
 
@@ -82,7 +82,8 @@ The test pistol is hitscan. The first shot after the gun settles always goes exa
 - Recoil kicks the view and settles back. It is visual only, so it never breaks a flip.
 - Aiming down sights zooms in and slows the look speed to match.
 - Target health refills after 2.5 s without a hit, so kills reward landing shots quickly.
-- Hits are tagged with what you were doing (airborne, wallrun, mid-flip, upside down, sliding, diving, fast). These tags feed into scoring later.
+- Hits are tagged with what you were doing (airborne, wallrun, mid-flip, upside down, sliding, fast). These tags feed into scoring later.
+- Aim help (Settings, 0 = off, default 50%): a shot that just misses bends onto the nearest head or body in clear view (up to 2.5° at full), and a hit just under a head moves up to it (1.2°). On a controller, look slows down while the crosshair is near a target. Targets join it by putting their hitboxes in the `hitboxes` group.
 
 All weapon numbers are in `weapons/weapon_stats.gd`.
 

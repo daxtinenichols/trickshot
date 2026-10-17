@@ -226,6 +226,7 @@ func _build_settings() -> Control:
 	_slider_row(box, "ads_sensitivity", "Aim-down-sights sensitivity", 0.3, 2.0, 0.05, "%.2fx")
 	_slider_row(box, "gamepad_look_speed", "Controller look speed", 1.0, 8.0, 0.1, "%.1f")
 	_slider_row(box, "fov", "Field of view", 70.0, 110.0, 1.0, "%.0f°")
+	_slider_row(box, "aim_assist", "Aim help (0 = off)", 0.0, 1.0, 0.05, "%.0f%%", 100.0)
 	_slider_row(box, "volume", "Volume", 0.0, 1.0, 0.05, "%.0f%%", 100.0)
 	var inv := CheckButton.new()
 	inv.text = "Invert look up/down"

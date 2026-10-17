@@ -144,6 +144,8 @@ func _hitbox(zone: StringName, shape: Shape3D, pos: Vector3) -> StaticBody3D:
 	body.collision_mask = 0
 	body.set_meta("zone", zone)
 	body.set_meta("target", self)
+	# Aim help looks for these.
+	body.add_to_group("hitboxes")
 	var cs := CollisionShape3D.new()
 	cs.shape = shape
 	body.add_child(cs)

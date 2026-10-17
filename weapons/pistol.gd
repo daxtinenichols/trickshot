@@ -46,6 +46,9 @@ var aim_held := false
 var reload_pressed := false
 var mode_pressed := false
 
+## Aim help, 0 (off) to 1 (full): shots bend onto nearby heads and bodies,
+## and controller look slows over targets. Set from Settings.
+var aim_assist := 0.5
 ## Optional: returns a damage multiplier (e.g. from the combo). Called per hit.
 var damage_scale := Callable()
 var full_auto := false
@@ -198,12 +201,84 @@ func _fire() -> void:
 	if player:
 		q.exclude = [player.get_rid()]
 	var result := get_world_3d().direct_space_state.intersect_ray(q)
+	var bent := _assisted(from, dir, result)
+	if not bent.is_empty():
+		dir = (bent.position - from).normalized()
+		result = bent
 	var end := to if result.is_empty() else (result.position as Vector3)
 	_effects(end, result)
 	fired.emit(ammo)
 	if result.is_empty():
 		return
 	_resolve_hit(result, from, dir)
+
+
+# ---------------------------------------------------------------- aim help
+
+## Shot magnetism: a shot that misses bends onto the nearest hitbox within
+## assist_miss_cone (heads first); a body hit moves up to a head within
+## assist_head_cone. Cones scale with aim_assist. Only hitboxes in clear
+## view count. Pure geometry, so it's deterministic. Returns the new
+## raycast result, or {} to keep the shot as it was.
+func _assisted(from: Vector3, dir: Vector3, result: Dictionary) -> Dictionary:
+	if aim_assist <= 0.0:
+		return {}
+	var hit_zone: StringName = &""
+	if not result.is_empty() and result.collider and (result.collider as Object).has_meta("zone"):
+		hit_zone = result.collider.get_meta("zone")
+	if hit_zone == &"head":
+		return {}
+	var cone := stats.assist_head_cone if hit_zone != &"" else stats.assist_miss_cone
+	var best := {}
+	var best_score := INF
+	for hb: Node3D in assist_candidates(from, dir, cone * aim_assist):
+		var head: bool = hb.get_meta("zone") == &"head"
+		if hit_zone != &"" and not head:
+			continue
+		var angle := dir.angle_to(hb.global_position - from)
+		# Heads win over bodies at a similar angle.
+		var score := angle * (0.5 if head else 1.0)
+		if score >= best_score:
+			continue
+		var q := PhysicsRayQueryParameters3D.create(from, from + (hb.global_position - from) * 1.05, HITBOX_MASK)
+		if player:
+			q.exclude = [player.get_rid()]
+		var r := get_world_3d().direct_space_state.intersect_ray(q)
+		if r.is_empty() or r.collider != hb:
+			continue
+		best = r
+		best_score = score
+	return best
+
+
+## Live hitboxes (group "hitboxes", layer 4) whose centre is within
+## `cone_deg` of `dir` from `from`, in range.
+func assist_candidates(from: Vector3, dir: Vector3, cone_deg: float) -> Array[Node3D]:
+	var out: Array[Node3D] = []
+	if cone_deg <= 0.0 or not is_inside_tree():
+		return out
+	var cone := deg_to_rad(cone_deg)
+	for n in get_tree().get_nodes_in_group("hitboxes"):
+		var hb := n as CollisionObject3D
+		if hb == null or hb.collision_layer & 4 == 0:
+			continue
+		var to := hb.global_position - from
+		if to.length() > stats.max_range or to.length() < 0.01:
+			continue
+		if dir.angle_to(to) <= cone:
+			out.append(hb)
+	return out
+
+
+## Controller look speed share: slower while the crosshair is near a target.
+func look_slowdown() -> float:
+	if aim_assist <= 0.0 or camera == null:
+		return 1.0
+	var from := camera.global_position
+	var dir := -camera.global_basis.z
+	if assist_candidates(from, dir, stats.assist_slow_cone * aim_assist).is_empty():
+		return 1.0
+	return lerpf(1.0, stats.assist_slow_speed, aim_assist)
 
 
 func _resolve_hit(result: Dictionary, from: Vector3, dir: Vector3) -> void:
