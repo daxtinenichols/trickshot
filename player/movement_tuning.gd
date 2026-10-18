@@ -32,6 +32,22 @@ extends Resource
 ## moves keeps stacking it. Let go of forward and friction stops you as usual.
 @export_range(0.0, 10.0, 0.05) var overspeed_decay := 1.0
 
+@export_group("Flow")
+## Style is speed: each trick in the live combo raises your ground cruise
+## speed (what running holds without bleeding) by this much, scaled by how
+## well it was done. Repeats of a trick add less each time (the combo's
+## repeat decay), so variety is what gets you fast.
+@export_range(0.0, 3.0, 0.05) var flow_per_trick := 0.5
+## Flips and 360s count this many times over toward flow.
+@export_range(0.0, 5.0, 0.1) var flow_flip_weight := 2.0
+## After a combo banks cleanly, its flow eases back to nothing over this
+## long. A bail drops it at once.
+@export_range(0.0, 10.0, 0.1) var flow_fade_time := 3.0
+## Landing cleanly out of a flip, side flip or 360 kicks you forward this
+## much per rotation, scaled by how clean the landing is. Repeats of the same
+## rotation in one combo give less each time (the combo's repeat decay).
+@export_range(0.0, 5.0, 0.05) var flip_land_boost := 1.5
+
 @export_group("Air")
 @export_range(0.0, 60.0, 0.1) var gravity := 19.0
 @export_range(0.0, 20.0, 0.1) var jump_velocity := 7.8

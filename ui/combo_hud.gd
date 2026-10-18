@@ -1,7 +1,8 @@
 class_name ComboHud
 extends CanvasLayer
 ## Score and the running combo: "1,240 x 5", the tricks in it, the time left
-## before it banks, and the shot damage it gives. Each trick pops up as you
+## before it banks, and the shot damage it gives (shown whenever it's above
+## 1x) with the cruise speed its flow adds. Each trick pops up as you
 ## do it ("+300 BACKFLIP  PERFECT"). All of it sits in the top-right corner. When a combo ends, a card shows the whole chain
 ## (ending in the kill, if a kill finished it), then the points go into the
 ## score. Bails flash red.
@@ -111,8 +112,8 @@ func _ready() -> void:
 	_bar.custom_minimum_size = Vector2(200, 5)
 	_bar.size_flags_horizontal = Control.SIZE_SHRINK_END
 	column.add_child(_bar)
-	_damage = _styled(Label.new(), 13)
-	_damage.modulate = Color(1, 1, 1, 0.75)
+	_damage = _styled(Label.new(), 17)
+	_damage.add_theme_color_override("font_color", Color(1.0, 0.72, 0.45))
 	column.add_child(_damage)
 
 	_flash = _styled(Label.new(), 24)
@@ -145,6 +146,10 @@ func setup(t: ComboTracker) -> void:
 	tracker = t
 	_shown_score = t.score
 	t.added.connect(_on_added)
+	if t.player:
+		t.player.trick.connect(func(trick_name: StringName, info: Dictionary) -> void:
+			if trick_name == &"flip_kick":
+				_pop(flip_kick_text(info.get("boost", 0.0)), Color(0.55, 0.9, 1.0)))
 	t.finished.connect(show_card)
 	t.bailed.connect(func(lost: int, _reason: StringName) -> void:
 		_show_flash("BAILED  -%s" % with_commas(lost), Color(1.0, 0.35, 0.3)))
@@ -182,13 +187,32 @@ func show_card(summary: Dictionary) -> void:
 	_card.modulate.a = 1.0
 
 
+## "DAMAGE x1.6   FLOW +2.0 m/s", or "" when neither is worth showing.
+static func damage_text(damage: float, flow: float) -> String:
+	var parts: Array[String] = []
+	if damage >= 1.05:
+		parts.append("DAMAGE x%.1f" % damage)
+	if flow >= 0.05:
+		parts.append("FLOW +%.1f m/s" % flow)
+	return "   ".join(parts)
+
+
+static func flip_kick_text(boost: float) -> String:
+	return "+%.1f m/s  FLIP KICK" % boost
+
+
 func _on_added(trick_name: StringName, points: int) -> void:
-	var l := _styled(Label.new(), 22)
-	l.text = "+%s  %s" % [with_commas(points), trick_label(trick_name)]
+	var text := "+%s  %s" % [with_commas(points), trick_label(trick_name)]
 	if tracker and tracker.last_quality >= 0.0:
-		l.text += "  " + DebugHud.quality_grade(tracker.last_quality)
+		text += "  " + DebugHud.quality_grade(tracker.last_quality)
 	var shot := SHOT_NAMES.has(trick_name)
-	l.add_theme_color_override("font_color", Color(1.0, 0.6, 0.4) if shot else Color(1.0, 0.93, 0.62))
+	_pop(text, Color(1.0, 0.6, 0.4) if shot else Color(1.0, 0.93, 0.62))
+
+
+func _pop(text: String, color: Color) -> void:
+	var l := _styled(Label.new(), 22)
+	l.text = text
+	l.add_theme_color_override("font_color", color)
 	l.set_meta("age", 0.0)
 	l.pivot_offset = Vector2(WIDTH, 14)
 	_pops.add_child(l)
@@ -232,13 +256,14 @@ func _process(frame_delta: float) -> void:
 	_combo.visible = active
 	_list.visible = active
 	_bar.visible = active
-	_damage.visible = active
+	# Damage counts your speed too, so it can show with no combo running.
+	_damage.text = damage_text(tracker.damage_multiplier(), tracker.flow())
+	_damage.visible = _damage.text != ""
 	if not active:
 		return
 	_combo.text = "%s  x%d" % [with_commas(roundi(tracker.combo_points)), tracker.multiplier()]
 	_list.text = combo_list_text(tracker.entries)
 	_bar.value = clampf(tracker.time_left / tracker.bank_after, 0.0, 1.0)
-	_damage.text = "shot damage x%.1f" % tracker.damage_multiplier()
 
 
 func _show_flash(text: String, color: Color) -> void:

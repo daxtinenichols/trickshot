@@ -276,6 +276,22 @@ func test_perfect_hops_stack_speed_with_no_cap() -> void:
 ## Runs at full speed into `box` and jumps `press_dz` before its face.
 ## Returns [speed before, slowest until back on the ground, speed just
 ## after, the move it made (VAULT or MANTLE, else the last state)].
+func test_flow_raises_cruise_and_running_holds_it() -> void:
+	var w := _world()
+	var p := await _top_speed_runner(w)
+	var top := p.tuning.top_speed
+	var flow := [3.0]
+	p.flow_source = func() -> float: return flow[0]
+	await w.step(240, _fwd())
+	check_near(p.horizontal_speed(), top + 3.0, 0.1, "flow raises the speed running holds (%.2f, cruise %.2f)" % [p.horizontal_speed(), top + 3.0])
+	await w.step(120, _fwd())
+	check_near(p.horizontal_speed(), top + 3.0, 0.1, "and it holds on the flat while the combo lives (%.2f)" % p.horizontal_speed())
+	flow[0] = 0.0
+	await w.step(60, _fwd())
+	var after := p.horizontal_speed()
+	check(after < top + 2.5 and after > top + 1.5, "with flow gone, the extra bleeds like any overspeed (%.2f)" % after)
+
+
 func _move_at_speed(box_center: Vector3, box_size: Vector3, press_dz: float) -> Array:
 	var w := _world()
 	w.add_box(box_center, box_size)

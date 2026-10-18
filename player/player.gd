@@ -23,6 +23,15 @@ const WALL_PROBE := 0.35
 ## Off for players driven by tests or replays.
 @export var use_device_input := true
 
+## Hooks from scoring (ComboTracker.setup sets them; unset, style adds
+## nothing). They only read state fed by this player's own trick events, so
+## the sim stays deterministic.
+## flow_source() -> float: extra ground cruise speed from the live combo.
+var flow_source := Callable()
+## repeat_scale_source(names: Array, n: int) -> float: what the last `n` of
+## those tricks are worth after the combo's repeat decay (n with no decay).
+var repeat_scale_source := Callable()
+
 ## Set by tests or replays: the frame to use for the next tick.
 var scripted_input: InputFrame = null
 
@@ -461,6 +470,16 @@ func horizontal_speed() -> float:
 	return MovementMath.horizontal_speed(velocity)
 
 
+## Extra ground cruise speed from the live combo's style (0 with no scoring).
+func flow() -> float:
+	return maxf(float(flow_source.call()), 0.0) if flow_source.is_valid() else 0.0
+
+
+## Ground speed running holds at full momentum without bleeding.
+func cruise_speed() -> float:
+	return tuning.top_speed + flow()
+
+
 func _change_state(to: State) -> void:
 	if to == state:
 		return
@@ -753,7 +772,7 @@ func _tick_ground(f: InputFrame, wish: Vector3, delta: float) -> void:
 	# Always sprinting, in any direction, so you can strafe-run while aiming
 	# at something. Backpedalling caps at run speed; momentum only carries
 	# forward and sideways.
-	var top := MovementMath.ground_wish_speed(tuning.run_speed, tuning.top_speed, momentum) if f.move.y > -0.3 else tuning.run_speed
+	var top := MovementMath.ground_wish_speed(tuning.run_speed, cruise_speed(), momentum) if f.move.y > -0.3 else tuning.run_speed
 	if f.move.y > 0.3 and speed > top:
 		# Speed earned above top speed has no cap: it carries while you run
 		# on, bleeding slowly, and steers like running does.
@@ -880,6 +899,16 @@ func _touch_ground() -> void:
 
 
 func _land(f: InputFrame) -> void:
+	# Read before the landing leaves AIR, which clears the counts.
+	var rotations := _air_rotations()
+	var q := _land_on(f)
+	if q >= 0.0:
+		_flip_land_kick(rotations, q)
+
+
+## Lands and picks how: a roll, a slide, a crash... Returns how clean the
+## landing was (0..1), or -1 for a crash or a hard landing.
+func _land_on(f: InputFrame) -> float:
 	var fall := -_pre_move_velocity.y
 	_touch_ground()
 	_ground_time = 0.0
@@ -888,32 +917,35 @@ func _land(f: InputFrame) -> void:
 	landed.emit(fall)
 	var crouch_age := _since_crouch_press
 	var tucked := _landing_tucked(fall) and not _landing_tipped()
-	if _tuck_roll(f, fall, crouch_age):
-		return
+	var tuck_q := _tuck_roll(f, fall, crouch_age)
+	if tuck_q >= 0.0:
+		return tuck_q
 	if _landing_tipped() and not _landing_crashed():
 		# Down on your side partway round a side flip: a shoulder roll that
 		# keeps you moving. The further off upright, the more speed it costs.
 		var off := absf(rad_to_deg(wrapf(_air_roll, -PI, PI)))
 		var flipped := _sideflips_done > 0
 		_air_roll = 0.0
-		_start_roll(timing_quality(off, 25.0, 160.0), &"flip_roll" if flipped else &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
-		return
+		var shoulder_q := timing_quality(off, 25.0, 160.0)
+		_start_roll(shoulder_q, &"flip_roll" if flipped else &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
+		return shoulder_q
 	if _landing_tipped() or (_landing_crashed() and not tucked):
 		trick.emit(&"crash", {"speed": horizontal_speed()})
 		_start_stun()
-		return
+		return -1.0
 	if tucked:
 		var p := wrapf(pitch, -PI, PI)
 		var q := timing_quality(absf(rad_to_deg(p) + 100.0), 20.0, 75.0)
 		pitch = 0.0
 		_start_roll(q, &"flip_roll", p, MovementMath.horizontal(_pre_move_velocity), fall)
-		return
+		return q
 	if fall >= tuning.hard_landing_speed:
 		if crouch_age <= tuning.roll_window:
-			_start_roll(timing_quality(crouch_age, 0.05, tuning.roll_window), &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
-		else:
-			_start_stun()
-		return
+			var roll_q := timing_quality(crouch_age, 0.05, tuning.roll_window)
+			_start_roll(roll_q, &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
+			return roll_q
+		_start_stun()
+		return -1.0
 	if f.crouch_held and crouch_age <= tuning.slide_land_window and fall > 3.0:
 		# Slide landing: a well-timed crouch turns some fall speed into speed.
 		var q := timing_quality(crouch_age, 0.05, tuning.slide_land_window)
@@ -923,22 +955,55 @@ func _land(f: InputFrame) -> void:
 		velocity = Vector3(h.x, velocity.y, h.z)
 		if horizontal_speed() >= tuning.slide_min_speed:
 			_start_slide(q)
-			return
+			return 1.0
 	if f.crouch_held and horizontal_speed() >= tuning.slide_min_speed:
 		_start_slide()
-		return
+		return 1.0
 	_change_state(State.CROUCH if f.crouch_held else State.GROUND)
+	return 1.0
+
+
+## The whole rotations done this jump, by kind: [[combo trick names], count].
+func _air_rotations() -> Array:
+	var spins: Array[StringName] = []
+	for n in range(1, maxi(_spins_done, 1) + 1):
+		spins.append(StringName("spin_%d" % (360 * n)))
+	return [
+		[[&"backflip" if _air_pitch > 0.0 else &"frontflip"], _flips_done],
+		[[&"sideflip"], _sideflips_done],
+		[spins, _spins_done],
+	]
+
+
+## Landing cleanly out of flips, side flips or 360s kicks you on along your
+## heading: flip_land_boost per rotation, scaled by the landing's quality,
+## and less for each repeat of the same rotation in the combo.
+func _flip_land_kick(rotations: Array, quality: float) -> void:
+	var boost := 0.0
+	for r: Array in rotations:
+		var n: int = r[1]
+		if n <= 0:
+			continue
+		boost += float(repeat_scale_source.call(r[0], n)) if repeat_scale_source.is_valid() else float(n)
+	boost *= tuning.flip_land_boost * clampf(quality, 0.0, 1.0)
+	if boost <= 0.0:
+		return
+	var h := MovementMath.horizontal(velocity)
+	h += (h.normalized() if h.length() > 0.5 else forward()) * boost
+	velocity = Vector3(h.x, velocity.y, h.z)
+	_trick_feedback(&"flip_kick", {"boost": boost, "quality": quality})
 
 
 ## Crouch held in the air is a tuck: you land in a roll whatever angle
 ## you're at. A crouch pressed just before landing is a slide landing
-## instead (unless you'd otherwise crash or the drop is hard).
-func _tuck_roll(f: InputFrame, fall: float, crouch_age: float) -> bool:
+## instead (unless you'd otherwise crash or the drop is hard). Returns the
+## roll's quality, or -1 when it isn't a tuck roll.
+func _tuck_roll(f: InputFrame, fall: float, crouch_age: float) -> float:
 	if not f.crouch_held or not is_tucked() or fall < tuning.tuck_roll_min_fall:
-		return false
+		return -1.0
 	var bad_angle := _landing_tipped() or _landing_crashed()
 	if not bad_angle and crouch_age <= tuning.slide_land_window and fall < tuning.hard_landing_speed:
-		return false
+		return -1.0
 	var p := wrapf(pitch, -PI, PI)
 	var off := maxf(absf(rad_to_deg(wrapf(_air_roll, -PI, PI))), maxf(absf(rad_to_deg(p)) - 60.0, 0.0))
 	var q := timing_quality(off, 25.0, 160.0)
@@ -946,7 +1011,7 @@ func _tuck_roll(f: InputFrame, fall: float, crouch_age: float) -> bool:
 	_air_roll = 0.0
 	pitch = 0.0
 	_start_roll(q, &"flip_roll" if flipped else &"landing_roll", p if p < 0.0 else 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
-	return true
+	return q
 
 
 ## Sliding, on the ground or on a ramp or loop.
