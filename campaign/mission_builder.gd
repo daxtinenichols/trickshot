@@ -15,6 +15,8 @@ const PropKit := preload("res://art/props/prop_kit.gd")
 const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
 ## A runner standing in the level as a character (Echo in the studio).
 const FIGURE_SCRIPT_PATH := "res://art/characters/runner/runner_figure.gd"
+## Scripted chase moments (falling beams, the Host's shortcuts, blasts).
+const SET_PIECE_SCRIPT_PATH := "res://campaign/set_piece.gd"
 # Enemies load by path, not class_name (a stale class cache has broken
 # scenes before).
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
@@ -38,6 +40,8 @@ var mission := {}
 var tapes: Array[Dictionary] = []
 ## Enemy encounters (EnemyEncounter nodes), in the order they appear.
 var encounters: Array[Node3D] = []
+## Set pieces (campaign/set_piece.gd), in route order. MissionRun ticks them.
+var set_pieces: Array[Node3D] = []
 ## The base map's builder, when the mission builds on one.
 var base: SandboxBuilder
 
@@ -61,6 +65,7 @@ func build() -> void:
 	zone_names.clear()
 	tapes.clear()
 	encounters.clear()
+	set_pieces.clear()
 	mission = Campaign.load_mission_file(resolved_path())
 	if mission.is_empty():
 		_box(Vector3(0, -0.5, 0), Vector3(40, 1, 40), Kind.FLOOR)
@@ -178,6 +183,8 @@ func _piece(p: Dictionary) -> void:
 		_fire(vec(p.fire), vec(p.get("size", [2, 1.5, 2]), Vector3(2, 1.5, 2)))
 	elif p.has("encounter"):
 		_encounter(p)
+	elif p.has("set_piece"):
+		_set_piece(p)
 	elif p.has("figure"):
 		_figure(String(p.figure), Transform3D(basis, vec(p.get("at", [0, 0, 0]))), String(p.get("pose", "")))
 	else:
@@ -199,6 +206,18 @@ func _figure(runner: String, xf: Transform3D, pose: String) -> void:
 		f.pose_name = pose
 	f.transform = xf
 	_root.add_child(f)
+
+
+func _set_piece(p: Dictionary) -> void:
+	var script := load(SET_PIECE_SCRIPT_PATH) as Script if ResourceLoader.exists(SET_PIECE_SCRIPT_PATH) else null
+	if script == null or not script.can_instantiate():
+		push_warning("MissionBuilder: couldn't load %s, skipping a set piece" % SET_PIECE_SCRIPT_PATH)
+		return
+	var sp: Node3D = script.new()
+	sp.name = "SetPiece_%s_%d" % [p.set_piece, set_pieces.size()]
+	_root.add_child(sp)
+	sp.setup(p)
+	set_pieces.append(sp)
 
 
 func _slab(corners: Array, top: float) -> StaticBody3D:

@@ -99,6 +99,7 @@ Features on a roof, `at` meters from its start:
 | `{"radio": {"who", "line"}, "radius": 7}` | a radio line played here |
 | `{"prop": "car_wreck", "x": -4, "yaw": 80}`, `{"label": "text"}`, `{"mark": "#f57320"}` | dressing |
 | `{"lane": x}` | where the test bot runs from here |
+| `{"set_piece": "debris", "as": "slide", "at": 46, "trigger": 20}` | a chase set piece (see The chase) |
 
 Everything after a corner is laid out turned with the run (checkpoints
 face along it). Two 45° corners make a 90° turn with a diagonal stretch
@@ -229,15 +230,31 @@ a recorded take saved under `audio/voices/recorded/` replaces the synthetic one.
 ### The chase
 
 ```json
-"pursuer": {"name": "THE HOST", "speed": 7.6, "speed_gain": 0.03, "max_speed": 9.4,
-            "delay": 2.5, "catch_distance": 1.6, "leash": 22, "catchup_speed": 12.5}
+"pursuer": {"name": "THE HOST", "speed": 10.4, "speed_gain": 0.1, "max_speed": 11.4,
+            "delay": 1.2, "catch_distance": 2.2, "lunge_range": 5.5, "lunge_boost": 3.5,
+            "leash": 12, "catchup_speed": 15}
 ```
 
 He sets off `delay` seconds after you, follows your exact path, speeds up
-over time, and never drops more than `leash` meters behind (past it he runs
-at `catchup_speed`). Within `catch_distance` you're caught and go back to
-the last checkpoint. A clean run keeps him about `leash` behind; a stop of
-two or three seconds gets you caught.
+over time (to just under your sprint), and never drops more than `leash`
+meters behind (past it he runs at `catchup_speed`). You can't circle him:
+within `shortcut_range` (12 m) in a straight line, when your path back to
+him is much longer, he cuts straight across. Inside `lunge_range` he lunges
+`lunge_boost` m/s faster, and within `catch_distance` (along your path or in
+a straight line) you're caught and go back to the last checkpoint. A clean
+run keeps him about `leash` behind; any stumble puts him on your back. He's
+the Host's own model (art/characters/host, built by art/source/build_host.py
+on the runners' skeleton).
+
+Chase set pieces (route feature `{"set_piece": kind, "at": d, "trigger": d}`,
+`x` across; campaign/set_piece.gd) fire once when you reach the trigger and
+reset at checkpoints: `"debris"` a burning beam crashes across the roof and
+stays as an obstacle (`"as": "slide"` or `"hurdle"`; solid once landed),
+`"host"` he cuts through the building and drops in `gap` m behind you,
+`"blast"` an explosion beside the run (`size`), `"mast"` a lattice mast
+(`height`, `fall_yaw` degrees from the run) topples over. Events: `host_close`
+(a shortcut), `host_near` (he's within 6 m), `set_piece:<kind>`; chatter can
+react to any of them.
 
 ### Pieces
 

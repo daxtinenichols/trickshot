@@ -238,18 +238,23 @@ parker,parker/4da3fc7a75d1.ogg,m11_dead_air,Traffic.
 parker,parker/bd9cb607c7ad.ogg,m11_dead_air,Echo.
 vell,vell/22df3d263b74.ogg,m11_dead_air,All units to the studio. This ends tonight.
 echo,echo/2c49aa070bed.ogg,m12_signal_out,"Running. Talk to me, Parker."
+echo,echo/3088e7e480e2.ogg,m12_signal_out,"Parker, the mast's going! The whole tower's coming apart!"
 echo,echo/316c8beb808b.ogg,m12_signal_out,"Port Calder, it's Echo. And Parker. The show's over."
 echo,echo/8fb060d0a5c0.ogg,m12_signal_out,He's still behind me. I can hear him laughing.
 echo,echo/c20e59ff0519.ogg,m12_signal_out,I'm here. Hang on. I'm coming back for you.
 echo,echo/ca3f46c3f9a5.ogg,m12_signal_out,"And that's the show, Port Calder."
 host,host/105e09d78aa2.ogg,m12_signal_out,"Show-off. God, you two deserve each other."
+host,host/1ba4ee3812bc.ogg,m12_signal_out,Almost... almost got you...
 host,host/2b1542db436d.ogg,m12_signal_out,"Ooh, tripped! I'm right behind you."
 host,host/4a8b94ffb927.ogg,m12_signal_out,"Gotcha! Oh, don't cry, darling. We'll do another take."
 host,host/5038dc5c8f5e.ogg,m12_signal_out,"Not the Silt yet, sweetheart. I want you on air."
 host,host/7263bbb2ce1b.ogg,m12_signal_out,"Where are you taking me, Echo? That's... that's the Silt. What are those... Echo? ECHO!"
 host,host/75524b97f685.ogg,m12_signal_out,"Change of plans, Port Calder! Our courier's stuck under my antenna, and the wife's making a run for it!"
+host,host/78651939a285.ogg,m12_signal_out,Did you miss me? Tell me you missed me.
+host,host/9ddcd73ae23f.ogg,m12_signal_out,"I can hear your heart going, darling."
 host,host/b5586b0e112e.ogg,m12_signal_out,"I used to chase ratings, darling. This is way more fun."
 host,host/c1e8ab8c4292.ogg,m12_signal_out,"Slowing down, sweetheart? I can hear you breathing."
+host,host/ed51334f075f.ogg,m12_signal_out,"Shortcut! I know every stair in this tower, sweetheart."
 host,host/f213a987f4f4.ogg,m12_signal_out,Caught you! Folks love a rerun.
 juno,juno/10ec5191ae01.ogg,m12_signal_out,"Not bad, courier. Not bad."
 mags,mags/4f0ff997c5c6.ogg,m12_signal_out,Line camp to anyone out there. They made it. Both of them.
@@ -260,10 +265,14 @@ parker,parker/7a8fb9523789.ogg,m12_signal_out,Echo. Run. Don't look back. I'll t
 parker,parker/7ef0bb0efb75.ogg,m12_signal_out,That's it. That's my girl.
 parker,parker/8597ccba91c4.ogg,m12_signal_out,Go outside. It's a nice day.
 parker,parker/8c0c8958984c.ogg,m12_signal_out,Echo?
+parker,parker/9d107565c3ed.ogg,m12_signal_out,Ceiling's coming down! Slide!
 parker,parker/a9a55c37114a.ogg,m12_signal_out,Bar ahead. Slide under it.
 parker,parker/b81db1514778.ogg,m12_signal_out,"Up! Get up, he's coming!"
 parker,parker/c5b6c1e05d75.ogg,m12_signal_out,"Big drop. Crouch right before you land, then roll."
+parker,parker/de41dead0d1b.ogg,m12_signal_out,He came through the stairwell! He's right behind you!
+parker,parker/e0feb9567948.ogg,m12_signal_out,Don't look back. Just go!
 parker,parker/f5f2b22bc987.ogg,m12_signal_out,Last gap. Kick off the pillar if you need the distance.
+parker,parker/f978ff8b56ec.ogg,m12_signal_out,Another one's coming down. Get low!
 raider,raider/256548278328.ogg,raider taunt,SAY HI TO ECHO!
 raider,raider/66bf4fcc3473.ogg,raider taunt,BOSS IS GONNA LOVE THIS!
 raider,raider/829c4bb9d009.ogg,raider taunt,"HOLD STILL, DAMN IT!"
