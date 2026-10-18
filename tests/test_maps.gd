@@ -69,6 +69,8 @@ func _run_route(route: Array, end_z: float, max_frames := 1800, log := false) ->
 					f.crouch_held = true
 				"roll":
 					roll_armed = true
+				"kick":
+					f.kick_pressed = true
 			next += 1
 		if roll_armed and player.state == Player.State.AIR and player.velocity.y < 0.0:
 			var q := PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 1.2, 1)
@@ -139,6 +141,8 @@ func _run_path(path: PackedVector3Array, route: Array, end_s: float, max_frames 
 					f.crouch_held = true
 				"roll":
 					roll_armed = true
+				"kick":
+					f.kick_pressed = true
 			next += 1
 		# Face the path a few meters ahead.
 		var ahead := _path_tangent(path, cum, s + 3.0 + player.horizontal_speed() * 0.2)
@@ -190,13 +194,13 @@ const COURSE_ROUTE := [
 	[26.5, "crouch", 0.0],   # slide bar at -31
 	[38.8, "jump", 0.0],     # gap to R2
 	[42.0, "", 3.3],         # line up with the window
-	[55.0, "crouch", 3.3],   # window at -58: slide through
+	[54.5, "jump", 3.3],     # window at -58: jump through the glass
 	[62.0, "", 5.4],         # toward the wall
 	[71.3, "jump", 7.0],     # gap: into the wallrun wall
 	[86.0, "", 0.3],
 	[90.6, "jump", 0.3],     # hurdle at -92
 	[102.2, "jump", 0.3],    # climb face at -104
-	[110.5, "crouch", 0.3],  # window at -114: slide through
+	[110.5, "crouch", 0.3],  # hole at -114: slide through
 	[122.0, "roll", 0.3],    # drop to R5
 	[130.0, "", 1.5],
 	[140.6, "jump", 1.5],    # hurdles at -142, -152, -162
@@ -210,7 +214,7 @@ const COURSE_ROUTE := [
 	[238.8, "jump", 0.0],    # gap to R7
 	[260.6, "jump", 0.0],    # vault row at -262
 	[298.2, "jump", 0.3],    # climb face at -300
-	[311.5, "crouch", 0.3],  # window at -315: slide through
+	[311.5, "crouch", 0.3],  # hole at -315: slide through
 	[320.0, "", 0.0],
 	[328.6, "jump", 0.0],    # hurdle at -330, then the first corner
 	[386.3, "jump", 0.0],    # leg 2: hurdle at x -26

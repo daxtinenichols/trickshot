@@ -37,10 +37,28 @@ const CLUTTER := ["ac_unit", "vent_stack", "satellite_dish", "generator", "barre
 	"crate_wood", "tire_stack", "crate_stack", "antenna_mast", "loudspeaker_pole"]
 ## Piece fields that hold a position.
 const POINT_KEYS := ["box", "building", "mark", "window", "ramp", "to", "from", "tape", "at", "fire", "spawn",
-	"bank", "quarter_pipe", "loop", "door", "target"]
+	"bank", "quarter_pipe", "loop", "door", "doors", "target"]
 ## Pieces that turn with their leg (they take a yaw).
 const TURNING_KEYS := ["box", "building", "prop", "row", "mark", "window", "bank", "quarter_pipe", "loop", "door",
-	"figure"]
+	"doors", "figure"]
+## Ways through a wall across the run. Glass to jump through: a pane from
+## a sill at vault height to well over head height, so a jump at any point
+## of its arc goes through standing up.
+const GLASS_WIDTH := 3.0
+const GLASS_SILL := 0.8
+const GLASS_TOP := 3.4
+## Where the bot jumps for the glass (meters before the wall).
+const GLASS_JUMP := 3.5
+## A hole to slide through: too low to run through (the slide is 1 m tall).
+const HOLE_WIDTH := 2.4
+const HOLE_TOP := 1.3
+## Double doors to kick: the opening, and where the bot kicks (the kick
+## reaches 2 m from the eye).
+const DOORS_WIDTH := 2.2
+const DOORS_TOP := 2.2
+const KICK_AT := 1.9
+## A wall across an open roof is this tall; indoors it meets the ceiling.
+const OUTDOOR_WALL := 3.5
 ## Enemy types that fight from behind cover: the route puts sandbags in
 ## front of them (any enemy can say "cover": true or false instead).
 const COVER_TYPES := ["raider", "trooper", "marksman"]
@@ -64,6 +82,9 @@ static func expand(mission: Dictionary) -> Dictionary:
 		"leg": 0, "dx": 0.0, "fork": null, "forks": [],
 		"chalk": mission.get("chalk", false),
 		"roof_look": mission.get("roof_look", "FACADE"),
+		# The roof being laid out: its width and how high its ceiling is
+		# (0 outdoors).
+		"roof_w": WIDTH, "inside": 0.0,
 	}
 	if mission.has("route_origin") or mission.get("route_from", "") == "base_exit":
 		st.y = origin.origin.y
@@ -312,6 +333,10 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	# (At street level, y 0, the street itself is the floor.)
 	_lane(st, z0, z0 - length, w)
 	_set_low(st, st.y)
+	st.roof_w = w
+	# Indoors (walls and a ceiling this high): from "interior", or
+	# "indoors" when the mission builds its own walls and ceiling.
+	st.inside = float(seg.get("interior", seg.get("indoors", 0.0)))
 	if seg.has("interior"):
 		_interior(st, z0, length, w, float(seg.interior))
 	var busy: Array = []
@@ -330,6 +355,8 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 		busy.append(_feature(st, f, z0))
 	if not seg.get("bare", false) and not seg.get("bridge", false):
 		_clutter(st, z0, length, busy)
+	st.inside = 0.0
+	st.roof_w = WIDTH
 	st.z = z0 - length
 	st.roof_end = st.z
 
@@ -545,18 +572,36 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 		_add(st, {"mark": [0, y, z - 8.5], "size": [5, 18], "color": "#d94c40"})
 		st.bot.append([z + 8.0, "", 0.0])
 		return [d - 2.0, d + 20.0]
-	if f.has("window"):
-		# A wall across the roof with a low window to slide through at x.
-		var wx: float = f.window
-		var half := WIDTH * 0.5
-		var lo := wx - 1.1
-		var hi := wx + 1.1
-		_add(st, {"box": [(-half + lo) * 0.5, y + 1.5, z], "size": [lo + half, 3.0, 0.3], "kind": "NEUTRAL"})
-		_add(st, {"box": [(hi + half) * 0.5, y + 1.5, z], "size": [half - hi, 3.0, 0.3], "kind": "NEUTRAL"})
-		_add(st, {"window": [wx, y, z], "size": [2.2, 1.4]})
-		_add(st, {"box": [wx, y + 2.2, z], "size": [2.2, 1.6, 0.3], "kind": "NEUTRAL"})
-		st.bot.append([z + 16.0, "", wx])
-		st.bot.append([z + 3.0, "crouch", wx])
+	if f.has("glass"):
+		# Glass to jump through, in a wall across the room. Indoors only:
+		# glass belongs in a building (an office partition, a storefront).
+		var gx: float = f.glass
+		if st.inside <= 0.0:
+			push_warning("Route: glass at %s m is on an open roof; give the roof an \"interior\"" % d)
+		_cross_wall(st, z, gx, GLASS_WIDTH, GLASS_SILL, GLASS_TOP, f.get("look", "TILE"))
+		_add(st, {"window": [gx, y + GLASS_SILL, z], "size": [GLASS_WIDTH, GLASS_TOP - GLASS_SILL]})
+		st.bot.append([z + 16.0, "", gx])
+		st.bot.append([z + GLASS_JUMP, "jump", gx])
+		st.bot.append([z - 5.0, "", 0.0])
+		return [d - 4.0, d + 16.0]
+	if f.has("door"):
+		# Double doors in a wall across the room: kick one and both swing
+		# open away from you. No slowing down if you kick in time.
+		var dx: float = f.door
+		_cross_wall(st, z, dx, DOORS_WIDTH, 0.0, DOORS_TOP, f.get("look", "FACADE"))
+		_add(st, {"doors": [dx, y, z]})
+		st.bot.append([z + 16.0, "", dx])
+		st.bot.append([z + KICK_AT, "kick", dx])
+		st.bot.append([z - 5.0, "", 0.0])
+		return [d - 4.0, d + 16.0]
+	if f.has("hole") or f.has("window"):
+		# A gap to slide through, as something that belongs where it is
+		# (see _hole). "window" is the old name.
+		var hx: float = f.get("hole", f.get("window", 0.0))
+		var style: String = f.get("style", "broken" if st.inside > 0.0 else "fence")
+		_hole(st, z, hx, style)
+		st.bot.append([z + 16.0, "", hx])
+		st.bot.append([z + 3.0, "crouch", hx])
 		st.bot.append([z - 5.0, "", 0.0])
 		return [d - 4.0, d + 16.0]
 	if f.has("checkpoint"):
@@ -601,6 +646,82 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 		return [d, d]
 	push_warning("Route: unknown feature %s" % f)
 	return [d, d]
+
+
+## A wall across the roof at z with an opening at x, `width` wide, from
+## `lo` to `hi` m up (whatever fills it is the caller's). Indoors it meets
+## the ceiling; on an open roof it is OUTDOOR_WALL tall. Returns the piece
+## over the opening.
+static func _cross_wall(st: Dictionary, z: float, x: float, width: float, lo: float, hi: float, look: String) -> Dictionary:
+	var y: float = st.y
+	var h: float = st.inside if st.inside > 0.0 else OUTDOOR_WALL
+	var half: float = st.roof_w * 0.5
+	var a := x - width * 0.5
+	var b := x + width * 0.5
+	_add(st, {"box": [(-half + a) * 0.5, y + h * 0.5, z], "size": [a + half, h, 0.3], "kind": "NEUTRAL", "look": look})
+	_add(st, {"box": [(b + half) * 0.5, y + h * 0.5, z], "size": [half - b, h, 0.3], "kind": "NEUTRAL", "look": look})
+	if lo > 0.01:
+		_add(st, {"box": [x, y + lo * 0.5, z], "size": [width, lo, 0.3], "kind": "NEUTRAL", "look": look})
+	var over := {"box": [x, y + (hi + h) * 0.5, z], "size": [width, h - hi, 0.3], "kind": "NEUTRAL", "look": look}
+	_add(st, over)
+	return over
+
+
+## A gap HOLE_TOP high to slide through at x, in one of these styles:
+##   indoors: "broken" (a hole knocked through a brick wall), "shutter"
+##     (a roll-up shutter jammed part way down a loading door)
+##   outdoors: "fence" (a raider hoarding across the roof with its bottom
+##     sheet torn out), "duct" (a big air duct across the roof on legs),
+##     "wagon" (a derailed goods wagon lying across the tracks)
+## The piece over the gap carries meta "opening" (the style) for shots.
+static func _hole(st: Dictionary, z: float, x: float, style: String) -> void:
+	var y: float = st.y
+	var half: float = st.roof_w * 0.5
+	var tag := {"opening": style, "floor": y}
+	match style:
+		"shutter":
+			# A loading door 3.4 m wide in a concrete wall, its shutter down
+			# to HOLE_TOP, with the roller box over it.
+			var over := _cross_wall(st, z, x, 3.4, 0.0, 3.0, "FACADE")
+			over.meta = tag
+			_add(st, {"box": [x, y + (HOLE_TOP + 3.0) * 0.5, z - 0.22], "size": [3.4, 3.0 - HOLE_TOP, 0.08], "kind": "NEUTRAL", "look": "CORRUGATED"})
+			_add(st, {"box": [x, y + 3.0 - 0.2, z - 0.35], "size": [3.6, 0.4, 0.4], "kind": "NEUTRAL", "look": "RUST"})
+			_add(st, {"box": [x, y + HOLE_TOP + 0.05, z - 0.22], "size": [3.4, 0.1, 0.14], "kind": "NEUTRAL", "look": "RUST"})
+		"duct":
+			# Square duct on legs, end to end across the roof.
+			_add(st, {"box": [0, y + HOLE_TOP + 0.55, z], "size": [half * 2.0, 1.1, 1.3], "kind": "NEUTRAL", "look": "RUST", "meta": tag})
+			# It comes up out of the roof at the end away from the gap, on a
+			# leg at the other.
+			var riser := -1.0 if x > 0.0 else 1.0
+			_add(st, {"box": [riser * (half - 0.65), y + 1.2, z], "size": [1.3, 2.4, 1.3], "kind": "NEUTRAL", "look": "RUST"})
+			_add(st, {"box": [-riser * (half - 0.4), y + HOLE_TOP * 0.5, z], "size": [0.25, HOLE_TOP, 0.25], "kind": "NEUTRAL", "look": "RUST"})
+		"wagon":
+			# A goods wagon on its side across the line, its body held off
+			# the deck by the bogies at its ends.
+			_add(st, {"box": [0, y + HOLE_TOP + 1.4, z], "size": [half * 2.0 + 1.0, 2.8, 2.9], "kind": "NEUTRAL", "look": "RUST", "meta": tag})
+			for side: float in [-1.0, 1.0]:
+				var bx := side * (half - 0.4)
+				if absf(bx - x) > HOLE_WIDTH * 0.5 + 0.6:
+					_add(st, {"box": [bx, y + HOLE_TOP * 0.5, z], "size": [1.6, HOLE_TOP, 2.2], "kind": "NEUTRAL", "look": "RUST"})
+		"fence":
+			# Corrugated sheets on posts, the bottom of one sheet pried off.
+			var over := _cross_wall(st, z, x, HOLE_WIDTH, 0.0, HOLE_TOP, "CORRUGATED")
+			over.meta = tag
+			for px: float in [-half + 0.1, x - HOLE_WIDTH * 0.5 - 0.1, x + HOLE_WIDTH * 0.5 + 0.1, half - 0.1]:
+				_add(st, {"box": [px, y + OUTDOOR_WALL * 0.5 + 0.1, z + 0.2], "size": [0.14, OUTDOOR_WALL + 0.2, 0.14], "kind": "NEUTRAL", "look": "RUST"})
+			# The torn-off sheet, propped against the fence beside the gap.
+			_add(st, {"box": [x - HOLE_WIDTH * 0.5 - 0.8, y + 0.6, z + 0.3], "size": [1.2, 1.2, 0.05], "kind": "NEUTRAL", "look": "CORRUGATED", "yaw": 8.0})
+		_:
+			# "broken": a brick wall with a hole knocked through at the
+			# floor, ragged at the top.
+			var over := _cross_wall(st, z, x, HOLE_WIDTH, 0.0, HOLE_TOP, "BRICK")
+			over.meta = tag
+			# (Bricks hanging into it leave at least 1.1 m to slide under.)
+			for k: Array in [[-0.95, 0.5, 0.18], [0.9, 0.6, 0.2], [0.05, 0.5, 0.1]]:
+				_add(st, {"box": [x + k[0], y + HOLE_TOP - k[2] * 0.5, z], "size": [k[1], k[2], 0.32], "kind": "NEUTRAL", "look": "BRICK"})
+			# Rubble kicked through to the far side, out of the slide.
+			for k: Array in [[-1.7, -0.9], [1.9, -1.4], [-2.2, 0.8]]:
+				_add(st, {"box": [x + k[0], y + 0.15, z + k[1]], "size": [0.7, 0.3, 0.5], "kind": "NEUTRAL", "look": "BRICK", "yaw": k[0] * 20.0})
 
 
 ## Enemies on a roof: raiders behind sandbags, mutants on their patch, and

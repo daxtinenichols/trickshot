@@ -47,6 +47,10 @@ func on_kicked(_by: Node, dir: Vector3) -> void:
 	var sign_dir := -1.0 if dir.dot(normal) > 0.0 else 1.0
 	_swing(_closed_basis.rotated(Vector3.UP, OPEN_ANGLE * sign_dir))
 	get_tree().create_timer(CLOSE_AFTER, false).timeout.connect(_close)
+	# Double doors: the other leaf (meta "mate") goes too.
+	var mate: Object = get_meta("mate", null)
+	if is_instance_valid(mate) and mate.has_method("on_kicked"):
+		mate.on_kicked(_by, dir)
 
 
 func _close() -> void:
