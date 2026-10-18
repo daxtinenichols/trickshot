@@ -988,14 +988,39 @@ func _turn_run(lean: float) -> Player:
 	return p
 
 
-func test_quick_turn_turns_faster_and_keeps_speed() -> void:
+func test_quick_turn_keeps_speed_without_speeding_up_the_view() -> void:
 	# Q (lean left) while turning left.
 	var p := await _turn_run(-1.0)
-	var turned := rad_to_deg(absf(angle_difference(0.0, p.yaw)))
-	check(turned > 80.0, "holding lean turns the view faster (%.0f deg)" % turned)
+	check_near(rad_to_deg(absf(angle_difference(0.0, p.yaw))), 36.0, 0.5, "holding lean turns the view exactly as far as the mouse")
 	var h := MovementMath.horizontal(p.velocity)
 	check(h.length() > 8.5, "speed kept round the turn (%.2f m/s)" % h.length())
-	check(h.normalized().dot(p.forward()) > 0.95, "and going where you look")
+	check(h.normalized().dot(p.forward()) > 0.99, "and going where you look (%.3f)" % h.normalized().dot(p.forward()))
+
+
+func test_quick_turn_carries_speed_a_plain_turn_bleeds() -> void:
+	# A hard 90 degree snap at speed: the run swings round with Q held, but
+	# without it your velocity still points the old way and has to catch up.
+	var dots := []
+	for lean: float in [-1.0, 0.0]:
+		if is_instance_valid(w):
+			w.queue_free()
+			await tree.process_frame
+		w = TestWorld.new()
+		tree.root.add_child(w)
+		w.add_floor()
+		var p := await _settle()
+		await _run_to(9.0)
+		var f := _fwd()
+		f.lean = lean
+		await w.step(1, f)
+		for i in 6:
+			p._look(deg_to_rad(15.0), 0.0)
+			await w.step(1, f)
+		check_near(rad_to_deg(absf(angle_difference(0.0, p.yaw))), 90.0, 0.5, "the view turns 90 degrees either way")
+		var h := MovementMath.horizontal(p.velocity)
+		dots.append([h.normalized().dot(p.forward()), h.length()])
+	check(dots[0][0] > 0.99 and dots[0][1] > 8.5, "with Q your run follows the snap at speed (%.3f, %.2f m/s)" % dots[0])
+	check(dots[1][0] < dots[0][0] - 0.05, "without it the run lags behind (%.3f)" % dots[1][0])
 
 
 func test_quick_turn_only_toward_its_side() -> void:
