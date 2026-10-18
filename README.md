@@ -140,14 +140,16 @@ Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbo
 
 ## Campaign
 
-**Campaign** (Esc menu or F11) opens *Dead Air*: all thirteen missions by act, each with its story beat, what it teaches and your best result. Six are playable so far, and together they run west across the city:
+**Campaign** (Esc menu or F11) opens *Dead Air*: all fifteen missions by act, each with its story beat, what it teaches and your best result. Six are playable so far, and together they run west across the city:
 
 - **0 Dawn Run** (dock rooftops): deliver a parcel, run home, and hear the Host announce he has Echo.
 - **1 The Yard** (Combo Park): Mags's last lesson: a x3 combo, three dummies, two headshots, 6,000 points, then out the south gate.
 - **2 On Air** (warehouse roofs, 540 m): the Host names you on air; wallruns, wall hops and three of the Static's raiders shooting back from behind sandbags.
 - **3 Glass District** (office roofs, 560 m): office floors with glass to jump through and doors to kick, a climb to the upper offices, toll spotters to take out, on to the Silt bridge.
 - **4 Silt Line** (the Silt, 530 m): the bridge is gone; run through the crawlers without stopping, climb onto the overpass and run it to Meridian Mall.
-- **12 Signal Out** (the burning tower): you play Echo (her own runner model, on Parker's animations) and the Host chases you. He follows your exact path, never drops more than about 22 m behind, and catches you if you slow down; Parker coaches you on the radio. Beating it unlocks Echo as a runner for every mission.
+- **10 Head Office** (Calder House, about 1 km indoors): the Host comes down in person. He shoots from the atrium balcony, the server room catwalk and his own office, then runs; hitting him is a bonus. Kick the doors, jump the meeting-room glass, slide the shutters, and reach his corner office.
+- **11 Skybridge** (Calder House's top floors): the tape archive, the lift shaft or the stairs, the half-built penthouse, the water tanks and the CALDER sign on the roof, then the glass skybridge to the tower, where Parker reaches Echo before the Ward take her across and blow the bridge.
+- **14 Signal Out** (the burning tower): you play Echo (her own runner model, on Parker's animations) and the Host chases you. He follows your exact path, never drops more than about 22 m behind, and catches you if you slow down; Parker coaches you on the radio. Beating it unlocks Echo as a runner for every mission.
 
 Mags, the Host, Echo and Parker talk over the radio while you run, in spoken voices through a radio filter with subtitles low in the middle (Echo's coded messages break up with static, and raiders shout their taunts when they tag you); nothing stops the game. The clock starts when you leave the start, the objective shows under it, falling sends you to the last checkpoint, and lost broadcast tapes hide on the harder routes. Number keys jump to checkpoints as practice runs. Missions are data files; how to write one is in [docs/missions.md](docs/missions.md).
 

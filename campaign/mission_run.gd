@@ -22,7 +22,9 @@ enum Phase { READY, RUNNING, COMPLETE }
 ## (objective N became active), "done:N", "checkpoint:N", "fall", "caught",
 ## "tape", "kill", "kill:<enemy type>", "headshot", "combo", "bail", "down"
 ## (enemies took you down), "fate:spared" / "fate:not_spared" (a boss like
-## Juno was beaten and you chose), "complete".
+## Juno was beaten and you chose), an enemy's own story events like
+## "host:hit" and "host:hit:1" (see _on_story_event), a set piece going off
+## ("set_piece:<kind>", counted the same way), "complete".
 signal event(name: String)
 signal objective_changed(index: int)
 signal completed(result: Dictionary)
@@ -53,6 +55,8 @@ var objectives: Array = []
 ## "headshots_at", "until" (the required objective that closes it), "done",
 ## "closed"}.
 var bonuses := {}
+## How often each enemy story event (`_on_story_event`) happened this run.
+var event_counts := {}
 var tapes_found: Array[String] = []
 var kills := 0
 var headshots := 0
@@ -100,6 +104,8 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 			e.killed.connect(_on_target_killed.bind(String(e.get_meta("enemy_type", ""))))
 			if e.has_signal("fate_decided"):
 				e.fate_decided.connect(func(fate: String) -> void: event.emit("fate:" + fate))
+			if e.has_signal("story_event"):
+				e.story_event.connect(_on_story_event)
 	var health := p.get_node_or_null("PlayerHealth")
 	if health != null:
 		health.died.connect(_on_player_down)
@@ -110,10 +116,22 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 		add_child(pursuer)
 	for sp: Node3D in b.set_pieces:
 		sp.went.connect(func(kind: String) -> void:
-			event.emit("host_close" if kind == "host" else "set_piece:" + kind))
+			if kind == "host":
+				event.emit("host_close")
+			else:
+				_on_story_event("set_piece:" + kind))
 	_start_pos = b.spawns[0].origin
 	event.connect(_save_choice)
 	_reset_run(0)
+
+
+## An enemy's own story moment, like the Host's "host:hit" (m09b): played
+## as is and numbered across the run ("host:hit:1", "host:hit:2"), so the
+## radio can answer the first and the second differently.
+func _on_story_event(e: String) -> void:
+	event_counts[e] = int(event_counts.get(e, 0)) + 1
+	event.emit(e)
+	event.emit("%s:%d" % [e, event_counts[e]])
 
 
 ## A boss's fate ("fate:spared") is a story choice later missions remember
@@ -184,7 +202,7 @@ func bonus_text() -> String:
 			continue
 		var o: Dictionary = objectives[i]
 		var text: String = o.get("text", "")
-		if String(o.get("type", "")) == "shoot":
+		if String(o.get("type", "")) == "shoot" or String(o.get("type", "")) == "event" and int(o.get("count", 1)) > 1:
 			var need: int = o.get("count", 1)
 			text = text if text != "" else "Take down %d" % need
 			text += "  done" if b.done else "  (%d / %d)" % [mini(_bonus_progress(i), need), need]
@@ -298,6 +316,8 @@ func _check_objective(pos: Vector3) -> void:
 			done = _duel_done(o, pos)
 		"collect":
 			done = tapes_found.size() >= int(o.get("count", builder.tapes.size()))
+		"event":
+			done = int(event_counts.get(String(o.get("event", "")), 0)) >= int(o.get("count", 1))
 	if done:
 		event.emit("done:%d" % objective)
 		_close_bonuses(objective)
@@ -316,8 +336,10 @@ func _next_required(i: int) -> int:
 func _open_bonus(i: int) -> void:
 	if bonuses.has(i):
 		return
-	bonuses[i] = {"kills_at": kills, "headshots_at": headshots, "until": _next_required(i + 1),
-		"done": false, "closed": false}
+	# "until": "end" keeps a bonus open for the rest of the mission.
+	var until := objectives.size() if objectives[i].get("until", "") == "end" else _next_required(i + 1)
+	bonuses[i] = {"kills_at": kills, "headshots_at": headshots, "until": until,
+		"events_at": event_counts.get(String(objectives[i].get("event", "")), 0), "done": false, "closed": false}
 	event.emit("objective:%d" % i)
 
 
@@ -348,6 +370,8 @@ func _check_bonuses(pos: Vector3) -> void:
 				done = encounter_cleared(String(o.get("encounter", "")))
 			"collect":
 				done = tapes_found.size() >= int(o.get("count", builder.tapes.size()))
+			"event":
+				done = _bonus_progress(i) >= int(o.get("count", 1))
 		if done:
 			b.done = true
 			if combo != null:
@@ -357,6 +381,8 @@ func _check_bonuses(pos: Vector3) -> void:
 
 func _bonus_progress(i: int) -> int:
 	var b: Dictionary = bonuses[i]
+	if objectives[i].get("type", "") == "event":
+		return int(event_counts.get(String(objectives[i].get("event", "")), 0)) - int(b.events_at)
 	if objectives[i].get("headshots", false):
 		return headshots - int(b.headshots_at)
 	return kills - int(b.kills_at)
@@ -510,6 +536,7 @@ func _reset_run(index: int) -> void:
 	practice = index != 0
 	tapes_found.clear()
 	bonuses.clear()
+	event_counts.clear()
 	for t: Dictionary in builder.tapes:
 		if is_instance_valid(t.node):
 			(t.node as Node3D).visible = true

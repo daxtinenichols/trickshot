@@ -71,12 +71,12 @@ func _index(id: String) -> int:
 
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
-	check(all.size() == 13, "13 missions (%d)" % all.size())
+	check(all.size() == 15, "15 missions (%d)" % all.size())
 	check(Campaign.acts().size() == 3, "three acts")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
-	check(Campaign.entry(12).get("unlocks", "") == "echo", "the finale unlocks Echo")
+	check(Campaign.entry(all.size() - 1).get("unlocks", "") == "echo", "the finale unlocks Echo")
 	for id: String in ["m00_dawn_run", "m01_the_yard", "m02_on_air", "m12_signal_out"]:
 		check(Campaign.is_built(_index(id)), "%s is built" % id)
 
@@ -809,6 +809,81 @@ func test_kill_goals_are_bonuses() -> void:
 		for o: Dictionary in Campaign.load_mission_file(m.file).get("objectives", []):
 			if String(o.get("type", "")) == "shoot" and not MissionRun.is_bonus(o):
 				check(m.id == "m01_the_yard", "%s: kill goal '%s' is required" % [m.id, o.get("text", "")])
+
+
+## Head Office: the Host turns up three times, every hit on him is a story
+## event the radio answers in order, the hit bonus stays open the whole
+## mission, and reaching his office wins whether or not you hit him.
+func test_head_office_host_hits_are_a_bonus() -> void:
+	await _load(_index("m09b_head_office"))
+	var hosts: Array[Node] = []
+	for enc: Node3D in level.builder.encounters:
+		for e: Node in enc.enemies:
+			if e.has_signal("story_event"):
+				hosts.append(e)
+	check(hosts.size() == 3, "the Host turns up three times (%d)" % hosts.size())
+	var heard: Array[String] = []
+	run.event.connect(func(e: String) -> void: heard.append(e))
+	await _step(40, _forward())
+	check(run.phase == MissionRun.Phase.RUNNING, "the run is on")
+	check(run.bonuses.has(0) and run.bonus_text().contains("Hit the Host"), "the hit bonus is open (%s)" % run.bonus_text())
+	if hosts.size() == 3:
+		hosts[0].story_event.emit("host:hit")
+		hosts[1].story_event.emit("host:hit")
+	await _step(2)
+	check(heard.has("host:hit:1") and heard.has("host:hit:2"), "hits are numbered across his turns (%s)" % [heard])
+	check(run.bonuses[0].done, "a hit finishes the bonus")
+	var objs: Array = run.objectives
+	for i in range(1, objs.size()):
+		player.global_position = MissionBuilder.vec(objs[i].at) + Vector3(0, 0.1, 0)
+		await _step(2)
+	check(run.phase == MissionRun.Phase.COMPLETE, "reaching his office wins")
+	check(run.result.bonuses == 1, "with the bonus (%s)" % run.result)
+	# Every Head Office and Skybridge radio line has a trigger the mission can fire.
+	for id: String in ["m09b_head_office", "m09c_skybridge"]:
+		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
+		for r: Dictionary in m.radio:
+			var on: String = r.get("on", "")
+			check(r.has("at") or on in ["start", "go", "complete"] or on.begins_with("checkpoint:") or on.begins_with("host:")
+				or on.begins_with("set_piece:"),
+				"%s: line '%s' has a known trigger" % [id, r.line])
+
+
+## Skybridge ends at the Ward's glass gate: you can't get past it, they
+## walk Echo off, the bridge blows, and only then is the mission won.
+func test_skybridge_ends_after_the_bridge_falls() -> void:
+	await _load(_index("m09c_skybridge"))
+	var gate: Node3D = null
+	for sp: Node3D in level.builder.set_pieces:
+		if sp.kind == "skybridge":
+			gate = sp
+	check(gate != null, "the skybridge has its gate scene")
+	if gate == null:
+		return
+	var heard: Array[String] = []
+	run.event.connect(func(e: String) -> void: heard.append(e))
+	await _step(40, _forward())
+	var objs: Array = run.objectives
+	for i in objs.size():
+		if objs[i].get("type", "reach") == "reach":
+			player.global_position = MissionBuilder.vec(objs[i].at) + Vector3(0, 0.1, 0)
+			await _step(2)
+	check(gate.fired, "reaching the gate starts the scene")
+	check(heard.has("set_piece:skybridge"), "the radio hears it (%s)" % [heard])
+	check(run.phase == MissionRun.Phase.RUNNING, "the gate alone doesn't win it")
+	await _step(240, _forward())
+	check(gate.to_local(player.global_position).z > 0.0, "you can't get past the gate (%s)" % gate.to_local(player.global_position))
+	await _step(set_piece_ticks(gate, gate.SKY_BLAST) + 2, _forward())
+	check(heard.has("set_piece:skybridge_blast") and run.phase == MissionRun.Phase.RUNNING, "the bridge blows before the end")
+	await _step(set_piece_ticks(gate, gate.SKY_DOWN) + 2, _forward())
+	check(heard.has("set_piece:skybridge_down"), "the span comes down")
+	check(run.phase == MissionRun.Phase.COMPLETE, "and that wins it")
+	check(heard.find("set_piece:skybridge_down") < heard.find("complete"), "won only after the drop (%s)" % [heard])
+
+
+## Ticks until a fired set piece reaches tick `at` (0 if it's past).
+func set_piece_ticks(sp: Node, at: int) -> int:
+	return maxi(at - int(sp.ticks), 0)
 
 
 func _forward() -> InputFrame:

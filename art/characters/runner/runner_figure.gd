@@ -15,7 +15,12 @@ const LOOK_LIMIT := 70.0
 var runner := "echo"
 var pose_name := "arms_crossed"
 var body: Node3D
+## Walking speed (m/s) while someone moves her (the Ward walking Echo off
+## the skybridge, campaign/set_piece.gd): legs cycle, head stops following
+## the camera, and she pulls back against it. 0 = still, in her pose.
+var walk_speed := 0.0
 var _look := 0.0
+var _phase := 0.0
 
 
 ## Still poses, in RunnerPoses' angle convention (degrees, character space).
@@ -80,6 +85,16 @@ func _ready() -> void:
 
 func _process(delta: float) -> void:
 	if body == null:
+		return
+	if walk_speed > 0.0:
+		_phase = fposmod(_phase + walk_speed * minf(delta, 0.1) / 1.3, 1.0)
+		var w := RunnerPoses.run(_phase, clampf(walk_speed / 9.0, 0.0, 1.0))
+		# Leaning back, twisting to look behind her.
+		w["Spine"] = w.get("Spine", Vector3.ZERO) + Vector3(-10, 8, 0)
+		w["Neck"] = w.get("Neck", Vector3.ZERO) + Vector3(0, 20, 0)
+		w["Head"] = w.get("Head", Vector3.ZERO) + Vector3(0, 30, 0)
+		body.pose_override = w
+		body.global_transform = global_transform
 		return
 	# Head and chest follow the camera (the player's eye), within limits.
 	var cam := get_viewport().get_camera_3d()

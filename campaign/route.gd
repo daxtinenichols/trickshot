@@ -789,9 +789,10 @@ static func _encounter(st: Dictionary, f: Dictionary, d: float, z: float, y: flo
 		var type: String = spec.get("type", "raider")
 		var ez := z - float(spec.get("d", 0.0))
 		var ex: float = spec.get("x", 0.0)
-		var e := {"type": type, "at": [ex, y, ez], "yaw": 180, "wake": spec.get("wake", 0.0)}
+		# "elevation": stands that many m over the roof (a balcony, a catwalk).
+		var e := {"type": type, "at": [ex, y + float(spec.get("elevation", 0.0)), ez], "yaw": 180, "wake": spec.get("wake", 0.0)}
 		for k: String in spec:
-			if k not in ["type", "x", "d", "wake", "height", "cover"]:
+			if k not in ["type", "x", "d", "wake", "height", "cover", "elevation"]:
 				e[k] = spec[k]
 		if type.ends_with("drone"):
 			e.hover_height = float(spec.get("height", 4.0))
