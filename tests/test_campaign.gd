@@ -1126,7 +1126,7 @@ func test_route_45_degree_corners() -> void:
 	var diagonal := false
 	var bank_yaw := INF
 	for p: Dictionary in m.pieces:
-		if p.has("slab"):
+		if p.has("slab") and not p.get("city", false):
 			slabs += 1
 		if p.has("building") and is_equal_approx(fposmod(float(p.get("yaw", 0.0)), 90.0), 45.0):
 			diagonal = true
