@@ -9,8 +9,8 @@
  "checkpoints": [],
  "objectives": [
   {"type": "combo", "multiplier": 3, "text": "Chain three different moves before you land: a x3 combo"},
-  {"type": "shoot", "count": 3, "text": "Shoot three of Mags's dummies"},
-  {"type": "shoot", "count": 2, "headshots": true, "text": "Two headshots: aim for the yellow heads"},
+  {"type": "shoot", "count": 3, "optional": false, "text": "Shoot three of Mags's dummies"},
+  {"type": "shoot", "count": 2, "headshots": true, "optional": false, "text": "Two headshots: aim for the yellow heads"},
   {"type": "score", "points": 6000, "text": "Score 6,000 points in the yard"},
   {"type": "reach", "name": "the gate", "text": "Run the park and out through the south gate", "at": "end"}
  ],
