@@ -32,6 +32,15 @@ extends Resource
 ## moves keeps stacking it. Let go of forward and friction stops you as usual.
 @export_range(0.0, 10.0, 0.05) var overspeed_decay := 1.0
 
+## Running into an enemy at least this fast (m/s) knocks it over and you
+## carry on through; slower, it just blocks you.
+@export_range(0.0, 20.0, 0.1) var body_check_speed := 6.0
+## Share of your speed kept after knocking an enemy over.
+@export_range(0.0, 1.0, 0.01) var body_check_keep := 0.6
+## Share kept shouldering past one too heavy to knock over (heavies,
+## brutes, drones).
+@export_range(0.0, 1.0, 0.01) var body_check_heavy_keep := 0.35
+
 @export_group("Flow")
 ## Style is speed: each trick in the live combo raises your ground cruise
 ## speed (what running holds without bleeding) by this much, scaled by how

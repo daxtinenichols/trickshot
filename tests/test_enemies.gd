@@ -645,3 +645,55 @@ func test_sandbox_has_an_enemy_arena_by_zone_one() -> void:
 		check(arena.phase == EnemyEncounter.Phase.ACTIVE, "the fight starts when you walk in")
 	level.queue_free()
 	await tree.process_frame
+
+
+# ------------------------------------------------------------------ running into enemies
+
+func test_running_into_a_raider_slowly_is_blocked() -> void:
+	await _setup()
+	w.player.tuning.body_check_speed = 30.0  # never fast enough here
+	var r := _raider(Vector3(0, 0, -3), false)
+	await w.step(90, TestWorld.forward_input())
+	check(not r.is_knocked_down(), "too slow to knock it over")
+	check(w.player.global_position.z > r.global_position.z + 0.4, "can't walk through it (player z %.2f, raider z %.2f)" % [w.player.global_position.z, r.global_position.z])
+
+
+func test_running_into_a_raider_knocks_it_over() -> void:
+	await _setup()
+	var r := _raider(Vector3(0, 0, -16), false)
+	var before := [0.0]
+	var walled := [false]
+	var hit := await w.step_until(func() -> bool:
+		walled[0] = walled[0] or w.player.state == Player.State.WALLRUN
+		if not r.is_knocked_down():
+			before[0] = w.player.horizontal_speed()
+		return r.is_knocked_down(), 180, TestWorld.forward_input())
+	check(hit, "a sprint into it knocks it over")
+	check(before[0] >= w.player.tuning.body_check_speed, "hit at speed (%.1f m/s)" % before[0])
+	var after := w.player.horizontal_speed()
+	check(after < before[0] - 0.5 and after > before[0] * 0.4, "slowed, not stopped (%.1f -> %.1f m/s)" % [before[0], after])
+	check_near(r.health, r.max_health, 0.01, "no damage, just knocked down")
+	await w.step(30, TestWorld.forward_input())
+	check(w.player.global_position.z < -17.0, "ran on through (z %.2f)" % w.player.global_position.z)
+	check(not walled[0], "no wallrun off a body")
+	await w.step(int(60 * r.knockdown_time) + 30)
+	check(not r.is_knocked_down() and r.collision_layer != 0, "back up and solid again")
+
+
+func test_running_into_a_heavy_staggers_it_and_you_shoulder_past() -> void:
+	await _setup()
+	var h: Node = load("res://enemies/heavy.gd").new()
+	h.position = Vector3(0, 0, -16)
+	w.add_child(h)
+	var before := [0.0]
+	var hit := await w.step_until(func() -> bool:
+		if not h.is_staggered():
+			before[0] = w.player.horizontal_speed()
+		return h.is_staggered(), 180, TestWorld.forward_input())
+	check(hit, "a sprint into it staggers it")
+	check(not h.is_knocked_down(), "too heavy to knock over")
+	var after := w.player.horizontal_speed()
+	check(after < before[0] * w.player.tuning.body_check_keep and after > 0.5, "slowed more than a raider, not stopped (%.1f -> %.1f m/s)" % [before[0], after])
+	await w.step(60, TestWorld.forward_input())
+	check(w.player.global_position.z < h.global_position.z - 1.0, "shouldered past it (player z %.2f, heavy z %.2f)" % [w.player.global_position.z, h.global_position.z])
+	check(h.collision_layer != 0, "solid again once you're by")

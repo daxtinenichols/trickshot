@@ -184,6 +184,7 @@ func tick(delta: float) -> void:
 	if is_dead:
 		_fall(delta)
 		return
+	_tick_solid(delta)
 	if _stagger > 0.0:
 		# Knocked tumbling: drifts and slows in the air.
 		_stagger -= delta
