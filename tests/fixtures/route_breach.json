@@ -1,0 +1,18 @@
+{
+ "id": "test_route_breach",
+ "title": "Ways through walls",
+ "runner": "",
+ "start": {"at": [0, 10, 2]},
+ "objectives": [
+  {"type": "reach", "name": "the end", "at": "end"}
+ ],
+ "route": [
+  {"roof": 50, "do": [{"hole": 3.3, "style": "fence", "at": 24}]},
+  {"roof": 70, "interior": 5, "do": [{"glass": -3.3, "at": 20}, {"door": 0, "at": 48}]},
+  {"roof": 50, "interior": 5, "do": [{"hole": 0, "at": 14}, {"hole": -3.3, "style": "shutter", "at": 34}]},
+  {"roof": 50, "do": [{"hole": 3.3, "style": "duct", "at": 20}]},
+  {"roof": 50, "do": [{"hole": 0, "style": "wagon", "at": 20}]},
+  {"roof": 60, "interior": 4.6, "do": [{"door": 3.3, "at": 18}, {"glass": 0, "at": 44}]},
+  {"roof": 180}
+ ]
+}

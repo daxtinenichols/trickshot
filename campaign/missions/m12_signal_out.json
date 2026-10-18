@@ -66,7 +66,7 @@
   ]},
   {"ramp_down": 32, "length": 22},
   {"roof": 76, "y": 32, "do": [
-   {"window": 3.3, "at": 20},
+   {"hole": 3.3, "style": "duct", "at": 20},
    {"piece": {"fire": [-7, 0, -40], "size": [2.5, 1.6, 2.5]}, "at": 0},
    {"prop": "car_wreck", "x": -4.8, "at": 48, "yaw": 20},
    {"hurdles": true, "at": 58}

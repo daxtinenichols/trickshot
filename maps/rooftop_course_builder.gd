@@ -9,7 +9,7 @@ extends SandboxBuilder
 ## hurdles and a slide bar, a gap, a door and a window, a wallrun across a
 ## wide gap, a climb up to a higher roof, a big drop to roll out of, an
 ## optional loop, a long sprint, a field of rooftop plant and a climb, then
-## a window wall and the first corner, with a banked curve round its outside.
+## a slide hole in a brick wall and the first corner, with a banked curve round its outside.
 ## Leg 2 (toward -X) splits: a high line up a slab and along a narrow roof
 ## with a wallrun gap, or a low line down onto the roofs below and a climb
 ## back up. They meet at the second corner (banked too).
@@ -33,7 +33,7 @@ const ROOFS := [
 	[4.0, -128.0, -172.0, 20.0], # R5: 9 m drop, loop
 	[4.0, -178.0, -240.0, 12.0], # R6: rooftop sprint
 	[4.0, -246.0, -300.0, 14.0], # R7: AC field
-	[7.0, -300.0, -386.0, 20.0], # R8: climb up to it, window wall, first corner
+	[7.0, -300.0, -386.0, 20.0], # R8: climb up to it, hole wall, first corner
 ]
 
 ## The three legs: each authors its roofs in its own frame, running toward
@@ -185,15 +185,20 @@ func _section_breach() -> void:
 	_spawn_at(Vector3(0, 10, -46), "2 · DOOR AND WINDOW")
 	var z := -58.0
 	var y := 10.0
-	# Wall across the roof: door on the left half, low window on the right.
-	_box(Vector3(-4.1, y + 1.5, z), Vector3(3.8, 3.0, 0.3), Kind.NEUTRAL)   # x -6..-2.2
-	_door(Vector3(-2.2, y, z))                                              # panel x -2.2..-1.1
-	_box(Vector3(-1.65, y + 2.6, z), Vector3(1.1, 0.8, 0.3), Kind.NEUTRAL)  # over the door
-	_box(Vector3(0.55, y + 1.5, z), Vector3(3.3, 3.0, 0.3), Kind.NEUTRAL)   # x -1.1..2.2
-	_window(Vector3(3.3, y, z), Vector2(2.2, 1.4))                          # x 2.2..4.4, slide under
-	_box(Vector3(3.3, y + 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)    # over the window
-	_box(Vector3(5.2, y + 1.5, z), Vector3(1.6, 3.0, 0.3), Kind.NEUTRAL)    # x 4.4..6
-	_label("Kick the door (F) or slide through the window (Ctrl)", Vector3(0, y + 3.6, z + 0.4), 0.8)
+	# The front of a rooftop stairwell block: a door on the left half, a
+	# window on the right (sill 0.8 m, glass up to 3.4 m) to jump through.
+	var walls: Array[StaticBody3D] = []
+	walls.append(_box(Vector3(-4.1, y + 1.9, z), Vector3(3.8, 3.8, 0.3), Kind.NEUTRAL))   # x -6..-2.2
+	_door(Vector3(-2.2, y, z))                                                            # panel x -2.2..-1.1
+	walls.append(_box(Vector3(-1.65, y + 3.0, z), Vector3(1.1, 1.6, 0.3), Kind.NEUTRAL))  # over the door
+	walls.append(_box(Vector3(0.55, y + 1.9, z), Vector3(3.3, 3.8, 0.3), Kind.NEUTRAL))   # x -1.1..2.2
+	walls.append(_box(Vector3(3.3, y + 0.4, z), Vector3(2.2, 0.8, 0.3), Kind.NEUTRAL))    # sill
+	_window(Vector3(3.3, y + 0.8, z), Vector2(2.2, 2.6))                                  # x 2.2..4.4
+	walls.append(_box(Vector3(3.3, y + 3.6, z), Vector3(2.2, 0.4, 0.3), Kind.NEUTRAL))    # over the window
+	walls.append(_box(Vector3(5.2, y + 1.9, z), Vector3(1.6, 3.8, 0.3), Kind.NEUTRAL))    # x 4.4..6
+	for w in walls:
+		w.set_meta("look", "TILE")
+	_label("Kick the door (F) or jump through the window", Vector3(0, y + 4.3, z + 0.4), 0.8)
 	_label("Wallrun the wall across the gap", Vector3(0, y + 3, -68), 0.8)
 
 
@@ -212,13 +217,13 @@ func _section_climb() -> void:
 	_label("Run straight at the wall and jump to climb it", Vector3(0, 13.8, -100), 0.8)
 	# Hurdle on the way so it isn't just running.
 	_box(Vector3(0, 10.5, -92), Vector3(12, 1.0, 0.4), Kind.PARKOUR)
-	# Up top: a low window to slide through in a short wall, and the edge.
+	# Up top: a brick wall with a hole knocked through at the floor to
+	# slide through, and the edge.
 	var z := -114.0
 	var y := 13.0
-	_box(Vector3(-3.4, y + 1.5, z), Vector3(5.2, 3.0, 0.3), Kind.NEUTRAL)   # x -6..-0.8
-	_window(Vector3(0.3, y, z), Vector2(2.2, 1.4))                          # x -0.8..1.4, slide under
-	_box(Vector3(0.3, y + 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)
-	_box(Vector3(3.7, y + 1.5, z), Vector3(4.6, 3.0, 0.3), Kind.NEUTRAL)    # x 1.4..6
+	_hole_wall([_box(Vector3(-3.4, y + 1.5, z), Vector3(5.2, 3.0, 0.3), Kind.NEUTRAL),     # x -6..-0.8
+		_box(Vector3(0.3, y + 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL),               # hole x -0.8..1.4
+		_box(Vector3(3.7, y + 1.5, z), Vector3(4.6, 3.0, 0.3), Kind.NEUTRAL)], y)           # x 1.4..6
 	_label("Slide through it (Ctrl)", Vector3(0.3, y + 3.6, z + 0.4), 0.8)
 	_label("9 m drop: press crouch just before you land to roll", Vector3(0, y + 2.5, -121), 0.8)
 
@@ -262,16 +267,24 @@ func _section_sprint() -> void:
 	_label("Climb", Vector3(0, 8.8, -296), 0.8)
 
 
-## R8: a window wall, then the first corner: a wide roof that turns left,
+## A brick wall with a hole 1.4 m high at the floor to slide through:
+## `pieces` are the wall either side and the piece over the hole (middle).
+func _hole_wall(pieces: Array, floor_y: float) -> void:
+	for w: StaticBody3D in pieces:
+		w.set_meta("look", "BRICK")
+	pieces[1].set_meta("opening", "broken")
+	pieces[1].set_meta("floor", floor_y)
+
+
+## R8: a brick wall with a slide hole, then the first corner: a wide roof that turns left,
 ## with a banked curve round its outside to carve at speed.
 func _section_first_corner() -> void:
 	_spawn_at(Vector3(0, 7, -303), "6 · FIRST CORNER")
 	var z := -315.0
 	var y := 7.0
-	_box(Vector3(-5.4, y + 1.5, z), Vector3(9.2, 3.0, 0.3), Kind.NEUTRAL)   # x -10..-0.8
-	_window(Vector3(0.3, y, z), Vector2(2.2, 1.4))
-	_box(Vector3(0.3, y + 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL)
-	_box(Vector3(5.7, y + 1.5, z), Vector3(8.6, 3.0, 0.3), Kind.NEUTRAL)    # x 1.4..10
+	_hole_wall([_box(Vector3(-5.4, y + 1.5, z), Vector3(9.2, 3.0, 0.3), Kind.NEUTRAL),     # x -10..-0.8
+		_box(Vector3(0.3, y + 2.2, z), Vector3(2.2, 1.6, 0.3), Kind.NEUTRAL),               # hole x -0.8..1.4
+		_box(Vector3(5.7, y + 1.5, z), Vector3(8.6, 3.0, 0.3), Kind.NEUTRAL)], y)           # x 1.4..10
 	_label("Slide through", Vector3(0.3, y + 3.6, z + 0.4), 0.8)
 	# A long run-up, then the corner. Keep wide: the banked curve is
 	# round the outside, the racing line inside it.
