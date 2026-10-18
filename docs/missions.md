@@ -194,7 +194,7 @@ has to do it to go on.
 | `combo` | `multiplier` | you bank a combo at that multiplier or more |
 | `shoot` | `count`, `headshots` (true = only headshot kills count) | that many target kills since the objective began (a bonus goal by default) |
 | `collect` | `count` (default: every tape) | that many tapes found |
-| `event` | `event` (an enemy's story event, like `host:hit`), `count` | it happened that many times since the goal opened (a bonus goal: give it `"optional": true`) |
+| `event` | `event` (an enemy's story event, like `host:hit`, or a set piece's, like `set_piece:skybridge_down`), `count` | as a bonus goal (`"optional": true`): it happened that many times since the goal opened; as a required goal: that many times this run (Skybridge ends on its bridge falling) |
 | `clear` | `encounter` (its id) | that encounter is cleared: every enemy down, or out of the fight like a spared Juno |
 | `duel` | `encounter` (its id), `radius` (4 m) | its boss (Juno) is shot down, or you get within `radius` of her and she concedes; then you spare her or not |
 
@@ -260,8 +260,13 @@ reset at checkpoints: `"debris"` a burning beam crashes across the roof and
 stays as an obstacle (`"as": "slide"` or `"hurdle"`; solid once landed),
 `"host"` he cuts through the building and drops in `gap` m behind you,
 `"blast"` an explosion beside the run (`size`), `"mast"` a lattice mast
-(`height`, `fall_yaw` degrees from the run) topples over. Events: `host_close`
-(a shortcut), `host_near` (he's within 6 m), `set_piece:<kind>`; chatter can
+(`height`, `fall_yaw` degrees from the run) topples over, `"skybridge"`
+(Skybridge's ending: a glass gate across the bridge with Echo behind it; the
+Ward walk her back over the `span` m to the tower door, it shuts, and the span
+blows and drops; the gate never opens). Events: `host_close` (a shortcut),
+`host_near` (he's within 6 m), `set_piece:<kind>` (and `set_piece:skybridge_blast`,
+`set_piece:skybridge_down` as that scene plays out; each also counts like a
+story event, so `set_piece:skybridge_down:1` works too); chatter and radio can
 react to any of them.
 
 ### Pieces

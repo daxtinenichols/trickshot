@@ -23,7 +23,8 @@ enum Phase { READY, RUNNING, COMPLETE }
 ## "tape", "kill", "kill:<enemy type>", "headshot", "combo", "bail", "down"
 ## (enemies took you down), "fate:spared" / "fate:not_spared" (a boss like
 ## Juno was beaten and you chose), an enemy's own story events like
-## "host:hit" and "host:hit:1" (see _on_story_event), "complete".
+## "host:hit" and "host:hit:1" (see _on_story_event), a set piece going off
+## ("set_piece:<kind>", counted the same way), "complete".
 signal event(name: String)
 signal objective_changed(index: int)
 signal completed(result: Dictionary)
@@ -115,7 +116,10 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 		add_child(pursuer)
 	for sp: Node3D in b.set_pieces:
 		sp.went.connect(func(kind: String) -> void:
-			event.emit("host_close" if kind == "host" else "set_piece:" + kind))
+			if kind == "host":
+				event.emit("host_close")
+			else:
+				_on_story_event("set_piece:" + kind))
 	_start_pos = b.spawns[0].origin
 	event.connect(_save_choice)
 	_reset_run(0)
@@ -312,6 +316,8 @@ func _check_objective(pos: Vector3) -> void:
 			done = _duel_done(o, pos)
 		"collect":
 			done = tapes_found.size() >= int(o.get("count", builder.tapes.size()))
+		"event":
+			done = int(event_counts.get(String(o.get("event", "")), 0)) >= int(o.get("count", 1))
 	if done:
 		event.emit("done:%d" % objective)
 		_close_bonuses(objective)

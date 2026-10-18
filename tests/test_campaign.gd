@@ -777,8 +777,46 @@ func test_head_office_host_hits_are_a_bonus() -> void:
 		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
 		for r: Dictionary in m.radio:
 			var on: String = r.get("on", "")
-			check(r.has("at") or on in ["start", "go", "complete"] or on.begins_with("checkpoint:") or on.begins_with("host:"),
+			check(r.has("at") or on in ["start", "go", "complete"] or on.begins_with("checkpoint:") or on.begins_with("host:")
+				or on.begins_with("set_piece:"),
 				"%s: line '%s' has a known trigger" % [id, r.line])
+
+
+## Skybridge ends at the Ward's glass gate: you can't get past it, they
+## walk Echo off, the bridge blows, and only then is the mission won.
+func test_skybridge_ends_after_the_bridge_falls() -> void:
+	await _load(_index("m09c_skybridge"))
+	var gate: Node3D = null
+	for sp: Node3D in level.builder.set_pieces:
+		if sp.kind == "skybridge":
+			gate = sp
+	check(gate != null, "the skybridge has its gate scene")
+	if gate == null:
+		return
+	var heard: Array[String] = []
+	run.event.connect(func(e: String) -> void: heard.append(e))
+	await _step(40, _forward())
+	var objs: Array = run.objectives
+	for i in objs.size():
+		if objs[i].get("type", "reach") == "reach":
+			player.global_position = MissionBuilder.vec(objs[i].at) + Vector3(0, 0.1, 0)
+			await _step(2)
+	check(gate.fired, "reaching the gate starts the scene")
+	check(heard.has("set_piece:skybridge"), "the radio hears it (%s)" % [heard])
+	check(run.phase == MissionRun.Phase.RUNNING, "the gate alone doesn't win it")
+	await _step(240, _forward())
+	check(gate.to_local(player.global_position).z > 0.0, "you can't get past the gate (%s)" % gate.to_local(player.global_position))
+	await _step(set_piece_ticks(gate, gate.SKY_BLAST) + 2, _forward())
+	check(heard.has("set_piece:skybridge_blast") and run.phase == MissionRun.Phase.RUNNING, "the bridge blows before the end")
+	await _step(set_piece_ticks(gate, gate.SKY_DOWN) + 2, _forward())
+	check(heard.has("set_piece:skybridge_down"), "the span comes down")
+	check(run.phase == MissionRun.Phase.COMPLETE, "and that wins it")
+	check(heard.find("set_piece:skybridge_down") < heard.find("complete"), "won only after the drop (%s)" % [heard])
+
+
+## Ticks until a fired set piece reaches tick `at` (0 if it's past).
+func set_piece_ticks(sp: Node, at: int) -> int:
+	return maxi(at - int(sp.ticks), 0)
 
 
 func _forward() -> InputFrame:
