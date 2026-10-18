@@ -247,6 +247,45 @@ func test_broadcast_tower_dress() -> void:
 	body.queue_free()
 
 
+## A slide-under bar dressed as a pipe or girder stands on a post at each
+## end that reaches the floor 1.1 m below it, inside the bar's length.
+func test_slide_bars_stand_on_posts() -> void:
+	var look := _look()
+	var size := Vector3(12, 0.5, 0.6)
+	for at: Vector3 in [Vector3(200, 1.35, 200), Vector3(230.3, 1.35, 200)]:
+		var body := StaticBody3D.new()
+		body.position = at
+		body.set_meta("kind", "PARKOUR")
+		body.set_meta("dress", "pipe")
+		var cs := CollisionShape3D.new()
+		var box := BoxShape3D.new()
+		box.size = size
+		cs.shape = box
+		body.add_child(cs)
+		var mesh := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = size
+		mesh.mesh = bm
+		var m := ShaderMaterial.new()
+		m.shader = preload("res://levels/graybox.gdshader")
+		m.set_shader_parameter("base_color", Color(0.9, 0.75, 0.2))
+		mesh.material_override = m
+		body.add_child(mesh)
+		level.add_child(body)
+		look._apply_all(body)
+		var dress := body.get_node_or_null("Dress")
+		check(dress != null and dress.get_meta("style", "") == "pipe", "dressed as a pipe or girder")
+		var low := INF
+		var wide := 0.0
+		for mi: MeshInstance3D in dress.find_children("*", "MeshInstance3D", true, false):
+			var a := mi.global_transform * mi.get_aabb()
+			low = minf(low, a.position.y)
+			wide = maxf(wide, maxf(absf(a.position.x - at.x), absf(a.end.x - at.x)))
+		check_near(low, 0.0, 0.05, "its posts reach the floor")
+		check(wide <= size.x * 0.5 + 0.2, "and stand inside the bar's ends (%.2f m out)" % wide)
+		body.queue_free()
+
+
 ## Practice targets look like junk set up to shoot at, without changing
 ## their hitboxes, and their own meshes come back when the look is off.
 func test_targets_dress_as_junk() -> void:
