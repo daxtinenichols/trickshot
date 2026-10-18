@@ -146,6 +146,8 @@ func _decide(f: String) -> void:
 
 func tick(delta: float) -> void:
 	if is_beaten and not is_dead:
+		_knocked = maxf(_knocked - delta, 0.0)
+		_tick_solid(delta)
 		if not is_on_floor():
 			velocity.y -= GRAVITY * delta
 		steer(Vector3.ZERO, 20.0, delta)
