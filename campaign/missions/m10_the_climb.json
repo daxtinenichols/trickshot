@@ -121,13 +121,13 @@
  "chatter": {
   "headshot": [
    {"who": "mags", "line": "Clean."},
-   {"who": "echo", "line": "Got that one on camera, love. The whole city saw it."}
+   {"who": "echo", "line": "Got that one on camera, courier. The whole city saw it.", "after": "checkpoint:1"}
   ],
   "bail": [
    {"who": "host", "line": "Long way down, Parker! Well. Medium way. Try harder."}
   ],
   "combo": [
-   {"who": "echo", "line": "Look at you. Half the city's on their roofs watching."},
+   {"who": "echo", "line": "Look at you. Half the city's on their roofs watching.", "after": "checkpoint:1"},
    {"who": "mags", "line": "That's it. Up, up, up."}
   ],
   "fall": [

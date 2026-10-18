@@ -97,7 +97,7 @@ func _knock_helmet_off(info: Dictionary) -> void:
 	dome.is_hemisphere = true
 	m.mesh = dome
 	var mat := StandardMaterial3D.new()
-	mat.albedo_color = Color(0.3, 0.33, 0.35)
+	mat.albedo_color = Color(0.86, 0.87, 0.88)
 	m.material_override = mat
 	m.top_level = true
 	add_child(m)

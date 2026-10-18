@@ -1,9 +1,16 @@
 class_name MissionRun
 extends Node
 ## Runs a mission's rules on top of a level: the clock, checkpoints, falls,
-## objectives in order, collectible tapes, the pursuer in a chase, and the
-## result at the end. Everything ticks with physics (after the player), so a
+## objectives in order, bonus goals, collectible tapes, the pursuer in a
+## chase, and the result at the end. Everything ticks with physics (after the player), so a
 ## run is deterministic: the same input gives the same time and result.
+##
+## Kill goals never stand between you and the finish: a "shoot" objective
+## is a bonus goal (unless it says "optional": false, like the yard's
+## lessons), and any objective with "optional": true is one too. The chain
+## steps over bonuses, so you win by reaching the end; a bonus opens when
+## the chain reaches it, stays open until the next required objective is
+## done, and pays BONUS_POINTS if you finish it in time.
 ##
 ## Only reads the player, apart from respawning it at a checkpoint after a
 ## fall or a catch. Story lines are not played here: it emits `event` and the
@@ -26,6 +33,8 @@ const START_DISTANCE := 1.5
 const TAPE_RADIUS := 1.4
 ## A banked combo at this multiplier or more is worth a radio reaction.
 const COMBO_REACTION_MULTIPLIER := 4
+## Points for each bonus goal finished.
+const BONUS_POINTS := 1000
 
 var phase := Phase.READY
 var ticks := 0
@@ -37,9 +46,13 @@ var downs := 0
 var practice := false
 ## Index into builder.spawns: 0 is the start, then each checkpoint.
 var checkpoint := 0
-## Index of the active objective in `objectives`.
+## Index of the active (required) objective in `objectives`.
 var objective := 0
 var objectives: Array = []
+## Bonus goals opened this run: objective index -> {"kills_at",
+## "headshots_at", "until" (the required objective that closes it), "done",
+## "closed"}.
+var bonuses := {}
 var tapes_found: Array[String] = []
 var kills := 0
 var headshots := 0
@@ -93,7 +106,15 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 		pursuer.configure(mission.pursuer)
 		add_child(pursuer)
 	_start_pos = b.spawns[0].origin
+	event.connect(_save_choice)
 	_reset_run(0)
+
+
+## A boss's fate ("fate:spared") is a story choice later missions remember
+## (not from a practice run).
+func _save_choice(e: String) -> void:
+	if e.begins_with("fate:") and not practice and mission_index >= 0:
+		Campaign.set_choice(mission_index, "fate", e.substr(5))
 
 
 ## Starts the mission: call after connecting to `event` (the radio).
@@ -128,6 +149,43 @@ func par_seconds() -> float:
 
 func current_objective() -> Dictionary:
 	return objectives[objective] if objective < objectives.size() else {}
+
+
+## True for an objective you don't need for the win: kill goals ("shoot")
+## unless they say "optional": false, and anything with "optional": true.
+static func is_bonus(o: Dictionary) -> bool:
+	if o.has("optional"):
+		return bool(o.optional)
+	return String(o.get("type", "reach")) == "shoot"
+
+
+## Bonus goals finished this run.
+func bonuses_done() -> int:
+	return bonuses.values().filter(func(b: Dictionary) -> bool: return b.done).size()
+
+
+## Bonus goals in the whole mission.
+func total_bonuses() -> int:
+	return objectives.filter(func(o: Dictionary) -> bool: return is_bonus(o)).size()
+
+
+## What the HUD shows for the open bonus goals, with progress.
+func bonus_text() -> String:
+	var lines: Array[String] = []
+	for i: int in bonuses:
+		var b: Dictionary = bonuses[i]
+		if b.closed:
+			continue
+		var o: Dictionary = objectives[i]
+		var text: String = o.get("text", "")
+		if String(o.get("type", "")) == "shoot":
+			var need: int = o.get("count", 1)
+			text = text if text != "" else "Take down %d" % need
+			text += "  done" if b.done else "  (%d / %d)" % [mini(_bonus_progress(i), need), need]
+		elif b.done:
+			text += "  done"
+		lines.append("Bonus: " + text)
+	return "\n".join(lines)
 
 
 ## What the HUD shows for the active objective, with progress.
@@ -184,12 +242,18 @@ func _physics_process(_delta: float) -> void:
 			_back_to_checkpoint()
 			event.emit("caught")
 			return
+	_check_bonuses(pos)
 	_check_objective(pos)
 
 
 # ---------------------------------------------------------------- objectives
 
+## Makes objective i active, stepping over (and opening) any bonus goals on
+## the way to the next required one.
 func _begin_objective(i: int) -> void:
+	while i < objectives.size() and is_bonus(objectives[i]):
+		_open_bonus(i)
+		i += 1
 	objective = i
 	_kills_at = kills
 	_headshots_at = headshots
@@ -215,14 +279,72 @@ func _check_objective(pos: Vector3) -> void:
 			done = _shoot_progress(o) >= int(o.get("count", 1))
 		"clear":
 			done = encounter_cleared(String(o.get("encounter", "")))
+		"duel":
+			done = _duel_done(o, pos)
 		"collect":
 			done = tapes_found.size() >= int(o.get("count", builder.tapes.size()))
 	if done:
 		event.emit("done:%d" % objective)
-		if objective + 1 >= objectives.size():
+		_close_bonuses(objective)
+		if _next_required(objective + 1) >= objectives.size():
 			_complete()
 		else:
 			_begin_objective(objective + 1)
+
+
+func _next_required(i: int) -> int:
+	while i < objectives.size() and is_bonus(objectives[i]):
+		i += 1
+	return i
+
+
+func _open_bonus(i: int) -> void:
+	if bonuses.has(i):
+		return
+	bonuses[i] = {"kills_at": kills, "headshots_at": headshots, "until": _next_required(i + 1),
+		"done": false, "closed": false}
+	event.emit("objective:%d" % i)
+
+
+## The required objective `index` is done: bonuses open until then close.
+func _close_bonuses(index: int) -> void:
+	for i: int in bonuses:
+		if bonuses[i].until == index:
+			bonuses[i].closed = true
+
+
+func _check_bonuses(pos: Vector3) -> void:
+	if phase == Phase.READY:
+		return
+	for i: int in bonuses:
+		var b: Dictionary = bonuses[i]
+		if b.done or b.closed:
+			continue
+		var o: Dictionary = objectives[i]
+		var done := false
+		match String(o.get("type", "reach")):
+			"shoot":
+				done = _bonus_progress(i) >= int(o.get("count", 1))
+			"reach":
+				done = inside(o, pos)
+			"score":
+				done = _score() >= int(o.points)
+			"clear":
+				done = encounter_cleared(String(o.get("encounter", "")))
+			"collect":
+				done = tapes_found.size() >= int(o.get("count", builder.tapes.size()))
+		if done:
+			b.done = true
+			if combo != null:
+				combo.score += BONUS_POINTS
+			event.emit("done:%d" % i)
+
+
+func _bonus_progress(i: int) -> int:
+	var b: Dictionary = bonuses[i]
+	if objectives[i].get("headshots", false):
+		return headshots - int(b.headshots_at)
+	return kills - int(b.kills_at)
 
 
 ## True once the encounter with this id is cleared (every enemy down, or out
@@ -232,6 +354,30 @@ func encounter_cleared(id: String) -> bool:
 		if enc.get_meta("id", "") == id:
 			return enc.phase == enc.Phase.CLEARED
 	return false
+
+
+## A boss duel (Juno) ends when she's shot down or you reach her: within
+## `radius` m she concedes. Either way the spare-or-not choice follows.
+func _duel_done(o: Dictionary, pos: Vector3) -> bool:
+	var boss := duel_boss(String(o.get("encounter", "")))
+	if boss == null:
+		return true
+	if boss.get("is_beaten") or boss.get("is_dead"):
+		return true
+	if boss.global_position.distance_to(pos) <= float(o.get("radius", 4.0)):
+		boss.concede()
+		return true
+	return false
+
+
+## The enemy in that encounter who can concede (Juno), or null.
+func duel_boss(id: String) -> Node3D:
+	for enc: Node3D in builder.encounters:
+		if enc.get_meta("id", "") == id:
+			for e: Node in enc.enemies:
+				if e.has_method("concede"):
+					return e
+	return null
 
 
 func _shoot_progress(o: Dictionary) -> int:
@@ -269,6 +415,8 @@ func _complete() -> void:
 		"downs": downs,
 		"tapes": tapes_found.duplicate(),
 		"total_tapes": total_tapes(),
+		"bonuses": bonuses_done(),
+		"total_bonuses": total_bonuses(),
 		"par_seconds": par_seconds(),
 		"practice": practice,
 		"records": {},
@@ -344,6 +492,7 @@ func _reset_run(index: int) -> void:
 	checkpoint = index
 	practice = index != 0
 	tapes_found.clear()
+	bonuses.clear()
 	for t: Dictionary in builder.tapes:
 		if is_instance_valid(t.node):
 			(t.node as Node3D).visible = true
@@ -383,12 +532,16 @@ func _on_encounter_started() -> void:
 		health.respawn_point = builder.spawns[checkpoint]
 
 
-## An encounter's enemies came back: a shoot objective counts again from
-## here, so kills from before don't count twice.
+## An encounter's enemies came back: a shoot objective (or an open kill
+## bonus) counts again from here, so kills from before don't count twice.
 func _on_encounter_reset() -> void:
 	if current_objective().get("type", "") == "shoot":
 		_kills_at = kills
 		_headshots_at = headshots
+	for i: int in bonuses:
+		if not bonuses[i].done:
+			bonuses[i].kills_at = kills
+			bonuses[i].headshots_at = headshots
 
 
 func _on_player_down() -> void:

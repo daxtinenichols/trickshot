@@ -73,6 +73,7 @@ See `m03_glass_district.json`.
 |---|---|
 | `{"roof": length, "y": h, "width": 12, "do": [...]}` | a roof (y 0 is the street). Higher than the roof before and straight on: a yellow face to climb (3 m max). Lower after a gap: a drop (roll from 3.5 m) |
 | `{"roof": 80, "y": 1, "interior": 6}` | the inside of a building: walls and a roof `interior` m over the floor, with skylights every 10 m (a warehouse, an office floor). Enter by ramp or straight on; climb out to a higher roof at its end |
+| `{"roof": 26, "bridge": true, "beyond": 150}` | a bridge deck on piers instead of a building (railings, girders); `beyond` m more of the span carry on past its end, seen but not run (m03's Silt bridge) |
 | `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof |
 | `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
 | `{"ramp_up": y}` / `{"ramp_down": y, "length": 22}` | a ramp to a new height (down is a slide ramp) |
@@ -169,16 +170,29 @@ Checkpoints are in order; reaching a later one counts the ones before.
 
 ### Objectives
 
-Done in order; the mission is complete when the last one is.
+Done in order; the mission is complete when the last required one is.
+
+**Kill goals are never required to win.** A `shoot` objective is a bonus
+goal unless it says `"optional": false` (only the yard's practice dummies in
+The Yard do), and any objective with `"optional": true` is one too. The
+chain steps over bonus goals, so reaching the end always wins and nobody is
+sent back for enemies they ran past. A bonus opens when the chain reaches
+it (its `objective:N` line plays then), stays open until the next required
+objective is done, shows under the objective on the HUD, and is worth
+`MissionRun.BONUS_POINTS` (1,000) when finished in time (`done:N` plays).
+The results card counts them. Keep `clear` for story beats you can't skip,
+like Juno's fight. Radio and HUD text for a bonus must not say the player
+has to do it to go on.
 
 | type | fields | done when |
 |---|---|---|
 | `reach` | `at`, `size` (box) or `radius` (cylinder 3 m up and down), `name` | you're inside the region |
 | `score` | `points` | your total score this run reaches it |
 | `combo` | `multiplier` | you bank a combo at that multiplier or more |
-| `shoot` | `count`, `headshots` (true = only headshot kills count) | that many target kills since the objective began |
+| `shoot` | `count`, `headshots` (true = only headshot kills count) | that many target kills since the objective began (a bonus goal by default) |
 | `collect` | `count` (default: every tape) | that many tapes found |
 | `clear` | `encounter` (its id) | that encounter is cleared: every enemy down, or out of the fight like a spared Juno |
+| `duel` | `encounter` (its id), `radius` (4 m) | its boss (Juno) is shot down, or you get within `radius` of her and she concedes; then you spare her or not |
 
 `text` is what the HUD shows; without it a default is written.
 
@@ -196,12 +210,14 @@ Story lines play once, queued, without ever stopping the game:
 N begins), `done:N`, `checkpoint:N`, `complete`, `time:SECONDS`, `fall`,
 `caught`, `down`, `tape`, `kill:TYPE` (the first kill of an enemy listed by
 type, like `kill:camera_drone`). Or use `at` with `radius`/`size` to play when you reach a
-spot.
+spot. `"if": "m07_parking_spiral.fate=spared"` plays a line only when an
+earlier mission saved that story choice (a boss's `fate:` event saves its
+mission's `fate`).
 
 `chatter` holds reactions to how you play, by event: `bail`, `combo` (a
 banked combo of x4 or more), `fall`, `kill`, `headshot`, `down` (enemies
 took you down), `caught`, `tape`.
-Each is a list of `{"who", "line"}` used in turn, at most one every few
+Each is a list of `{"who", "line"}` used in turn (a line with `"after": "checkpoint:1"` waits until that event has happened), at most one every few
 seconds, and never over a story line.
 
 Every line is spoken. After adding or rewording lines, run
@@ -273,7 +289,8 @@ never by default), `hear_shots` (true: your shots wake the encounter's
 `"sleeper": true` enemies within `hearing_radius`, 30 m; they also wake
 within `wake_distance`, 5 m). Every kill counts toward `shoot` objectives,
 like targets. A boss who can be spared (Juno) never counts as a kill unless
-you finish her, so use a `clear` objective for her fight, and the radio
+you finish her, so her fight is a `duel` objective (reaching her ends it,
+since fighting is never required to win), and the radio
 events `fate:spared` / `fate:not_spared` for the line that follows.
 
 ## Hand-made missions on a base map
