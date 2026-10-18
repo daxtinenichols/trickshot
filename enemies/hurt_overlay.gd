@@ -2,7 +2,14 @@ class_name HurtOverlay
 extends CanvasLayer
 ## Shows the player's health while it matters: a red edge flash when you
 ## get hit, a marker pointing at whoever hit you, and a health bar that
-## appears while you're hurt. Reads PlayerHealth only.
+## appears while you're hurt. Also a faint pulsing red edge while an enemy
+## is aiming at you and you're easy to hit (slow, no tricks: combo armor
+## is low). Reads PlayerHealth, the player and enemies' aim; visual only.
+
+const ComboArmor := preload("res://enemies/combo_armor.gd")
+## Exposure where the warning starts, and where it's at full strength.
+const EXPOSED_FROM := 0.75
+const EXPOSED_FULL := 1.3
 
 const MARKER_TIME := 1.4
 const VIGNETTE_SHADER := """
@@ -21,6 +28,8 @@ var _draw_layer: Control
 var _flash := 0.0
 var _markers: Array[Dictionary] = []  # {from, time}
 var _bar_alpha := 0.0
+var _exposed := 0.0
+var _pulse := 0.0
 
 
 func setup(h: PlayerHealth) -> void:
@@ -72,7 +81,9 @@ func _process(delta: float) -> void:
 		return
 	_flash = move_toward(_flash, 0.0, delta * 2.0)
 	var low := 1.0 - health.fraction()
-	var strength := maxf(_flash * 0.6, low * low * 0.45)
+	_exposed = move_toward(_exposed, exposed_warning(), delta * 3.0)
+	_pulse = fmod(_pulse + delta * 2.2, TAU)
+	var strength := maxf(maxf(_flash * 0.6, low * low * 0.45), _exposed * (0.22 + 0.08 * sin(_pulse)))
 	(_vignette.material as ShaderMaterial).set_shader_parameter("strength", strength)
 	_vignette.visible = strength > 0.01
 	for i in range(_markers.size() - 1, -1, -1):
@@ -82,6 +93,22 @@ func _process(delta: float) -> void:
 	var want := 1.0 if health.fraction() < 0.999 else 0.0
 	_bar_alpha = move_toward(_bar_alpha, want, delta * 3.0)
 	_draw_layer.queue_redraw()
+
+
+## 0..1: how strongly to warn that you're exposed. Only while an enemy
+## that can see you is aiming at you.
+func exposed_warning() -> float:
+	var p: Node = health.player if health else null
+	if p == null or not p.is_inside_tree():
+		return 0.0
+	var aimed := false
+	for e: Node in p.get_tree().get_nodes_in_group("enemies"):
+		if e.has_method("is_aiming") and e.is_aiming() and not e.is_dead and e.player == p:
+			aimed = true
+			break
+	if not aimed:
+		return 0.0
+	return clampf((ComboArmor.exposure(p) - EXPOSED_FROM) / (EXPOSED_FULL - EXPOSED_FROM), 0.0, 1.0)
 
 
 func _draw_markers() -> void:

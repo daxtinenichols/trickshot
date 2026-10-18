@@ -76,12 +76,18 @@ See `m03_glass_district.json`.
 | `{"roof": 26, "bridge": true, "beyond": 150}` | a bridge deck on piers instead of a building (railings, girders); `beyond` m more of the span carry on past its end, seen but not run (m03's Silt bridge) |
 | `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof |
 | `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
+| `{"gate": {"tier": 1}}` | a speed gate, straight after a roof (campaign/speed_gate.gd): a gap the best jump a tier slower (base top speed for tier 1) misses by 0.5 m and an ordinary edge jump at the tier's speed clears by 0.3 m. Tiers want 13.7 / 15.9 / 18.4 m/s at take-off (top speed 11.5 plus a varied combo's Flow); tier 3 needs a long varied combo, so keep it for high paths and late districts. Chalk at the edge (one dash per tier) and where you land; hurdles, a slide bar and a wall hop in the run-up unless `"tricks": false` or the roof already has features in its last 60 m. Miss it and you drop 3 m onto a ledge and climb a yellow face back up, slow and exposed (`"lower": "fall"`: no ledge, a miss is a fall). The landing roof must be at the same height |
 | `{"ramp_up": y}` / `{"ramp_down": y, "length": 22}` | a ramp to a new height (down is a slide ramp) |
 | `{"street": m}` | a stretch at street level (y 0) |
 | `{"skip": m}` | nothing for `m` m: the base map's own ground past its EXIT (a route from `base_exit` starts 6 m behind EXIT) |
 | `{"turn": "left", "size": 20, "angle": 90}` | a corner where the run turns left or right: 90° (a square roof `size` m across) or 45° (`"angle": 45`, a slab joining the roofs before and after) |
 | `{"fork": [segments], "side": 1, "spread": 18}` | the route splits on a wide roof: `fork` is a second line run beside the main one (right, or `-1` left), while the segments after it carry on the main line |
 | `{"join": true}` | the two lines meet again on a wide roof (the shorter one is lengthened); both must end at the same height |
+
+A mission with `"plain_runner": true` is checked by tests/test_speed_gates.gd:
+its bot line must get through every gate and encounter alive, and a plain
+runner (base speed, no Flow or combo) dropped in before each one must fail
+it. tests/fixtures/route_gates.json is the example.
 
 Features on a roof, `at` meters from its start:
 

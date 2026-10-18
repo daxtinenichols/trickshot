@@ -247,7 +247,14 @@ func _think(delta: float) -> void:
 			_duck_toward(0.0, delta)
 			face_toward(player.global_position, delta)
 			var to := EnemyMath.horizontal(move_target - global_position)
-			if to.length() < 0.35 or state_time > 4.0:
+			# A runner coming through with a shot ready: stop and take it
+			# rather than give them a free pass while shuffling to cover.
+			_shot_timer -= delta
+			if _shot_timer <= 0.0 and state_time > 0.25 and player.horizontal_speed() >= player.tuning.run_speed \
+					and sees and dist <= max_range and _take_token():
+				_set_state(State.AIM)
+				aim_dir = (_aim_point() - muzzle_position()).normalized()
+			elif to.length() < 0.35 or state_time > 4.0:
 				_set_state(State.HOLD)
 				_shot_timer = maxf(_shot_timer, 0.35)
 			else:
@@ -262,6 +269,9 @@ func _think(delta: float) -> void:
 				var want := (_aim_point() - muzzle_position()).normalized()
 				aim_dir = EnemyMath.turn_dir(aim_dir, want, deg_to_rad(aim_track_rate) * delta)
 			elif state_time - delta < wind - lock_time:
+				# The lock: aim where a runner holding their line will be
+				# when the shot lands. Change line now and it misses.
+				aim_dir = (_aim_point(lock_time) - muzzle_position()).normalized()
 				EnemySfx.play_at(self, &"lock", -4.0)
 			if state_time >= wind:
 				_fire()
@@ -301,13 +311,14 @@ func _duck_toward(target: float, delta: float, rate := 3.5) -> void:
 	duck = move_toward(duck, target, rate * delta)
 
 
-## Where the raider aims: your chest, plus some lead if it has any.
-func _aim_point() -> Vector3:
+## Where the raider aims: your chest, plus some lead if it has any, for a
+## shot leaving `delay` s from now.
+func _aim_point(delay := 0.0) -> Vector3:
 	var chest := EnemyMath.player_chest(player)
 	if aim_lead <= 0.0:
 		return chest
 	var flight := muzzle_position().distance_to(chest) / bullet_speed
-	return chest + player.velocity * flight * aim_lead
+	return chest + player.velocity * (flight + delay) * aim_lead
 
 
 func _fire() -> void:
@@ -320,6 +331,8 @@ func _fire() -> void:
 
 func _spawn_bullet(dir: Vector3) -> void:
 	var b := EnemyProjectile.new()
+	# Combo armor: whether the shot lands depends on how you're moving.
+	dir = ComboArmor.shot_dir(dir, muzzle_position(), player, _rng, _aim_point() if aim_lead > 0.0 else EnemyMath.player_chest(player))
 	b.velocity = dir * bullet_speed
 	b.damage = bullet_damage
 	b.player = player

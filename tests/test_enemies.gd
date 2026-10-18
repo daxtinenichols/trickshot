@@ -194,13 +194,17 @@ func test_standing_still_gets_you_shot() -> void:
 func test_circle_strafing_dodges_the_shots() -> void:
 	await _setup(Vector3(0, 0.05, 0))
 	var r := _raider(Vector3(0, 0, -15))
+	var hits := [0]
+	_health().damaged.connect(func(_a: float, _f: Vector3, _k: StringName) -> void: hits[0] += 1)
 	var f := InputFrame.make(Vector2(1, 0))
 	for i in 420:
 		# Keep looking at the raider while running sideways around it.
 		_aim(r.global_position + Vector3(0, 1.4, 0))
 		await w.step(1, f)
 	check(r.shots_fired >= 3, "the raider kept shooting (%d shots)" % r.shots_fired)
-	check(_health().health >= _health().max_health - 0.01, "every shot missed a moving target (%.0f hp)" % _health().health)
+	# Combo armor: strafing at a run is no trick, so some shots land, but
+	# changing line keeps most of them off you.
+	check(hits[0] * 2 < r.shots_fired, "most shots missed a moving target (%d of %d hit)" % [hits[0], r.shots_fired])
 
 
 func test_raider_backs_off_when_you_close_in() -> void:
@@ -220,6 +224,8 @@ func test_raider_takes_cover_and_ducks_behind_it() -> void:
 	e.add_cover_wall(wall, 6, 0.5)
 	var r := Raider.new()
 	e.add_enemy(r, Transform3D(Basis.IDENTITY, Vector3(5, 0, -22)))
+	# Standing still you'd go down (and the fight reset) before it reloads.
+	_health().can_die = false
 	await w.step(2)
 	e.start()
 	var ducked_head := INF
@@ -274,8 +280,10 @@ func test_only_a_few_raiders_aim_at_once() -> void:
 func test_mutant_runs_down_a_standing_player() -> void:
 	await _setup()
 	var m := _mutant(Vector3(0, 0, -12))
+	var hurt := [0.0]
+	_health().damaged.connect(func(a: float, _f: Vector3, _k: StringName) -> void: hurt[0] += a)
 	await w.step(300)
-	check(_health().health < _health().max_health, "it caught you (%.0f hp)" % _health().health)
+	check(hurt[0] > 0.0, "it caught you (%.0f damage)" % hurt[0])
 	check(m.leaps + m.swipes >= 1, "it attacked (%d leaps, %d swipes)" % [m.leaps, m.swipes])
 
 

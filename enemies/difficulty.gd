@@ -33,11 +33,11 @@ const TRACK_KEYS := ["aim_track_rate"]
 const BULLET := 1.3
 const BULLET_KEYS := ["bullet_speed"]
 ## Damage per hit.
-const DAMAGE := 1.2
+const DAMAGE := 2.0
 const DAMAGE_KEYS := ["bullet_damage", "leap_damage", "swipe_damage", "charge_damage"]
 ## Gunners lead a moving target at least this much (0 = aim where you are,
 ## 1 = where you'll be when the bullet arrives).
-const MIN_LEAD := 0.55
+const MIN_LEAD := 1.0
 ## Shooting spread (degrees) tightens.
 const SPREAD := 0.7
 const SPREAD_KEYS := ["spread"]
