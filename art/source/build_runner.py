@@ -5,9 +5,11 @@ Run with Blender 4.2+ (or the `bpy` Python module):
     python3 art/source/build_runner.py            # with `pip install bpy`
 
 Output: art/characters/runner/runner.glb (Parker), or with `-- echo`:
-art/characters/runner/echo.glb (Echo, the second playable runner).
+art/characters/runner/echo.glb (Echo, the second playable runner), or with
+`-- mags`: art/characters/runner/mags.glb (Mags, the Line's dispatcher; a
+character in levels, not playable).
 
-Both runners share the exact same skeleton (bone names AND positions), so
+All of them share the exact same skeleton (bone names AND positions), so
 RunnerBody's poses drive either one unchanged. Everything else differs: body
 shape, head and face, hair, outfit, gear and palette.
 
@@ -32,7 +34,7 @@ import bmesh
 from mathutils import Matrix, Vector
 
 HERE = os.path.dirname(os.path.abspath(__file__))
-RUNNER = "echo" if "echo" in sys.argv[1:] else "parker"
+RUNNER = next((r for r in ("echo", "mags") if r in sys.argv[1:]), "parker")
 OUT = os.path.normpath(os.path.join(HERE, "..", "characters", "runner", "%s.glb" % ("runner" if RUNNER == "parker" else RUNNER)))
 
 # Palette (linear-ish sRGB values, shaded by the toon shader in game).
@@ -79,8 +81,45 @@ ECHO_PALETTE = {
     "lips": (0.40, 0.18, 0.17),
     "pad": (0.16, 0.16, 0.17),
 }
+# Mags: sixties, warm, tired, tough. Grey hair in a short thick braid,
+# reading glasses low on her nose on a cord, an old studio headset round her
+# neck, a patched canvas vest stuffed with chalk and pencils over a faded
+# denim shirt with rolled sleeves, fingerless gloves, cargo trousers and worn
+# boots. Amber (the Line's dispatch light) is her accent.
+MAGS_PALETTE = {
+    "skin": (0.74, 0.54, 0.42),
+    "hair": (0.66, 0.65, 0.62),
+    "hair_dark": (0.48, 0.47, 0.45),
+    "vest": (0.47, 0.38, 0.24),
+    "pocket": (0.40, 0.32, 0.20),
+    "patch": (0.27, 0.32, 0.36),
+    "patch2": (0.52, 0.24, 0.17),
+    "stitch": (0.86, 0.80, 0.66),
+    "shirt": (0.38, 0.46, 0.54),
+    "pants": (0.33, 0.33, 0.26),
+    "glove": (0.18, 0.15, 0.13),
+    "boot": (0.30, 0.20, 0.13),
+    "sole": (0.12, 0.11, 0.10),
+    "strap": (0.22, 0.17, 0.12),
+    "metal": (0.40, 0.40, 0.38),
+    "headset": (0.13, 0.13, 0.14),
+    "pad": (0.24, 0.21, 0.19),
+    "accent": (0.95, 0.60, 0.14),
+    "frame": (0.27, 0.16, 0.09),
+    "cord": (0.55, 0.30, 0.20),
+    "chalk": (0.93, 0.92, 0.88),
+    "chalk2": (0.55, 0.78, 0.86),
+    "pencil": (0.93, 0.72, 0.16),
+    "lead": (0.15, 0.13, 0.12),
+    "eye_white": (0.90, 0.87, 0.82),
+    "iris": (0.20, 0.26, 0.24),
+    "brow": (0.56, 0.55, 0.52),
+    "lips": (0.56, 0.34, 0.30),
+}
 if RUNNER == "echo":
     PALETTE = ECHO_PALETTE
+elif RUNNER == "mags":
+    PALETTE = MAGS_PALETTE
 
 # Rigid parts (hair, gear, face) are tagged with a "part" attribute: tag N
 # is RIGID[N - 1] = (palette entry, bone the part follows rigidly). 0 = the
@@ -156,10 +195,26 @@ ECHO_VERTS = {
     "hip": ((0.1, 0.0, 0.90), (0.094, 0.092)), "knee": (None, (0.054, 0.056)),
     "ankle": (None, (0.042, 0.042)), "heel": (None, (0.046, 0.043)), "toe": (None, (0.05, 0.036)),
 }
-if RUNNER == "echo":
-    for _k, (_p, _r) in ECHO_VERTS.items():
-        _table = BODY_VERTS if _k in BODY_VERTS else LEFT_LIMB_VERTS
-        _table[_k] = (_p or _table[_k][0], _r)
+# Mags's build: same skeleton, an older, sturdier body. A soft middle and
+# broad back, a touch of a stoop (chest and neck carried forward), strong
+# forearms and working hands, and chunky boots.
+MAGS_VERTS = {
+    "pelvis": ((0, 0.008, 0.94), (0.158, 0.11)),
+    "waist": ((0, -0.008, 1.08), (0.138, 0.108)),
+    "ribs": ((0, -0.004, 1.23), (0.146, 0.102)),
+    "chest": ((0, -0.006, 1.355), (0.152, 0.108)),
+    "neck_base": ((0, -0.006, 1.47), (0.058, 0.054)),
+    "neck_top": ((0, -0.008, 1.55), (0.05, 0.05)),
+    "shoulder": ((0.163, 0.004, 1.412), (0.058, 0.06)),
+    "elbow": (None, (0.045, 0.045)), "wrist": (None, (0.033, 0.03)),
+    "knuckles": (None, (0.044, 0.02)), "fingertips": (None, (0.039, 0.018)),
+    "hip": ((0.098, 0.0, 0.90), (0.09, 0.09)), "knee": (None, (0.059, 0.059)),
+    "ankle": (None, (0.047, 0.047)), "heel": (None, (0.052, 0.046)), "toe": (None, (0.056, 0.042)),
+}
+_BUILD = {"echo": ECHO_VERTS, "mags": MAGS_VERTS}.get(RUNNER, {})
+for _k, (_p, _r) in _BUILD.items():
+    _table = BODY_VERTS if _k in BODY_VERTS else LEFT_LIMB_VERTS
+    _table[_k] = (_p or _table[_k][0], _r)
 
 
 def mirror(p):
@@ -234,9 +289,10 @@ def build_head():
     for v in bm.verts:
         # Slightly longer front-to-back than wide, chin tapered.
         x, y, z = v.co
-        taper = 1.0 - max(0.0, -z) * (0.3 if RUNNER == "echo" else 0.22)
-        w = 0.087 if RUNNER == "echo" else 0.092
-        v.co = Vector((x * w * taper, y * 0.100 * taper - max(0.0, -z) * 0.012, z * 0.114 if RUNNER == "echo" else z * 0.118))
+        # (taper, width, height) per runner; Mags has a softer, rounder jaw.
+        taper, w, h = {"echo": (0.3, 0.087, 0.114), "mags": (0.2, 0.09, 0.115)}.get(RUNNER, (0.22, 0.092, 0.118))
+        taper = 1.0 - max(0.0, -z) * taper
+        v.co = Vector((x * w * taper, y * 0.100 * taper - max(0.0, -z) * 0.012, z * h))
         v.co += Vector((0, -0.008, 1.64))
     mesh = bpy.data.meshes.new("RunnerHead")
     bm.to_mesh(mesh)
@@ -459,6 +515,162 @@ def build_echo_gear():
     return gear
 
 
+def build_mags_hair():
+    """Mags's hair: grey, pulled back off her face into a short, thick braid
+    that hangs to the top of her back, with a little volume over the temples.
+    Plaits are offset ellipsoids, chunky enough to read in cel."""
+    parts = []
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=20, v_segments=12, radius=1.0)
+    for v in bm.verts:
+        x, y, z = v.co
+        v.co = Vector((x * 0.099, y * 0.111, max(z, -0.42) * 0.107)) + Vector((0, 0.006, 1.668))
+    drop = [v for v in bm.verts if v.co.y < -0.036 and v.co.z < 1.708]
+    bmesh.ops.delete(bm, geom=drop, context="VERTS")
+    cap = _bm_object("MagsHairCap", bm, smooth=True)
+    solid = cap.modifiers.new("Solid", "SOLIDIFY")
+    solid.thickness = 0.012
+    apply_modifiers(cap)
+    parts.append((cap, "hair", "Head"))
+    # Swept-back volume over each temple and a gathered knot at the crown
+    # of the braid, so the hair isn't a flat helmet.
+    for side in (-1, 1):
+        parts.append((_ellipsoid("Temple", (0.072 * side, -0.01, 1.70), (0.034, 0.06, 0.04), (10, 8)), "hair", "Head"))
+    parts.append((_ellipsoid("BraidKnot", (0, 0.10, 1.625), (0.05, 0.035, 0.042), (10, 8)), "hair_dark", "Head"))
+    # The braid: plaits alternating left and right, thinning toward the tie.
+    for i in range(5):
+        t = i / 4.0
+        side = -1 if i % 2 else 1
+        r = 0.036 - 0.008 * t
+        c = (0.009 * side, 0.118 + 0.018 * t, 1.585 - 0.13 * t)
+        rot = Matrix.Rotation(0.35 * side, 4, "Y")
+        parts.append((_ellipsoid("Plait", c, (r * 0.95, r * 0.8, r * 1.15), (10, 8), rot), "hair", "Head"))
+    parts.append((_ring("BraidTie", (0, 0.138, 1.445), 0.02, 0.018, 0.006), "accent", "Head"))
+    parts.append((_ellipsoid("BraidEnd", (0, 0.14, 1.415), (0.022, 0.018, 0.03), (8, 6)), "hair", "Head"))
+    return parts
+
+
+def build_mags_face():
+    """Eyes under heavy lids, grey brows that tip down at the ends (tired,
+    kind), a strong nose, thin lips, and reading glasses low on her nose on
+    a cord that loops behind her neck."""
+    parts = []
+    for side in (-1, 1):
+        x = 0.032 * side
+        parts.append((_ellipsoid("EyeWhite", (x, -0.091, 1.655), (0.014, 0.008, 0.0088)), "eye_white", "Head"))
+        parts.append((_ellipsoid("Iris", (x, -0.0972, 1.6535), (0.007, 0.004, 0.0074), (10, 6)), "iris", "Head"))
+        parts.append((_ellipsoid("Lid", (x, -0.092, 1.6615), (0.0165, 0.0086, 0.0062)), "skin", "Head"))
+        brow_rot = Matrix.Rotation(-0.16 * side, 4, "Y")
+        parts.append((_box("Brow", (x * 1.1, -0.096, 1.681), (0.032, 0.009, 0.0065), brow_rot), "brow", "Head"))
+        # Reading glasses: half-moon frames low on the nose, arms to the ears.
+        frame = _ring("GlassFrame", (0, 0, 0), 0.018, 0.012, 0.0028, tilt=math.pi / 2, segments=16)
+        frame.data.transform(Matrix.Translation(Vector((0.031 * side, -0.112, 1.641))))
+        parts.append((frame, "frame", "Head"))
+        parts.append((_rod("GlassArm", (0.05 * side, -0.108, 1.645), (0.09 * side, -0.01, 1.655), 0.0022, 6), "frame", "Head"))
+        # The cord: from the arm's end down behind the neck.
+        parts.append((_rod("GlassCord", (0.09 * side, -0.005, 1.652), (0.055 * side, 0.065, 1.50), 0.0018, 5), "cord", "Head"))
+        parts.append((_rod("GlassCord", (0.055 * side, 0.065, 1.50), (0.0, 0.075, 1.475), 0.0018, 5), "cord", "Head"))
+    parts.append((_rod("GlassBridge", (-0.013, -0.114, 1.645), (0.013, -0.114, 1.645), 0.0022, 6), "frame", "Head"))
+    parts.append((_ellipsoid("Nose", (0, -0.105, 1.630), (0.0125, 0.016, 0.021)), "skin", "Head"))
+    parts.append((_ellipsoid("Lips", (0, -0.0935, 1.599), (0.019, 0.0075, 0.0052)), "lips", "Head"))
+    return parts
+
+
+def build_mags_gear():
+    """The studio headset round her neck, the vest's pockets (chalk and
+    pencils sticking out of them), patches, belt, cargo pockets, rolled
+    sleeves and boot tops. Returns (object, palette key, rigid bone) triples."""
+    gear = []
+    # Headset: band round the back of the neck, the cups resting forward on
+    # her collarbones, a coiled lead down to a vest pocket.
+    band = _arc("HeadsetBand", (0, 0, 0), 0.086, 0.0, math.pi, 0.008)
+    band.data.transform(Matrix.Translation(Vector((0, -0.012, 1.462))) @ Matrix.Rotation(-math.pi / 2, 4, "X"))
+    gear.append((band, "headset", "UpperChest"))
+    for side in (-1, 1):
+        x = 0.1 * side
+        gear.append((_rod("HeadsetYoke", (0.086 * side, -0.012, 1.462), (x, -0.06, 1.44), 0.006, 6), "metal", "UpperChest"))
+        rot = Matrix.Rotation(-1.15, 4, "X") @ Matrix.Rotation(0.35 * side, 4, "Y")
+        bm = bmesh.new()
+        bmesh.ops.create_cone(bm, cap_ends=True, segments=16, radius1=0.045, radius2=0.04, depth=0.034,
+                              matrix=Matrix.Translation(Vector((x, -0.088, 1.43))) @ rot)
+        gear.append((_bm_object("HeadsetCup", bm), "headset", "UpperChest"))
+        pad = _ring("CupPad", (0, 0, 0), 0.036, 0.036, 0.009, segments=16)
+        pad.data.transform(Matrix.Translation(Vector((x, -0.078, 1.448))) @ rot)
+        gear.append((pad, "pad", "UpperChest"))
+    gear.append((_ellipsoid("CupLight", (0.1, -0.104, 1.418), (0.008, 0.006, 0.008), (8, 6)), "accent", "UpperChest"))
+    # Coiled lead: a zigzag of short rods from the left cup to the chest pocket.
+    a = Vector((0.11, -0.112, 1.405))
+    for i in range(6):
+        b = Vector((0.11 + (0.012 if i % 2 == 0 else -0.004), -0.122, 1.405 - 0.013 * (i + 1)))
+        gear.append((_rod("HeadsetLead", tuple(a), tuple(b), 0.004, 5), "headset", "UpperChest"))
+        a = b
+
+    # Vest pockets: two on the chest with flaps, two big ones low down.
+    for side in (-1, 1):
+        x = 0.078 * side
+        gear.append((_box("ChestPocket", (x, -0.118, 1.275), (0.066, 0.022, 0.074)), "pocket", "UpperChest"))
+        gear.append((_box("PocketFlap", (x, -0.128, 1.305), (0.07, 0.01, 0.022)), "vest", "UpperChest"))
+        gear.append((_box("LowPocket", (0.088 * side, -0.124, 1.115), (0.08, 0.024, 0.085)), "pocket", "Spine"))
+    # Chalk sticks in her left chest pocket, pencils in the right.
+    for i, (dx, key) in enumerate(((0.062, "chalk"), (0.078, "chalk2"), (0.094, "chalk"))):
+        gear.append((_rod("Chalk", (dx, -0.114, 1.28), (dx + 0.004 * (i - 1), -0.116, 1.345 - 0.008 * i), 0.0065, 6), key, "UpperChest"))
+    for i, dx in enumerate((-0.062, -0.08, -0.095)):
+        top = Vector((dx - 0.012 * (i - 1), -0.118, 1.36 + 0.01 * (i % 2)))
+        gear.append((_rod("Pencil", (dx, -0.116, 1.27), tuple(top), 0.0042, 6), "pencil", "UpperChest"))
+        gear.append((_rod("PencilTip", tuple(top), tuple(top + (top - Vector((dx, -0.116, 1.27))).normalized() * 0.012), 0.0022, 6), "lead", "UpperChest"))
+    # Patches: one on the front, two on the back, each with a stitched edge.
+    for center, size, key, bone in (((-0.085, -0.129, 1.115), (0.05, 0.004, 0.04), "patch2", "Spine"),
+                                    ((0.06, 0.11, 1.28), (0.09, 0.006, 0.075), "patch", "UpperChest"),
+                                    ((-0.07, 0.107, 1.16), (0.07, 0.006, 0.06), "patch2", "Spine")):
+        gear.append((_box("Patch", center, size), key, bone))
+        sy = 1 if center[1] > 0 else -1
+        gear.append((_box("Stitch", (center[0], center[1] + 0.0035 * sy, center[2] + size[2] * 0.5 - 0.004), (size[0] * 0.9, 0.002, 0.003)), "stitch", bone))
+
+    # Belt and buckle, cargo pockets on the outside of each thigh.
+    gear.append((_ring("Belt", (0, 0.004, 0.985), 0.156, 0.112, 0.018), "strap", "Hips"))
+    gear.append((_box("Buckle", (0, -0.124, 0.985), (0.046, 0.014, 0.034)), "metal", "Hips"))
+    for side, bone in ((1, "LeftUpperLeg"), (-1, "RightUpperLeg")):
+        gear.append((_box("CargoPocket", (0.182 * side, -0.005, 0.68), (0.026, 0.1, 0.12)), "pants", bone))
+        gear.append((_box("CargoFlap", (0.19 * side, -0.005, 0.735), (0.02, 0.104, 0.026)), "pocket", bone))
+    # Rolled shirt sleeves just below the elbow, and worn boot tops.
+    for side, bone in ((1, "LeftLowerArm"), (-1, "RightLowerArm")):
+        gear.append((_ring_x("RolledSleeve", (0.49 * side, 0.0, 1.43), 0.046, 0.014), "shirt", bone))
+    for side, bone in ((1, "LeftLowerLeg"), (-1, "RightLowerLeg")):
+        gear.append((_ring("BootTop", (0.108 * side, 0.006, 0.205), 0.056, 0.058, 0.014), "boot", bone))
+    return gear
+
+
+def mags_region(co, bone):
+    """Mags's clothes, painted by dominant bone and position."""
+    x, y, z = co
+    if bone in ("Head", "Neck"):
+        return "skin"
+    if bone.endswith("Hand"):
+        return "glove" if abs(x) < 0.775 else "skin"
+    if bone.endswith("LowerArm"):
+        return "shirt" if abs(x) < 0.49 else "skin"
+    if bone.endswith("Foot") or bone.endswith("Toes"):
+        return "sole" if z < 0.025 else "boot"
+    if bone.endswith("LowerLeg"):
+        return "boot" if z < 0.205 else "pants"
+    if bone.endswith("UpperLeg") or bone == "Hips":
+        if z < 0.995:
+            return "pants"
+    if bone.endswith("UpperArm"):
+        return "shirt"
+    # The vest: open down the front over the shirt, a V at the neck, no
+    # sleeves (the shirt shows at the shoulders), the shirt tail below it.
+    if z < 1.02:
+        return "shirt"
+    if y < -0.06 and abs(x) < 0.022:
+        return "shirt"
+    if y < -0.03 and z > 1.36 and abs(x) < 0.03 + (z - 1.36) * 0.9:
+        return "shirt"
+    if abs(x) > 0.14 and z > 1.33:
+        return "shirt"
+    return "vest"
+
+
 def _ring_x(name, center, radius, minor):
     """A ring facing along X (headphone cup rims)."""
     obj = _ring(name, (0, 0, 0), radius, radius, minor)
@@ -621,7 +833,7 @@ def paint(body):
     groups = {g.index: g.name for g in body.vertex_groups}
     color_attr = mesh.color_attributes.new("Col", "FLOAT_COLOR", "POINT")
     part = mesh.attributes["part"].data
-    regions = echo_region if RUNNER == "echo" else region_for
+    regions = {"echo": echo_region, "mags": mags_region}.get(RUNNER, region_for)
     rigid = {}  # bone -> vertex ids that follow it rigidly
     for v in mesh.vertices:
         tag_value = part[v.index].value
@@ -676,6 +888,8 @@ def main():
     tag(head, 0)
     if RUNNER == "echo":
         rigid = build_echo_hair() + build_echo_face() + build_echo_gear()
+    elif RUNNER == "mags":
+        rigid = build_mags_hair() + build_mags_face() + build_mags_gear()
     else:
         parker_parts = {2: "goggle_band", 3: "lens", 4: "scarf"}
         rigid = [(h, "hair", "Head") for h in build_hair()] + [(g, parker_parts[t], "Head") for g, t in build_gear()]
