@@ -1,6 +1,7 @@
 class_name MissionHud
 extends CanvasLayer
-## Mission readouts: the clock and the active objective at the top, the gap
+## Mission readouts: the clock, the active objective and any open bonus
+## goals at the top, the gap
 ## to the Host in a chase, and the results card at the end with Next,
 ## Retry and Campaign buttons.
 
@@ -14,6 +15,7 @@ var run: MissionRun
 
 var _clock: Label
 var _objective: Label
+var _bonus: Label
 var _chase: Label
 var _results: PanelContainer
 var _results_body: VBoxContainer
@@ -38,6 +40,9 @@ func _ready() -> void:
 	_objective = _label(22)
 	_objective.add_theme_color_override("font_color", Color(1.0, 0.86, 0.6))
 	top.add_child(_objective)
+	_bonus = _label(18)
+	_bonus.add_theme_color_override("font_color", Color(0.75, 0.85, 0.95))
+	top.add_child(_bonus)
 	_chase = _label(26)
 	_chase.add_theme_color_override("font_color", Color(1.0, 0.35, 0.3))
 	top.add_child(_chase)
@@ -69,6 +74,7 @@ func _process(_delta: float) -> void:
 	if run.total_tapes() > 0:
 		obj += "      tapes %d / %d" % [run.tapes_found.size(), run.total_tapes()]
 	_objective.text = obj
+	_bonus.text = run.bonus_text()
 	var p := run.pursuer
 	if p != null and p.visible and p.gap < INF:
 		_chase.text = "%s  %d m" % [p.display_name, roundi(p.gap)]
@@ -95,6 +101,8 @@ func show_results(result: Dictionary, title: String, has_next: bool) -> void:
 	]
 	if result.par_seconds > 0.0:
 		lines.append("Par  %s  %s" % [CourseTimer.format_time(result.par_seconds), "beaten" if result.seconds <= result.par_seconds else "not yet"])
+	if result.get("total_bonuses", 0) > 0:
+		lines.append("Bonus goals  %d / %d   +%d" % [result.bonuses, result.total_bonuses, result.bonuses * MissionRun.BONUS_POINTS])
 	if result.total_tapes > 0:
 		lines.append("Tapes  %d / %d" % [result.tapes.size(), result.total_tapes])
 	if result.falls > 0 or result.catches > 0:

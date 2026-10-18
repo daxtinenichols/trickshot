@@ -161,6 +161,18 @@ static func record(i: int, result: Dictionary) -> Dictionary:
 	return broke
 
 
+## Saves a story choice made in mission i (e.g. "fate" = "spared" when
+## Juno is spared in m07), for later missions' radio to branch on.
+static func set_choice(i: int, key: String, value: String) -> void:
+	save().set_value(_id(i), key, value)
+	_write()
+
+
+## A story choice saved by mission `mission_id`, or "" if it wasn't made.
+static func choice(mission_id: String, key: String) -> String:
+	return str(save().get_value(mission_id, key, ""))
+
+
 static func echo_unlocked() -> bool:
 	return save().get_value("runners", "echo", false)
 

@@ -642,19 +642,20 @@ def build_hunter(juno=False):
 # ---------------------------------------------------------------- soldier
 
 SOLDIER_PALETTE = {
+    # The Ward: clean grey-and-white corporate security, blue stripe.
     "skin": (0.58, 0.42, 0.32),
-    "uniform": (0.25, 0.29, 0.32),
-    "uniform_dark": (0.17, 0.19, 0.21),
+    "uniform": (0.46, 0.48, 0.5),
+    "uniform_dark": (0.3, 0.32, 0.34),
     "boot": (0.09, 0.09, 0.10),
-    "glove": (0.08, 0.08, 0.09),
-    "armor": (0.34, 0.37, 0.38),
-    "armor_dark": (0.20, 0.22, 0.23),
-    "helmet": (0.30, 0.33, 0.35),
+    "glove": (0.12, 0.12, 0.13),
+    "armor": (0.82, 0.84, 0.85),
+    "armor_dark": (0.55, 0.57, 0.59),
+    "helmet": (0.86, 0.87, 0.88),
     "visor": (0.05, 0.06, 0.07),
-    "strip": (0.25, 0.95, 1.0),
-    "accent": (0.95, 0.72, 0.16),
+    "strip": (0.25, 0.6, 1.0),
+    "accent": (0.12, 0.38, 0.85),
     "black": (0.06, 0.06, 0.07),
-    "shield": (0.18, 0.2, 0.22),
+    "shield": (0.75, 0.77, 0.79),
     "glass": (0.2, 0.26, 0.3),
 }
 
@@ -765,11 +766,11 @@ def build_shield(p):
 
 HEAVY_PALETTE = dict(SOLDIER_PALETTE)
 HEAVY_PALETTE.update({
-    "uniform": (0.22, 0.24, 0.2),
-    "uniform_dark": (0.14, 0.15, 0.13),
-    "armor": (0.3, 0.32, 0.3),
-    "armor_dark": (0.16, 0.17, 0.16),
-    "helmet": (0.26, 0.28, 0.26),
+    "uniform": (0.36, 0.38, 0.4),
+    "uniform_dark": (0.24, 0.25, 0.27),
+    "armor": (0.7, 0.72, 0.74),
+    "armor_dark": (0.42, 0.44, 0.46),
+    "helmet": (0.74, 0.76, 0.78),
     "hazard": (0.95, 0.62, 0.12),
     "strip": (1.0, 0.45, 0.15),
 })
