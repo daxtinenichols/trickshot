@@ -634,6 +634,47 @@ func _check_closed(center: Vector3, size: Vector2, depth := 10.0) -> void:
 	check(open == 0, "edges closed (%d of %d samples open)" % [open, samples])
 
 
+## Slide-under bars (dressed as pipes and girders) stand on posts that reach
+## the floor SLIDE_GAP m below them, so there must be floor there at both
+## ends, not a drop: nothing floats.
+func _check_bars_grounded() -> void:
+	var dresser: Script = load("res://art/look/obstacle_dresser.gd")
+	var space := level.get_world_3d().direct_space_state
+	var bars := 0
+	var floating := 0
+	for body: Node in level.find_children("*", "StaticBody3D", true, false):
+		if body.get_meta("kind", "") != "PARKOUR" or body.has_meta("look"):
+			continue
+		var size: Vector3 = dresser._box_size(body)
+		var style: String = body.get_meta("dress", "")
+		if style == "":
+			style = dresser.pick_style("PARKOUR", size, (body as Node3D).global_position)
+		if style != "pipe":
+			continue
+		bars += 1
+		var b := body as Node3D
+		var along := b.global_basis.x if size.x >= size.z else b.global_basis.z
+		var half := maxf(size.x, size.z) * 0.5 - 0.15
+		for sgn: float in [-1.0, 1.0]:
+			var end := b.global_position + along.normalized() * half * sgn - Vector3(0, size.y * 0.5 + 0.02, 0)
+			var q := PhysicsRayQueryParameters3D.create(end, end - Vector3(0, 3, 0))
+			q.exclude = [b.get_rid()]
+			var r := space.intersect_ray(q)
+			if r.is_empty() or absf(end.y + 0.02 - r.position.y - dresser.SLIDE_GAP) > 0.1:
+				floating += 1
+				print("    bar end without floor %.1f m under it at %s" % [dresser.SLIDE_GAP, end])
+	check(bars > 0, "the map has slide-under bars (%d)" % bars)
+	check(floating == 0, "every bar's posts reach the floor (%d ends float)" % floating)
+
+
+func test_slide_bars_stand_on_the_floor() -> void:
+	for scene: PackedScene in [ROOFTOPS, PARK]:
+		await _load(scene)
+		_check_bars_grounded()
+		level.queue_free()
+		await tree.process_frame
+
+
 func test_park_edges_closed() -> void:
 	await _load(PARK)
 	_check_closed(ComboParkBuilder.FLOOR_CENTER, ComboParkBuilder.FLOOR_SIZE)
