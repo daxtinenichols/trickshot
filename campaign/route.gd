@@ -20,6 +20,7 @@ extends RefCounted
 ## Loaded by path (no class_name).
 
 const City := preload("res://campaign/city.gd")
+const PROP_KIT := "res://art/props/prop_kit.gd"
 
 ## Roof width; the running lane is its middle.
 const WIDTH := 12.0
@@ -555,8 +556,15 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 	var z := z0 - d
 	var y: float = st.y
 	if f.has("hurdles"):
-		_add(st, {"row": f.get("hurdles", "barricade_jersey") if f.hurdles is String else "barricade_jersey",
-			"from": [-5, y, z], "to": [5, y, z], "count": 6})
+		var hurdle: String = f.hurdles if f.hurdles is String else "barricade_jersey"
+		# Wall to wall; pieces too wide to sit side by side step back and
+		# forth instead of running into each other.
+		var size: Vector3 = load(PROP_KIT).size_of(hurdle)
+		var n := clampi(ceili(12.0 / size.x - 0.01), 2, 8)
+		var step := (12.0 - size.x) / (n - 1)
+		for i in n:
+			var stagger := 0.0 if step >= size.x - 0.01 else (size.z + 0.05 if i % 2 == 1 else 0.0)
+			_add(st, {"prop": hurdle, "at": [-6.0 + size.x * 0.5 + step * i, y, z - stagger]})
 		st.bot.append([z + 1.6, "jump", NAN])
 		return [d - 4.0, d + 3.0]
 	if f.has("slide"):
