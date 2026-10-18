@@ -79,6 +79,35 @@ func test_runner_meta_picks_the_model() -> void:
 	check(String(_rig.model.scene_file_path).ends_with("runner.glb"), "unknown runner falls back to Parker")
 
 
+func _vertex_count(model: Node) -> int:
+	var n := 0
+	for mi: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
+		for i in mi.mesh.get_surface_count():
+			n += mi.mesh.surface_get_array_len(i)
+	return n
+
+
+## Echo is her own model, not Parker's with new colours, and she still shows
+## when the editor hasn't imported echo.glb yet (read straight from the file).
+func test_echo_model_is_her_own_and_loads_unimported() -> void:
+	var body: Node3D = RunnerBody.new()
+	var parker: Node3D = RunnerBody.MODEL.instantiate()
+	var parker_verts := _vertex_count(parker)
+	parker.free()
+	var echo: Node3D = load(RunnerBody.MODELS["echo"]).instantiate()
+	check(_vertex_count(echo) > parker_verts * 1.4, "Echo has her own hair, face and gear (%d vs %d verts)" % [_vertex_count(echo), parker_verts])
+	var raw: Node3D = body._load_gltf_file(RunnerBody.MODELS["echo"])
+	check(raw != null, "echo.glb loads straight from the file")
+	if raw != null:
+		var skel: Skeleton3D = raw.find_children("*", "Skeleton3D", true, false)[0]
+		check(skel.get_bone_count() == echo.find_children("*", "Skeleton3D", true, false)[0].get_bone_count(), "same skeleton from the file")
+		check(_vertex_count(raw) > parker_verts * 1.4, "the file copy is Echo, not Parker")
+		raw.free()
+	check(body._load_gltf_file("res://art/characters/runner/nobody.glb") == null, "a missing file gives no model")
+	echo.free()
+	body.free()
+
+
 func test_figure_stands_in_the_level() -> void:
 	_w = TestWorld.new()
 	tree.root.add_child(_w)

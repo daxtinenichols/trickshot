@@ -9,7 +9,7 @@ extends RefCounted
 ## The look stays consistent so it can still be read at speed:
 ##   corrugated sheet metal / billboards = run along it (WALLRUN)
 ##   concrete, brick, crates, rails, sandbags = vault, mantle, climb (PARKOUR)
-##   pipes and girders at head height = slide under (thin PARKOUR bars)
+##   pipes and girders at head height on steel posts = slide under (thin PARKOUR bars)
 ##   bent sheet metal = slide down (SLIDE)
 ##   escalators (a map asks for them) = steps over a ramp you run or slide on
 ##   poured concrete channel walls = banks you run along (SURFACE)
@@ -42,6 +42,9 @@ const STEEL := Color(0.42, 0.40, 0.37)
 const HOARDING_PAINTS := [Color(0.33, 0.47, 0.50), Color(0.40, 0.46, 0.40), Color(0.52, 0.44, 0.34), Color(0.36, 0.40, 0.48)]
 const CONTAINER_PAINTS := [Color(0.55, 0.27, 0.20), Color(0.24, 0.38, 0.46), Color(0.38, 0.44, 0.30)]
 const HAZARD := Color(0.70, 0.30, 0.22)
+## How far a slide-under bar hangs over its floor (every map builds them
+## 1.1 m up), so a pipe or girder's posts reach the ground.
+const SLIDE_GAP := 1.1
 ## Runnable curves: one paint per kind of piece (not per piece), so a loop or
 ## a bank built from dozens of strips reads as one structure.
 const TRACK_PAINT := Color(0.40, 0.44, 0.42)
@@ -294,21 +297,64 @@ class _Dress:
 				x += bag
 				i += 1
 
-	## A rusted pipe or girder hung at head height, with straps.
+	## A rusted pipe or girder at head height, carried by a steel frame at
+	## each end that stands on the ground below (every slide-under bar hangs
+	## SLIDE_GAP m over its floor), so it reads as a gantry or a pipe rack
+	## and never floats. The posts are visual only and stand inside the
+	## bar's own ends; where the floor is higher they just sink into it.
 	func pipe() -> void:
 		hide_core()
 		var r := minf(s.y, thin) * 0.5
 		var rust := mat("RUST")
+		var steel := mat("NEUTRAL", STEEL)
 		if h < 0.5:
 			cyl(Vector3.ZERO, r, long, rust)
 			for x in spots(2.5, 0.3):
-				cyl(Vector3(x, 0, 0), r + 0.025, 0.08, mat("NEUTRAL", STEEL))
+				cyl(Vector3(x, 0, 0), r + 0.025, 0.08, steel)
 		else:
 			# An I-beam: flanges top and bottom, web between.
 			var f := s.y * 0.18
 			box(Vector3(0, top() - f * 0.5, 0), Vector3(long, f, thin), rust)
 			box(Vector3(0, bottom() + f * 0.5, 0), Vector3(long, f, thin), rust)
 			box(Vector3.ZERO, Vector3(long, s.y - f * 2.0, thin * 0.25), rust)
+		_gantry_legs(rust, steel)
+
+	## Two steel posts under the ends of a bar, down to the floor SLIDE_GAP m
+	## below it: an I-section column, a base plate, a worn hazard band, and
+	## a knee brace into the bar.
+	func _gantry_legs(rust: Material, steel: Material) -> void:
+		var ground := bottom() - SLIDE_GAP
+		var w := 0.28
+		var col_h := top() - ground
+		for sgn: float in [-1.0, 1.0]:
+			var x := sgn * (long * 0.5 - w * 0.5)
+			var cy := ground + col_h * 0.5
+			# Flanges across the bar, web between: it faces the runner.
+			box(Vector3(x - w * 0.42, cy, 0), Vector3(w * 0.16, col_h, thin + 0.04), rust)
+			box(Vector3(x + w * 0.42, cy, 0), Vector3(w * 0.16, col_h, thin + 0.04), rust)
+			box(Vector3(x, cy, 0), Vector3(w, col_h, 0.06), rust)
+			box(Vector3(x, ground + 0.03, 0), Vector3(w + 0.3, 0.06, thin + 0.4), steel)
+			box(Vector3(x, ground + 0.45, 0), Vector3(w + 0.02, 0.25, thin + 0.06), mat("SIGN", HAZARD.lerp(CONCRETE, 0.35)))
+			# Knee brace from the post up into the bar's underside.
+			var a := Vector3(x, bottom() - 0.55, 0)
+			var b := Vector3(x - sgn * 0.6, bottom(), 0)
+			strut(a, b, 0.07, steel)
+
+	## A square strut from a to b (local, as along/up/across).
+	func strut(a: Vector3, b: Vector3, width: float, m: Material) -> MeshInstance3D:
+		var pa := along * a.x + Vector3.UP * a.y + across * a.z
+		var pb := along * b.x + Vector3.UP * b.y + across * b.z
+		var mi := MeshInstance3D.new()
+		var bm := BoxMesh.new()
+		bm.size = Vector3(width, pa.distance_to(pb), width)
+		mi.mesh = bm
+		var up := (pb - pa).normalized()
+		var side := up.cross(across).normalized()
+		mi.basis = Basis(side, up, side.cross(up))
+		mi.position = (pa + pb) * 0.5
+		mi.material_override = m
+		root.add_child(mi)
+		return mi
 
 	## A stack of wooden crates filling the block.
 	func crates() -> void:

@@ -634,6 +634,47 @@ func _check_closed(center: Vector3, size: Vector2, depth := 10.0) -> void:
 	check(open == 0, "edges closed (%d of %d samples open)" % [open, samples])
 
 
+## Slide-under bars (dressed as pipes and girders) stand on posts that reach
+## the floor SLIDE_GAP m below them, so there must be floor there at both
+## ends, not a drop: nothing floats.
+func _check_bars_grounded() -> void:
+	var dresser: Script = load("res://art/look/obstacle_dresser.gd")
+	var space := level.get_world_3d().direct_space_state
+	var bars := 0
+	var floating := 0
+	for body: Node in level.find_children("*", "StaticBody3D", true, false):
+		if body.get_meta("kind", "") != "PARKOUR" or body.has_meta("look"):
+			continue
+		var size: Vector3 = dresser._box_size(body)
+		var style: String = body.get_meta("dress", "")
+		if style == "":
+			style = dresser.pick_style("PARKOUR", size, (body as Node3D).global_position)
+		if style != "pipe":
+			continue
+		bars += 1
+		var b := body as Node3D
+		var along := b.global_basis.x if size.x >= size.z else b.global_basis.z
+		var half := maxf(size.x, size.z) * 0.5 - 0.15
+		for sgn: float in [-1.0, 1.0]:
+			var end := b.global_position + along.normalized() * half * sgn - Vector3(0, size.y * 0.5 + 0.02, 0)
+			var q := PhysicsRayQueryParameters3D.create(end, end - Vector3(0, 3, 0))
+			q.exclude = [b.get_rid()]
+			var r := space.intersect_ray(q)
+			if r.is_empty() or absf(end.y + 0.02 - r.position.y - dresser.SLIDE_GAP) > 0.1:
+				floating += 1
+				print("    bar end without floor %.1f m under it at %s" % [dresser.SLIDE_GAP, end])
+	check(bars > 0, "the map has slide-under bars (%d)" % bars)
+	check(floating == 0, "every bar's posts reach the floor (%d ends float)" % floating)
+
+
+func test_slide_bars_stand_on_the_floor() -> void:
+	for scene: PackedScene in [ROOFTOPS, PARK]:
+		await _load(scene)
+		_check_bars_grounded()
+		level.queue_free()
+		await tree.process_frame
+
+
 func test_park_edges_closed() -> void:
 	await _load(PARK)
 	_check_closed(ComboParkBuilder.FLOOR_CENTER, ComboParkBuilder.FLOOR_SIZE)
@@ -649,10 +690,15 @@ func test_sandbox_edges_closed() -> void:
 	_check_closed(Vector3(10, 0, -27.5), Vector2(320, 285))
 
 
-## The campaign's hand-off points: the exit and the store's roof are real
-## ground, and the far edge opens on request.
+## The campaign's hand-off points: the exit and the skybridge door (built
+## the way m06 and m07 build the mall) are real ground, and the far edge
+## opens on request.
 func test_mall_campaign_points() -> void:
-	await _load(MALL)
+	CourseTimer.persist = false
+	level = MALL.instantiate()
+	level.get_node("Builder").set("skybridge", true)
+	tree.root.add_child(level)
+	await tree.physics_frame
 	var space := level.get_world_3d().direct_space_state
 	for xf: Transform3D in [MallBuilder.EXIT, MallBuilder.ANCHOR_ENTRY, MallBuilder.ANCHOR_EXIT]:
 		var q := PhysicsRayQueryParameters3D.create(xf.origin + Vector3(0, 1, 0), xf.origin + Vector3(0, -1, 0), 1)
@@ -702,9 +748,10 @@ func test_rooftops_hide_course_marks() -> void:
 	check(counts[1][1] == counts[0][1] and counts[1][4] == counts[0][4], "same roofs and spawns either way")
 
 
-## The department store's roof access really climbs: mantle up the steps
-## from the sales floor onto the roof.
-func test_mall_roof_access() -> void:
+## The department store's roof is shut: where the roof hatch used to be,
+## climbing at the wall gets nowhere near the roof, and the dock's back doors
+## are shuttered.
+func test_mall_roof_and_back_closed() -> void:
 	await _load(MALL)
 	player.respawn(Transform3D(Basis.IDENTITY, Vector3(14, MallBuilder.UPPER_Y, -350)))
 	await _step(10)
@@ -712,7 +759,6 @@ func test_mall_roof_access() -> void:
 	var best := -INF
 	for i in 400:
 		var f := _steer(14.0)
-		# Jump at each step face, like a person would.
 		var pos := player.global_position
 		var q := PhysicsRayQueryParameters3D.create(pos + Vector3(0, 0.6, 0), pos + Vector3(0, 0.6, -1.4), 1)
 		q.exclude = [player.get_rid()]
@@ -722,9 +768,39 @@ func test_mall_roof_access() -> void:
 		player.scripted_input = f
 		await tree.physics_frame
 		best = maxf(best, player.global_position.y)
-		if best > MallBuilder.ROOF_Y + 0.3:
+	check(best < MallBuilder.ROOF_Y, "no way up to the roof (best y %.2f)" % best)
+	for x: float in [-13.0, 0.0, 13.0]:
+		var d := PhysicsRayQueryParameters3D.create(Vector3(x, 1.5, MallBuilder.DOCK_BACK + 3.0), Vector3(x, 1.5, MallBuilder.DOCK_BACK - 3.0), 1)
+		check(not space.intersect_ray(d).is_empty(), "dock door at x %.0f is shut" % x)
+
+
+## With skybridge, the covered way leaves the sales floor at ANCHOR_EXIT:
+## a bot walks from there through both turns and up to the dock wall.
+func test_mall_skybridge() -> void:
+	CourseTimer.persist = false
+	level = MALL.instantiate()
+	level.get_node("Builder").set("skybridge", true)
+	tree.root.add_child(level)
+	player = level.get_node("Player")
+	player.use_device_input = false
+	player.scripted_input = InputFrame.new()
+	await tree.physics_frame
+	player.respawn(MallBuilder.ANCHOR_EXIT)
+	await _step(10)
+	var points := [Vector2(15, -402), Vector2(13, -406), Vector2(2, -406), Vector2(0, -410), Vector2(0, -429)]
+	var next := 0
+	for i in 900:
+		var pos := player.global_position
+		if next < points.size() and Vector2(pos.x, pos.z).distance_to(points[next]) < 1.5:
+			next += 1
+		if next >= points.size():
 			break
-	check(best > MallBuilder.ROOF_Y + 0.3, "reached the roof (best y %.2f, at %s)" % [best, player.global_position])
+		var to: Vector2 = points[next] - Vector2(pos.x, pos.z)
+		player.set_view(atan2(-to.x, -to.y), 0.0)
+		player.scripted_input = InputFrame.make(Vector2(0, 1))
+		await tree.physics_frame
+	check(next >= points.size(), "walks the skybridge to the dock wall (at %s)" % player.global_position)
+	check(player.global_position.y > MallBuilder.SKY_END.y - 0.5, "climbed to the end (y %.2f)" % player.global_position.y)
 
 
 ## The old parking-lot kerb used to cross the north wing's concourse at

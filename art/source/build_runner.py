@@ -8,8 +8,8 @@ Output: art/characters/runner/runner.glb (Parker), or with `-- echo`:
 art/characters/runner/echo.glb (Echo, the second playable runner).
 
 Both runners share the exact same skeleton (bone names AND positions), so
-RunnerBody's poses drive either one unchanged. Only the mesh (cross-section
-radii, hair, gear) and the palette differ.
+RunnerBody's poses drive either one unchanged. Everything else differs: body
+shape, head and face, hair, outfit, gear and palette.
 
 Everything about the character lives here, so it can be rebuilt and tweaked
 without hand-edited binary files. Proportions are in meters.
@@ -52,32 +52,40 @@ PALETTE = {
     "lens": (0.95, 0.62, 0.20),
     "scarf": (0.70, 0.58, 0.44),
 }
-# Echo: the radio fixer. Oxblood work jacket with the sleeves rolled to the
-# forearm, slate-blue work pants, teal accents (her colour on the radio
-# dial) so she never reads as Parker at a glance, a long braid and her
-# headphones round her neck.
+# Echo: the radio fixer, built to read as her own person from any angle:
+# a big cloud of dark curls under on-ear headphones, a face, a cropped
+# oxblood bomber with a cream shearling collar, a radio pack with a whip
+# antenna on her back, a webbing belt with a handset, blue work pants and
+# tall tan lace-up boots. Teal (her colour on the radio dial) marks the
+# headphones, antenna tip and jacket trim.
 ECHO_PALETTE = {
-    "skin": (0.62, 0.42, 0.31),
-    "hair": (0.24, 0.10, 0.06),
-    "top": (0.34, 0.12, 0.11),
-    "accent": (0.10, 0.58, 0.55),
-    "pants": (0.17, 0.21, 0.27),
-    "glove": (0.13, 0.12, 0.12),
-    "shoe": (0.20, 0.18, 0.17),
-    "sole": (0.12, 0.70, 0.66),
-    "goggle_band": (0.10, 0.10, 0.11),
-    "lens": (0.12, 0.70, 0.66),
-    "scarf": (0.62, 0.55, 0.42),
+    "skin": (0.50, 0.32, 0.22),
+    "hair": (0.11, 0.06, 0.05),
+    "top": (0.36, 0.09, 0.09),
+    "accent": (0.08, 0.60, 0.56),
+    "rib": (0.12, 0.10, 0.10),
+    "shirt": (0.78, 0.70, 0.56),
+    "collar": (0.70, 0.60, 0.46),
+    "pants": (0.17, 0.25, 0.36),
+    "glove": (0.12, 0.11, 0.11),
+    "boot": (0.46, 0.30, 0.17),
+    "sole": (0.10, 0.09, 0.09),
+    "metal": (0.22, 0.23, 0.21),
+    "strap": (0.20, 0.19, 0.15),
+    "canvas": (0.33, 0.33, 0.24),
+    "eye_white": (0.92, 0.89, 0.84),
+    "iris": (0.06, 0.04, 0.04),
+    "brow": (0.08, 0.05, 0.04),
+    "lips": (0.40, 0.18, 0.17),
+    "pad": (0.16, 0.16, 0.17),
 }
 if RUNNER == "echo":
     PALETTE = ECHO_PALETTE
 
-# Head-rigid parts (hair, goggles, scarf) are tagged with a "part" attribute;
-# PARTS maps the tag to its palette entry. 0 = skinned body.
-PARTS = {1: "hair", 2: "goggle_band", 3: "lens", 4: "scarf", 5: "accent", 6: "goggle_band", 7: "lens"}
-# Parts rigid with the upper chest instead of the head (Echo's headphones,
-# which rest on her collarbones and shouldn't swing with her aim).
-CHEST_PARTS = {6, 7}
+# Rigid parts (hair, gear, face) are tagged with a "part" attribute: tag N
+# is RIGID[N - 1] = (palette entry, bone the part follows rigidly). 0 = the
+# skinned body. Filled by main().
+RIGID = []
 
 # Skeleton: name -> (head, tail, parent). Left side only; right is mirrored.
 CENTER_BONES = [
@@ -132,20 +140,26 @@ LEFT_LIMB_EDGES = [
     ("L.ankle", "L.heel"), ("L.heel", "L.toe"),
 ]
 
-# Echo's build: same joints, different cross-sections. Narrower shoulders and
-# waist, fuller hips and thighs, slimmer arms and smaller hands and feet.
-ECHO_RADII = {
-    "pelvis": (0.155, 0.105), "waist": (0.112, 0.08), "ribs": (0.132, 0.092),
-    "chest": (0.142, 0.098), "neck_base": (0.052, 0.05), "neck_top": (0.044, 0.044),
-    "shoulder": (0.052, 0.054), "elbow": (0.038, 0.038), "wrist": (0.029, 0.026),
-    "knuckles": (0.039, 0.018), "fingertips": (0.035, 0.016),
-    "hip": (0.088, 0.088), "knee": (0.054, 0.054), "ankle": (0.036, 0.036),
-    "heel": (0.041, 0.037), "toe": (0.045, 0.032),
+# Echo's build: same skeleton, a different body. Narrower shoulders and a
+# cinched waist, fuller bust and hips, slimmer arms and calves, smaller hands
+# and feet. name -> (position, or None to keep Parker's, radii).
+ECHO_VERTS = {
+    "pelvis": ((0, 0.008, 0.94), (0.162, 0.11)),
+    "waist": ((0, 0.0, 1.08), (0.104, 0.078)),
+    "ribs": ((0, -0.006, 1.23), (0.124, 0.092)),
+    "chest": ((0, -0.016, 1.355), (0.138, 0.112)),
+    "neck_base": ((0, 0.006, 1.47), (0.05, 0.048)),
+    "neck_top": ((0, 0.004, 1.575), (0.046, 0.046)),
+    "shoulder": ((0.158, 0.0, 1.42), (0.05, 0.052)),
+    "elbow": (None, (0.037, 0.037)), "wrist": (None, (0.028, 0.025)),
+    "knuckles": (None, (0.038, 0.017)), "fingertips": (None, (0.033, 0.015)),
+    "hip": ((0.1, 0.0, 0.90), (0.094, 0.092)), "knee": (None, (0.054, 0.056)),
+    "ankle": (None, (0.042, 0.042)), "heel": (None, (0.046, 0.043)), "toe": (None, (0.05, 0.036)),
 }
 if RUNNER == "echo":
-    for _k, _r in ECHO_RADII.items():
+    for _k, (_p, _r) in ECHO_VERTS.items():
         _table = BODY_VERTS if _k in BODY_VERTS else LEFT_LIMB_VERTS
-        _table[_k] = (_table[_k][0], _r)
+        _table[_k] = (_p or _table[_k][0], _r)
 
 
 def mirror(p):
@@ -220,7 +234,7 @@ def build_head():
     for v in bm.verts:
         # Slightly longer front-to-back than wide, chin tapered.
         x, y, z = v.co
-        taper = 1.0 - max(0.0, -z) * 0.22
+        taper = 1.0 - max(0.0, -z) * (0.3 if RUNNER == "echo" else 0.22)
         w = 0.087 if RUNNER == "echo" else 0.092
         v.co = Vector((x * w * taper, y * 0.100 * taper - max(0.0, -z) * 0.012, z * 0.114 if RUNNER == "echo" else z * 0.118))
         v.co += Vector((0, -0.008, 1.64))
@@ -269,77 +283,222 @@ def build_hair():
     return parts
 
 
+def _ellipsoid(name, center, radii, segments=(12, 8), rot=None):
+    bm = bmesh.new()
+    bmesh.ops.create_uvsphere(bm, u_segments=segments[0], v_segments=segments[1], radius=1.0)
+    m = Matrix.Translation(Vector(center)) @ (rot or Matrix.Identity(4)) @ Matrix.Diagonal(Vector(radii + (1.0,)))
+    bmesh.ops.transform(bm, matrix=m, verts=bm.verts)
+    return _bm_object(name, bm, smooth=True)
+
+
+def _box(name, center, size, rot=None):
+    bm = bmesh.new()
+    bmesh.ops.create_cube(bm, size=1.0)
+    m = Matrix.Translation(Vector(center)) @ (rot or Matrix.Identity(4)) @ Matrix.Diagonal(Vector(tuple(size) + (1.0,)))
+    bmesh.ops.transform(bm, matrix=m, verts=bm.verts)
+    return _bm_object(name, bm)
+
+
+def _rod(name, a, b, radius, segments=8):
+    a, b = Vector(a), Vector(b)
+    d = b - a
+    bm = bmesh.new()
+    rot = d.to_track_quat("Z", "Y").to_matrix().to_4x4()
+    bmesh.ops.create_cone(bm, cap_ends=True, segments=segments, radius1=radius, radius2=radius, depth=d.length,
+                          matrix=Matrix.Translation((a + b) / 2.0) @ rot)
+    return _bm_object(name, bm)
+
+
+def _bm_object(name, bm, smooth=False):
+    mesh = bpy.data.meshes.new(name)
+    bm.to_mesh(mesh)
+    bm.free()
+    obj = bpy.data.objects.new(name, mesh)
+    bpy.context.scene.collection.objects.link(obj)
+    if smooth:
+        for poly in mesh.polygons:
+            poly.use_smooth = True
+    return obj
+
+
+def _arc(name, center, radius, start, end, minor, segments=16):
+    """A square tube bent along a circular arc in the XZ plane (over the top
+    of the head), angles in radians from +X."""
+    verts = []
+    bm = bmesh.new()
+    for i in range(segments + 1):
+        t = start + (end - start) * i / segments
+        ring = []
+        for dr, dw in ((-1, -1), (1, -1), (1, 1), (-1, 1)):
+            r = radius + dr * minor
+            p = Vector((math.cos(t) * r, dw * minor, math.sin(t) * r))
+            ring.append(bm.verts.new(p + Vector(center)))
+        verts.append(ring)
+    for i in range(segments):
+        for k in range(4):
+            k2 = (k + 1) % 4
+            bm.faces.new((verts[i][k], verts[i + 1][k], verts[i + 1][k2], verts[i][k2]))
+    bm.faces.new(verts[0])
+    bm.faces.new(list(reversed(verts[-1])))
+    bmesh.ops.recalc_face_normals(bm, faces=bm.faces)
+    return _bm_object(name, bm)
+
+
 def build_echo_hair():
-    """Echo: a fuller cap with a side-swept fringe, and a long braid down
-    her back with a teal tie. Returns (object, part tag) pairs."""
+    """Echo's hair: a big cloud of curls round the back, sides and top of her
+    head, open at the face, so her silhouette is nothing like Parker's tight
+    cap. Each curl is its own little ball, which reads as texture in cel."""
     parts = []
+    # A cap under the curls so no scalp shows between them.
     bm = bmesh.new()
     bmesh.ops.create_uvsphere(bm, u_segments=20, v_segments=12, radius=1.0)
     for v in bm.verts:
         x, y, z = v.co
-        v.co = Vector((x * 0.098, y * 0.111, max(z, -0.3) * 0.106)) + Vector((0, 0.004, 1.66))
-    # Open the face, lower on her left so the fringe sweeps across.
-    drop = [v for v in bm.verts if v.co.y < -0.03 and v.co.z < 1.69 + 0.25 * min(v.co.x, 0.04)]
+        v.co = Vector((x * 0.1, y * 0.112, max(z, -0.35) * 0.112)) + Vector((0, 0.008, 1.668))
+    drop = [v for v in bm.verts if v.co.y < -0.04 and v.co.z < 1.715]
     bmesh.ops.delete(bm, geom=drop, context="VERTS")
-    mesh = bpy.data.meshes.new("EchoHair")
-    bm.to_mesh(mesh)
-    bm.free()
-    cap = bpy.data.objects.new("EchoHair", mesh)
-    bpy.context.scene.collection.objects.link(cap)
+    cap = _bm_object("EchoHairCap", bm, smooth=True)
     solid = cap.modifiers.new("Solid", "SOLIDIFY")
-    solid.thickness = 0.014
+    solid.thickness = 0.012
     apply_modifiers(cap)
-    parts.append((cap, 1))
+    parts.append((cap, "hair", "Head"))
 
-    # The braid: alternating fat and thin beads read as plaits in cel.
-    path = [(0, 0.095, 1.69), (0, 0.13, 1.62), (0, 0.145, 1.55), (0, 0.145, 1.48),
-            (0, 0.14, 1.41), (0, 0.135, 1.35), (0, 0.13, 1.30)]
-    pts, radii = [], []
-    for i in range(len(path) - 1):
-        a, b = Vector(path[i]), Vector(path[i + 1])
-        for t in (0.0, 0.5):
-            pts.append(a.lerp(b, t))
-            k = 1.0 - (len(pts) / (2.0 * len(path))) * 0.45
-            r = (0.03 if t == 0.0 else 0.02) * k
-            radii.append((r, r * 0.9))
-    pts.append(Vector(path[-1]))
-    radii.append((0.012, 0.012))
-    braid = bpy.data.meshes.new("EchoBraid")
-    braid.from_pydata([tuple(p) for p in pts], [(i, i + 1) for i in range(len(pts) - 1)], [])
-    bobj = bpy.data.objects.new("EchoBraid", braid)
-    bpy.context.scene.collection.objects.link(bobj)
-    skin = bobj.modifiers.new("Skin", "SKIN")
-    for sv, r in zip(braid.skin_vertices[0].data, radii):
-        sv.radius = r
-    bsub = bobj.modifiers.new("Subsurf", "SUBSURF")
-    bsub.levels = 1
-    apply_modifiers(bobj)
-    parts.append((bobj, 1))
-    # Hair tie near the end of the braid.
-    tie = _ring("BraidTie", (0, 0.133, 1.33), 0.022, 0.02, 0.008, segments=12)
-    parts.append((tie, 5))
+    # Curls on a shell bigger than the head: golden-spiral points, seeded
+    # jitter so the build is deterministic.
+    center = Vector((0, 0.03, 1.70))
+    shell = Vector((0.125, 0.125, 0.112))
+    n = 90
+    rnd = 0
+    for i in range(n):
+        rnd = (rnd * 1103515245 + 12345) & 0x7FFFFFFF
+        jitter = (rnd % 1000) / 1000.0
+        zf = 1.0 - 2.0 * (i + 0.5) / n
+        ring = math.sqrt(max(0.0, 1.0 - zf * zf))
+        a = i * 2.39996323
+        d = Vector((math.cos(a) * ring, math.sin(a) * ring, zf))
+        p = center + Vector((d.x * shell.x, d.y * shell.y, d.z * shell.z))
+        # Keep the face clear and stop at the nape and jaw.
+        if p.y < -0.025 and p.z < 1.735:
+            continue
+        if p.z < 1.57 or (p.z < 1.63 and p.y < 0.03):
+            continue
+        r = 0.036 + 0.014 * jitter
+        parts.append((_ellipsoid("Curl", tuple(p), (r, r, r * 0.92), (8, 6)), "hair", "Head"))
+    # A short fringe of curls along the hairline.
+    for x in (-0.07, -0.035, 0.0, 0.035, 0.07):
+        parts.append((_ellipsoid("Fringe", (x, -0.07 + abs(x) * 0.35, 1.745 - abs(x) * 0.35), (0.03, 0.026, 0.024), (8, 6)), "hair", "Head"))
+    return parts
+
+
+def build_echo_face():
+    """Eyes, brows, nose and lips. Parker's face is hidden by goggles and
+    scarf; Echo's is the first thing you see in the studio and on the chase
+    cam's turnarounds."""
+    parts = []
+    for side in (-1, 1):
+        x = 0.031 * side
+        parts.append((_ellipsoid("EyeWhite", (x, -0.091, 1.655), (0.015, 0.008, 0.0098)), "eye_white", "Head"))
+        parts.append((_ellipsoid("Iris", (x, -0.0975, 1.654), (0.0078, 0.004, 0.0085), (10, 6)), "iris", "Head"))
+        brow_rot = Matrix.Rotation(0.12 * side, 4, "Y")
+        parts.append((_box("Brow", (x * 1.08, -0.095, 1.68), (0.028, 0.008, 0.005), brow_rot), "brow", "Head"))
+    parts.append((_ellipsoid("Nose", (0, -0.104, 1.632), (0.011, 0.014, 0.019)), "skin", "Head"))
+    parts.append((_ellipsoid("Lips", (0, -0.093, 1.601), (0.019, 0.008, 0.0068)), "lips", "Head"))
+    # Small hoop earrings would vanish under the headphones; cheekbones do the
+    # rest through the narrower jaw in build_head.
     return parts
 
 
 def build_echo_gear():
-    """Echo's headphones, resting round her neck: a band behind the neck and
-    a cup on each collarbone, rigid with the upper chest."""
+    """Headphones on her head, the shearling collar, the radio pack and
+    antenna on her back, belt and handset, boot cuffs and a knee pad.
+    Returns (object, palette key, rigid bone) triples."""
     gear = []
-    gear.append((_ring("HeadphoneBand", (0, 0.012, 1.475), 0.088, 0.085, 0.009, tilt=0.35), 6))
-    for x in (-0.092, 0.092):
+    # Headphones: band over the curls, a cup on each side, a boom mic.
+    gear.append((_arc("HeadphoneBand", (0, 0.0, 1.655), 0.15, math.radians(8), math.radians(172), 0.009), "metal", "Head"))
+    for side in (-1, 1):
+        x = 0.148 * side
+        rot = Matrix.Rotation(math.pi / 2, 4, "Y")
         bm = bmesh.new()
-        bmesh.ops.create_cone(bm, cap_ends=True, segments=14, radius1=0.04, radius2=0.034, depth=0.03,
-                              matrix=Matrix.Translation(Vector((x, -0.035, 1.455)))
-                              @ Matrix.Rotation(math.copysign(math.pi / 2, x), 4, "Y")
-                              @ Matrix.Rotation(0.5, 4, "X"))
-        mesh = bpy.data.meshes.new("HeadphoneCup")
-        bm.to_mesh(mesh)
-        bm.free()
-        cup = bpy.data.objects.new("HeadphoneCup", mesh)
-        bpy.context.scene.collection.objects.link(cup)
-        gear.append((cup, 6))
-        gear.append((_lens("CupLight", (x * 1.18, -0.035, 1.455), 0.012, 0.012), 7))
+        bmesh.ops.create_cone(bm, cap_ends=True, segments=16, radius1=0.042, radius2=0.036, depth=0.04,
+                              matrix=Matrix.Translation(Vector((x, 0.0, 1.655))) @ rot)
+        gear.append((_bm_object("HeadphoneCup", bm), "metal", "Head"))
+        gear.append((_ring_x("CupRim", (x + 0.021 * side, 0.0, 1.655), 0.034, 0.006), "accent", "Head"))
+    gear.append((_rod("BoomMic", (0.15, -0.02, 1.64), (0.05, -0.115, 1.6), 0.0045), "metal", "Head"))
+    gear.append((_ellipsoid("MicTip", (0.045, -0.118, 1.598), (0.011, 0.011, 0.011), (8, 6)), "accent", "Head"))
+
+    # Shearling collar: a soft band lying on the shoulders.
+    gear.append((_ring("Collar", (0, 0.01, 1.452), 0.078, 0.072, 0.017, tilt=0.22), "collar", "UpperChest"))
+
+    # Radio pack between the shoulder blades, with dial, light and antenna.
+    gear.append((_box("RadioPack", (0, 0.155, 1.29), (0.23, 0.1, 0.26)), "canvas", "UpperChest"))
+    gear.append((_box("PackFlap", (0, 0.16, 1.40), (0.24, 0.11, 0.04)), "strap", "UpperChest"))
+    gear.append((_box("RadioFace", (0, 0.2055, 1.27), (0.19, 0.01, 0.15)), "metal", "UpperChest"))
+    gear.append((_ellipsoid("Dial", (-0.06, 0.212, 1.29), (0.03, 0.008, 0.03), (12, 6)), "accent", "UpperChest"))
+    for x in (0.03, 0.07):
+        gear.append((_box("Knob", (x, 0.212, 1.25), (0.022, 0.012, 0.022)), "rib", "UpperChest"))
+    gear.append((_rod("Antenna", (0.09, 0.17, 1.42), (0.15, 0.25, 1.98), 0.006, 6), "metal", "UpperChest"))
+    gear.append((_ellipsoid("AntennaTip", (0.151, 0.251, 1.985), (0.014, 0.014, 0.014), (8, 6)), "accent", "UpperChest"))
+    # Pack straps over the shoulders and down the front.
+    for side in (-1, 1):
+        x = 0.085 * side
+        gear.append((_box("StrapTop", (x, 0.02, 1.44), (0.032, 0.2, 0.014), Matrix.Rotation(0.12, 4, "X")), "strap", "UpperChest"))
+        gear.append((_box("StrapFront", (x, -0.106, 1.37), (0.032, 0.012, 0.15), Matrix.Rotation(-0.3, 4, "X")), "strap", "UpperChest"))
+
+    # Webbing belt with a buckle, a pouch and the handset on her left hip.
+    gear.append((_ring("Belt", (0, 0.006, 0.985), 0.158, 0.106, 0.018), "strap", "Hips"))
+    gear.append((_box("Buckle", (0, -0.12, 0.985), (0.05, 0.016, 0.034)), "metal", "Hips"))
+    gear.append((_box("Pouch", (-0.12, 0.08, 0.95), (0.07, 0.05, 0.08)), "strap", "Hips"))
+    gear.append((_box("Handset", (0.165, -0.01, 0.95), (0.04, 0.06, 0.13)), "metal", "Hips"))
+    gear.append((_rod("HandsetAerial", (0.165, 0.0, 1.0), (0.168, 0.0, 1.08), 0.005, 6), "metal", "Hips"))
+    gear.append((_ellipsoid("HandsetLight", (0.186, -0.01, 0.97), (0.006, 0.012, 0.012), (8, 6)), "accent", "Hips"))
+
+    # Boot cuffs (folded tops of the tall boots) and a pad on her right knee.
+    for side, bone in ((1, "LeftLowerLeg"), (-1, "RightLowerLeg")):
+        gear.append((_ring("BootCuff", (0.108 * side, 0.004, 0.36), 0.056, 0.056, 0.016), "boot", bone))
+    gear.append((_box("KneePad", (-0.105, -0.055, 0.5), (0.085, 0.03, 0.1)), "pad", "RightLowerLeg"))
     return gear
+
+
+def _ring_x(name, center, radius, minor):
+    """A ring facing along X (headphone cup rims)."""
+    obj = _ring(name, (0, 0, 0), radius, radius, minor)
+    obj.data.transform(Matrix.Translation(Vector(center)) @ Matrix.Rotation(math.pi / 2, 4, "Y"))
+    return obj
+
+
+def echo_region(co, bone):
+    """Echo's outfit, painted by dominant bone and position."""
+    x, y, z = co
+    if bone in ("Head", "Neck"):
+        return "skin"
+    if bone.endswith("Hand"):
+        # Fingerless gloves: dark over the palm, bare fingers.
+        return "glove" if abs(x) < 0.775 else "skin"
+    if bone.endswith("LowerArm"):
+        # Full jacket sleeves with a dark knit cuff and a teal piping line.
+        if abs(x) > 0.62:
+            return "rib"
+        return "accent" if z > 1.462 else "top"
+    if bone.endswith("Foot") or bone.endswith("Toes"):
+        return "sole" if z < 0.025 else "boot"
+    if bone.endswith("LowerLeg"):
+        return "boot" if z < 0.37 else "pants"
+    if bone.endswith("UpperLeg") or bone == "Hips":
+        if z < 0.995:
+            return "pants"
+    # Cropped bomber: knit band at the hem, the cream shirt showing below it
+    # and at the open neck, teal piping down the zip and along the sleeves.
+    if z < 1.035:
+        return "shirt"
+    if z < 1.075:
+        return "rib"
+    if y < -0.06 and abs(x) < 0.03 and z < 1.40:
+        return "accent" if abs(x) > 0.012 else "rib"
+    if y < -0.05 and abs(x) < 0.045 and z > 1.40:
+        return "shirt"
+    if bone.endswith("UpperArm") and z > 1.462:
+        return "accent"
+    return "top"
 
 
 def _ring(name, center, rx, ry, minor, tilt=0.0, segments=24):
@@ -444,7 +603,9 @@ def region_for(co, bone):
     return "top"
 
 
-def paint_and_skin(body, arm):
+def skin(body, arm):
+    """Automatic weights for the skinned body and head only: loose rigid
+    parts in the mix make bone heat weighting fail."""
     for o in bpy.context.selected_objects:
         o.select_set(False)
     body.select_set(True)
@@ -452,34 +613,39 @@ def paint_and_skin(body, arm):
     bpy.context.view_layer.objects.active = arm
     bpy.ops.object.parent_set(type="ARMATURE_AUTO")
 
+
+def paint(body):
+    """Vertex colors from the outfit regions, and every rigid part (plus the
+    head) bound with full weight to the one bone it follows."""
     mesh = body.data
     groups = {g.index: g.name for g in body.vertex_groups}
     color_attr = mesh.color_attributes.new("Col", "FLOAT_COLOR", "POINT")
     part = mesh.attributes["part"].data
-    hair_ids = set(i for i in range(len(mesh.vertices)) if part[i].value > 0)
+    regions = echo_region if RUNNER == "echo" else region_for
+    rigid = {}  # bone -> vertex ids that follow it rigidly
     for v in mesh.vertices:
-        best, weight = "Hips", -1.0
-        for g in v.groups:
-            if g.weight > weight:
-                best, weight = groups[g.group], g.weight
-        region = PARTS[part[v.index].value] if v.index in hair_ids else region_for(v.co, best)
+        tag_value = part[v.index].value
+        if tag_value > 0:
+            region, bone = RIGID[tag_value - 1]
+        else:
+            best, weight = "Hips", -1.0
+            for g in v.groups:
+                if g.weight > weight:
+                    best, weight = groups[g.group], g.weight
+            region = regions(v.co, best)
+            # The head (and the top of the neck) follows the head bone rigidly.
+            bone = "Head" if v.co.z > 1.53 else None
+        if bone:
+            rigid.setdefault(bone, []).append(v.index)
         c = PALETTE[region]
         color_attr.data[v.index].color = (c[0], c[1], c[2], 1.0)
     mesh.color_attributes.active_color = color_attr
 
-    # Hair and head follow the head bone rigidly; chest gear the upper chest.
-    chest_ids = [i for i in hair_ids if part[i].value in CHEST_PARTS]
-    head_group = body.vertex_groups["Head"]
-    head_ids = [v.index for v in mesh.vertices
-                if (v.index in hair_ids or v.co.z > 1.53) and part[v.index].value not in CHEST_PARTS]
-    for g in body.vertex_groups:
-        if g.name != "Head":
-            g.remove(head_ids)
-    head_group.add(head_ids, 1.0, "REPLACE")
-    if chest_ids:
+    for bone, ids in rigid.items():
         for g in body.vertex_groups:
-            g.remove(chest_ids)
-        body.vertex_groups["UpperChest"].add(chest_ids, 1.0, "REPLACE")
+            g.remove(ids)
+        group = body.vertex_groups.get(bone) or body.vertex_groups.new(name=bone)
+        group.add(ids, 1.0, "REPLACE")
 
 
 def tag(obj, value):
@@ -509,12 +675,15 @@ def main():
     tag(body, 0)
     tag(head, 0)
     if RUNNER == "echo":
-        rigid = build_echo_hair() + build_echo_gear()
+        rigid = build_echo_hair() + build_echo_face() + build_echo_gear()
     else:
-        rigid = [(h, 1) for h in build_hair()] + build_gear()
-    for g, t in rigid:
-        tag(g, t)
-    body = join([body, head] + [g for g, _ in rigid], "RunnerMesh")
+        parker_parts = {2: "goggle_band", 3: "lens", 4: "scarf"}
+        rigid = [(h, "hair", "Head") for h in build_hair()] + [(g, parker_parts[t], "Head") for g, t in build_gear()]
+    for g, region, bone in rigid:
+        if (region, bone) not in RIGID:
+            RIGID.append((region, bone))
+        tag(g, RIGID.index((region, bone)) + 1)
+    body = join([body, head], "RunnerMesh")
     # Merge the doubled verts that the skin modifier leaves at branch joins.
     bpy.context.view_layer.objects.active = body
     bpy.ops.object.mode_set(mode="EDIT")
@@ -522,7 +691,12 @@ def main():
     bpy.ops.mesh.remove_doubles(threshold=0.0005)
     bpy.ops.mesh.normals_make_consistent(inside=False)
     bpy.ops.object.mode_set(mode="OBJECT")
-    paint_and_skin(body, arm)
+    skin(body, arm)
+    for g, _, bone in rigid:
+        g.vertex_groups.new(name=bone).add(list(range(len(g.data.vertices))), 1.0, "REPLACE")
+    body = join([body] + [g for g, _, _ in rigid], "RunnerMesh")
+    paint(body)
+    body.data.validate()
     body.data.attributes.remove(body.data.attributes["part"])
     build_material(body)
 

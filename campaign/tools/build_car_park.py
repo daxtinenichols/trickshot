@@ -1,9 +1,12 @@
 #!/usr/bin/env python3
 """Lays out the Meridian car park for m07 Parking Spiral.
 
-The car park is a helix: three laps of sloped decks around an open core,
+The car park is a helix: three laps of sloped decks around a walled core,
 each lap 6.5 m lower than the last, from the top deck (19.5 m, where the
-skybridge from the department store's roof lands) down to the street. It
+covered skybridge from the department store lands) down to the street.
+It is a closed building: solid outer walls and core walls from the street
+to above the top deck, so the run goes floor by floor (every deck is the
+ceiling of the one below) and nobody drops straight to the bottom. It
 can't be a route (route roofs are solid from the street up, and the laps
 stand over each other), so this script writes it as ordinary pieces.
 
@@ -38,10 +41,20 @@ LONG_DROP, SHORT_DROP = 2.3, 0.95
 LAPS = 3
 SLAB = 0.5
 
-# The store roof and the skybridge up to the top deck.
-ROOF_Y = 13.0
+# The skybridge: it leaves the mall's dock wall (MallBuilder.SKY_END, the
+# end of the covered way out of the store) and climbs to the top deck.
+BRIDGE_Y = 9.5
 ROOF_EDGE = -430.0
 BRIDGE_W = 4.0
+BRIDGE_HEAD = 2.8
+# The shell: outer and core walls stand this high, out of reach of the top
+# deck (a 3 m face climbs).
+SHELL_TOP = TOP + 4.5
+WALL = 0.4
+# The way out at the bottom: from the core north under the last lap's
+# north side to the street.
+EXIT_X = 5.0
+EXIT_H = 3.0
 # The street past the car park, and how far the mission runs down it.
 ROAD_END = -660.0
 
@@ -235,34 +248,100 @@ def lights():
 # ------------------------------------------------------------- bridge, street
 
 def skybridge():
-    """From the store roof's back edge up to the top deck: a covered
-    walkway that climbs 6.5 m (slide up it with speed)."""
+    """From the mall's dock wall up to the top deck: a covered walkway (walls
+    and roof) that climbs 10 m. Slide up it with speed."""
     z0, z1 = ROOF_EDGE, Z_S
-    ramp((0, TOP, z1), (0, ROOF_Y, z0), BRIDGE_W)
+    ramp((0, TOP, z1), (0, BRIDGE_Y, z0), BRIDGE_W)
     hw = BRIDGE_W / 2 + 0.15
+    # Walls: a sloped parapet is a 1 m band under its top edge, so stack
+    # bands up to the roof.
     for s in (-1, 1):
-        parapet((s * hw, ROOF_Y, z0), (s * hw, TOP, z1), h=1.1)
-    # Frame overhead every 8 m, and legs down to the street.
+        for h in (1.0, 2.0, BRIDGE_HEAD):
+            parapet((s * hw, BRIDGE_Y, z0), (s * hw, TOP, z1), h=h)
+    # Roof: a sloped sheet over the walls.
+    p(ramp=[0, TOP + BRIDGE_HEAD + 0.3, z1], to=[0, BRIDGE_Y + BRIDGE_HEAD + 0.3, z0], width=BRIDGE_W + 0.9, kind="NEUTRAL", look="CORRUGATED")
+    # Frame every 8 m, and legs down to the ground.
     n = 5
     for i in range(1, n + 1):
         t = i / (n + 1)
         z = z0 + (z1 - z0) * t
-        y = ROOF_Y + (TOP - ROOF_Y) * t
+        y = BRIDGE_Y + (TOP - BRIDGE_Y) * t
         for s in (-1, 1):
-            box((s * hw, y + 1.7, z), (0.2, 3.4, 0.2), look="RUST")
-        box((0, y + 3.5, z), (BRIDGE_W + 0.5, 0.2, 0.3), look="RUST")
+            box((s * (hw + 0.2), y + BRIDGE_HEAD / 2, z), (0.25, BRIDGE_HEAD + 0.4, 0.25), look="RUST")
     for t in (0.3, 0.7):
         z = z0 + (z1 - z0) * t
-        y = ROOF_Y + (TOP - ROOF_Y) * t
+        y = BRIDGE_Y + (TOP - BRIDGE_Y) * t
         for s in (-1, 1):
             box((s * (hw + 0.4), (y - 1.0) / 2, z), (0.6, y - 1.0, 0.6), look="NEUTRAL")
-    p(label="TO PARKING", at=[0, ROOF_Y + 3.2, z0 - 1.0], size=0.9)
+
+
+# ------------------------------------------------------------- the shell
+
+def wall_z(x, z0, z1, holes=(), top=SHELL_TOP):
+    """A wall along z at x from z0 to z1 (z0 > z1), street to `top`, with
+    holes (za, zb, y_low, y_high), za > zb."""
+    a = z0
+    for (za, zb, lo, hi) in sorted(holes, reverse=True) + [(z1, z1, 0, 0)]:
+        if a - za > 0.01:
+            box((x, top / 2, (a + za) / 2), (WALL, top, a - za), look="NEUTRAL")
+        if za - zb > 0.01:
+            if lo > 0.01:
+                box((x, lo / 2, (za + zb) / 2), (WALL, lo, za - zb), look="NEUTRAL")
+            box((x, (hi + top) / 2, (za + zb) / 2), (WALL, top - hi, za - zb), look="NEUTRAL")
+        a = zb
+
+
+def wall_x(z, x0, x1, holes=(), top=SHELL_TOP):
+    """A wall along x at z from x0 to x1 (x0 < x1), holes (xa, xb, lo, hi)."""
+    a = x0
+    for (xa, xb, lo, hi) in sorted(holes) + [(x1, x1, 0, 0)]:
+        if xa - a > 0.01:
+            box(((a + xa) / 2, top / 2, z), (xa - a, top, WALL), look="NEUTRAL")
+        if xb - xa > 0.01:
+            if lo > 0.01:
+                box(((xa + xb) / 2, lo / 2, z), (xb - xa, lo, WALL), look="NEUTRAL")
+            box(((xa + xb) / 2, (hi + top) / 2, z), (xb - xa, top - hi, WALL), look="NEUTRAL")
+        a = xb
+
+
+def shell():
+    """Outer walls and the core's walls, street to SHELL_TOP. Holes: the
+    skybridge door, the high line's break in the top lap and its way back
+    in on the second lap, the core's door off the last lap, and the way
+    out under the last lap's north side."""
+    xo = X_OUT + WALL / 2
+    a, b = (Z_SI - BREAK[0]) / (Z_SI - Z_NI), (Z_SI - BREAK[1]) / (Z_SI - Z_NI)
+    lo = min(deck_y(0, "W", a), deck_y(0, "W", b))
+    reentry = (REENTRY[0], REENTRY[1], deck_y(1, "W", (Z_SI - REENTRY[1]) / (Z_SI - Z_NI)) - 0.2, LEDGES[2][2] + 4.5)
+    wall_z(-xo, Z_S + 0.2, Z_N - 0.2, [(BREAK[0], BREAK[1], lo - 0.2, lo + 4.0), reentry])
+    wall_z(xo, Z_S + 0.2, Z_N - 0.2)
+    wall_x(Z_S + WALL / 2, -xo, xo, [(-BRIDGE_W / 2 - 0.3, BRIDGE_W / 2 + 0.3, TOP - 0.3, TOP + BRIDGE_HEAD + 0.3)])
+    wall_x(Z_N - WALL / 2, -xo, xo, [(-EXIT_X, EXIT_X, 0, EXIT_H)])
+    xi = X_IN + WALL / 2
+    wall_z(-xi, Z_SI, Z_NI)
+    wall_z(xi, Z_SI, Z_NI)
+    wall_x(Z_SI + WALL / 2, -xi, xi, [(-5.0, 5.0, 0, 4.0)])
+    wall_x(Z_NI - WALL / 2, -xi, xi, [(-EXIT_X, EXIT_X, 0, EXIT_H)])
+    # The way out is a tunnel under the north lane, and the space under the
+    # last lap's west side is shut off where it meets the street.
+    for sx in (-1, 1):
+        box((sx * (EXIT_X + WALL / 2), EXIT_H / 2, (Z_NI + Z_N) / 2), (WALL, EXIT_H, Z_NI - Z_N), look="NEUTRAL")
+    box((-(X_OUT + X_IN) / 2, TOP / 3 / 2, Z_SI), (LANE, TOP / 3, WALL), look="NEUTRAL")
+    # The core is lit from its open top, and by the fire on Juno's floor.
+    # Ruins either side of the way out, so the street only goes on west.
+    for sx in (-1, 1):
+        x0 = X_OUT + WALL
+        p(building=[sx * (x0 + 46.0) / 2, 14.0, Z_N - 1.0], size=[46.0 - x0, 2.0])
 
 
 def street():
     """Ground past the mall's road, ruins either side and at the end."""
     z0, z1 = -458.0, ROAD_END - 70.0
-    box((0, -0.5, (z0 + z1) / 2), (140, 1, z0 - z1), look="FLOOR", kind="FLOOR")
+    # No ground under the high line's ledges: a slip there is a fall.
+    hx0, hx1 = YARD_X
+    hz0, hz1 = YARD_Z
+    for (xa, xb, za, zb) in [(-70.0, hx0, z0, z1), (hx1, 70.0, z0, z1), (hx0, hx1, z0, hz0), (hx0, hx1, hz1, z1)]:
+        box(((xa + xb) / 2, -0.5, (za + zb) / 2), (xb - xa, 1, za - zb), look="FLOOR", kind="FLOOR")
     for s in (-1, 1):
         for i, (za, zb) in enumerate([(z0, -520.0), (-520.0, -600.0), (-600.0, z1)]):
             h = [30.0, 24.0, 34.0][i]
@@ -296,15 +375,26 @@ LEDGES = [
 ]
 LEDGE_W = 5.0
 LEDGE_X = -X_OUT - 0.3 - LEDGE_W / 2
+# Where the high line comes back in through the second lap's west wall.
+REENTRY = (-541.0, -556.0)
+# The yard under the ledges (x, z ranges): walled round, no floor.
+YARD_X = (LEDGE_X - LEDGE_W / 2 - 0.2, -X_OUT - WALL)
+YARD_Z = (-488.0, -561.0)
 
 
 def high_line():
     for (z0, z1, y) in LEDGES:
         box((LEDGE_X, y - 0.25, (z0 + z1) / 2), (LEDGE_W, 0.5, z0 - z1), look="RUST")
-        box((LEDGE_X - LEDGE_W / 2 + 0.1, y + 0.5, (z0 + z1) / 2), (0.15, 1.0, z0 - z1), look="RUST")
         for z in (z0 - 2.0, z1 + 2.0):
             box((LEDGE_X - LEDGE_W / 2 + 0.4, (y - 0.5) / 2, z), (0.3, y - 0.5, 0.3), look="RUST")
         p(mark=[LEDGE_X, y, z0 - 1.0], size=[2.6, 0.3], color="#b98a62")
+    # A screen of sheeting along the outside, ground to well over the top
+    # ledge, and across both ends: the ledges are a way down, not out.
+    top = LEDGES[0][2] + 4.5
+    sx = YARD_X[0]
+    box((sx, top / 2, (YARD_Z[0] + YARD_Z[1]) / 2), (0.3, top, YARD_Z[0] - YARD_Z[1]), look="CORRUGATED")
+    for z in YARD_Z:
+        box(((YARD_X[0] + YARD_X[1]) / 2, top / 2, z), (YARD_X[1] - YARD_X[0], top, 0.3), look="CORRUGATED")
     # Back in over the second lap's west wall, at the end of its west side.
     p(tape=[LEDGE_X, LEDGES[1][2], -515.0], id="m07_tape_ledges")
 
@@ -370,20 +460,20 @@ def enemies():
 
 def bot_paths():
     """Waypoints [x, z, action] for the test bots."""
-    main = [[0, -398], [3.8, -406], [3.8, -418], [0, -425], [0, -466], [-1, -474.5],
+    main = [[15, -390], [15, -402], [13, -406], [2, -406], [0, -410], [0, -466], [-1, -474.5],
             [-13.5, -474.5], [-15.5, -478]]
     for lap in range(LAPS):
         last = lap == LAPS - 1
         main += [[-15.5, Z_NI + 1], [-13.5, CZ_N], [13.5, CZ_N], [CX, Z_NI + 1], [CX, Z_SI - 1], [13.5, CZ_S]]
         if not last:
             main += [[-13.5, CZ_S], [-CX, Z_SI - 1]]
-    main += [[2, CZ_S], [1.5, Z_SI - 3], [2.5, -536], [1.5, -566], [0, ROAD_END + 5]]
-    alt = main[:8] + [[-17.0, -490.0], [LEDGE_X, -499.0], [LEDGE_X, -511.0], [LEDGE_X, -515.0, "jump"],
+    main += [[5, CZ_S], [2.5, Z_SI + 1.5], [1.5, Z_SI - 3], [2.5, -536], [1.5, -566], [0, ROAD_END + 5]]
+    alt = main[:main.index([-15.5, -478]) + 1] + [[-17.0, -490.0], [LEDGE_X, -499.0], [LEDGE_X, -511.0], [LEDGE_X, -515.0, "jump"],
                       [LEDGE_X, -526.0], [LEDGE_X, -532.0], [LEDGE_X, -536.0, "jump"],
                       [LEDGE_X, -543.0], [-20.3, -547.0, "jump"], [-16.0, -551.0],
                       [-13.5, CZ_N]]
     # Then the second lap from its north side on, like the main line.
-    i = main.index([-13.5, CZ_N], 10)
+    i = main.index([-13.5, CZ_N], main.index([-13.5, CZ_N]) + 1)
     alt += main[i + 1:]
     return main, alt
 
@@ -395,6 +485,7 @@ def main():
     cars()
     lights()
     skybridge()
+    shell()
     street()
     high_line()
     enemies()

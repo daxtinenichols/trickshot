@@ -81,13 +81,27 @@ const BRIDGES := [-150.0, -230.0, -310.0]
 ## campaign reads these by path; past EXIT the road is left open for it.
 const ENTRY := Transform3D(Basis.IDENTITY, Vector3(0, 0, 26))
 const EXIT := Transform3D(Basis.IDENTITY, Vector3(0, 0, -438))
-## The department store on its own: in on the ground floor, out on its roof.
+## The skybridge: a covered walkway from the sales floor's back edge at
+## x SKY_DOOR_X, straight back through the stockroom wall, west across the
+## dock at z SKY_CROSS_Z, then back again on x 0 and up to SKY_END, where it
+## leaves the building through the dock's back wall (the car park's bridge
+## carries on from there in m07).
+const SKY_DOOR_X := 15.0
+const SKY_W := 4.0
+const SKY_CROSS_Z := -406.0
+const SKY_END := Vector3(0, 9.5, DOCK_BACK)
+const SKY_HEAD := 2.8  # walls and roof over the deck
+## The department store on its own: in on the ground floor, out through the
+## skybridge door at the back corner of its sales floor (see skybridge).
 const ANCHOR_ENTRY := Transform3D(Basis.IDENTITY, Vector3(0, 0, -345))
-const ANCHOR_EXIT := Transform3D(Basis.IDENTITY, Vector3(0, ROOF_Y + 0.5, -395))
+const ANCHOR_EXIT := Transform3D(Basis.IDENTITY, Vector3(SKY_DOOR_X, UPPER_Y, STORE_DECK.y - 2.0))
 
 ## Leave the far (-Z) edge open so a mission can carry on down the road.
 ## Set before the builder enters the tree.
 @export var open_exit := false
+## Build the covered skybridge out of the store (m06, m07) in place of the
+## slide down to the dock, and shut the dock off from the store.
+@export var skybridge := false
 
 ## The front is painted render, the sides and back bare concrete blocks.
 const FRONT_PAINT := Color(0.72, 0.64, 0.52)
@@ -166,6 +180,17 @@ func _parking_lot() -> void:
 	for piece in MapPieces.perimeter(GROUND_CENTER, GROUND_SIZE, 26.0, 36.0, 16.0, 10.0, open_exit):
 		var t: Transform3D = piece.transform
 		_part_basis(t.origin, piece.size, t.basis, Kind.NEUTRAL, "FACADE")
+	# Burnt-out shops either side of the lot, wall to wall with the mall's
+	# front: the only way on from the lot is through the front doors, never
+	# round the outside to the back.
+	var edge := GROUND_SIZE.x * 0.5 + 1.0
+	for side: float in [-1.0, 1.0]:
+		var x0 := HALF_W + 0.5
+		var mid := (x0 + edge) * 0.5
+		for half: Array in [[x0, mid, 19.0], [mid, edge, 24.0]]:
+			var w: float = half[1] - half[0]
+			var hgt: float = half[2]
+			_part(Vector3(side * (half[0] + w * 0.5), hgt * 0.5, FRONT_Z + 3.5), Vector3(w + 0.05, hgt, 8.0), Kind.NEUTRAL, "FACADE")
 	for x: float in [-40.0, 40.0]:
 		_part(Vector3(x, 0.5, -25), Vector3(0.6, 1, 150), Kind.PARKOUR, "NEUTRAL")
 	_part(Vector3(0, 0.5, 50), Vector3(80, 1, 0.6), Kind.PARKOUR, "NEUTRAL")
@@ -587,8 +612,9 @@ func _wing() -> void:
 
 ## The department store anchor: an open hall with racks to slide under and
 ## tables to vault, an upper sales floor over most of it, stockroom shelving
-## to mantle up from the back, a slide down into the dock, and a roof access
-## (shelving up through a hatch) for the fight on the roof.
+## to mantle up from the back, and a slide down into the dock (or, with
+## skybridge, the covered way out to the car park). Its roof is shut: no
+## hatch, nothing to climb.
 func _store() -> void:
 	var h := ROOF_Y + 0.5
 	# Front wall: the void runs straight in through a full-height arch; the
@@ -609,7 +635,11 @@ func _store() -> void:
 		_slab(Vector3(side * (WELL_X + WING_HALF) * 0.5, sy, (WELL_Z.x + WELL_Z.y) * 0.5), Vector3(WING_HALF - WELL_X, 0.5, WELL_Z.x - WELL_Z.y))
 	_store_well()
 	_rail_x(STORE_DECK.y + 0.1, Vector2(-17.0, -5.0), UPPER_Y + 0.5)
-	_rail_x(STORE_DECK.y + 0.1, Vector2(5.0, 16.0), UPPER_Y + 0.5)
+	if skybridge:
+		_rail_x(STORE_DECK.y + 0.1, Vector2(5.0, SKY_DOOR_X - SKY_W * 0.5), UPPER_Y + 0.5)
+		_rail_x(STORE_DECK.y + 0.1, Vector2(SKY_DOOR_X + SKY_W * 0.5, 20.0), UPPER_Y + 0.5)
+	else:
+		_rail_x(STORE_DECK.y + 0.1, Vector2(5.0, 16.0), UPPER_Y + 0.5)
 	for x: float in [-18.0, -8.0, 8.0, 18.0]:
 		for z: float in [-352.0, -372.0]:
 			_part(Vector3(x, (UPPER_Y - 0.5) * 0.5, z), Vector3(0.8, UPPER_Y - 0.5, 0.8), Kind.NEUTRAL)
@@ -629,33 +659,19 @@ func _store() -> void:
 	for p: Vector3 in [Vector3(-10, 0, -350), Vector3(10, 0, -358), Vector3(-11, 0, -368), Vector3(12, 0, -376)]:
 		_part(Vector3(p.x, UPPER_Y + 0.4, p.z), Vector3(2, 0.8, 2), Kind.PARKOUR)
 	_part(Vector3(-18, UPPER_Y + 0.5, -362), Vector3(1.5, 1, 14), Kind.PARKOUR, "RUST")
-	# Slide from the sales floor's back edge down through the dock doors.
-	_ramp(Vector3(0, UPPER_Y, STORE_DECK.y), Vector3(0, 0, DOCK_Z + 0.5), 8.0, Kind.SLIDE)
-	_label("Slide down to the dock", Vector3(0, UPPER_Y + 2.5, STORE_DECK.y + 3.0), 0.8)
+	# Slide from the sales floor's back edge down through the dock doors, or
+	# the skybridge out.
+	if skybridge:
+		_skybridge()
+	else:
+		_ramp(Vector3(0, UPPER_Y, STORE_DECK.y), Vector3(0, 0, DOCK_Z + 0.5), 8.0, Kind.SLIDE)
 	# Stockroom shelving at the back: 1.5 m steps up to the sales floor.
 	for i in 3:
 		var top := 1.5 * (i + 1)
 		_part(Vector3(-20, top * 0.5, -395.0 + i * 4.0), Vector3(6, top, 4), Kind.PARKOUR, "RUST")
 	_label("Mantle up the shelving", Vector3(-20, 6.5, -394), 0.8)
-	# Roof access: shelving up under a hatch; from the top step, mantle out
-	# onto the roof ahead.
-	for i in 4:
-		var top := 1.5 * (i + 1)
-		_part(Vector3(14, UPPER_Y + top * 0.5, -361.0 - i * 2.0), Vector3(4, top, 2), Kind.PARKOUR, "RUST")
-	_label("ROOF ACCESS", Vector3(14, UPPER_Y + 3.0, -357.0), 1.0)
-	# Roof over store and dock, with the hatch at x 12..16, z -368..-360.
-	var y := ROOF_Y + 0.25
-	_roof_slab(Vector3(0, y, (STORE_Z - 360.0) * 0.5), Vector3(WING_HALF * 2, 0.5, STORE_Z + 360.0))
-	_roof_slab(Vector3(0, y, (-368.0 + DOCK_BACK) * 0.5), Vector3(WING_HALF * 2, 0.5, -368.0 - DOCK_BACK))
-	_roof_slab(Vector3((-WING_HALF + 12.0) * 0.5, y, -364.0), Vector3(WING_HALF + 12.0, 0.5, 8))
-	_roof_slab(Vector3((16.0 + WING_HALF) * 0.5, y, -364.0), Vector3(WING_HALF - 16.0, 0.5, 8))
-	# The roof: plant and cover for a fight up there.
-	var ry := ROOF_Y + 0.5
-	for p: Array in [[Vector3(-12, ry, -350), 0.0, "ac_unit"], [Vector3(-14, ry, -352), 0.0, "ac_unit"], [Vector3(6, ry, -386), PI, "ac_unit"],
-			[Vector3(-4, ry, -372), 0.0, "vent_stack"], [Vector3(18, ry, -392), 0.0, "vent_stack"], [Vector3(-18, ry, -398), 0.6, "satellite_dish"],
-			[Vector3(0, ry, -412), 0.0, "water_tank"], [Vector3(10, ry, -355), 0.0, "sandbag_wall"], [Vector3(-8, ry, -390), 1.57, "sandbag_wall"]]:
-		_prop(p[2], p[0], p[1])
-	_store_roof_edges()
+	# One roof over store and dock, no way through it.
+	_roof_slab(Vector3(0, ROOF_Y + 0.25, (STORE_Z + DOCK_BACK) * 0.5), Vector3(WING_HALF * 2, 0.5, STORE_Z - DOCK_BACK))
 	_lamp(Vector3(0, UPPER_Y - 0.8, -360), WARM, 1.4)
 	_lamp(Vector3(-14, ROOF_Y - 0.8, -360), WARM, 1.0)
 	_lamp(Vector3(14, ROOF_Y - 0.8, -380), COOL, 1.0)
@@ -664,57 +680,69 @@ func _store() -> void:
 		_target(Vector3(-16, 0, -377), ShootingTarget.Motion.STRAFE, 2.0, 3.0)
 
 
-## The store roof is a closed yard: the hatch comes up in it and the only
-## way on is the skybridge gap at the back edge (when a mission carries on,
-## see open_exit). A plant room with the store's sign shuts off the long
-## mall roof to the north, and the Static's sheet-metal hoardings, topped
-## with wire, close the side edges and the rest of the back. All 4.5 m or
-## more: too tall to climb.
-func _store_roof_edges() -> void:
-	var y := ROOF_Y + 0.5
-	var back := DOCK_BACK + 0.4
-	# North: lift motor room and water plant, the sign on its south face.
-	_part(Vector3(0, y + 3.5, STORE_Z - 2.0), Vector3(WING_HALF * 2 + 1.4, 7.0, 3.4), Kind.NEUTRAL, "BRICK")
-	_sign_band(Vector3(0, y + 4.6, STORE_Z - 3.9), Vector3(16, 2.0, 0.3), PI, "HARGROVE & SONS", SIGN_COLORS[1], 2.6)
-	_prop("water_tank", Vector3(-15, y + 7.0, STORE_Z - 2.0), 0.0)
-	_prop("antenna_mast", Vector3(17, y + 7.0, STORE_Z - 2.0), 0.0)
-	# Sides, back to front.
-	for side: float in [-1.0, 1.0]:
-		_hoarding(Vector2(side * (WING_HALF - 0.3), STORE_Z - 3.7), Vector2(side * (WING_HALF - 0.3), back), y)
-	# The back: open over the skybridge when the run goes on, lit so the
-	# gap reads from the hatch.
-	var gap := 2.6 if open_exit else 0.0
-	for side: float in [-1.0, 1.0]:
-		if gap > 0.0:
-			_hoarding(Vector2(side * (WING_HALF - 0.3), back), Vector2(side * gap, back), y)
-		else:
-			_hoarding(Vector2(-WING_HALF + 0.3, back), Vector2(WING_HALF - 0.3, back), y)
-			break
-	if gap > 0.0:
-		for side: float in [-1.0, 1.0]:
-			_part(Vector3(side * (gap + 0.3), y + 3.0, back), Vector3(0.6, 6.0, 0.6), Kind.NEUTRAL, "RUST")
-		_part(Vector3(0, y + 5.8, back), Vector3(gap * 2.0 + 1.2, 0.5, 0.6), Kind.NEUTRAL, "RUST")
-		_lamp(Vector3(0, y + 5.2, back + 0.8), WARM, 2.2)
-		_prop("barrel_rust", Vector3(-4.2, y, back + 1.2), 0.0)
-		_prop("barrel_rust", Vector3(4.2, y, back + 1.2), 0.6)
+## The covered skybridge out of the store: a walled, roofed deck from the
+## door in the sales floor's back rail (x SKY_DOOR_X) through the stockroom
+## wall, a right turn across the dock, a left turn and up to SKY_END in the
+## dock's back wall. Walls and roof all the way, so it's one way through.
+func _skybridge() -> void:
+	var y := UPPER_Y
+	var hw := SKY_W * 0.5
+	var door := Vector3(SKY_DOOR_X, y, STORE_DECK.y)
+	var turn1 := Vector3(SKY_DOOR_X, y, SKY_CROSS_Z)
+	var turn2 := Vector3(0, y, SKY_CROSS_Z)
+	# Leg 1: straight back from the door.
+	_sky_leg(door, Vector3(SKY_DOOR_X, y, SKY_CROSS_Z + hw))
+	# Leg 2: across the dock, west (the corner squares are part of it).
+	_slab(Vector3((turn1.x + turn2.x) * 0.5, y - 0.25, SKY_CROSS_Z), Vector3(SKY_DOOR_X + SKY_W, 0.5, SKY_W))
+	# Its front wall (open where leg 1 comes in) and back wall (open where
+	# leg 3 goes on).
+	_sky_part(Vector3((SKY_DOOR_X - SKY_W) * 0.5, y + SKY_HEAD * 0.5, SKY_CROSS_Z + hw + 0.15), Vector3(SKY_DOOR_X, SKY_HEAD, 0.3))
+	_sky_part(Vector3((SKY_DOOR_X + SKY_W) * 0.5, y + SKY_HEAD * 0.5, SKY_CROSS_Z - hw - 0.15), Vector3(SKY_DOOR_X, SKY_HEAD, 0.3))
+	_sky_part(Vector3(SKY_DOOR_X + hw + 0.15, y + SKY_HEAD * 0.5, SKY_CROSS_Z), Vector3(0.3, SKY_HEAD, SKY_W))
+	_sky_part(Vector3(-hw - 0.15, y + SKY_HEAD * 0.5, SKY_CROSS_Z), Vector3(0.3, SKY_HEAD, SKY_W))
+	_part(Vector3((turn1.x + turn2.x) * 0.5, y + SKY_HEAD + 0.15, SKY_CROSS_Z), Vector3(SKY_DOOR_X + SKY_W + 0.6, 0.3, SKY_W + 0.6), Kind.NEUTRAL, "CORRUGATED")
+	# Leg 3: back again on x 0, climbing to the dock's back wall.
+	_sky_leg(Vector3(0, y, SKY_CROSS_Z - hw), SKY_END)
+	# Lit door frame and sign at the start, so it reads from the sales floor.
+	for s: float in [-1.0, 1.0]:
+		_part(Vector3(SKY_DOOR_X + s * (hw + 0.2), y + SKY_HEAD * 0.5, STORE_DECK.y + 0.1), Vector3(0.4, SKY_HEAD, 0.4), Kind.NEUTRAL, "RUST")
+	_part(Vector3(SKY_DOOR_X, y + SKY_HEAD + 0.2, STORE_DECK.y + 0.1), Vector3(SKY_W + 0.8, 0.4, 0.4), Kind.NEUTRAL, "RUST")
+	_sign_band(Vector3(SKY_DOOR_X, y + SKY_HEAD + 0.9, STORE_DECK.y + 0.25), Vector3(SKY_W + 1.0, 0.9, 0.2), 0.0, "TO PARKING", SIGN_COLORS[2], 1.2)
+	_lamp(Vector3(SKY_DOOR_X, y + SKY_HEAD - 0.4, STORE_DECK.y - 1.5), WARM, 1.6)
+	_lamp(Vector3(SKY_DOOR_X * 0.5, y + SKY_HEAD - 0.4, SKY_CROSS_Z), WARM, 1.2)
+	_lamp(Vector3(0, (y + SKY_END.y) * 0.5 + SKY_HEAD - 0.4, (SKY_CROSS_Z + SKY_END.z) * 0.5), COOL, 1.2)
 
 
-## A run of corrugated sheet hoarding on posts from a to b (x, z) on the
-## roof at y: 4.5 m sheets, a coil of wire along the top.
-func _hoarding(a: Vector2, b: Vector2, y: float) -> void:
-	var length := a.distance_to(b)
-	if length < 0.1:
-		return
+## One straight leg of the skybridge along -Z from a to b (a ramp if they
+## differ in height): deck, walls both sides, roof.
+func _sky_leg(a: Vector3, b: Vector3) -> void:
+	var hw := SKY_W * 0.5
+	var length := a.z - b.z
+	var rise := b.y - a.y
+	var basis := Basis.IDENTITY
+	if absf(rise) > 0.01:
+		basis = Basis(Vector3.RIGHT, atan2(rise, length))
+	var along := Vector3(0, rise, -length)
 	var mid := (a + b) * 0.5
-	var along_x := absf(b.x - a.x) > absf(b.y - a.y)
-	var size := Vector3(length, 4.5, 0.2) if along_x else Vector3(0.2, 4.5, length)
-	_part(Vector3(mid.x, y + 2.25, mid.y), size, Kind.NEUTRAL, "CORRUGATED")
-	var wire := Vector3(length, 0.35, 0.35) if along_x else Vector3(0.35, 0.35, length)
-	_part(Vector3(mid.x, y + 4.7, mid.y), wire, Kind.NEUTRAL, "RUST")
-	var posts := maxi(1, roundi(length / 4.0))
-	for i in posts + 1:
-		var p := a.lerp(b, float(i) / posts)
-		_part(Vector3(p.x, y + 2.4, p.y), Vector3(0.3, 4.8, 0.3), Kind.NEUTRAL, "RUST")
+	var span := along.length()
+	_part_basis(mid + basis * Vector3(0, -0.25, 0), Vector3(SKY_W, 0.5, span), basis, Kind.FLOOR, "TILE")
+	# Walls and roof run a little past both ends (into the next leg or the
+	# wall), so a sloped leg leaves no gap where it meets them.
+	var over := span + (1.0 if absf(rise) > 0.01 else 0.0)
+	for s: float in [-1.0, 1.0]:
+		_part_basis(mid + basis * Vector3(s * (hw + 0.15), SKY_HEAD * 0.5, 0), Vector3(0.3, SKY_HEAD, over), basis, Kind.NEUTRAL, "CORRUGATED")
+	_part_basis(mid + basis * Vector3(0, SKY_HEAD + 0.15, 0), Vector3(SKY_W + 0.6, 0.3, over), basis, Kind.NEUTRAL, "CORRUGATED")
+
+
+func _sky_part(center: Vector3, size: Vector3) -> void:
+	_part(center, size, Kind.NEUTRAL, "CORRUGATED")
+
+
+## A roller shutter pulled down over a doorway: bottom center, width,
+## height, a steel box over the top.
+func _shutter(bottom: Vector3, width: float, height: float) -> void:
+	_part(bottom + Vector3(0, height * 0.5, 0), Vector3(width, height, 0.15), Kind.NEUTRAL, "CORRUGATED")
+	_part(bottom + Vector3(0, height - 0.25, 0.25), Vector3(width + 0.3, 0.5, 0.5), Kind.NEUTRAL, "RUST")
 
 
 ## The well through the sales floor: the high line goes up it (mantle two
@@ -740,23 +768,51 @@ func _store_well() -> void:
 	_rail_z(WELL_X + 0.1, Vector2(WELL_Z.x, back), UPPER_Y + 0.5)
 
 
-## The loading dock and the service road out. Past EXIT the road is kept
-## clear (a mission carries on down it).
+## The loading dock and the service road behind it. The dock's doors are
+## shuttered (the Static welded them), so the road is only ever seen; with
+## skybridge the dock is shut off from the store too, and the skybridge
+## crosses over it and leaves through its back wall.
 func _dock() -> void:
 	var h := ROOF_Y + 0.5
-	# Wall between store and dock, open in the middle (where the slide lands).
+	var hw := SKY_W * 0.5
+	# Wall between store and dock, open in the middle (where the slide lands),
+	# and with the skybridge's hole in it when there is one.
 	for side: float in [-1.0, 1.0]:
-		_part(Vector3(side * (6.0 + WING_HALF) * 0.5, h * 0.5, DOCK_Z), Vector3(WING_HALF - 6.0, h, 0.6), Kind.NEUTRAL)
+		if skybridge and side > 0.0:
+			var x0 := SKY_DOOR_X - hw - 0.3
+			var x1 := SKY_DOOR_X + hw + 0.3
+			_part(Vector3((6.0 + x0) * 0.5, h * 0.5, DOCK_Z), Vector3(x0 - 6.0, h, 0.6), Kind.NEUTRAL)
+			_part(Vector3((x1 + WING_HALF) * 0.5, h * 0.5, DOCK_Z), Vector3(WING_HALF - x1, h, 0.6), Kind.NEUTRAL)
+			_part(Vector3(SKY_DOOR_X, (UPPER_Y - 0.5) * 0.5, DOCK_Z), Vector3(x1 - x0, UPPER_Y - 0.5, 0.6), Kind.NEUTRAL)
+			var top := UPPER_Y + SKY_HEAD + 0.3
+			_part(Vector3(SKY_DOOR_X, (top + h) * 0.5, DOCK_Z), Vector3(x1 - x0, h - top, 0.6), Kind.NEUTRAL)
+		else:
+			_part(Vector3(side * (6.0 + WING_HALF) * 0.5, h * 0.5, DOCK_Z), Vector3(WING_HALF - 6.0, h, 0.6), Kind.NEUTRAL)
 	_part(Vector3(0, 5.0 + (UPPER_Y - 5.5) * 0.5 + 0.25, DOCK_Z), Vector3(12, 1.0, 0.6), Kind.NEUTRAL)
 	_part(Vector3(0, UPPER_Y + (h - UPPER_Y) * 0.5, DOCK_Z), Vector3(12, h - UPPER_Y, 0.6), Kind.NEUTRAL)
-	# Back wall: a big door in the middle, two bays over the platforms.
+	if skybridge:
+		_shutter(Vector3(0, 0, DOCK_Z - 0.4), 12.0, 5.0)
+	# Back wall: a big door in the middle, two bays over the platforms, all
+	# shuttered. With skybridge, a hole over the middle door for it.
 	var doors := [Vector2(-16, -10), Vector2(-6, 6), Vector2(10, 16)]
 	var a := -WING_HALF - 0.7
 	for d: Vector2 in doors + [Vector2(WING_HALF + 0.7, WING_HALF + 0.7)]:
 		if d.x - a > 0.01:
 			_part(Vector3((a + d.x) * 0.5, h * 0.5, DOCK_BACK - 0.35), Vector3(d.x - a, h, 0.7), Kind.NEUTRAL)
 		if d.y - d.x > 0.01:
-			_part(Vector3((d.x + d.y) * 0.5, 5.2 + (h - 5.2) * 0.5, DOCK_BACK - 0.35), Vector3(d.y - d.x, h - 5.2, 0.7), Kind.NEUTRAL)
+			var w := d.y - d.x
+			var cx := (d.x + d.y) * 0.5
+			if skybridge and absf(cx) < 0.1:
+				var under := SKY_END.y - 0.6
+				var over := SKY_END.y + SKY_HEAD + 0.3
+				_part(Vector3(cx, 5.2 + (under - 5.2) * 0.5, DOCK_BACK - 0.35), Vector3(w, under - 5.2, 0.7), Kind.NEUTRAL)
+				_part(Vector3(cx, over + (h - over) * 0.5, DOCK_BACK - 0.35), Vector3(w, h - over, 0.7), Kind.NEUTRAL)
+				for side: float in [-1.0, 1.0]:
+					var sw := w * 0.5 - hw - 0.3
+					_part(Vector3(side * (hw + 0.3 + sw * 0.5), (under + over) * 0.5, DOCK_BACK - 0.35), Vector3(sw, over - under, 0.7), Kind.NEUTRAL)
+			else:
+				_part(Vector3(cx, 5.2 + (h - 5.2) * 0.5, DOCK_BACK - 0.35), Vector3(w, h - 5.2, 0.7), Kind.NEUTRAL)
+			_shutter(Vector3(cx, 0, DOCK_BACK - 0.3), w, 5.2)
 		a = d.y
 	_part(Vector3(0, 6.5, DOCK_BACK - 0.85), Vector3(16, 1.2, 0.3), Kind.NEUTRAL, "SIGN", SIGN_COLORS[2])
 	# Loading platforms (1.2 m) either side, with stock still on them.
@@ -769,7 +825,6 @@ func _dock() -> void:
 	_prop("barrel_rust", Vector3(15.7, 0, -408.6), 0.0)
 	_lamp(Vector3(-10, ROOF_Y - 0.8, -415), COOL, 1.2)
 	_lamp(Vector3(10, ROOF_Y - 0.8, -415), COOL, 1.2)
-	_label("Out through the dock", Vector3(0, 6.2, -420), 0.9)
 	# Service road: lines, a trailer and wrecks off to the sides, the middle
 	# left open past the exit.
 	for z in range(int(DOCK_BACK) - 4, int(ROAD_END), -6):
