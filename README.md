@@ -55,18 +55,18 @@ Every move is simple to do. Doing it *precisely* gets you more out of it: more s
 | Slide landing | Press crouch just before you land from a fall | Turns some of your fall into forward speed |
 | Wallrun | Jump into a blue wall at an angle, holding a direction | You keep the angle you hit the wall at, and gravity keeps bending your path down: nothing holds you up. Shallow angle + speed = a longer run. Lean (Q or E) to roll your path round on the wall like a roll: toward the wall turns it up, away turns it down. Running up the wall costs speed. Look and aim anywhere while running; crouch drops off |
 | Wall hop | Jump during a wallrun or next to a wall in the air | Kicks you off the wall; the steeper you're running up it, the harder. Chain wall to wall |
-| Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it (your view stays put; hold Q or E while turning to face away quickly) |
+| Wall climb | Jump at a wall head-on | Straighter and faster = higher. Jump mid-climb to kick back off it (your view stays put, so turn to face away) |
 | Ramp run / loop | Run onto a purple ramp or loop | Gravity slows you going up and speeds you coming down. Fast enough and you run up steep ramps and upside down round loops; too slow and you drop off. Steer with the stick to run off the side. Whenever you leave a ramp or loop you fly off like a real body: you keep your angle and keep turning the way it was turning you (move the view to take over), so off a loop you can come round and land it like a flip. Land on a ramp mid-flip and you crash into it. Launch off the lip of a ramp for air tricks |
 | Sideways ramp | Run onto a purple bank at an angle, or across any steep ramp | Run along it tilted like a wallrun; steer with the stick or look up the slope to climb it, let go to drift down |
 | Roll | On the ground, flick the view down past your feet | A forward roll, like a flip on the ground. Keeps your speed |
 | Ground roll | Double-tap crouch while running | A quick forward roll that keeps your speed |
 | Landing roll | Hold crouch in the air (from any angle, even mid-flip), or land tucked forward | You curl into a ball and roll out of big drops without losing speed instead of a stun |
 | Kick | F. In the air: kick off walls and targets | Kicking with speed pushes you further and keeps your speed along the wall. Kicks doors open and breaks windows |
-| Lean / quick turn | Hold Q or E | Leans you to peek. While held, turning the view toward that side (Q left, E right) is faster and your run follows it without losing speed (in the air, part of your speed follows) |
+| Lean / quick turn | Hold Q or E | Leans you to peek. While held, turning the view toward that side (Q left, E right) swings your run round with it without losing speed (in the air, part of your speed follows). The view turns at your normal mouse speed |
 | Side flip | Hold Q or E in the air | Rolls you sideways one way (the first one you press). Holding it, or crouch, tucks you in and spins you faster; let go to open up and slow down. Near level it settles; land on your side and you shoulder-roll, keeping your speed (the further off level, the more it costs). A lean you were holding on a wallrun doesn't flip you as you come off: let go and lean again |
 | Window smash | Run or slide into glass fast enough | Low windows are too low to run through: slide under them |
 | Backflip / front flip | In the air, keep moving the view up and over (backflip) or down and over (front flip) until it comes back around | Past straight up/down the view turns faster, so commit to the flick. Flick hard past halfway and let go: momentum carries you round to level. Hold crouch to keep spinning. The HUD shows your flip progress. Land level or you crash |
-| 360 / 720 | In the air, turn a full circle | Momentum carries a fast spin round the same way as flips. Quick turn (Q/E) speeds the turn up |
+| 360 / 720 | In the air, turn a full circle | Momentum carries a fast spin round the same way as flips |
 
 You never have to stand still, but you can: let go of the stick and you stop quickly.
 

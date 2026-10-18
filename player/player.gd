@@ -269,15 +269,21 @@ func capture_mouse(on: bool) -> void:
 	Input.mouse_mode = Input.MOUSE_MODE_CAPTURED if on else Input.MOUSE_MODE_VISIBLE
 
 
-## How much faster this turn goes: quick_turn_look_scale toward the side of
-## a held lean button, scaled by the mouse lean toward its side, else 1.
-## (Positive yaw turns left.)
+## How much faster this turn goes: with steer (Shift) on your feet, up to
+## mouse_lean_turn_scale toward the side the mouse leans you, else 1. A held
+## lean button (Q/E) never speeds the view up; it only keeps your speed
+## (see _quick_turning). (Positive yaw turns left.)
 func _quick_turn_scale(d_yaw: float) -> float:
-	if _turn_side != 0.0 and d_yaw * _turn_side < 0.0:
-		return tuning.quick_turn_look_scale
 	if d_yaw * _mouse_lean < 0.0:
-		return lerpf(1.0, tuning.quick_turn_look_scale, absf(_mouse_lean))
+		return lerpf(1.0, tuning.mouse_lean_turn_scale, absf(_mouse_lean))
 	return 1.0
+
+
+## True while a lean button (Q left, E right) is held and you turn toward
+## its side: the view turns exactly as far as you move it, and your speed
+## swings round with it.
+func _quick_turning(d_yaw: float) -> bool:
+	return _turn_side != 0.0 and d_yaw * _turn_side < 0.0
 
 
 ## Turns the view. In the air the pitch is free, so pulling the view all the
@@ -298,10 +304,13 @@ func _look(d_yaw: float, d_pitch: float) -> void:
 		var dy := d_yaw * sin(r) + d_pitch * cos(r)
 		d_yaw = -dx if cos(pitch) < 0.0 else dx
 		d_pitch = dy
-	var scale := _quick_turn_scale(d_yaw)
-	if scale > 1.0:
-		d_yaw *= scale
+	if _quick_turning(d_yaw):
 		_turn_carry += d_yaw
+	else:
+		var scale := _quick_turn_scale(d_yaw)
+		if scale > 1.0:
+			d_yaw *= scale
+			_turn_carry += d_yaw
 	yaw = wrapf(yaw + d_yaw, -PI, PI)
 	if state == State.AIR:
 		if absf(wrapf(pitch, -PI, PI)) > deg_to_rad(75.0):
@@ -1952,8 +1961,9 @@ func _can_stand() -> bool:
 
 # ---------------------------------------------------------------- quick turn
 
-## Quick turn: while a lean button is held the view turns faster and your
-## speed swings round with it, so a hard turn doesn't cost you speed.
+## Quick turn: while a lean button is held, your speed swings round with
+## the view as you turn toward that side, so a hard turn doesn't cost you
+## speed. (The view itself turns at your normal sensitivity.)
 func _carry_turn() -> void:
 	var turned := _turn_carry
 	_turn_carry = 0.0

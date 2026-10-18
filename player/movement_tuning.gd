@@ -245,9 +245,10 @@ extends Resource
 @export_range(0.0, 2.0, 0.01) var spin_carry_time := 0.3
 
 @export_group("Quick turn and mouse steering")
-## Holding a lean button turns the view this many times faster toward that
-## side (Q left, E right); turning the other way is normal speed.
-@export_range(1.0, 5.0, 0.1) var quick_turn_look_scale := 2.5
+## Holding steer (Shift) on your feet, a full mouse lean turns the view up to
+## this many times faster (see mouse_lean_full_rate). Q/E never speed the
+## view up: they only keep your speed through the turn.
+@export_range(1.0, 5.0, 0.1) var mouse_lean_turn_scale := 2.5
 ## Holding steer (Shift) in the air or on a wall, moving the mouse left and
 ## right rolls you instead of turning: a side flip in the air, rolling your
 ## path round on a wall. This scales how far (1 = as far as it would turn).
@@ -255,7 +256,7 @@ extends Resource
 ## Holding steer (Shift) on your feet, turning the mouse leans you that way: the
 ## faster you turn, the more you lean (full lean at this many degrees per
 ## second), and the more you lean, the harder the turn (up to
-## quick_turn_look_scale), with your speed swinging round like a quick turn.
+## mouse_lean_turn_scale), with your speed swinging round like a quick turn.
 @export_range(60.0, 1440.0, 10.0) var mouse_lean_full_rate := 400.0
 ## While quick turning, your speed turns with your view: all of it on the
 ## ground, this share of it in the air.
