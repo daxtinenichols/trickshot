@@ -112,6 +112,35 @@ func _ready() -> void:
 	_weights["idle"] = 1.0
 
 
+## True when the editor has imported the asset (its .import file points at
+## an imported copy that exists), so load() won't fail with errors.
+func _imported(path: String) -> bool:
+	if path == "" or not ResourceLoader.exists(path):
+		return false
+	var cfg := ConfigFile.new()
+	if cfg.load(path + ".import") != OK:
+		return true  # no import file to check against; let load() decide
+	var remap := String(cfg.get_value("remap", "path", ""))
+	return remap == "" or FileAccess.file_exists(remap)
+
+
+## Reads a .glb straight from disk when the editor hasn't imported it yet
+## (a freshly copied model shows up before Project > Reload Current
+## Project), so the runner still gets their own model instead of Parker's.
+func _load_gltf_file(path: String) -> Node3D:
+	if path == "" or not FileAccess.file_exists(path):
+		return null
+	var doc := GLTFDocument.new()
+	var state := GLTFState.new()
+	if doc.append_from_file(path, state) != OK:
+		return null
+	var scene := doc.generate_scene(state) as Node3D
+	if scene != null and scene.find_children("*", "Skeleton3D", true, false).is_empty():
+		scene.free()
+		return null
+	return scene
+
+
 ## Swaps the shown model ("parker", "echo"). Call it before anything is
 ## attached to the skeleton (the gun look's hand); setup() does it for you.
 func set_runner(runner_name: String) -> void:
@@ -125,15 +154,18 @@ func set_runner(runner_name: String) -> void:
 
 
 func _load_model() -> void:
-	var scene: PackedScene = MODEL
 	var path: String = MODELS.get(runner, "")
+	model = null
 	if runner != "parker":
-		var res: Resource = load(path) if path != "" and ResourceLoader.exists(path) else null
+		var res: Resource = load(path) if _imported(path) else null
 		if res is PackedScene:
-			scene = res
+			model = res.instantiate()
 		else:
+			model = _load_gltf_file(path)
+		if model == null:
 			push_warning("RunnerBody: no model for runner '%s' (%s), showing Parker (reload the project if it was just added)" % [runner, path])
-	model = scene.instantiate()
+	if model == null:
+		model = MODEL.instantiate()
 	model.name = "Model"
 	add_child(model)
 	skeleton = model.find_children("*", "Skeleton3D", true, false)[0]
