@@ -57,7 +57,17 @@
   {"fork": [{"roof": 30, "y": 2.6, "look": "RUST", "bare": true}, {"gap": 5}, {"roof": 36, "y": 5.2, "look": "RUST", "bare": true, "do": [{"tape": "l1_2_tape_calder", "x": 0, "at": 20}]}, {"wallrun": 12, "side": -1}, {"roof": 30, "y": 5.2, "look": "RUST", "bare": true}, {"ramp_down": 0, "length": 18}], "side": -1},
   {"roof": 80, "y": 0, "do": [{"hole": 0, "style": "wagon", "at": 30}, {"hurdles": true, "at": 62}]},
   {"join": true},
-  {"roof": 158, "y": 0, "do": [{"slide": true, "at": 40}, {"prop": "car_wreck", "x": 4.4, "at": 70, "yaw": 15}, {"hurdles": true, "at": 118}]},
+  {"roof": 10, "y": 0},
+  {"ramp_up": 3.5, "length": 10},
+  {"roof": 14, "y": 3.5, "do": [{"label": "LOADING DOCK", "at": 4, "size": 0.8}]},
+  {"gap": 3, "trick": "flip"},
+  {"roof": 14, "y": 3.5},
+  {"gap": 3, "trick": "spin"},
+  {"roof": 56, "y": 3.5},
+  {"gate": {"tier": 1}},
+  {"roof": 14, "y": 3.5},
+  {"ramp_down": 0, "length": 12},
+  {"roof": 7.32, "y": 0},
   {"roof": 60, "y": 0, "bare": true, "do": [{"piece": {"row": "fence_chainlink", "from": [-14, 0, 0], "to": [-4.5, 0, 0], "count": 4}, "at": 40, "length": 0}, {"piece": {"row": "fence_chainlink", "from": [4.5, 0, 0], "to": [14, 0, 0], "count": 4}, "at": 40, "length": 0}, {"prop": "loudspeaker_pole", "x": -3.6, "at": 39, "yaw": 180}, {"prop": "loudspeaker_pole", "x": 3.6, "at": 39, "yaw": 160}, {"label": "SOUTH GATE · TO THE WAREHOUSES", "at": 40, "size": 1.0}, {"mark": "#f57320", "at": 41}]}
  ]
 }

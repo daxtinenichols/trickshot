@@ -24,6 +24,7 @@ extends RefCounted
 const PATH := "res://campaign/atlas.json"
 const CAMPAIGN_PATH := "res://campaign/campaign.json"
 const ROUTE_PATH := "res://campaign/route.gd"
+const SPEED_GATE_PATH := "res://campaign/speed_gate.gd"
 const City := preload("res://campaign/city.gd")
 ## How far past the level the skyline reaches (the camera sees 600 m).
 const SKY_RANGE := 560.0
@@ -360,7 +361,7 @@ static func _neighbour_courses(id: String) -> Array:
 static func course_of(id: String, path: String) -> Array:
 	if _courses.has(id):
 		return _courses[id]
-	var m := _raw(path)
+	var m: Dictionary = (load(SPEED_GATE_PATH) as Script).call("prepare", _raw(path))
 	m.skyline = false
 	var route: Script = load(ROUTE_PATH)
 	route.call("expand", m)

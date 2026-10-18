@@ -26,6 +26,7 @@ const SHOTS := [
 	["l1_2_the_yard", Vector3(3425, 13.7, 117), Vector3(3423, 13.2, 130), "dk_1_2_handoff"],
 	["l1_2_the_yard", Vector3(3448, 22, 156), Vector3(3420, 0, 240), "dk_1_2_yard"],
 	["l1_2_the_yard", Vector3(3402, 15, 296), Vector3(3300, 3, 330), "dk_1_2_terminal"],
+	["l1_2_the_yard", Vector3(3112, 6.5, 321), Vector3(3060, 2.5, 318), "dk_1_2_speed_gate"],
 	["l1_2_the_yard", Vector3(2992, 1.7, 318), Vector3(2700, 30, 318), "dk_1_2_gate_west"],
 	["l1_2_the_yard", Vector3(2972, 1.7, 318), Vector3(0, 120, 0), "dk_1_2_skyline_west"],
 	["m02_on_air", Vector3(-14, 18, 6), Vector3(0, 8, -40), "m02_start"],
