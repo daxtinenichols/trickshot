@@ -6,7 +6,7 @@
 
 [node name="Player" type="CharacterBody3D" groups=["player"]]
 collision_layer = 2
-collision_mask = 1
+collision_mask = 9
 script = ExtResource("1_player")
 tuning = ExtResource("2_tuning")
 

@@ -425,19 +425,24 @@ static func _turn(st: Dictionary, seg: Dictionary) -> void:
 	var z0: float = st.z
 	var pivot := z0 - size * 0.5
 	var turn := angle if left else -angle
+	# The near edge of a corner that isn't square (where the last roof
+	# ends) and its far edge (where the next one starts), turned by the
+	# corner.
+	var h := maxf(WIDTH, size) * 0.5
+	var b := Basis(Vector3.UP, turn)
+	var far_c := Vector3(0, 0, pivot) + b * Vector3(0, 0, -size * 0.5)
+	var far_r := b * Vector3(h, 0, 0)
+	var quad := [[-h, z0], [h, z0], [far_c.x + far_r.x, far_c.z + far_r.z], [far_c.x - far_r.x, far_c.z - far_r.z]]
+	var square := is_equal_approx(angle, PI * 0.5)
 	if st.y > 0.5:
-		if is_equal_approx(angle, PI * 0.5):
+		if square:
 			_add(st, {"building": [0, st.y, pivot], "size": [size, size], "look": seg.get("look", st.roof_look)})
 		else:
-			# The near edge of the corner (where the last roof ends) and its
-			# far edge (where the next one starts), turned by the corner.
-			var h := maxf(WIDTH, size) * 0.5
-			var b := Basis(Vector3.UP, turn)
-			var far_c := Vector3(0, 0, pivot) + b * Vector3(0, 0, -size * 0.5)
-			var far_r := b * Vector3(h, 0, 0)
-			_add(st, {"slab": [[-h, z0], [h, z0], [far_c.x + far_r.x, far_c.z + far_r.z], [far_c.x - far_r.x, far_c.z - far_r.z]],
-				"top": st.y, "look": seg.get("look", st.roof_look)})
+			_add(st, {"slab": quad, "top": st.y, "look": seg.get("look", st.roof_look)})
 	_lane(st, z0, z0 - size, maxf(WIDTH, size))
+	if not square:
+		# The city fits the corner's own outline, not a square round it.
+		st.lanes[-1].append(quad)
 	_set_low(st, st.y)
 	# The bot heads for the middle of the corner; it turns there.
 	st.bot.append([z0 + 6.0, "", 0.0])
@@ -963,6 +968,14 @@ static func _lane_areas(st: Dictionary) -> Array:
 		var leg: int = l[0]
 		var c := _world(st, leg, l[1], (float(l[2]) + float(l[3])) * 0.5, 0.0)
 		var top: float = l[5]
-		out.append(City.area(Vector2(c.x, c.z), Vector2(float(l[4]) * 0.5, absf(float(l[2]) - float(l[3])) * 0.5),
-			st.legs[leg].yaw, top, City.STREET_MARGIN if top <= City.STREET_TOP else City.ROOF_MARGIN))
+		var a := City.area(Vector2(c.x, c.z), Vector2(float(l[4]) * 0.5, absf(float(l[2]) - float(l[3])) * 0.5),
+			st.legs[leg].yaw, top, City.STREET_MARGIN if top <= City.STREET_TOP else City.ROOF_MARGIN)
+		if l.size() > 7:
+			# An outline [[x, z], ...] in the leg's frame.
+			var poly: Array = []
+			for q: Array in l[7]:
+				var w := _world(st, leg, q[0], q[1], 0.0)
+				poly.append(Vector2(w.x, w.z))
+			a.poly = poly
+		out.append(a)
 	return out

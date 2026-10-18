@@ -692,10 +692,46 @@ func _move() -> void:
 	_pre_move_velocity = velocity
 	move_and_slide()
 	_smash_breakables()
-	if is_on_wall():
+	_body_check()
+	if _on_world_wall():
 		_wall_normal = get_wall_normal()
 		_since_wall = 0.0
 		_check_wall_impact()
+
+
+## Running into an enemy fast knocks it over (Enemy.on_body_checked): you
+## lose some speed and run on through, since it's no longer solid. One too
+## heavy to knock over staggers aside and you shoulder past, losing more.
+## Too slow, and it blocks you like any body.
+func _body_check() -> void:
+	var pre := MovementMath.horizontal(_pre_move_velocity)
+	var speed := pre.length()
+	if speed < tuning.body_check_speed:
+		return
+	for i in get_slide_collision_count():
+		var col := get_slide_collision(i).get_collider()
+		if col is Node and (col as Node).is_in_group("enemies") and col.has_method("on_body_checked"):
+			if col.on_body_checked(self, pre, speed):
+				var heavy: bool = col.has_method("is_knocked_down") and not col.is_knocked_down()
+				var keep := pre * (tuning.body_check_heavy_keep if heavy else tuning.body_check_keep)
+				velocity = Vector3(keep.x, velocity.y, keep.z)
+			return
+
+
+## Touching a wall that isn't an enemy. Enemies are solid (you bump into
+## them) but aren't walls: no wallruns, climbs or bonks off a body.
+func _on_world_wall() -> bool:
+	if not is_on_wall():
+		return false
+	var limit := cos(floor_max_angle) - 0.01
+	for i in get_slide_collision_count():
+		var c := get_slide_collision(i)
+		if c.get_normal().dot(up_direction) >= limit:
+			continue
+		var col := c.get_collider()
+		if not (col is Node and (col as Node).is_in_group("enemies")):
+			return true
+	return false
 
 
 ## Running or sliding into a window fast enough goes straight through.
@@ -887,9 +923,9 @@ func _tick_air(f: InputFrame, wish: Vector3, delta: float) -> void:
 	if is_on_floor():
 		_land(f)
 		return
-	if is_on_wall() and _try_start_wallrun(f, wish):
+	if _on_world_wall() and _try_start_wallrun(f, wish):
 		return
-	if is_on_wall() and f.jump_held and _try_wall_climb(f, false):
+	if _on_world_wall() and f.jump_held and _try_wall_climb(f, false):
 		return
 
 

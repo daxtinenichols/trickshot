@@ -5,7 +5,8 @@ extends Node
 ##
 ## A few hits to go down, and health comes back once you stop getting
 ## hit for a while, so moving well keeps you alive. Going down
-## respawns you (which also bails the combo, like any respawn).
+## respawns you (which also bails the combo, like any respawn), unless
+## respawn_on_down is off: a mission restarts the whole level instead.
 ##
 ## Pure game logic ticked in physics; HurtOverlay only reads it.
 
@@ -23,6 +24,9 @@ const NODE_NAME := "PlayerHealth"
 @export var regen_rate := 28.0
 ## Off: damage still shows but never takes you down (testing).
 @export var can_die := true
+## Going down puts you back at respawn_point (free-roam maps). Missions
+## turn this off: they restart the level (MissionRun).
+@export var respawn_on_down := true
 
 var player: Player
 var health := 100.0
@@ -91,7 +95,7 @@ func refill() -> void:
 
 func _go_down() -> void:
 	deaths += 1
-	if player:
+	if player and respawn_on_down:
 		player.respawn(respawn_point)
 	refill()
 	died.emit()

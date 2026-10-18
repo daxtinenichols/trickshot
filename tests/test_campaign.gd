@@ -28,7 +28,34 @@ func after_each() -> void:
 	if is_instance_valid(level):
 		level.queue_free()
 	level = null
+	# A restart a test didn't wait for leaves a fresh level behind.
+	for n: Node in tree.root.get_children():
+		if n.scene_file_path == MISSION.resource_path:
+			n.queue_free()
 	await tree.process_frame
+
+
+## Waits for the level to restart after a loss and switches to the fresh one.
+func _await_restart(max_frames := 120) -> bool:
+	var old := level
+	for i in max_frames:
+		await tree.physics_frame
+		if not is_instance_valid(old) or not old.is_inside_tree():
+			break
+	await tree.process_frame
+	var fresh: Node3D = null
+	for n: Node in tree.root.get_children():
+		if n != old and n.scene_file_path == MISSION.resource_path and not n.is_queued_for_deletion():
+			fresh = n
+	if fresh == null:
+		return false
+	level = fresh
+	player = level.get_node("Player")
+	player.use_device_input = false
+	player.scripted_input = InputFrame.new()
+	run = level.run
+	await tree.physics_frame
+	return true
 
 
 func _load(i: int) -> void:
@@ -164,11 +191,6 @@ func test_checkpoints_falls_and_objectives() -> void:
 	player.global_position = Vector3(0, 10.05, -46)
 	await _step(3)
 	check(run.checkpoint == 1, "first checkpoint (%d)" % run.checkpoint)
-	player.global_position = Vector3(0, 1.0, -75)
-	await _step(3)
-	check(run.falls == 1, "a fall is counted")
-	check(player.global_position.distance_to(level.builder.spawns[1].origin) < 1.0, "back at the checkpoint")
-	check(run.phase == MissionRun.Phase.RUNNING, "the clock keeps going")
 	# Through the drop zone: the first objective completes.
 	player.global_position = Vector3(0, 13.05, -109)
 	await _step(3)
@@ -197,6 +219,110 @@ func test_zone_key_starts_a_practice_run() -> void:
 	await _step(3)
 	check(run.phase == MissionRun.Phase.COMPLETE, "can finish")
 	check(not Campaign.is_complete(_index("m00_dawn_run")), "but a practice run saves nothing")
+
+
+## Losing sends you back to the very start (Dax 2026-10-18): a fall past a
+## checkpoint, and the restart is a clean run.
+func test_a_fall_restarts_the_mission_from_the_start() -> void:
+	await _load(_index("m00_dawn_run"))
+	var lost: Array[String] = []
+	run.lost.connect(func(r: String) -> void: lost.append(r))
+	await _step(5)
+	player.global_position = Vector3(0, 10.05, -8)
+	await _step(3)
+	player.global_position = Vector3(0, 10.05, -46)
+	await _step(3)
+	check(run.checkpoint == 1, "past the first checkpoint")
+	level.combo.add(&"vault", 75, 8.0)
+	player.global_position = Vector3(0, 1.0, -75)
+	await _step(3)
+	check(run.falls == 1 and lost == ["fall"], "a fall loses the run (%s)" % [lost])
+	check(run.phase == MissionRun.Phase.LOST, "the clock stops")
+	check(level._fade_layer.visible and level._fade_label.text == "FELL", "it fades out on FELL")
+	var old := level
+	await _step(30)
+	check(is_instance_valid(old) and old.is_inside_tree(), "not straight away: the loss reads first")
+	check(await _await_restart(), "then the level starts again")
+	check(level != old, "as a fresh copy of the level")
+	check(player.global_position.distance_to(level.builder.spawns[0].origin) < 1.0, "at the start, not the checkpoint (%s)" % player.global_position)
+	check(run.phase == MissionRun.Phase.READY and run.ticks == 0 and run.checkpoint == 0, "a clean run: clock at zero, no checkpoint")
+	check(run.objective == 0 and not run.practice, "first objective, a real run")
+	check(level.combo.score == 0 and level.combo.multiplier() <= 1, "no score or combo carried over")
+	check(run.restarts == 1 and level.restarts == 1, "one restart counted")
+
+
+func test_going_down_restarts_with_every_enemy_back() -> void:
+	await _load(_index("m02_on_air"))
+	var b: MissionBuilder = level.builder
+	var enc: Node3D = b.encounters[0]
+	var n: int = enc.alive_count()
+	player.global_position = b.spawns[0].origin + Vector3(0, 0.05, -8)
+	await _step(3)
+	check(run.phase == MissionRun.Phase.RUNNING, "running")
+	var c: Vector3 = enc.bounds.get_center()
+	player.global_position = Vector3(c.x, 8.05, c.z)
+	await _step(5)
+	enc.enemies[0].take_hit({"damage": 500.0, "zone": &"body", "position": enc.enemies[0].global_position})
+	check(enc.alive_count() == n - 1, "one killed")
+	var at := player.global_position
+	var health: PlayerHealth = PlayerHealth.of(player)
+	health.take_damage(500.0, Vector3.ZERO)
+	await _step(2)
+	check(run.downs == 1 and run.phase == MissionRun.Phase.LOST, "going down loses the run")
+	check(player.global_position.distance_to(at) < 1.0, "you go down where you were, no teleport mid-fade")
+	check(level._fade_label.text == "DOWN", "it fades out on DOWN")
+	check(await _await_restart(), "the level starts again")
+	b = level.builder
+	enc = b.encounters[0]
+	check(player.global_position.distance_to(b.spawns[0].origin) < 1.0, "at the start (%s)" % player.global_position)
+	check(enc.alive_count() == n, "every enemy is back (%d / %d)" % [enc.alive_count(), n])
+	check(PlayerHealth.of(player).health == PlayerHealth.of(player).max_health, "full health")
+
+
+func test_backspace_restarts_the_level() -> void:
+	await _load(_index("m00_dawn_run"))
+	await _step(3)
+	player.respawn()
+	await _step(3)
+	check(run.phase == MissionRun.Phase.READY, "at the start before moving: nothing to restart")
+	player.global_position = Vector3(0, 10.05, -8)
+	await _step(3)
+	player.global_position = Vector3(0, 10.05, -46)
+	await _step(3)
+	player.respawn()  # Backspace
+	await _step(2)
+	check(run.phase == MissionRun.Phase.LOST and run.lost_reason == "restart", "Backspace restarts the level")
+	check(run.falls == 0 and run.downs == 0, "without counting a fall")
+	check(await _await_restart(30), "quickly")
+	check(player.global_position.distance_to(level.builder.spawns[0].origin) < 1.0, "from the start")
+	check(run.checkpoint == 0 and run.restarts == 1, "a fresh run")
+
+
+func test_pause_menu_restarts_the_level() -> void:
+	await _load(_index("m00_dawn_run"))
+	var buttons: Array = level.menu.find_children("*", "Button", true, false).filter(func(x: Button) -> bool: return x.text == "Restart level")
+	check(buttons.size() == 1, "the menu has Restart level")
+	if buttons.is_empty():
+		return
+	level.menu.open()
+	(buttons[0] as Button).pressed.emit()
+	check(not tree.paused, "it closes the menu")
+	check(await _await_restart(5), "and restarts")
+
+
+func test_a_lost_practice_run_restarts_at_its_start() -> void:
+	await _load(_index("m00_dawn_run"))
+	level.go_to_zone(3)
+	await _step(3)
+	var sp: Transform3D = level.builder.spawns[3]
+	player.global_position = sp.origin - sp.basis.z * 6.0
+	await _step(3)
+	player.global_position = Vector3(sp.origin.x, run.fail_y() - 20.0, sp.origin.z)
+	await _step(2)
+	check(run.phase == MissionRun.Phase.LOST, "a fall loses the practice run (%s, falls %d, y %.1f, fail %.1f)" % [MissionRun.Phase.keys()[run.phase], run.falls, player.global_position.y, run.fail_y()])
+	check(await _await_restart(), "it restarts")
+	check(run.practice and run.start_index == 3, "from the same practice start (%d)" % run.start_index)
+	check(player.global_position.distance_to(level.builder.spawns[3].origin) < 1.0, "standing there")
 
 
 func test_tapes_are_collected() -> void:
@@ -454,6 +580,12 @@ func test_the_host_has_his_own_model() -> void:
 		check(model != null and model.scene_file_path.ends_with("host.glb"), "host.glb (%s)" % (model.scene_file_path if model else "none"))
 		var skel: Skeleton3D = body.get("skeleton")
 		check(skel != null and skel.find_bone("LeftUpperLeg") >= 0, "on the runners' skeleton")
+		# The first-person camera skips the runner's own layer; he must not be on it.
+		var cull: int = 0xFFFFF & ~RunnerBody.LAYER  # what ArtLook sets on the player's camera
+		var meshes := model.find_children("*", "MeshInstance3D", true, false) if model else []
+		check(not meshes.is_empty(), "he has meshes")
+		for mi: MeshInstance3D in meshes:
+			check(mi.layers & cull != 0, "%s shows in first person (layers %d)" % [mi.name, mi.layers])
 
 
 ## The set pieces in Signal Out: a beam falls and only blocks once it has
@@ -483,8 +615,8 @@ func test_signal_out_set_pieces() -> void:
 	var q := PhysicsRayQueryParameters3D.create(top + Vector3(0, 0.5, 0), top - Vector3(0, 3, 0), 1)
 	var hit := player.get_world_3d().direct_space_state.intersect_ray(q)
 	check(not hit.is_empty() and hit.collider.get_parent() == beam.get_node("Beam"), "lying across the roof")
-	run._back_to_checkpoint()
-	check(not beam.fired and shapes.all(func(c: CollisionShape3D) -> bool: return c.disabled), "a checkpoint puts it back")
+	run.start_practice(0)
+	check(not beam.fired and shapes.all(func(c: CollisionShape3D) -> bool: return c.disabled), "a new run puts it back")
 
 
 func test_standing_still_in_the_chase_gets_you_caught() -> void:
@@ -502,8 +634,10 @@ func test_standing_still_in_the_chase_gets_you_caught() -> void:
 			caught = true
 			break
 	check(caught, "the Host catches you if you stand still")
-	check(player.global_position.distance_to(level.builder.spawns[0].origin) < 1.0, "back to the checkpoint")
-	check(not run.pursuer.visible, "he waits again before coming")
+	check(run.phase == MissionRun.Phase.LOST and level._fade_label.text == "CAUGHT", "and that loses the run")
+	check(await _await_restart(), "the level restarts")
+	check(player.global_position.distance_to(level.builder.spawns[0].origin) < 1.0, "back at the start")
+	check(not run.pursuer.visible and run.catches == 0, "he waits again before coming")
 
 
 func test_beating_the_finale_unlocks_echo() -> void:
@@ -618,6 +752,9 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 		var pos := player.global_position
 		if run.phase == MissionRun.Phase.COMPLETE:
 			return true
+		if run.phase == MissionRun.Phase.LOST:
+			push_warning("route bot lost the run (%s) at %s" % [run.lost_reason, pos])
+			return false
 		_update_leg(pos)
 		var z := _local(pos, _leg).y
 		if z < stop_z:
@@ -744,22 +881,12 @@ func test_on_air_lookouts_are_raiders() -> void:
 	check(enc.phase == EnemyEncounter.Phase.ACTIVE, "the encounter starts on the roof")
 	check(run.objective == 2, "practice from the lookout roof: the lookouts are a bonus, the mast is the goal")
 	check(run.bonuses.has(1) and run.bonus_text().contains("(0 / 3)"), "the lookout bonus is open (%s)" % run.bonus_text())
-	# One kill, then go down: the one you killed stays dead (Dax: killed
-	# enemies don't respawn), the rest go back to their spots, and the
-	# count keeps the kill.
 	enc.enemies[0].take_hit({"damage": 500.0, "zone": &"body", "position": enc.enemies[0].global_position})
 	check(run.bonus_text().contains("(1 / 3)"), "one down (%s)" % run.bonus_text())
-	var health: PlayerHealth = PlayerHealth.of(player)
-	health.take_damage(500.0, Vector3.ZERO)
-	await _step(2)
-	check(run.downs == 1, "went down once")
-	check(player.global_position.distance_to(b.spawns[2].origin) < 1.0, "back at the checkpoint (%s)" % player.global_position)
-	check(enc.enemies[0].is_dead and not enc.enemies[0].visible, "the killed raider stays dead")
-	check(enc.alive_count() == n - 1, "the others reset (%d alive)" % enc.alive_count())
-	check(run.bonus_text().contains("(1 / 3)"), "the kill still counts (%s)" % run.bonus_text())
 	var score: int = level.combo.score
 	for e: Node in enc.enemies:
-		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
+		if not e.is_dead:
+			e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
 	await _step(2)
 	check(run.bonuses[1].done and run.bonuses_done() == 1, "the lookouts are down: bonus done")
 	check(level.combo.score >= score + MissionRun.BONUS_POINTS, "and it pays (%d -> %d)" % [score, level.combo.score])
@@ -767,10 +894,6 @@ func test_on_air_lookouts_are_raiders() -> void:
 	check(run.headshots == n - 1, "headshots counted (%d)" % run.headshots)
 	await _step(400)
 	check(enc.alive_count() == 0, "a cleared encounter stays cleared")
-	# Going down again doesn't bring anyone back either.
-	health.take_damage(500.0, Vector3.ZERO)
-	await _step(2)
-	check(enc.alive_count() == 0 and enc.phase == EnemyEncounter.Phase.CLEARED, "still cleared after going down")
 
 
 ## The Static and the Ward never fight side by side (Dax: they don't like
@@ -894,13 +1017,17 @@ func test_skybridge_ends_after_the_bridge_falls() -> void:
 	check(gate.fired, "reaching the gate starts the scene")
 	check(heard.has("set_piece:skybridge"), "the radio hears it (%s)" % [heard])
 	check(run.phase == MissionRun.Phase.RUNNING, "the gate alone doesn't win it")
-	await _step(240, _forward())
+	# Push into the gate (_forward() walks backwards: any loss now restarts
+	# the level, so backing off the roof would end the test).
+	await _step(240, TestWorld.forward_input())
 	check(gate.to_local(player.global_position).z > 0.0, "you can't get past the gate (%s)" % gate.to_local(player.global_position))
-	await _step(set_piece_ticks(gate, gate.SKY_BLAST) + 2, _forward())
+	check(gate.to_local(player.global_position).z < 3.0, "pressed up against it (%s)" % gate.to_local(player.global_position))
+	await _step(set_piece_ticks(gate, gate.SKY_BLAST) + 2, TestWorld.forward_input())
 	check(heard.has("set_piece:skybridge_blast") and run.phase == MissionRun.Phase.RUNNING, "the bridge blows before the end")
-	await _step(set_piece_ticks(gate, gate.SKY_DOWN) + 2, _forward())
+	await _step(set_piece_ticks(gate, gate.SKY_DOWN) + 2, TestWorld.forward_input())
 	check(heard.has("set_piece:skybridge_down"), "the span comes down")
 	check(run.phase == MissionRun.Phase.COMPLETE, "and that wins it")
+	check(run.falls == 0 and run.downs == 0, "standing at the gate is safe")
 	check(heard.find("set_piece:skybridge_down") < heard.find("complete"), "won only after the drop (%s)" % [heard])
 
 
@@ -1126,7 +1253,7 @@ func test_route_45_degree_corners() -> void:
 	var diagonal := false
 	var bank_yaw := INF
 	for p: Dictionary in m.pieces:
-		if p.has("slab"):
+		if p.has("slab") and not p.get("city", false):
 			slabs += 1
 		if p.has("building") and is_equal_approx(fposmod(float(p.get("yaw", 0.0)), 90.0), 45.0):
 			diagonal = true
@@ -1215,6 +1342,9 @@ func _run_path(path: Array, max_frames := 6000) -> bool:
 	for i in max_frames:
 		if run.phase == MissionRun.Phase.COMPLETE:
 			return true
+		if run.phase == MissionRun.Phase.LOST:
+			push_warning("path bot lost the run (%s) at %s" % [run.lost_reason, player.global_position])
+			return false
 		var pos := player.global_position
 		var here := Vector2(pos.x, pos.z)
 		var f := InputFrame.new()
@@ -1470,3 +1600,108 @@ func test_radio_cues_jump_the_queue_and_stale_lines_drop() -> void:
 		if not radio.current.is_empty() and String(radio.current.line).begins_with("Line "):
 			heard = maxi(heard, int(String(radio.current.line).substr(5, 1)) + 1)
 	check(heard == 4, "a conversation plays to the end (%d of 4)" % heard)
+
+
+## Along diagonal legs and 45 degree corners the city's fronts and kerbs
+## run straight beside the course, not in 2 m steps: just past the slot (or
+## pavement) beside a diagonal roof or street there is always a building,
+## standing clear of the roofs, and just inside it never is; the kerb is
+## straight too.
+func test_city_edges_run_straight_along_angled_legs() -> void:
+	var City_: Script = load("res://campaign/city.gd")
+	var roofs := Route_.expand({"id": "t_edges", "route": [{"roof": 40, "y": 8}, {"turn": "left", "angle": 45, "size": 22},
+		{"roof": 60}, {"gap": 5}, {"roof": 60}, {"turn": "right", "angle": 45, "size": 22}, {"roof": 40}]})
+	var city := _city_shapes(roofs)
+	var sides := 0
+	var gaps := 0
+	var pokes := 0
+	var low := 0
+	for p: Dictionary in roofs.pieces:
+		if not p.has("building") or p.get("city", false) or not is_equal_approx(fposmod(float(p.get("yaw", 0.0)), 90.0), 45.0):
+			continue
+		var yaw := deg_to_rad(float(p.yaw))
+		var c := Vector2(p.building[0], p.building[2])
+		var across := Vector2(cos(yaw), -sin(yaw))
+		var along := Vector2(sin(yaw), cos(yaw))
+		var hw: float = float(p.size[0]) * 0.5 + City_.ROOF_MARGIN
+		var d := -float(p.size[1]) * 0.5 + 2.0
+		while d < float(p.size[1]) * 0.5 - 2.0:
+			for side: float in [-1.0, 1.0]:
+				sides += 1
+				var out := _cover(city.buildings, c + along * d + across * side * (hw + 0.3))
+				if out < 0.0:
+					gaps += 1
+				elif out < float(p.building[1]) + City_.CLEAR:
+					low += 1
+				if _cover(city.buildings, c + along * d + across * side * (hw - 0.3)) >= 0.0:
+					pokes += 1
+			d += 1.0
+	check(sides > 200, "diagonal roofs to check (%d)" % sides)
+	check(gaps == 0, "a front straight along the slot beside diagonal roofs (%d gaps of %d)" % [gaps, sides])
+	check(pokes == 0, "and none pokes into the slot (%d)" % pokes)
+	check(low == 0, "fronts stand clear of the roofs (%d too low)" % low)
+	# A street: pavement right up to a straight kerb, fronts behind it.
+	var street := Route_.expand({"id": "t_edges_street", "route": [{"street": 40}, {"turn": "left", "angle": 45, "size": 22},
+		{"street": 80}, {"turn": "right", "angle": 45, "size": 22}, {"street": 40}]})
+	city = _city_shapes(street)
+	var leg: Array = street.route_legs[1]
+	var o := Vector2(leg[0], leg[1])
+	var yaw: float = leg[2]
+	var fwd := Vector2(-sin(yaw), -cos(yaw))
+	var right := Vector2(cos(yaw), -sin(yaw))
+	var length: float = float(leg[3]) - float(street.route_legs[2][3]) - 11.0
+	var kerb := 0
+	var fronts := 0
+	var n := 0
+	# (Past the corners, which are wider than the street, plus their margin.)
+	var d := 16.0
+	while d < length - 5.0:
+		for side: float in [-1.0, 1.0]:
+			n += 1
+			var at := o + fwd * d
+			var w := Route_.WIDTH * 0.5
+			if _cover(city.pavements, at + right * side * (w + 0.3)) < 0.0 or _cover(city.pavements, at + right * side * (w - 0.3)) >= 0.0:
+				kerb += 1
+			if _cover(city.buildings, at + right * side * (w + City_.STREET_MARGIN + 0.3)) < 0.0 \
+					or _cover(city.buildings, at + right * side * (w + City_.STREET_MARGIN - 0.3)) >= 0.0:
+				fronts += 1
+		d += 1.0
+	check(n > 100, "a diagonal street to check (%d)" % n)
+	check(kerb == 0, "a straight kerb along the diagonal street (%d off of %d)" % [kerb, n])
+	check(fronts == 0, "straight fronts behind its pavement (%d off of %d)" % [fronts, n])
+
+
+## The city's buildings and pavements as outlines [PackedVector2Array, top].
+func _city_shapes(m: Dictionary) -> Dictionary:
+	var out := {"buildings": [], "pavements": []}
+	for p: Dictionary in m.pieces:
+		if not p.get("city", false):
+			continue
+		var poly := PackedVector2Array()
+		var top := 0.0
+		if p.has("slab"):
+			for a: Array in p.slab:
+				poly.append(Vector2(a[0], a[1]))
+			top = float(p.top)
+		elif p.has("building") or (p.has("box") and p.get("look", "") == "TILE"):
+			var c: Array = p.get("building", p.get("box"))
+			var s := Vector2(p.size[0], p.size[1]) if p.has("building") else Vector2(p.size[0], p.size[2])
+			var yaw := deg_to_rad(float(p.get("yaw", 0.0)))
+			var ax := Vector2(cos(yaw), -sin(yaw)) * s.x * 0.5
+			var az := Vector2(sin(yaw), cos(yaw)) * s.y * 0.5
+			var mid := Vector2(c[0], c[2])
+			poly = PackedVector2Array([mid - ax - az, mid + ax - az, mid + ax + az, mid - ax + az])
+			top = float(c[1]) if p.has("building") else float(c[1]) + float(p.size[1]) * 0.5
+		else:
+			continue
+		(out.buildings if top > 1.0 else out.pavements).append([poly, top])
+	return out
+
+
+## The top of the highest outline over a point, or -1 for none.
+func _cover(shapes: Array, at: Vector2) -> float:
+	var best := -1.0
+	for s: Array in shapes:
+		if Geometry2D.is_point_in_polygon(at, s[0]):
+			best = maxf(best, float(s[1]))
+	return best
