@@ -196,7 +196,7 @@ const COURSE_ROUTE := [
 	[42.0, "", 3.3],         # line up with the window
 	[54.5, "jump", 3.3],     # window at -58: jump through the glass
 	[62.0, "", 5.4],         # toward the wall
-	[71.3, "jump", 7.0],     # gap: into the wallrun wall
+	[72.3, "jump", 7.0],     # gap: into the wallrun wall
 	[86.0, "", 0.3],
 	[90.6, "jump", 0.3],     # hurdle at -92
 	[102.2, "jump", 0.3],    # climb face at -104
