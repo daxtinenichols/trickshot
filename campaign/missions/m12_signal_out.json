@@ -72,7 +72,7 @@
   ]},
   {"ramp_down": 32, "length": 22},
   {"roof": 76, "y": 32, "do": [
-   {"window": 3.3, "at": 20},
+   {"hole": 3.3, "style": "duct", "at": 20},
    {"piece": {"fire": [-7, 0, -40], "size": [2.5, 1.6, 2.5]}, "at": 0},
    {"radio": {"who": "parker", "line": "Another one's coming down. Get low!"}, "at": 30, "radius": 7},
    {"set_piece": "debris", "as": "slide", "at": 50, "trigger": 30},

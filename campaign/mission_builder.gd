@@ -127,6 +127,8 @@ func _piece(p: Dictionary) -> void:
 		var b := _box_basis(vec(p.box), vec(p.get("size", [1, 1, 1]), Vector3.ONE), basis, kind)
 		if p.has("look"):
 			b.set_meta("look", p.look)
+		for k: String in p.get("meta", {}):
+			b.set_meta(k, p.meta[k])
 	elif p.has("building"):
 		# A building from the street up to its roof: [x, roof_y, z] and
 		# size [width, depth]. Its sides look like a ruined facade.
@@ -153,6 +155,10 @@ func _piece(p: Dictionary) -> void:
 		_door(vec(p.door))
 		if yaw != 0.0 and not Engine.is_editor_hint():
 			_root.get_child(-1).rotation.y = yaw
+	elif p.has("doors"):
+		# Double doors DOORS_WIDTH wide, bottom center at "doors": kick
+		# either leaf and both open.
+		_double_doors(Transform3D(basis, vec(p.doors)))
 	elif p.has("window"):
 		var s: Array = p.get("size", [2.2, 1.4])
 		_window(vec(p.window), Vector2(s[0], s[1]))
@@ -189,6 +195,25 @@ func _piece(p: Dictionary) -> void:
 		_figure(String(p.figure), Transform3D(basis, vec(p.get("at", [0, 0, 0]))), String(p.get("pose", "")))
 	else:
 		push_warning("MissionBuilder: unknown piece %s" % p)
+
+
+func _double_doors(xf: Transform3D) -> void:
+	if Engine.is_editor_hint():
+		return
+	var leaves: Array[Node3D] = []
+	for side: float in [-1.0, 1.0]:
+		var leaf: StaticBody3D = DOOR_SCRIPT.new()
+		# Hinges at the outer edges: the left leaf's panel runs +X from its
+		# hinge, the right one's -X. Placed before it enters the tree, where
+		# it takes its closed pose.
+		var turn := Basis.IDENTITY if side < 0.0 else Basis(Vector3.UP, PI)
+		leaf.transform = Transform3D(xf.basis * turn, xf * Vector3(side * DOOR_SCRIPT.WIDTH, 0, 0))
+		leaf.set_meta("leaf", leaves.size())
+		leaves.append(leaf)
+	leaves[0].set_meta("mate", leaves[1])
+	leaves[1].set_meta("mate", leaves[0])
+	for leaf in leaves:
+		_root.add_child(leaf)
 
 
 ## A prism from the street (y 0) up to `top` over a convex footprint.

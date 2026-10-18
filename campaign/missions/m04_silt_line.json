@@ -118,7 +118,7 @@
    ]
   },
   {"ramp_up": 4, "length": 14},
-  {"roof": 50, "y": 4, "do": [{"window": 3.3, "at": 18}]},
+  {"roof": 50, "y": 4, "do": [{"hole": 3.3, "style": "duct", "at": 18}]},
   {
    "roof": 56,
    "y": 7,

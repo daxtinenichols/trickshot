@@ -7,7 +7,7 @@ extends TestCase
 
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
-const PIECE_KEYS := ["box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
+const PIECE_KEYS := ["box", "building", "prop", "row", "door", "doors", "window", "target", "ramp", "loop",
 	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure", "set_piece"]
 
 var level: Node3D
@@ -594,6 +594,8 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 					f.crouch_held = true
 				"roll":
 					roll_armed = true
+				"kick":
+					f.kick_pressed = true
 			next += 1
 		if roll_armed and player.state == Player.State.AIR and player.velocity.y < 0.0:
 			var q := PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 1.2, 1)
@@ -848,6 +850,46 @@ func test_route_turns_and_forks() -> void:
 	check(end[1] == 7.0, "on the last roof")
 
 
+const BREACH := "res://tests/fixtures/route_breach.json"
+
+
+## Ways through a wall: glass hangs from a sill (never on the floor), holes
+## have no glass in them, doors come in pairs that open together, and a bot
+## runs through all of them: jumping the glass, kicking the doors, sliding
+## the holes.
+func test_route_glass_doors_and_holes() -> void:
+	var m := Campaign.load_mission_file(BREACH)
+	var panes := 0
+	var openings := {}
+	for p: Dictionary in m.pieces:
+		if p.has("window"):
+			panes += 1
+			check(float(p.window[1]) > 0.5, "glass sits on a sill, not the floor (%s)" % [p.window])
+		if p.get("meta", {}).has("opening"):
+			openings[p.meta.opening] = true
+	check(panes == 2, "two panes, both in walls with glass (%d)" % panes)
+	for style: String in ["fence", "broken", "shutter", "duct", "wagon"]:
+		check(openings.has(style), "a %s hole" % style)
+	await _load_file(BREACH)
+	var doors := tree.get_nodes_in_group("doors").filter(func(d: Node) -> bool: return level.is_ancestor_of(d))
+	check(doors.size() == 4, "two double doors (%d leaves)" % doors.size())
+	var glass := tree.get_nodes_in_group("windows").filter(func(w: Node) -> bool: return level.is_ancestor_of(w))
+	var opened := {}
+	var broken := {}
+	for d: Node in doors:
+		opened[d] = false
+	var watch := func() -> void:
+		for d: Node in doors:
+			opened[d] = opened[d] or d.is_open
+		for w: Node in glass:
+			broken[w] = broken.get(w, false) or w.is_broken
+	tree.physics_frame.connect(watch)
+	await _bot_run("breach", false)
+	tree.physics_frame.disconnect(watch)
+	check(opened.values().all(func(o: bool) -> bool: return o), "the bot kicked both pairs open, each leaf swinging (%s)" % [opened.values()])
+	check(broken.size() == 2 and broken.values().all(func(b: bool) -> bool: return b), "and jumped through both panes (%s)" % [broken.values()])
+
+
 ## The city round a route: blocks fill the ground next to the course
 ## without touching any of its roofs, and every block beside a roof stands
 ## too tall to climb onto from it.
@@ -1029,6 +1071,8 @@ func _run_path(path: Array, max_frames := 6000) -> bool:
 					crouch_until = i + 30
 				"roll":
 					roll_armed = true
+				"kick":
+					f.kick_pressed = true
 			next += 1
 		if OS.has_environment("ROUTE_LOG") and i % 10 == 0:
 			print("  t%4d pos %s wp %d state %s speed %.1f obj %d falls %d" % [i, pos.snapped(Vector3.ONE * 0.01), next, Player.State.keys()[player.state], player.horizontal_speed(), run.objective, run.falls])

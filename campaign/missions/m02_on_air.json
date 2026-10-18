@@ -104,7 +104,7 @@
    "side": -1
   },
   {"ramp_down": 1, "length": 20},
-  {"roof": 90, "y": 1, "interior": 6, "do": [{"hurdles": "crate_wood", "at": 24}, {"window": -3.3, "at": 52}, {"hurdles": "pallet", "at": 76}]},
+  {"roof": 90, "y": 1, "interior": 6, "do": [{"hole": 3.3, "style": "shutter", "at": 8}, {"hurdles": "crate_wood", "at": 30}, {"door": -3.3, "look": "BRICK", "at": 52}, {"hurdles": "pallet", "at": 76}]},
   {"roof": 30, "y": 4},
   {"roof": 30, "y": 7},
   {"join": true},
