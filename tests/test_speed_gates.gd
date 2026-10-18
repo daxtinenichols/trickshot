@@ -23,14 +23,15 @@ func test_gate_gaps_grow_by_tier() -> void:
 	var g1 := SpeedGate.gap_for_tier(1)
 	var g2 := SpeedGate.gap_for_tier(2)
 	var g3 := SpeedGate.gap_for_tier(3)
-	check(g1 > SpeedGate.BEST_AT_TOP and g1 < g2 and g2 < g3, "wider each tier (%.2f %.2f %.2f)" % [g1, g2, g3])
-	check(is_equal_approx(SpeedGate.tier_speed(2), 14.5), "tier 2 wants top speed + 3")
+	check(g1 > SpeedGate.best_jump(11.5) and g1 < g2 and g2 < g3, "wider each tier (%.2f %.2f %.2f)" % [g1, g2, g3])
+	for tier in [1, 2, 3]:
+		check(SpeedGate.tier_speed(tier) >= 11.5 + SpeedGate.TIER_FLOOR[tier - 1], "tier %d wants at least top speed + %.1f" % [tier, SpeedGate.TIER_FLOOR[tier - 1]])
 
 
 ## The gate in a test world: take-off roof edge at z 0 (running -z), the
 ## far roof, and the gate's own pieces. Runs in at `v`, jumps `late`
-## frames after leaving the edge (-1: 0.1 m before it). Returns "clear",
-## "ledge" or "fall".
+## frames after leaving the edge (-1: an ordinary jump, 0.25 m before it).
+## Returns "clear", "ledge" or "fall".
 func _jump_gate(tier: int, v: float, late: int) -> String:
 	if is_instance_valid(w):
 		w.queue_free()
@@ -57,7 +58,7 @@ func _jump_gate(tier: int, v: float, late: int) -> String:
 			off = 0
 		elif off >= 0:
 			off += 1
-		if not jumped and ((late < 0 and p.global_position.z < 0.1 and p.state == Player.State.GROUND) or (late >= 0 and off == late)):
+		if not jumped and ((late < 0 and p.global_position.z < 0.25 and p.state == Player.State.GROUND) or (late >= 0 and off == late)):
 			f = InputFrame.make(Vector2(0, 1), true)
 			jumped = true
 		await w.step(1, f)
@@ -68,22 +69,91 @@ func _jump_gate(tier: int, v: float, late: int) -> String:
 	return "fall at %s %s" % [p.global_position.snappedf(0.01), Player.State.keys()[p.state]]
 
 
-func test_top_speed_never_clears_a_gate() -> void:
+## Rule 1: the best jump at the speed a tier below (any timing, late in
+## coyote time included) never makes it.
+func test_a_tier_below_never_clears_a_gate() -> void:
 	for tier in [1, 2, 3]:
-		for late in [-1, 0, 2, 4, 5, 6]:
-			var got := await _jump_gate(tier, 11.5, late)
-			check(got == "ledge", "tier %d at top speed, jump %d: drops to the ledge (%s)" % [tier, late, got])
+		var below := 11.5 if tier == 1 else SpeedGate.tier_speed(tier - 1)
+		for late in [-1, 0, 2, 3, 4, 5, 6]:
+			var got := await _jump_gate(tier, below, late)
+			check(got == "ledge", "tier %d at %.1f m/s, jump %d: drops to the ledge (%s)" % [tier, below, late, got])
 
 
+## Rule 2: an ordinary edge jump at the tier's speed clears it.
 func test_tier_speed_clears_its_gate() -> void:
 	for tier in [1, 2, 3]:
-		# Tier 1 also wants a jump right at the edge (its gap is set by the
-		# best jump at top speed, which is wider than an edge jump at 13).
-		var v := SpeedGate.tier_speed(tier) + (0.3 if tier == 1 else 0.0)
+		var v := SpeedGate.tier_speed(tier)
 		var got := await _jump_gate(tier, v, -1)
-		check(got == "clear", "tier %d at %.1f m/s clears (%s)" % [tier, v, got])
-		got = await _jump_gate(tier, v, 3)
+		check(got == "clear", "tier %d at %.1f m/s clears off an edge jump (%s)" % [tier, v, got])
+		got = await _jump_gate(tier, v, 2)
 		check(got == "clear", "tier %d at %.1f m/s clears off a late jump too (%s)" % [tier, v, got])
+
+
+## A runner with combo scoring on: hops along a 150 m roof doing a
+## different flip or spin on each one (`kinds` of them, cycling), stops
+## 18 m out and runs to the gate's edge, jumps there. Returns the gate
+## result and the take-off speed.
+func _flip_run_gate(tier: int, kinds: int) -> Array:
+	if is_instance_valid(w):
+		w.queue_free()
+		await tree.process_frame
+	w = TestWorld.new()
+	tree.root.add_child(w)
+	var gap := SpeedGate.gap_for_tier(tier)
+	var far := gap + SpeedGate.FACE
+	w.add_box(Vector3(0, -6, 100), Vector3(12, 12, 200))
+	w.add_box(Vector3(0, -6, -far - 50), Vector3(12, 12, 100))
+	for p: Dictionary in SpeedGate.pieces(tier, gap):
+		if p.has("box"):
+			w.add_box(Vector3(p.box[0], p.box[1], p.box[2]), Vector3(p.size[0], p.size[1], p.size[2]))
+	var p := w.spawn_player(Vector3(0, 0.05, 190))
+	var combo := ComboTracker.new()
+	w.add_child(combo)
+	combo.setup(p)
+	await w.step(10)
+	var hops := 0
+	var turning := 0
+	var kind := 0
+	var takeoff := 0.0
+	for t in 60 * 30:
+		var f := TestWorld.forward_input()
+		var z := p.global_position.z
+		if p.state == Player.State.GROUND and z > 18.0 and z < 150.0 and p.horizontal_speed() > 9.0:
+			f = InputFrame.make(Vector2(0, 1), true)
+			hops += 1
+			turning = 24
+			kind = hops % kinds
+		elif p.state == Player.State.GROUND and z < 0.1 and z > -1.0 and takeoff == 0.0:
+			f = InputFrame.make(Vector2(0, 1), true)
+			takeoff = p.horizontal_speed()
+		if p.state == Player.State.AIR and turning > 0 and z > 18.0:
+			turning -= 1
+			match kind:
+				0: p._look(0.0, TAU / 24.0)  # backflip
+				1: p._look(TAU / 24.0, 0.0)  # 360
+				2: p._look(0.0, -TAU / 24.0)  # front flip
+				3: p._look(-TAU / 24.0, 0.0)  # 360 the other way
+		await w.step(1, f)
+		if z < -far - 2.0 and p.global_position.y > -0.3 and p.state == Player.State.GROUND:
+			return ["clear", takeoff]
+		if p.global_position.y < -2.5 and p.state == Player.State.GROUND:
+			return ["ledge", takeoff]
+	return ["fall", takeoff]
+
+
+func test_varied_flips_carry_you_over_every_tier() -> void:
+	for tier in [1, 2, 3]:
+		var got := await _flip_run_gate(tier, 4)
+		if OS.has_environment("PLAIN_LOG"):
+			print("  varied flips, tier %d: %s at %.1f m/s" % [tier, got[0], got[1]])
+		check(got[0] == "clear", "tier %d: a run of varied flips clears it (%s at %.1f m/s, wants %.1f)" % [tier, got[0], got[1], SpeedGate.tier_speed(tier)])
+
+
+func test_the_same_flip_over_and_over_isnt_enough() -> void:
+	var got := await _flip_run_gate(1, 1)
+	if OS.has_environment("PLAIN_LOG"):
+		print("  one flip, tier 1: %s at %.1f m/s" % got)
+	check(got[0] == "ledge", "the same backflip every hop: short of tier 1 (%s at %.1f m/s)" % got)
 
 
 # ------------------------------------------------------------------ plain runner

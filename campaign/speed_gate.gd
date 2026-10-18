@@ -15,28 +15,33 @@ extends RefCounted
 ##     "lower": "fall" there is no ledge and a miss is a fall.
 ## The landing roof must be at the take-off height (the table assumes it).
 ##
-## Tiers want this speed at take-off (Flow: +0.5 m/s per distinct trick,
-## flips count double):
-##   1 = top speed + 1.5, 2 = + 3.0, 3 = + 4.5.
-## A gap is the farthest a jump at the edge carries at its tier's speed,
-## and never less than the best jump at base top speed (taken late off the
-## edge in coyote time, which carries ~1.3 m further) plus a margin, so
-## plain running never makes it. tests/test_speed_gates.gd re-measures
-## both against the real player, so a movement change that breaks the
-## table fails there.
+## Sized by two rules (Game design lead, 2026-10-18):
+##   1. the best jump at the speed one tier below (base top speed for
+##      tier 1), taken late off the edge in coyote time, misses by at
+##      least MISS_BELOW;
+##   2. an ordinary jump at the edge at the tier's speed clears with
+##      SPARE to spare.
+## A tier's speed is the lowest that satisfies both, and at least top
+## speed + TIER_FLOOR (Flow: +0.5 m/s per distinct trick, flips double).
+## Coyote time carries a late jump ~1.5 m further than an edge jump, so
+## the tiers end up about 2.2 m/s apart: 13.7, 15.8, 18.6 m/s at take-off
+## with today's movement. tests/test_speed_gates.gd re-measures both rules
+## against the real player, so a movement change that breaks the table
+## fails there.
 ##
 ## Loaded by path (no class_name).
 
 ## Measured on playtest-3 (top speed 11.5, landing level with take-off,
-## mantle catches included): take-off speed -> widest gap cleared with a
-## jump 0.25 m before the edge.
-const EDGE_JUMP := [[11.5, 12.50], [12.25, 13.14], [13.0, 13.98], [14.5, 15.53], [16.0, 17.18], [17.5, 18.69]]
-## The widest gap cleared at base top speed with the best possible timing.
-const BEST_AT_TOP := 13.84
-## How much wider than that every gate is.
-const TOP_MARGIN := 0.3
-## Extra take-off speed each tier wants.
-const TIER_SPEED := 1.5
+## mantle catches included): take-off speed, the widest gap an ordinary
+## edge jump clears (0.25 m before the edge), and the widest the best late
+## (coyote) jump clears.
+const JUMPS := [[11.5, 12.50, 13.84], [13.0, 13.99, 15.47], [13.5, 14.46, 15.97], [14.5, 15.54, 17.19],
+	[15.0, 16.17, 17.62], [16.0, 17.19, 18.75], [16.5, 17.60, 19.49], [17.5, 18.71, 20.42], [18.0, 19.16, 21.22]]
+## Rule 1 and rule 2 margins (m).
+const MISS_BELOW := 0.5
+const SPARE := 0.3
+## The least extra take-off speed each tier wants over top speed.
+const TIER_FLOOR := [2.0, 3.5, 5.0]
 ## The climb face in front of the landing roof (the gap is measured to it).
 const FACE := 0.3
 ## How far below the roofs a missed jump lands.
@@ -48,27 +53,41 @@ const WIDTH := 12.0
 const RUNUP := [{"hurdles": true, "before": 46.0}, {"slide": true, "before": 32.0}, {"hop": true, "side": -1, "before": 18.0}]
 
 
+## The take-off speed a tier wants (see the rules at the top).
 static func tier_speed(tier: int, top_speed := 11.5) -> float:
-	return top_speed + TIER_SPEED * clampi(tier, 1, 3)
+	var below := top_speed
+	var v := top_speed
+	for t in range(1, clampi(tier, 1, 3) + 1):
+		v = maxf(top_speed + TIER_FLOOR[t - 1], below)
+		while edge_jump(v) - SPARE < best_jump(below) + MISS_BELOW:
+			v += 0.1
+		v = snappedf(v, 0.1)
+		below = v
+	return v
 
 
-## The widest gap a jump at the edge clears at take-off speed `v`.
+## The widest gap an ordinary edge jump clears at take-off speed `v`.
 static func edge_jump(v: float) -> float:
-	if v <= EDGE_JUMP[0][0]:
-		return EDGE_JUMP[0][1]
-	for i in range(1, EDGE_JUMP.size()):
-		if v <= EDGE_JUMP[i][0]:
-			var a: Array = EDGE_JUMP[i - 1]
-			var b: Array = EDGE_JUMP[i]
-			return lerpf(a[1], b[1], (v - a[0]) / (b[0] - a[0]))
-	var a2: Array = EDGE_JUMP[-2]
-	var b2: Array = EDGE_JUMP[-1]
-	return b2[1] + (v - b2[0]) * (b2[1] - a2[1]) / (b2[0] - a2[0])
+	return _lookup(v, 1)
+
+
+## The widest gap the best late jump clears at take-off speed `v`.
+static func best_jump(v: float) -> float:
+	return _lookup(v, 2)
+
+
+static func _lookup(v: float, col: int) -> float:
+	var i := 1
+	while i < JUMPS.size() - 1 and v > JUMPS[i][0]:
+		i += 1
+	var a: Array = JUMPS[i - 1]
+	var b: Array = JUMPS[i]
+	return a[col] + (v - a[0]) * (b[col] - a[col]) / (b[0] - a[0])
 
 
 ## The gap (edge to the climb face) for a tier.
 static func gap_for_tier(tier: int) -> float:
-	return snappedf(maxf(BEST_AT_TOP + TOP_MARGIN, edge_jump(tier_speed(tier))), 0.01)
+	return snappedf(edge_jump(tier_speed(tier)) - SPARE, 0.01)
 
 
 ## The gate's own pieces, in the take-off roof's frame: x across, y up from

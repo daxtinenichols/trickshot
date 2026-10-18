@@ -1015,6 +1015,24 @@ func test_kick_door_open() -> void:
 	check(through, "walk through the open doorway")
 
 
+func test_kick_double_doors_dead_center() -> void:
+	# The look ray can slip through the seam between the leaves (a hairline
+	# here; float error on a turned leaf in a mission); the kick should
+	# still land.
+	w.add_floor()
+	var left := KickDoor.new()
+	w.add_child(left)
+	left.global_position = Vector3(-KickDoor.WIDTH - 0.001, 0, -1.5)
+	var right := KickDoor.new()
+	w.add_child(right)
+	right.global_transform = Transform3D(Basis(Vector3.UP, PI), Vector3(KickDoor.WIDTH + 0.001, 0, -1.5))
+	left.set_meta("mate", right)
+	right.set_meta("mate", left)
+	await _settle()
+	await w.press(InputFrame.make(Vector2.ZERO, false, false, true))
+	check(left.is_open and right.is_open, "a kick at the seam opens both leaves")
+
+
 func test_kick_window() -> void:
 	w.add_floor()
 	var win := BreakableWindow.new()
