@@ -667,6 +667,79 @@ func test_backflip_and_clean_landing() -> void:
 	check(absf(p.pitch) <= deg_to_rad(89.1), "view settles after landing")
 
 
+## Drops into a running landing, flipping backwards `flips` times on the way
+## down (the spin can carry on for more), with combo scoring on. Returns the
+## horizontal speed on the landing tick.
+func _flip_landing_speed(flips: int, height := 4.2) -> float:
+	if is_instance_valid(w):
+		w.queue_free()
+		await tree.process_frame
+	w = TestWorld.new()
+	tree.root.add_child(w)
+	w.add_floor()
+	var p := w.spawn_player(Vector3(0, height, 0))
+	var combo := ComboTracker.new()
+	w.add_child(combo)
+	combo.setup(p)
+	p.velocity = Vector3(0, 0, -9)
+	await w.step(1)
+	if flips > 0:
+		for i in 24:
+			p._look(0.0, TAU * flips / 24.0)
+			await w.step(1)
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 180)
+	check(p.state != Player.State.STUN, "lands clean after %d flip(s)" % flips)
+	return p.horizontal_speed()
+
+
+func test_clean_flip_landing_kicks_you_forward() -> void:
+	var plain := await _flip_landing_speed(0)
+	var one := await _flip_landing_speed(1)
+	check(&"flip_kick" in w.tricks_seen, "the kick is reported for the HUD")
+	var boost := w.player.tuning.flip_land_boost
+	check_near(one - plain, boost, 0.15, "one flip: +%.1f m/s (got %.2f)" % [boost, one - plain])
+	var two := await _flip_landing_speed(2)
+	var done := w.tricks_seen.count(&"backflip")
+	var want := 0.0
+	for i in done:
+		want += boost * pow(0.6, i)
+	check(done >= 2, "flipped at least twice (%d)" % done)
+	check_near(two - plain, want, 0.2, "%d flips: each rotation after the first worth 60%% of the last (got %.2f)" % [done, two - plain])
+
+
+func test_flip_kick_decays_for_repeats_in_a_combo() -> void:
+	var plain := await _flip_landing_speed(0)
+	w.queue_free()
+	await tree.process_frame
+	w = TestWorld.new()
+	tree.root.add_child(w)
+	w.add_floor()
+	var p := w.spawn_player(Vector3(0, 4.2, 0))
+	var combo := ComboTracker.new()
+	w.add_child(combo)
+	combo.setup(p)
+	combo.on_trick(&"backflip", {})  # one backflip already in this combo
+	p.velocity = Vector3(0, 0, -9)
+	await w.step(1)
+	for i in 24:
+		p._look(0.0, TAU / 24.0)
+		await w.step(1)
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 180)
+	var got := p.horizontal_speed() - plain
+	check_near(got, p.tuning.flip_land_boost * 0.6, 0.15, "a repeat backflip kicks 60%% (got %.2f)" % got)
+
+
+func test_crashed_flip_gets_no_kick() -> void:
+	var p := await _airborne(3.0)
+	for i in 12:
+		p._look(0.0, PI / 12.0)
+		await w.step(1)
+	p._look(0.0, -0.01)
+	await w.step(1)
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 120)
+	check(&"crash" in w.tricks_seen and not (&"flip_kick" in w.tricks_seen), "a crash bails, no kick")
+
+
 func test_frontflip() -> void:
 	var p := await _airborne(4.2)
 	for i in 24:
