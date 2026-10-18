@@ -429,7 +429,8 @@ func _fire(pos: Vector3, size: Vector3) -> void:
 	var bm := BoxMesh.new()
 	bm.size = Vector3(size.x, 0.12, size.z)
 	embers.mesh = bm
-	embers.position = pos + Vector3(0, 0.06, 0)
+	# A centimeter proud of whatever it burns in (a barrel's rim), not flush.
+	embers.position = pos + Vector3(0, 0.07, 0)
 	var em := StandardMaterial3D.new()
 	em.albedo_color = Color(0.25, 0.08, 0.03)
 	em.emission_enabled = true

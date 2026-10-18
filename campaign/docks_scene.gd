@@ -371,7 +371,8 @@ func _bedroll(parent: Node3D, at: Vector3, sitting: bool) -> void:
 		_box(parent, at + Vector3(0, 0.35, 0), Vector3(0.5, 0.7, 0.45), cloth, false)
 		_box(parent, at + Vector3(0, 0.82, 0), Vector3(0.22, 0.24, 0.22), skin, false)
 	else:
-		_box(parent, at + Vector3(0, 0.14, 0.2), Vector3(0.55, 0.28, 1.3), cloth, false)
+		# Just off the floor: the tarp shelters' ground sheets are on it.
+		_box(parent, at + Vector3(0, 0.15, 0.2), Vector3(0.55, 0.28, 1.3), cloth, false)
 		_box(parent, at + Vector3(0, 0.14, -0.6), Vector3(0.22, 0.2, 0.24), skin, false)
 
 

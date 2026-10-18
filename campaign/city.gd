@@ -638,7 +638,8 @@ static func _streets(g: Dictionary, mission: Dictionary, rng: RandomNumberGenera
 			mission.pieces.append({"mark": [snappedf(p.x, 0.01), 0.0, snappedf(p.y, 0.01)], "size": [0.25, 3.0], "color": "#c9bd9a", "yaw": rad_to_deg(float(l.yaw)), "city": true})
 			if rng.randf() < 0.12:
 				var q: Vector2 = p + right * rng.randf_range(-4.0, 4.0)
-				mission.pieces.append({"mark": [snappedf(q.x, 0.01), 0.0, snappedf(q.y, 0.01)], "size": [rng.randf_range(1.5, 3.0), rng.randf_range(1.0, 2.2)], "color": "#4a4038", "yaw": rng.randf_range(0.0, 180.0), "city": true})
+				# A stain, a hair over the road lines so the two never flicker.
+				mission.pieces.append({"mark": [snappedf(q.x, 0.01), 0.006, snappedf(q.y, 0.01)], "size": [rng.randf_range(1.5, 3.0), rng.randf_range(1.0, 2.2)], "color": "#4a4038", "yaw": rng.randf_range(0.0, 180.0), "city": true})
 			d += 9.0
 
 
@@ -663,7 +664,8 @@ static func _street_prop(g: Dictionary, mission: Dictionary, rng: RandomNumberGe
 		return
 	mission.pieces.append({"prop": kind, "at": [snappedf(at.x, 0.01), y, snappedf(at.y, 0.01)], "yaw": snappedf(yaw, 0.1), "city": true})
 	if fire:
-		mission.pieces.append({"fire": [snappedf(at.x, 0.01), y + 1.0, snappedf(at.y, 0.01)], "size": [1.2, 1.2, 1.6], "city": true})
+		# On the roof (its embers clear of the body, which they'd flicker with).
+		mission.pieces.append({"fire": [snappedf(at.x, 0.01), y + 1.48, snappedf(at.y, 0.01)], "size": [1.2, 1.2, 1.6], "city": true})
 
 
 ## The ground under the roofs' gaps and in the slots beside them: rubble,

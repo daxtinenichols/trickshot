@@ -1865,7 +1865,7 @@ func _cover(shapes: Array, at: Vector2) -> float:
 ## clear of every building, never sunk into a facade.
 func test_city_props_stand_clear_of_buildings() -> void:
 	var PropKit_: Script = load("res://art/props/prop_kit.gd")
-	for id: String in ["m01_the_yard", "m04_silt_line", "m08_storm_channels", "m09_rail_bridge"]:
+	for id: String in ["l1_2_the_yard", "m04_silt_line", "m08_storm_channels", "m09_rail_bridge"]:
 		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
 		var walls: Array = []
 		for p: Dictionary in m.pieces:

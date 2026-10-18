@@ -248,10 +248,11 @@ def cars():
                 k += 1
                 if k % 3 == 0:
                     continue
-                x, y, z = side_point(lap, side, t, 3.3)
+                # Close to the outer wall, clear of the inner rail and pillars.
+                x, y, z = side_point(lap, side, t, 2.6)
                 p(prop="car_wreck", at=[x, y, z], yaw=(5 if k % 2 else -4) + (0 if sign > 0 else 180))
-        # A couple on the short sides, nose to the wall.
-        for side, t in [("N", 0.25), ("S", 0.7)]:
+        # A couple on the short sides, nose to the wall, clear of the pillars.
+        for side, t in [("N", 0.36), ("S", 0.64)]:
             x, y, z = side_point(lap, side, t, 3.0)
             p(prop="car_wreck", at=[x, y, z], yaw=90 if side == "N" else -90)
 
@@ -439,13 +440,13 @@ def enemies():
         cover, raiders, others = [], [], []
         # A gunner across the north side, one up the east side, one on the
         # south side: they shoot along the lane at you coming round.
-        g1 = side_point(lap, "N", 0.55, -3.2)
+        g1 = side_point(lap, "N", 0.55, -2.9)
         cover.append(sandbag(g1[0] - 2.0, g1[1], g1[2], 90))
         raiders.append(at(g1, yaw=90))
         g2 = side_point(lap, "E", 0.4, -3.0)
         cover.append(sandbag(g2[0], g2[1], g2[2] - 2.0, 0))
         raiders.append(at(g2, yaw=0, wake=1.0))
-        g3 = side_point(lap, "S", 0.6, -3.2)
+        g3 = side_point(lap, "S", 0.6, -2.9)
         cover.append(sandbag(g3[0] + 2.0, g3[1], g3[2], 90))
         raiders.append(at(g3, yaw=-90, wake=1.5))
         # Hunters come at you from the side.

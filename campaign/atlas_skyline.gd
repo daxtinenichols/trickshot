@@ -213,8 +213,10 @@ func _build_tower() -> void:
 	_part(Vector3(0, h * 0.5, 0), Vector3(w, h, w), concrete, 0.0)
 	for i in 4:
 		_part(Vector3(0, h - 3.0 - i * 4.0, 0), Vector3(w + 0.6, 4.0, w + 0.6), red if i % 2 == 0 else white, 0.0)
-	_part(Vector3(0, h + 2.0, 0), Vector3(w * 0.7, 4.0, w * 0.7), concrete, 0.0)
-	_part(Vector3(0, h + mast * 0.5, 0), Vector3(2.5, mast, 2.5), concrete.darkened(0.2), 0.0)
+	# The plant room sits into the roof, the mast into the plant room (no
+	# two faces in one plane).
+	_part(Vector3(0, h + 1.5, 0), Vector3(w * 0.7, 4.0, w * 0.7), concrete, 0.0)
+	_part(Vector3(0, h + 1.0 + mast * 0.5, 0), Vector3(2.5, mast, 2.5), concrete.darkened(0.2), 0.0)
 	_part(Vector3(0, h + mast + 1.0, 0), Vector3(3.0, 3.0, 3.0), Color(1.0, 0.15, 0.1), 4.0)
 	for sx: float in [-1.0, 1.0]:
 		for sz: float in [-1.0, 1.0]:
