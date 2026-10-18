@@ -55,12 +55,15 @@ const TAUNTS := [
 ## 0 aims where you are, 1 aims where you'll be (by bullet flight time).
 @export_range(0.0, 1.0, 0.05) var aim_lead := 0.0
 
-const HEAD_RADIUS := 0.22
+const HEAD_RADIUS := 0.15
 const HEAD_HEIGHT := 1.62
 const BODY_SIZE := Vector3(0.55, 1.3, 0.34)
 ## How far ducking lowers the body (head center 1.62 -> 1.0 m: below a
 ## 1.2 m cover wall, with the top of the head just showing).
 const DUCK_DROP := 0.62
+## The hit zones duck by kneeling: hips drop this far and the torso hunches.
+const DUCK_HIP_DROP := 0.4
+const DUCK_LEAN := 0.3
 const MUZZLE := Vector3(0.22, 1.42, -0.55)
 ## Windup multiplier while a spotter drone has you marked.
 const SPOTTED_WINDUP := 0.6
@@ -102,10 +105,33 @@ func _bar_height() -> float:
 
 
 func _build() -> void:
-	var body_y := BODY_SIZE.y * 0.5 + 0.12
-	_hitbox(&"body", box_shape(BODY_SIZE), Vector3(0, body_y, 0))
-	_hitbox(&"head", sphere_shape(HEAD_RADIUS), Vector3(0, HEAD_HEIGHT, 0))
+	_build_hit_rig(_hit_profile())
 	_build_laser()
+
+
+## Body proportions for the hit zones (HitRig profiles).
+func _hit_profile() -> Dictionary:
+	return HitRig.HUMAN
+
+
+## The hit zones' pose from the state: ducking behind cover kneels and
+## hunches, legs step with the speed, hands on the rifle where it points.
+func _hit_pose(delta: float) -> Dictionary:
+	var speed := EnemyMath.horizontal(velocity).length()
+	var aim_w := 1.0 if state in [State.AIM, State.RECOVER] else 0.0
+	var reload_w := 1.0 if state == State.RELOAD else 0.0
+	var local_aim := Basis(Vector3.UP, yaw).inverse() * aim_dir
+	return {"speed": speed, "delta": delta, "run": speed / maxf(move_speed, 0.1),
+		"crouch": DUCK_HIP_DROP * duck, "lean": DUCK_LEAN * duck,
+		"hands": _rifle_hands(local_aim, aim_w, reload_w)}
+
+
+## Where the hands hold the rifle (enemy-local), from the same placement
+## the model uses, with the chest where the hit zones put it.
+func _rifle_hands(local_aim: Vector3, aim_w: float, reload_w: float) -> Array:
+	var chest: Vector3 = hit_rig.head_local + Vector3(0, -0.3, 0.04) if hit_rig else Vector3(0, 1.33, -0.03)
+	var xf := Poses.rifle_xf(chest, local_aim, aim_w, reload_w)
+	return [xf * rifle_fore.lerp(rifle_mag, reload_w), xf * rifle_grip]
 
 
 func _build_placeholder() -> void:
@@ -265,7 +291,6 @@ func _think(delta: float) -> void:
 				_shot_timer = 0.35
 				_rethink = 0.0
 	move_and_slide()
-	_hit_root.position.y = -DUCK_DROP * duck
 
 
 func _set_state(s: State) -> void:

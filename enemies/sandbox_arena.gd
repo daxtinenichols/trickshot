@@ -86,11 +86,11 @@ func _ready() -> void:
 
 
 ## A clear swaps in the other wave; going down or leaving keeps this one.
-func reset() -> void:
+func reset(revive_all := false) -> void:
 	if phase == Phase.CLEARED and waves.size() > 1:
 		wave = (wave + 1) % waves.size()
 		enemies.assign(waves[wave])
-	super()
+	super(revive_all)
 	_bench_others()
 
 

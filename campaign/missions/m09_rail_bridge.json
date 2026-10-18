@@ -32,6 +32,8 @@
   {"roof": 74, "y": 0, "do": [
    {"mark": "#ff8a1f", "at": 4},
    {"prop": "chalk_arrow", "x": 0, "at": 6},
+   {"radio": {"who": "mags", "line": "See that? The Ward won't go anywhere near the Static. They hate each other. Use it."}, "at": 7, "radius": 9},
+   {"radio": {"who": "host", "line": "My crew and the sponsor's boys don't really... mix. Bit of history. Don't ask."}, "at": 8, "radius": 9},
    {"encounter": "street gunners", "at": 10, "length": 50, "raiders": [[-3.6, 16, 0], [3.6, 22, 0.5], [-3.6, 32, 1.0], [3.6, 40, 1.5], [-3.6, 46, 2.0]]},
    {"prop": "car_wreck", "x": 4.4, "at": 64, "yaw": 80}
   ]},

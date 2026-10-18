@@ -30,11 +30,16 @@ func _ready() -> void:
 	bullet_speed = 40.0
 	kick_stagger = 0.2
 	kick_shove = 2.0
+	knockdown_time = 0.0
 	headshot_flinch = 0.25
 	squad_spread = 0.0
 	rifle_grip = Vector3(0, -0.05, 0.04)
 	rifle_fore = Vector3(0, -0.05, -0.32)
 	rifle_mag = Vector3(0, -0.1, -0.12)
+
+
+func _hit_profile() -> Dictionary:
+	return HitRig.BULKY
 
 
 func _model_path() -> String:

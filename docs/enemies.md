@@ -8,6 +8,47 @@ seeded RNG (deterministic); the models only read the state.
 
 Only the final level is a chase. Every other enemy guards its patch.
 
+## Hit zones
+
+Each humanoid has body-shaped hit zones (`enemies/hit_rig.gd`): a head,
+chest, hips, and upper and lower arms and legs, sized from its model, so a
+shot past the shoulder or between the legs misses. They follow the pose the
+state calls for in the physics tick (ducking, the Hollows' hunch, running,
+hands on the gun where it aims, flinching, lying flat after a kick), so they
+stay deterministic. The drawn model eases between poses, so the two can be
+a few centimeters apart mid-move. The head is the `head` zone, the rest is
+`body`. Drones keep their box. To see them, render with `hitboxes` (below).
+
+## Kicks
+
+A kick (on the ground, or kicking off an enemy in the air) deals
+`kick_damage` (35) times the same combo multiplier shots get, and knocks
+the enemy flat on its back for `knockdown_time` (1.5 s, Juno 1 s) before it
+gets up. Heavies and brutes are too heavy: they only stagger. A kick that
+finishes an enemy is a "KICK KILL" trick. The kick reaches an enemy a
+little off your look ray.
+
+## Difficulty
+
+`enemies/difficulty.gd` scales every type's numbers when it joins a fight:
+25% faster on their feet, windups and pauses 28% shorter, the locked dodge
+window 20% shorter, aim that tracks 60% faster and leads a runner, faster
+bullets, 20% more damage. `Difficulty.level` (1 = this, 0 = the old
+numbers) scales all of it. Up to three gunners aim at once.
+
+## Respawning
+
+Mission encounters set `keep_dead`: whoever you kill stays dead when you
+go down or leave the area; only the survivors go back to their spots, and
+a cleared area stays cleared. A fresh run of the mission brings everyone
+back. The sandbox arena still restarts so you can practice.
+
+## Factions
+
+The Static (with their camera and spotter drones) and the Ward (with their
+gun drones) never share an encounter. The Hollows can turn up with either.
+`tests/test_campaign.gd` checks every mission.
+
 ## Types
 
 | type | faction | what it does | how you beat it |
@@ -15,7 +56,7 @@ Only the final level is a chase. Every other enemy guards its patch.
 | `raider` | Static | rifle, cover, red laser that turns white and beeps before the shot | move after the lock; headshot when it pops up |
 | `hunter` | Static | runs like you, keeps moving to your side, hops low walls, quick shots | keep turning; catch it when it stops to shoot |
 | `bruiser` | Static | big raider behind a scrap shield, walks you down, scattergun fan up close | get round it, headshot over the top, or kick the shield |
-| `juno` | Static | boss: a better hunter, faster once hurt, can't be killed outright (see below) | |
+| `juno` | Static | boss: a better hunter, faster once hurt, can't be killed outright (see below). Her own look: long bone-white coat, red visor and scarf, platinum ponytail, her name over her head | |
 | `mutant` / `crawler` | Hollows | rushes, leaps (crouch-and-glow windup), swipes; winded after landing | sidestep the leap, headshot while winded |
 | `leaper` | Hollows | small and quick, leaps far and often, short winded window | watch the ledges, quick headshots |
 | `brute` | Hollows | huge, bone-armored front (shots barely hurt), soft back (extra damage); roars, then charges in a locked straight line | sidestep after the line locks; it's dazed if it hits a wall; shoot its back |
@@ -67,8 +108,11 @@ load, the enemy falls back to its placeholder boxes.
 Review renders:
 
 ```
-xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --fixed-fps 60 -s res://enemies/tools/enemy_shots.gd -- <out_dir>
+xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --fixed-fps 60 -s res://enemies/tools/enemy_shots.gd -- <out_dir> [hitboxes] [lineup]
 ```
+
+`hitboxes` draws the hit zones over the models; a lineup name (`juno`,
+`raider`...) renders just that one.
 
 The sandbox's enemy arena alternates two waves when you clear it: the
 Host's crew, then troopers, a shield bearer and gun drones.

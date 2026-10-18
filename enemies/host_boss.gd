@@ -122,11 +122,12 @@ func take_hit(info: Dictionary) -> bool:
 	return false
 
 
-func on_kicked(by: Node, dir := Vector3.ZERO) -> void:
+func on_kicked(by: Node, dir := Vector3.ZERO) -> bool:
 	if gone:
-		return
-	super(by, dir)
+		return false
+	var killed := super(by, dir)
 	_run()
+	return killed
 
 
 func _think(delta: float) -> void:

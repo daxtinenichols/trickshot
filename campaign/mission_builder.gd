@@ -395,6 +395,8 @@ func _encounter(p: Dictionary) -> void:
 	enc.entry = Transform3D(Basis.IDENTITY, center)
 	# A mission's encounter stays cleared; the sandbox arena's restarts.
 	enc.restart_time = p.get("restart", INF)
+	# ...and whoever you kill stays dead, even if you go down or leave.
+	enc.keep_dead = p.get("keep_dead", true)
 	enc.max_aiming = p.get("max_aiming", enc.max_aiming)
 	for k: String in ["hear_shots", "hearing_radius", "wake_distance"]:
 		if p.has(k):

@@ -3,6 +3,9 @@ extends Node3D
 ## A group of enemies in an area. They wait until you step into the area,
 ## then fight; leave for a few seconds, or go down, and everything resets.
 ## Clear it and it restarts after a short break, so you can keep practicing.
+## With `keep_dead` (missions), whoever you killed stays dead through those
+## resets: only the survivors go back to their spots, and a cleared area
+## stays cleared. reset(true) brings everyone back (a fresh run).
 ##
 ## Also hands out cover spots to raiders (one raider per spot) and limits
 ## how many raiders aim at you at once, so shots stay readable.
@@ -27,7 +30,7 @@ enum Phase { WAITING, ACTIVE, CLEARED }
 const TYPE_DIR := "res://enemies/"
 
 ## How many raiders may be aiming at you at the same time.
-@export var max_aiming := 2
+@export var max_aiming := 3
 ## Seconds outside the area before the fight resets.
 @export var leave_reset_time := 4.0
 ## Seconds after clearing before it restarts.
@@ -38,6 +41,9 @@ const TYPE_DIR := "res://enemies/"
 @export var hearing_radius := 30.0
 ## A sleeper also wakes when you come this close (m).
 @export var wake_distance := 5.0
+## Killed enemies stay dead when the fight resets (you left, or went down).
+## Missions set it; the sandbox arena leaves it off so you can practice.
+@export var keep_dead := false
 
 var player: Player
 var player_health: PlayerHealth
@@ -52,6 +58,8 @@ var enemies: Array[Enemy] = []
 var phase := Phase.WAITING
 var kills := 0
 var clears := 0
+## Whether the last reset brought the killed enemies back.
+var revived := true
 
 var _aiming: Array[Node] = []
 ## Seconds left on a spotter drone's mark (gunners lock on faster).
@@ -288,18 +296,30 @@ func _on_player_fired(_ammo: int) -> void:
 			drew_enemies.emit(n)
 
 
-func reset() -> void:
+## Puts the fight back to waiting for you. Killed enemies come back too,
+## unless keep_dead is set (then only `revive_all` brings them back).
+func reset(revive_all := false) -> void:
 	for c in get_children():
 		if c is EnemyProjectile:
 			c.queue_free()
 			(c as EnemyProjectile).done = true
+	var revive := revive_all or not keep_dead
 	for e in enemies:
-		e.reset_to_home()
+		if revive or not e.is_dead:
+			e.reset_to_home()
+		else:
+			e.deactivate()
+			e.visible = false
 	_aiming.clear()
 	_claims.clear()
 	_spotted = 0.0
-	kills = 0
+	if revive:
+		kills = 0
+	revived = revive
 	phase = Phase.WAITING
+	# Everyone who fights is already dead: it stays cleared.
+	if not revive and kills > 0 and alive_count() == 0:
+		phase = Phase.CLEARED
 	_phase_time = 0.0
 	_outside = 0.0
 	reset_done.emit()

@@ -48,6 +48,7 @@ func _ready() -> void:
 	swipe_reach = 3.0
 	kick_stagger = 0.15
 	kick_shove = 1.5
+	knockdown_time = 0.0
 	headshot_flinch = 0.2
 	leash_radius = 20.0
 

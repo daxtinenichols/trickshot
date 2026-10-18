@@ -697,7 +697,9 @@ func test_on_air_lookouts_are_raiders() -> void:
 	check(enc.phase == EnemyEncounter.Phase.ACTIVE, "the encounter starts on the roof")
 	check(run.objective == 2, "practice from the lookout roof: the lookouts are a bonus, the mast is the goal")
 	check(run.bonuses.has(1) and run.bonus_text().contains("(0 / 3)"), "the lookout bonus is open (%s)" % run.bonus_text())
-	# One kill, then go down: the raiders come back and the count starts over.
+	# One kill, then go down: the one you killed stays dead (Dax: killed
+	# enemies don't respawn), the rest go back to their spots, and the
+	# count keeps the kill.
 	enc.enemies[0].take_hit({"damage": 500.0, "zone": &"body", "position": enc.enemies[0].global_position})
 	check(run.bonus_text().contains("(1 / 3)"), "one down (%s)" % run.bonus_text())
 	var health: PlayerHealth = PlayerHealth.of(player)
@@ -705,8 +707,9 @@ func test_on_air_lookouts_are_raiders() -> void:
 	await _step(2)
 	check(run.downs == 1, "went down once")
 	check(player.global_position.distance_to(b.spawns[2].origin) < 1.0, "back at the checkpoint (%s)" % player.global_position)
-	check(enc.alive_count() == n, "raiders reset")
-	check(run.bonus_text().contains("(0 / 3)"), "count starts over (%s)" % run.bonus_text())
+	check(enc.enemies[0].is_dead and not enc.enemies[0].visible, "the killed raider stays dead")
+	check(enc.alive_count() == n - 1, "the others reset (%d alive)" % enc.alive_count())
+	check(run.bonus_text().contains("(1 / 3)"), "the kill still counts (%s)" % run.bonus_text())
 	var score: int = level.combo.score
 	for e: Node in enc.enemies:
 		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
@@ -714,9 +717,49 @@ func test_on_air_lookouts_are_raiders() -> void:
 	check(run.bonuses[1].done and run.bonuses_done() == 1, "the lookouts are down: bonus done")
 	check(level.combo.score >= score + MissionRun.BONUS_POINTS, "and it pays (%d -> %d)" % [score, level.combo.score])
 	check(run.objective == 2, "still heading for the mast")
-	check(run.headshots == n, "headshots counted (%d)" % run.headshots)
+	check(run.headshots == n - 1, "headshots counted (%d)" % run.headshots)
 	await _step(400)
 	check(enc.alive_count() == 0, "a cleared encounter stays cleared")
+	# Going down again doesn't bring anyone back either.
+	health.take_damage(500.0, Vector3.ZERO)
+	await _step(2)
+	check(enc.alive_count() == 0 and enc.phase == EnemyEncounter.Phase.CLEARED, "still cleared after going down")
+
+
+## The Static and the Ward never fight side by side (Dax: they don't like
+## each other): every encounter in every mission is one faction. Hollows
+## can turn up anywhere.
+func test_raiders_and_the_ward_never_share_a_fight() -> void:
+	const STATIC := ["raider", "hunter", "bruiser", "juno", "camera_drone", "spotter_drone"]
+	const WARD := ["trooper", "shield", "marksman", "heavy", "drone", "gun_drone"]
+	var checked := 0
+	for f: String in DirAccess.get_files_at("res://campaign/missions"):
+		if not f.ends_with(".json"):
+			continue
+		var m: Variant = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/missions/" + f))
+		var stack: Array = [m]
+		while not stack.is_empty():
+			var o: Variant = stack.pop_back()
+			if o is Array:
+				stack.append_array(o)
+			elif o is Dictionary:
+				stack.append_array((o as Dictionary).values())
+				if not o.has("encounter"):
+					continue
+				var types: Array = []
+				for _r in o.get("raiders", []):
+					types.append("raider")
+				for _t in o.get("troopers", []):
+					types.append("trooper")
+				for _d in o.get("drones", []):
+					types.append("drone")
+				for e: Dictionary in o.get("enemies", []):
+					types.append(String(e.get("type", "raider")))
+				var s := types.any(func(t: String) -> bool: return t in STATIC)
+				var wd := types.any(func(t: String) -> bool: return t in WARD)
+				check(not (s and wd), "%s '%s' mixes the Static and the Ward (%s)" % [f, o.encounter, types])
+				checked += 1
+	check(checked > 30, "checked every encounter (%d)" % checked)
 
 
 ## Kill goals are bonuses: in Storm Channels you can run past both Ward

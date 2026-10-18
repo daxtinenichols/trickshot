@@ -48,6 +48,7 @@ const POINTS := {
 	&"flip_roll": 250,
 	&"kick_off": 150,         # 250 when kicking off a target
 	&"kick": 50,
+	&"kick_kill": 300,        # a kick that finishes an enemy
 	&"door_kick": 100,
 	&"window_kick": 100,
 	&"window_smash": 150,
@@ -126,6 +127,8 @@ func setup(p: Player, pistol: Pistol = null) -> void:
 	if pistol:
 		pistol.hit.connect(on_hit)
 		pistol.damage_scale = damage_multiplier
+	# Kicks hurt enemies by the same combo multiplier as shots.
+	p.kick_damage_scale = damage_multiplier
 
 
 func is_active() -> bool:

@@ -17,7 +17,7 @@
    "interior": 4.5,
    "do": [
     {"checkpoint": "Office roofs", "at": 3},
-    {"radio": {"who": "mags", "line": "Windows. Don't stop, just slide straight through."}, "at": 4},
+    {"radio": {"who": "mags", "line": "Glass coming up. Don't slow down, jump right through it."}, "at": 4},
     {"glass": 3.3, "at": 22}
    ]
   },

@@ -18,6 +18,8 @@ enum State { GROUND, AIR, CROUCH, SLIDE, VAULT, MANTLE, WALLRUN, WALLCLIMB, ROLL
 const RADIUS := 0.38
 const EYE_OFFSET := 0.14
 const WALL_PROBE := 0.35
+## How far around the kick's landing spot an enemy still gets kicked (m).
+const KICK_REACH_RADIUS := 0.6
 
 @export var tuning: MovementTuning
 ## Off for players driven by tests or replays.
@@ -34,6 +36,9 @@ var repeat_scale_source := Callable()
 
 ## Set by tests or replays: the frame to use for the next tick.
 var scripted_input: InputFrame = null
+## Optional: returns the kick damage multiplier (the combo's, like shots).
+## Enemies read it when kicked.
+var kick_damage_scale := Callable()
 
 var state: State = State.AIR
 var state_time := 0.0
@@ -1094,6 +1099,17 @@ func _start_roll(quality: float, trick_name: StringName, spin_from: float, h: Ve
 
 
 func _tick_roll(f: InputFrame, wish: Vector3, delta: float) -> void:
+	# Past the committed part, jump gets you out the way a ground jump
+	# would (an obstacle or climb first), keeping the roll's speed.
+	if state_time >= tuning.roll_time * tuning.roll_jump_cancel and _jump_buffer <= tuning.jump_buffer and _can_stand():
+		_set_height(tuning.stand_height)
+		if _try_obstacle(f, true):
+			return
+		if _try_wall_climb(f, true):
+			return
+		_jump()
+		_tick_air(f, wish, delta)
+		return
 	_set_height(tuning.crouch_height)
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), 1.0 * wish.length(), 4.0, delta)
 	velocity.y -= tuning.gravity * delta
@@ -1128,22 +1144,68 @@ func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
 
 # ---------------------------------------------------------------- kicks (doors, windows)
 
-## Front kick on the ground: opens doors, breaks windows, shoves targets.
+## Front kick on the ground: opens doors, breaks windows, shoves targets,
+## and hurts and knocks down enemies.
 func _ground_kick() -> void:
 	var eye := global_position + Vector3.UP * (_height - EYE_OFFSET)
 	var look := look_direction()
 	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * (tuning.kick_range + 0.3), 1 | 4)
 	q.exclude = [get_rid()]
 	var hit := get_world_3d().direct_space_state.intersect_ray(q)
-	if hit.is_empty():
+	var collider: Object = hit.get("collider")
+	if collider == null or not collider.is_in_group("hitboxes"):
+		# An enemy just off the look ray still takes the kick.
+		var enemy := _enemy_in_kick_reach(look)
+		if enemy != null and (collider == null or _kick_dist(enemy) < (hit.position as Vector3).distance_to(eye)):
+			collider = enemy
+	if collider == null:
 		_trick_feedback(&"kick_miss")
 		return
-	var collider: Object = hit.collider
 	if collider is RigidBody3D:
 		(collider as RigidBody3D).apply_central_impulse(look * tuning.kick_target_impulse)
-	if collider.has_method("on_kicked"):
+	if collider.is_in_group("hitboxes") and collider.has_method("on_kicked"):
+		_kick_enemy(collider, look)
+	elif collider.has_method("on_kicked"):
 		collider.on_kicked(self, look)
 		_trick(&"door_kick" if collider.is_in_group("doors") else &"kick")
+
+
+## Kicks an enemy's hit zone: "kick", plus "kick_kill" if it finished it.
+func _kick_enemy(hitbox: Object, dir: Vector3) -> void:
+	var killed: bool = hitbox.on_kicked(self, dir)
+	_trick(&"kick")
+	if killed:
+		_trick(&"kick_kill")
+
+
+## The nearest enemy hit zone in front within kick reach (a forgiving
+## sphere around where the foot lands), or null.
+func _enemy_in_kick_reach(look: Vector3) -> Object:
+	var flat := MovementMath.horizontal(look)
+	flat = flat.normalized() if flat.length_squared() > 1e-4 else -basis.z
+	var sphere := SphereShape3D.new()
+	sphere.radius = KICK_REACH_RADIUS
+	var sq := PhysicsShapeQueryParameters3D.new()
+	sq.shape = sphere
+	sq.transform = Transform3D(Basis.IDENTITY, global_position + Vector3.UP * (_height * 0.5) + flat * (tuning.kick_range * 0.6))
+	sq.collision_mask = 4
+	sq.exclude = [get_rid()]
+	var best: Object = null
+	var best_d := INF
+	for r: Dictionary in get_world_3d().direct_space_state.intersect_shape(sq, 16):
+		var c: Object = r.collider
+		if c == null or not c.is_in_group("hitboxes") or not c.has_method("on_kicked"):
+			continue
+		var d := _kick_dist(c)
+		# Ties broken by id, so the same setup always picks the same one.
+		if d < best_d - 1e-4 or (absf(d - best_d) <= 1e-4 and best and c.get_instance_id() < best.get_instance_id()):
+			best = c
+			best_d = d
+	return best
+
+
+func _kick_dist(c: Object) -> float:
+	return (c as Node3D).global_position.distance_to(global_position + Vector3.UP * (_height * 0.5)) if c is Node3D else INF
 
 
 ## A trick-feed event with no momentum bump (feedback only).
@@ -1984,11 +2046,15 @@ func _try_kick_off() -> bool:
 	_kicked_ids.append(cid)
 	_since_wall = 999.0
 	var is_target := collider is RigidBody3D
+	var kicked_enemy: bool = collider != null and collider.is_in_group("hitboxes") and collider.has_method("on_kicked")
 	if is_target:
 		(collider as RigidBody3D).apply_central_impulse(-n * tuning.kick_target_impulse + Vector3.UP * 3.0)
 		if collider.has_method("on_kicked"):
 			collider.on_kicked(self, -n)
-	_trick(&"kick_off", {"target": is_target, "quality": kick_q})
+	_trick(&"kick_off", {"target": is_target or kicked_enemy, "quality": kick_q})
+	if kicked_enemy:
+		# Kicking off an enemy: it takes the kick too.
+		_kick_enemy(collider, -n)
 	return true
 
 
