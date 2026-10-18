@@ -2,16 +2,21 @@
  "title": "Dead Air",
  "acts": [
   {
+   "title": "Stage 1: The Docks",
+   "missions": [
+    {"id": "l1_1_dawn_run", "number": 0, "label": "1-1", "title": "Dawn Run", "place": "The Line's camp and the dock roofs",
+     "beat": "Dawn at the Line's camp: Echo hands Parker the insulin for the Okafor kid. On the way back the radio cuts out, smoke climbs off the camp roof and a Static pickup pulls away up the quay with Echo in the back. The Host is on every radio: the hunt is on.",
+     "moves": "Sprint, jump, vault, slide, roll", "enemies": "None. The raid is seen, not fought.",
+     "file": "res://campaign/missions/l1_1_dawn_run.json"},
+    {"id": "l1_2_the_yard", "number": 1, "label": "1-2", "title": "The Yard", "place": "Mags's yard and the container terminal",
+     "beat": "Mags makes Parker run the yard once and hands him his granddad's pistol on the way past. Out through the south gate, Warehouse Row and the tower ahead.",
+     "moves": "Flips, 360s, lean and side flip; combos", "enemies": "Mags's scrap dummies; semi-auto; headshots",
+     "file": "res://campaign/missions/l1_2_the_yard.json"}
+   ]
+  },
+  {
    "title": "Act 1: The Edge",
    "missions": [
-    {"id": "m00_dawn_run", "number": 0, "title": "Dawn Run", "place": "Dock rooftops",
-     "beat": "A routine delivery. Parker gets back to find the camp raided and Echo gone. The Host's voice cuts into every radio: the hunt is on.",
-     "moves": "Sprint, jump, vault, slide, roll", "enemies": "None. Raiders seen at a distance only.",
-     "file": "res://campaign/missions/m00_dawn_run.json"},
-    {"id": "m01_the_yard", "number": 1, "title": "The Yard", "place": "Couriers' training yard",
-     "beat": "Mags hands Parker an old scrap pistol and runs him through the yard one last time.",
-     "moves": "Flips, 360s, lean and side flip; combos", "enemies": "Static targets; semi-auto; headshots",
-     "file": "res://campaign/missions/m01_the_yard.json"},
     {"id": "m02_on_air", "number": 2, "title": "On Air", "place": "Warehouse roofs",
      "beat": "First ambush. The Host names Parker on air and starts calling the run.",
      "moves": "Wallrun, wall hop", "enemies": "Gunners; slow-mo as an adrenaline burst",

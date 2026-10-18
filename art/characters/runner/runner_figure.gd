@@ -47,7 +47,38 @@ static func pose(pose_id: String) -> Dictionary:
 				"RightUpperLeg": Vector3(0, 0, -3),
 				"RightLowerLeg": Vector3(-2, 0, 0),
 			}
+		"hold_out":
+			# Holding something out to you at chest height (Echo's parcel,
+			# Mags's pistol): right arm forward, weight back a little.
+			var p := RunnerPoses.idle()
+			p["Spine"] = Vector3(-2, 6, 0)
+			p["Head"] = Vector3(4, 6, 0)
+			p["RightUpperArm"] = Vector3(62, -6, 4)
+			p["RightLowerArm"] = Vector3(24, 0, 0)
+			p["RightHand"] = Vector3(-14, 0, 0)
+			return p
+		"sit_floor":
+			# Sitting on the floor, knees up, arms round them (the wrecked
+			# camp). The figure stands SIT_DROP m lower to sit on the floor.
+			return RunnerPoses.mirror({
+				"Spine": Vector3(16, 0, 0),
+				"Chest": Vector3(10, 0, 0),
+				"Neck": Vector3(-8, 0, 0),
+				"Head": Vector3(-14, 0, 0),
+				"LeftUpperArm": Vector3(44, 0, 14),
+				"LeftLowerArm": Vector3(62, 0, 0),
+				"LeftUpperLeg": Vector3(84, 0, 12),
+				"LeftLowerLeg": Vector3(-118, 0, 0),
+				"LeftFoot": Vector3(-10, 0, 0),
+			})
 	return RunnerPoses.idle()
+
+
+## How much lower a "sit_floor" figure stands, so it sits on the floor.
+const SIT_DROP := 0.62
+## Runners without a model of their own yet stand in as another runner,
+## shaded (Mags until her model lands: Echo's build, greyed).
+const STAND_INS := {"mags": ["echo", Color(0.78, 0.76, 0.74)]}
 
 
 func _ready() -> void:
@@ -57,10 +88,19 @@ func _ready() -> void:
 		return
 	body = script.new()
 	body.name = "RunnerBody"
-	body.runner = runner
+	var models: Dictionary = script.get_script_constant_map().get("MODELS", {})
+	var stand_in: Array = STAND_INS.get(runner, []) if not models.has(runner) else []
+	body.runner = stand_in[0] if not stand_in.is_empty() else runner
 	add_child(body)
+	if not stand_in.is_empty():
+		for mi: MeshInstance3D in body.find_children("*", "MeshInstance3D", true, false):
+			var mat := mi.material_override as ShaderMaterial
+			if mat != null:
+				mat = mat.duplicate()
+				mat.set_shader_parameter("base_color", stand_in[1])
+				mi.material_override = mat
 	body.pose_override = pose(pose_name)
-	body.global_transform = global_transform
+	body.global_transform = _body_xf()
 	# A soft key light from the front so she reads against a bright opening.
 	var lamp := OmniLight3D.new()
 	lamp.name = "Lamp"
@@ -94,7 +134,7 @@ func _process(delta: float) -> void:
 		w["Neck"] = w.get("Neck", Vector3.ZERO) + Vector3(0, 20, 0)
 		w["Head"] = w.get("Head", Vector3.ZERO) + Vector3(0, 30, 0)
 		body.pose_override = w
-		body.global_transform = global_transform
+		body.global_transform = _body_xf()
 		return
 	# Head and chest follow the camera (the player's eye), within limits.
 	var cam := get_viewport().get_camera_3d()
@@ -109,4 +149,12 @@ func _process(delta: float) -> void:
 	p["Neck"] = p.get("Neck", Vector3.ZERO) + Vector3(0, _look * 0.3, 0)
 	p["Head"] = p.get("Head", Vector3.ZERO) + Vector3(0, _look * 0.4, 0)
 	body.pose_override = p
-	body.global_transform = global_transform
+	body.global_transform = _body_xf()
+
+
+## Where the body stands: here, or lower for a figure sitting on the floor.
+func _body_xf() -> Transform3D:
+	var xf := global_transform
+	if pose_name == "sit_floor":
+		xf.origin.y -= SIT_DROP
+	return xf

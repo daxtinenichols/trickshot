@@ -4,10 +4,14 @@ extends "res://levels/sandbox.gd"
 ## (MissionRun), the radio and the mission HUD.
 
 const HURT_OVERLAY_SCRIPT := preload("res://enemies/hurt_overlay.gd")
+## The longest the results card waits for the radio to finish (seconds).
+const STORY_WAIT_MAX := 90.0
 
 var run: MissionRun
 var radio: RadioFeed
 var mission_hud: MissionHud
+## The results waiting for the radio: {result, next, waited}.
+var _results := {}
 
 
 func _ready() -> void:
@@ -43,12 +47,25 @@ func _ready() -> void:
 func _on_completed(result: Dictionary) -> void:
 	var index := run.mission_index
 	var has_next := index >= 0 and index + 1 < Campaign.mission_count() and Campaign.is_unlocked(index + 1)
-	# Let the last radio line land, then hand the mouse to the results card.
+	# The ending is seen, not read over a menu: you keep control while the
+	# level's last story lines play, then the results card comes up.
+	_results = {"result": result, "next": has_next, "waited": 0.0}
+
+
+func _process(delta: float) -> void:
+	if _results.is_empty():
+		return
+	_results.waited += delta
+	if radio != null and radio.busy() and _results.waited < STORY_WAIT_MAX:
+		return
+	var r := _results
+	_results = {}
+	# Then hand the mouse to the results card.
 	player.use_device_input = false
 	player.scripted_input = InputFrame.new()
 	if DisplayServer.get_name() != "headless":
 		player.capture_mouse(false)
-	mission_hud.show_results(result, run.mission.get("title", "Mission complete"), has_next)
+	mission_hud.show_results(r.result, run.mission.get("title", "Mission complete"), r.next)
 
 
 func _next() -> void:

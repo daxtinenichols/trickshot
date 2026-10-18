@@ -20,6 +20,7 @@ extends RefCounted
 ## Loaded by path (no class_name).
 
 const City := preload("res://campaign/city.gd")
+const Atlas := preload("res://campaign/atlas.gd")
 
 ## Roof width; the running lane is its middle.
 const WIDTH := 12.0
@@ -141,7 +142,15 @@ static func expand(mission: Dictionary) -> Dictionary:
 		var top := -0.02 if mission.has("base") else 0.0
 		pieces.push_front({"box": [ground.get_center().x, top - 0.5, ground.get_center().y], "size": [ground.size.x, 1, ground.size.y], "kind": "FLOOR"})
 	if mission.get("skyline", true) != false:
-		City.build(mission, _lane_areas(st), ground, String(mission.get("id", "route")))
+		var atlas: bool = mission.get("atlas", false)
+		if atlas:
+			Atlas.before_city(mission, ground)
+		var first: int = mission.pieces.size()
+		var lanes := _lane_areas(st)
+		City.build(mission, lanes, ground, String(mission.get("id", "route")))
+		_clear_streets(st, mission, first)
+		if atlas:
+			Atlas.after_city(mission, first, ground, bounds, lanes)
 	if not mission.has("fail_y"):
 		mission.fail_y = st.lowest - 5.5 if st.lowest > 6.0 else -20.0
 	if mission.get("skyline", true) != false:
@@ -328,7 +337,9 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	var w: float = seg.get("width", WIDTH)
 	if seg.get("bridge", false):
 		_bridge(st, z0, length, w, float(seg.get("beyond", 0.0)))
-	elif st.y > 0.5:
+	elif st.y > 0.5 and seg.get("building", true):
+		# ("building": false: a roof of something already there, like an
+		# atlas landmark the level runs over.)
 		_add(st, {"building": [0, st.y, z0 - length * 0.5], "size": [w, length], "look": seg.get("look", st.roof_look)})
 	# (At street level, y 0, the street itself is the floor.)
 	_lane(st, z0, z0 - length, w)
@@ -588,7 +599,13 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 		# Double doors in a wall across the room: kick one and both swing
 		# open away from you. No slowing down if you kick in time.
 		var dx: float = f.door
-		_cross_wall(st, z, dx, DOORS_WIDTH, 0.0, DOORS_TOP, f.get("look", "FACADE"))
+		if f.has("glass"):
+			# And a window beside them in the same wall: kick the door or
+			# jump the glass.
+			_cross_wall2(st, z, [[dx, DOORS_WIDTH, 0.0, DOORS_TOP], [float(f.glass), GLASS_WIDTH, GLASS_SILL, GLASS_TOP]], f.get("look", "FACADE"))
+			_add(st, {"window": [float(f.glass), y + GLASS_SILL, z], "size": [GLASS_WIDTH, GLASS_TOP - GLASS_SILL]})
+		else:
+			_cross_wall(st, z, dx, DOORS_WIDTH, 0.0, DOORS_TOP, f.get("look", "FACADE"))
 		_add(st, {"doors": [dx, y, z]})
 		st.bot.append([z + 16.0, "", dx])
 		st.bot.append([z + KICK_AT, "kick", dx])
@@ -691,6 +708,27 @@ static func _cross_wall(st: Dictionary, z: float, x: float, width: float, lo: fl
 	var over := {"box": [x, y + (hi + h) * 0.5, z], "size": [width, h - hi, 0.3], "kind": "NEUTRAL", "look": look}
 	_add(st, over)
 	return over
+
+
+## A wall across the roof at z with several openings [x, width, lo, hi]
+## (left to right, not overlapping).
+static func _cross_wall2(st: Dictionary, z: float, openings: Array, look: String) -> void:
+	var y: float = st.y
+	var h: float = st.inside if st.inside > 0.0 else OUTDOOR_WALL
+	var half: float = st.roof_w * 0.5
+	openings.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	var left := -half
+	for o: Array in openings:
+		var a: float = float(o[0]) - float(o[1]) * 0.5
+		var b: float = float(o[0]) + float(o[1]) * 0.5
+		if a - left > 0.01:
+			_add(st, {"box": [(left + a) * 0.5, y + h * 0.5, z], "size": [a - left, h, 0.3], "kind": "NEUTRAL", "look": look})
+		if float(o[2]) > 0.01:
+			_add(st, {"box": [o[0], y + float(o[2]) * 0.5, z], "size": [o[1], o[2], 0.3], "kind": "NEUTRAL", "look": look})
+		_add(st, {"box": [o[0], y + (float(o[3]) + h) * 0.5, z], "size": [o[1], h - float(o[3]), 0.3], "kind": "NEUTRAL", "look": look})
+		left = b
+	if half - left > 0.01:
+		_add(st, {"box": [(left + half) * 0.5, y + h * 0.5, z], "size": [half - left, h, 0.3], "kind": "NEUTRAL", "look": look})
 
 
 ## A gap HOLE_TOP high to slide through at x, in one of these styles:
@@ -944,6 +982,37 @@ static func _pits(st: Dictionary, mission: Dictionary) -> void:
 			var rect: Rect2 = f
 			streets.append({"at": [rect.get_center().x, 0.0, rect.get_center().y], "size": [rect.size.x, 6.0, rect.size.y]})
 	mission.pits = {"y": pit_y, "streets": streets}
+
+
+## Takes the city's rubble, wrecks and fires (pieces from `first` on) off
+## the streets the course runs along: a piece high over a street (a dummy
+## on a container stack) reads to the city as a gap with ground under it.
+static func _clear_streets(st: Dictionary, mission: Dictionary, first: int) -> void:
+	var streets: Array = []
+	for l: Array in st.lanes:
+		if float(l[5]) <= City.STREET_TOP:
+			streets.append(l)
+	if streets.is_empty():
+		return
+	var kept: Array = mission.pieces.slice(0, first)
+	for i in range(first, mission.pieces.size()):
+		var p: Dictionary = mission.pieces[i]
+		var at: Variant = p.get("at", p.get("fire", null)) if (p.has("prop") or p.has("fire")) else null
+		if at is Array and _on_street(st, streets, Vector2(at[0], at[2])):
+			continue
+		kept.append(p)
+	mission.pieces = kept
+
+
+static func _on_street(st: Dictionary, streets: Array, p: Vector2) -> bool:
+	for l: Array in streets:
+		var leg: Dictionary = st.legs[int(l[0])]
+		# Into the leg's frame: x across, z along.
+		var v := Basis(Vector3.UP, -float(leg.yaw)) * Vector3(p.x - leg.o.x, 0.0, p.y - leg.o.z)
+		var z := v.z + float(leg.z0)
+		if absf(v.x - float(l[1])) <= float(l[4]) * 0.5 and z <= maxf(l[2], l[3]) and z >= minf(l[2], l[3]):
+			return true
+	return false
 
 
 ## The course's stretches as areas in the world, for the city.

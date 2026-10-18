@@ -8,7 +8,7 @@ extends TestCase
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "doors", "window", "target", "ramp", "loop",
-	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure", "set_piece", "chalk", "light"]
+	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure", "set_piece", "chalk", "light", "skyline"]
 const RouteMarker := preload("res://campaign/route_marker.gd")
 const MALL := ["m05_atrium", "m06_anchor_store", "m07_parking_spiral"]
 
@@ -74,12 +74,12 @@ func _index(id: String) -> int:
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
 	check(all.size() == 15, "15 missions (%d)" % all.size())
-	check(Campaign.acts().size() == 3, "three acts")
+	check(Campaign.acts().size() == 4, "the Docks stage and three acts")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
 	check(Campaign.entry(all.size() - 1).get("unlocks", "") == "echo", "the finale unlocks Echo")
-	for id: String in ["m00_dawn_run", "m01_the_yard", "m02_on_air", "m12_signal_out"]:
+	for id: String in ["l1_1_dawn_run", "l1_2_the_yard", "m02_on_air", "m12_signal_out"]:
 		check(Campaign.is_built(_index(id)), "%s is built" % id)
 
 
@@ -154,41 +154,51 @@ func test_menu_lists_every_mission() -> void:
 # ---------------------------------------------------------------- rules
 
 func test_checkpoints_falls_and_objectives() -> void:
-	await _load(_index("m00_dawn_run"))
+	await _load(_index("l1_1_dawn_run"))
+	var m: Dictionary = run.mission
+	var start := MissionBuilder.vec(m.start.at)
 	await _step(5)
 	check(run.phase == MissionRun.Phase.READY, "waits at the start")
 	check(run.objective == 0, "first objective active")
-	player.global_position = Vector3(0, 10.05, -8)
+	player.global_position = start + Vector3(-8, 0.05, 0)
 	await _step(3)
 	check(run.phase == MissionRun.Phase.RUNNING, "leaving the start starts the clock")
-	player.global_position = Vector3(0, 10.05, -46)
+	player.global_position = MissionBuilder.vec(m.checkpoints[0].at) + Vector3(0, 0.05, 0)
 	await _step(3)
 	check(run.checkpoint == 1, "first checkpoint (%d)" % run.checkpoint)
-	player.global_position = Vector3(0, 1.0, -75)
+	player.global_position = MissionBuilder.vec(m.checkpoints[0].at) + Vector3(0, -8.0, 0)
 	await _step(3)
 	check(run.falls == 1, "a fall is counted")
 	check(player.global_position.distance_to(level.builder.spawns[1].origin) < 1.0, "back at the checkpoint")
 	check(run.phase == MissionRun.Phase.RUNNING, "the clock keeps going")
 	# Through the drop zone: the first objective completes.
-	player.global_position = Vector3(0, 13.05, -109)
+	player.global_position = MissionBuilder.vec(m.objectives[0].at) + Vector3(0, 0.05, 0)
 	await _step(3)
 	check(run.objective == 1, "delivered: on to the next objective")
 	player.global_position = _camp()
 	await _step(3)
 	check(run.phase == MissionRun.Phase.COMPLETE, "reaching camp completes the mission")
-	check(Campaign.is_complete(_index("m00_dawn_run")), "progress saved")
-	check(level.mission_hud.results_visible(), "results shown")
-	check(int(Campaign.best(_index("m00_dawn_run")).ticks) == run.ticks, "best time saved")
+	check(Campaign.is_complete(_index("l1_1_dawn_run")), "progress saved")
+	check(int(Campaign.best(_index("l1_1_dawn_run")).ticks) == run.ticks, "best time saved")
+	# The ending is seen, not read over a menu: the results wait for the
+	# camp's last lines, and you keep control meanwhile.
+	await _step(3)
+	check(not level.mission_hud.results_visible(), "no results while the Host and Mags talk")
+	check(player.use_device_input or player.scripted_input != null, "still in control")
+	for k in 20:
+		level.radio.advance(30.0)
+	await _step(3)
+	check(level.mission_hud.results_visible(), "results shown after the last line")
 
 
-## Dawn Run's camp: the end of its route along the docks.
+## Dawn Run's camp: the end of its route, back on the camp roof.
 func _camp() -> Vector3:
 	var at := MissionBuilder.vec(run.mission.objectives[1].at)
-	return Vector3(at.x, 4.05, at.z)
+	return Vector3(at.x, 12.05, at.z)
 
 
 func test_zone_key_starts_a_practice_run() -> void:
-	await _load(_index("m00_dawn_run"))
+	await _load(_index("l1_1_dawn_run"))
 	level.go_to_zone(3)
 	await _step(3)
 	check(run.practice and run.checkpoint == 3, "practice from the third checkpoint")
@@ -196,13 +206,13 @@ func test_zone_key_starts_a_practice_run() -> void:
 	player.global_position = _camp()
 	await _step(3)
 	check(run.phase == MissionRun.Phase.COMPLETE, "can finish")
-	check(not Campaign.is_complete(_index("m00_dawn_run")), "but a practice run saves nothing")
+	check(not Campaign.is_complete(_index("l1_1_dawn_run")), "but a practice run saves nothing")
 
 
 func test_tapes_are_collected() -> void:
-	await _load(_index("m00_dawn_run"))
+	await _load(_index("l1_1_dawn_run"))
 	var b: MissionBuilder = level.builder
-	check(b.tapes.size() == 1, "mission 0 hides a tape")
+	check(b.tapes.size() == 1, "Dawn Run hides a tape")
 	player.global_position = (b.tapes[0].position as Vector3) + Vector3(0, 0.05, 0)
 	await _step(2)
 	check(run.tapes_found.size() == 1, "standing on it picks it up")
@@ -210,7 +220,7 @@ func test_tapes_are_collected() -> void:
 
 
 func test_shoot_and_combo_objectives() -> void:
-	await _load(_index("m01_the_yard"))
+	await _load(_index("l1_2_the_yard"))
 	var combo: ComboTracker = level.combo
 	check(run.current_objective().type == "combo", "starts with the combo")
 	combo.add(&"vault", 75, 8.0)
@@ -240,16 +250,21 @@ func test_shoot_and_combo_objectives() -> void:
 
 
 func test_radio_plays_story_lines_and_chatter() -> void:
-	await _load(_index("m00_dawn_run"))
+	await _load(_index("l1_1_dawn_run"))
 	var radio: RadioFeed = level.radio
 	radio.advance(0.0)
-	check(radio.current.get("who", "") == "mags", "Mags opens the mission")
+	check(radio.current.get("who", "") == "echo", "Echo opens the mission, in the camp")
 	var first: String = radio.current.line
 	radio.advance(30.0)
 	check(radio.current.is_empty() or radio.current.line != first, "lines move on")
 	# A zone line: the hurdles.
-	player.global_position = Vector3(0, 10.05, -11)
-	radio.advance(30.0)
+	radio.queue.clear()
+	radio.current = {}
+	for r: Dictionary in run.mission.radio:
+		if String(r.line).begins_with("Rails coming up"):
+			player.global_position = MissionBuilder.vec(r.at) + Vector3(0, 0.05, 0)
+	for k in 8:
+		radio.advance(30.0)
 	radio.advance(0.0)
 	var heard := radio.history.map(func(l: Dictionary) -> String: return l.line)
 	check(heard.any(func(l: String) -> bool: return l.begins_with("Rails coming up")), "the hurdle tip plays at the hurdles")
@@ -513,7 +528,7 @@ func test_beating_the_finale_unlocks_echo() -> void:
 	check(Campaign.echo_unlocked(), "unlocked by the finale")
 	Campaign.set_runner("echo")
 	check(Campaign.runner_for(_index("m02_on_air")) == "echo", "and playable in other missions")
-	check(Campaign.runner_for(_index("m00_dawn_run")) == "parker", "except where the story says otherwise")
+	check(Campaign.runner_for(_index("l1_1_dawn_run")) == "parker", "except where the story says otherwise")
 
 
 func test_echo_waits_in_the_studio_and_runs_the_finale() -> void:
@@ -660,66 +675,183 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 	return false
 
 
-## Rooftops as legs for the bot: the lines between its corners, so local z
-## runs on continuously from leg to leg ([origin x, origin z, yaw, z0]).
-const ROOFTOPS_LEGS := [[0.0, 0.0, 0.0, 0.0], [0.0, -369.0, PI * 0.5, -369.0], [-198.0, -369.0, 0.0, -567.0]]
+const Atlas_ := preload("res://campaign/atlas.gd")
 
 
-## test_maps' run of the whole Rooftops course (distances along its racing
-## line, which rounds the corners) turned into steps on ROOFTOPS_LEGS.
-func _rooftops_steps() -> Array:
-	var course: Array = load("res://tests/test_maps.gd").get_script_constant_map().COURSE_ROUTE
-	var out: Array = []
-	for step: Array in course:
-		var s: float = step[0]
-		var shift := 0.0 if s < 378.7 else (7.3 if s < 570.0 else 15.0)
-		out.append([-s - shift, step[1], step[2]])
-	return out
+## Levels on the city atlas meet: each starts exactly where the one before
+## it ends (same spot, same facing), and spawns there.
+func test_atlas_levels_meet() -> void:
+	var order: Array = Atlas_.order()
+	check(order.size() >= 2, "the Docks levels are on the atlas (%d)" % order.size())
+	for i in range(1, order.size()):
+		var a := Campaign.load_mission_file(order[i - 1][1])
+		var b := Campaign.load_mission_file(order[i][1])
+		var end := MissionBuilder.vec(a.route_end)
+		var start := MissionBuilder.vec(b.route_origin.at)
+		check(end.distance_to(start) < 0.05, "%s ends where %s starts (%s, %s)" % [a.id, b.id, end, start])
+		check(is_equal_approx(wrapf(float(a.route_end_yaw) - float(b.route_origin.yaw), -180.0, 180.0), 0.0),
+			"facing the same way (%s, %s)" % [a.route_end_yaw, b.route_origin.yaw])
+		check(MissionBuilder.vec(b.start.at).distance_to(start) < 0.05 and is_equal_approx(float(b.start.yaw), float(b.route_origin.yaw)),
+			"%s spawns there" % b.id)
 
 
-## Dawn Run is the whole Rooftops course (the delivery on its high roof),
-## then the mission's own route along the docks to camp.
-func test_dawn_run_can_be_finished() -> void:
-	await _load(_index("m00_dawn_run"))
-	PlayerHealth.ensure(player).can_die = false
-	await _step(10)
-	var m: Dictionary = run.mission
-	var exit_z: float = float(m.route_legs[0][1]) - 198.0
-	var base_done := await _run_route(_rooftops_steps(), 9000, exit_z + 6.0, ROOFTOPS_LEGS)
-	check(not base_done and run.objective == 1, "the bot crosses Rooftops with the parcel delivered (objective %d, at %s)" % [run.objective, player.global_position])
-	var done := await _run_route(m.bot, 3000, -INF, m.route_legs)
-	check(done, "and finishes Dawn Run at camp (stopped at %s, objective %d)" % [player.global_position, run.objective])
-	check(run.falls == 0, "without falling (%d)" % run.falls)
-	check(m.checkpoints.size() == 10 and m.checkpoints[0].name == "Door and window", "the base's checkpoints come before the route's")
+## The broadcast tower is in sight from the start and end of every atlas
+## level: nothing of the level, its city or its skyline stands across the
+## line from there to the tower's top floors.
+func test_tower_in_sight_from_atlas_levels() -> void:
+	var t: Dictionary = Atlas_.data().tower
+	var tower := Vector3(t.at[0], Atlas_.VIEW_AT + 6.0, t.at[1])
+	for o: Array in Atlas_.order():
+		var m := Campaign.load_mission_file(o[1])
+		var boxes: Array = []
+		for p: Dictionary in m.pieces:
+			if p.has("building"):
+				boxes.append([p.building[0], p.building[2], p.size[0], p.size[1], 0.0, p.building[1], 0, float(p.get("yaw", 0.0))])
+			elif p.get("skyline", false):
+				boxes.append_array(p.boxes)
+		for eye: Vector3 in Atlas_.tower_views(m):
+			var blocked := ""
+			# Out to where the skyline ends; past it the tower is all there is.
+			for k in range(1, 400):
+				var q := eye + (tower - eye).normalized() * (k * 2.0)
+				if Vector2(q.x - eye.x, q.z - eye.z).length() > Atlas_.SKY_RANGE + 200.0:
+					break
+				for b: Array in boxes:
+					if q.y < float(b[5]) and q.y > float(b[4]) and Atlas_._rect(b).has_point(Vector2(q.x, q.z)):
+						blocked = "%s at %s" % [b, q]
+						break
+				if blocked != "":
+					break
+			check(blocked == "", "%s: the tower's in sight from %s (%s)" % [m.id, eye, blocked])
 
 
-## Dawn Run sets its base's hide_course_marks (via "base_set"), so none of
-## the Rooftops course's own signs or its FINISH line show mid-mission.
-func test_dawn_run_hides_the_course_signs() -> void:
-	await _load(_index("m00_dawn_run"))
-	var b: MissionBuilder = level.builder
-	check(b.base != null and b.base.get("hide_course_marks") == true, "the base was told to hide its marks")
-	var finish := 0
-	for l: Label3D in b.base.find_children("*", "Label3D", true, false):
-		finish += 1
-	check(finish == 0, "no Rooftops labels (%d)" % finish)
+## The Docks: two levels of 600-900 m on the atlas, no enemies, the city
+## kept off the harbour, the skyline beyond with the tower; the last one
+## ends at the south gate looking west at Warehouse Row.
+func test_docks_levels_follow_the_atlas() -> void:
+	for id: String in ["l1_1_dawn_run", "l1_2_the_yard"]:
+		var m := Campaign.load_mission_file(Campaign.entry(_index(id)).file)
+		check(m.route_length >= 600.0 and m.route_length <= 900.0, "%s: 600-900 m (%d)" % [id, int(m.route_length)])
+		var sky := {}
+		var in_water := 0
+		var camp := 0
+		for p: Dictionary in m.pieces:
+			check(not p.has("encounter"), "%s: no enemies in the Docks" % id)
+			if p.has("skyline"):
+				sky = p
+			if p.has("building") and p.has("city") and Atlas_.in_water(p.building[0], p.building[2]):
+				in_water += 1
+			if p.get("atlas", "") == "line_camp":
+				camp += 1
+		check(in_water == 0, "%s: no city on the harbour (%d)" % [id, in_water])
+		check(camp == 1, "%s: runs over the Line's camp, from the atlas" % id)
+		check(not sky.is_empty() and sky.boxes.size() > 100, "%s: a skyline past its own city" % id)
+		check(not sky.is_empty() and sky.tower.size() == 5, "%s: the broadcast tower on it" % id)
+	var yard := Campaign.load_mission_file(Campaign.entry(_index("l1_2_the_yard")).file)
+	var end := MissionBuilder.vec(yard.route_end)
+	check(Atlas_.district_at(end.x, end.z).get("id", "") == "docks", "the Yard ends in the Docks")
+	check(is_equal_approx(float(yard.route_end_yaw), 90.0), "facing west (%s)" % yard.route_end_yaw)
+	check(Atlas_.district_at(end.x - 120.0, end.z).get("id", "") == "warehouse_glass", "looking out at Warehouse Row")
+	var ahead := 0
+	for p: Dictionary in yard.pieces:
+		if p.has("skyline"):
+			for b: Array in p.boxes:
+				if Atlas_.district_at(b[0], b[1]).get("id", "") == "warehouse_glass":
+					ahead += 1
+	check(ahead > 20, "Warehouse Row stands on the skyline ahead (%d)" % ahead)
+	# Nothing of the city's lies on the yard's streets.
+	var junk := 0
+	for p: Dictionary in yard.pieces:
+		if p.has("city") and (p.has("prop") or p.has("fire")):
+			var at: Array = p.get("at", p.get("fire", [0, 0, 0]))
+			if at[0] > 3414.0 and at[0] < 3436.0 and at[2] > 177.0 and at[2] < 305.0:
+				junk += 1
+	check(junk == 0, "no rubble in the yard (%d)" % junk)
 
 
-## The Yard: the yard's lessons, then out of the park's far end and down
-## the mission's own streets to the south gate.
-func test_the_yard_ends_at_the_south_gate() -> void:
-	await _load(_index("m01_the_yard"))
-	var m: Dictionary = run.mission
-	check(m.route_length > 150.0, "a run out past the park (%d m)" % int(m.route_length))
-	var exit: Transform3D = load(m.base).EXIT
-	player.respawn(exit)
-	player.set_spawn(exit)
-	await _step(10)
-	# The lessons, done for the bot.
-	run._begin_objective(4)
-	var done := await _run_route(m.bot, 2400, -INF, m.route_legs)
-	check(done, "a bot runs from the park's exit to the gate (stopped at %s, objective %d)" % [player.global_position, run.objective])
-	check(run.falls == 0, "without falling (%d)" % run.falls)
+## Dawn Run's way back: halfway down the waterfront the raid goes off where
+## you can see it. The camp is wrecked, smoke over it, the pickup pulls
+## away up the quay and the drone heads for the tower.
+func test_dawn_run_raid_is_seen() -> void:
+	await _load(_index("l1_1_dawn_run"))
+	var camp: Node3D = level.builder.set_pieces[0]
+	check(camp.get_node("Intact").visible and not camp.get_node("Wrecked").visible, "the camp's intact at dawn")
+	check(level.builder.find_children("Figure_echo", "", true, false).size() >= 1, "Echo's in the camp")
+	player.global_position = MissionBuilder.vec(run.mission.start.at) + Vector3(-8, 0.05, 0)
+	await _step(3)
+	var raid: Array[String] = []
+	run.event.connect(func(e: String) -> void:
+		if e == "set_piece:raid":
+			raid.append(e))
+	player.global_position = camp.trigger + Vector3(0, 0.05, 0)
+	await _step(3)
+	check(raid.size() == 1, "the raid goes off on the waterfront")
+	check(not camp.get_node("Intact").visible and camp.get_node("Wrecked").visible, "the camp's wrecked")
+	var truck: Node3D = camp.get_node("Pickup")
+	var z0 := truck.global_position.z
+	await _step(120)
+	check(truck.visible and truck.global_position.z < z0 - 10.0, "the pickup pulls away north (%.1f -> %.1f)" % [z0, truck.global_position.z])
+	var drone: Node3D = camp.get_node("Drone")
+	check(drone.visible and drone.global_position.y > camp.global_position.y + 5.0, "the drone lifts off the roof")
+
+
+## The Yard opens in the wrecked camp: Mags holds the pistol out by the way
+## down, and running past her takes it.
+func test_yard_pistol_handoff() -> void:
+	await _load(_index("l1_2_the_yard"))
+	var camp: Node3D = level.builder.set_pieces[0]
+	check(camp.get_node("Wrecked").visible, "the camp's still wrecked")
+	var pistol: Node3D = camp.get_node("Wrecked/Pistol")
+	check(pistol.visible, "Mags holds the pistol out")
+	var start := MissionBuilder.vec(run.mission.start.at)
+	var run_on := InputFrame.new()
+	run_on.move = Vector2(0, 1)
+	var hand: Vector3 = pistol.global_position
+	for k in 150:
+		if not pistol.visible:
+			break
+		await _step(1, run_on)
+	check(not pistol.visible, "running past takes it (passed %.1f m from her hand)" % Vector2(player.global_position.x - hand.x, player.global_position.z - hand.z).length())
+	check(player.horizontal_speed() > 4.0, "without stopping")
+	level.radio.advance(0.0)
+	var lines: Array = level.radio.queue.map(func(l: Dictionary) -> String: return l.line)
+	lines.append(level.radio.current.get("line", ""))
+	for l: Dictionary in level.radio.history:
+		lines.append(l.line)
+	check(lines.any(func(l: String) -> bool: return l.begins_with("Here. This was your granddad's")), "Mags says whose it was")
+	check(player.global_position.distance_to(start) > 8.0, "on the way down")
+
+
+## The Yard's lost tape is a Calder Radio reel: its lines play as a tape.
+func test_yard_tape_plays_as_a_tape() -> void:
+	await _load(_index("l1_2_the_yard"))
+	var radio: RadioFeed = level.radio
+	radio.queue.clear()
+	radio.current = {}
+	radio.notify("tape")
+	check(radio.queue.size() == 3 and radio.queue.all(func(l: Dictionary) -> bool: return l.get("fx", "") == "tape"), "three lines off the old tape")
+	radio.advance(0.0)
+	check(radio._who.text.contains("OLD TAPE"), "marked as a tape (%s)" % radio._who.text)
+
+
+## The atlas's skyline is built round a level, with the tower on it.
+func test_skyline_and_tower_are_built() -> void:
+	await _load(_index("l1_1_dawn_run"))
+	var sky: Node3D = level.builder.find_child("Skyline", true, false)
+	check(sky != null, "the skyline's there")
+	if sky == null:
+		return
+	var mesh := sky.get_node("Buildings") as MeshInstance3D
+	check(mesh != null and mesh.mesh.get_faces().size() > 1000, "its buildings, as one mesh")
+	check(sky.find_children("*", "CollisionShape3D", true, false).is_empty(), "nothing in it to touch")
+	var tower: Node3D = sky.get_node("Tower")
+	var eye := player.global_position
+	sky._place_proxy(eye)
+	var real := Vector3(0, 0, 0)
+	var dir_real := (real - eye).normalized()
+	var dir_proxy := (tower.global_position - eye).normalized()
+	check(dir_real.dot(dir_proxy) > 0.9999, "the tower stands where the real one is")
+	check(tower.global_position.distance_to(eye) < 600.0, "inside the camera's reach")
 
 
 func test_on_air_lookouts_are_raiders() -> void:
@@ -831,7 +963,7 @@ func test_kill_goals_are_bonuses() -> void:
 			continue
 		for o: Dictionary in Campaign.load_mission_file(m.file).get("objectives", []):
 			if String(o.get("type", "")) == "shoot" and not MissionRun.is_bonus(o):
-				check(m.id == "m01_the_yard", "%s: kill goal '%s' is required" % [m.id, o.get("text", "")])
+				check(m.id == "l1_2_the_yard", "%s: kill goal '%s' is required" % [m.id, o.get("text", "")])
 
 
 ## Head Office: the Host turns up three times, every hit on him is a story
@@ -962,7 +1094,10 @@ func _bot_run(label: String, alt := false) -> void:
 			for enc: Node3D in level.builder.encounters:
 				for en: Node in enc.enemies:
 					if not en.is_dead:
-						en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position}))
+						en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position})
+		if e.begins_with("objective:"):
+			_skip_lessons())
+	_skip_lessons()
 	await _step(10)
 	var bot: Array = run.mission.bot_alt if alt else run.mission.bot
 	var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
@@ -977,6 +1112,15 @@ func _bot_run(label: String, alt := false) -> void:
 	level.queue_free()
 	level = null
 	await tree.process_frame
+
+
+## The Yard's lessons (a combo, the dummies, a score) aren't the bot's to
+## learn: done for it, on to the next objective.
+func _skip_lessons() -> void:
+	var o := run.current_objective()
+	var t: String = o.get("type", "")
+	if t in ["combo", "score"] or t == "shoot" and level.builder.encounters.is_empty():
+		run.call_deferred("_begin_objective", run.objective + 1)
 
 
 const Route_ := preload("res://campaign/route.gd")
