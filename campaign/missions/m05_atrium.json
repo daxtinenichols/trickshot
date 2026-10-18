@@ -6,16 +6,44 @@
  "fail_y": -5,
  "par_seconds": 75,
  "objectives": [
-  {"type": "reach", "name": "the food court", "text": "Run the Host's arena to the food court", "at": [0, 4, -82], "size": [60, 12, 10]},
-  {"type": "reach", "name": "the walkways", "text": "The concourse floor's the Host's pit. Up the escalator, onto the walkways", "at": [0, 7.5, -140], "size": [48, 4, 6]},
-  {"type": "reach", "name": "the anchor store", "text": "Walkways are shut past every bridge. Cross over each time, on to Hargrove & Sons", "at": [0, 7.5, -344], "size": [48, 4, 4]}
+  {"type": "reach", "name": "the food court", "text": "Through the atrium to the food court", "at": [0, 4, -82], "size": [60, 12, 10]},
+  {"type": "reach", "name": "the walkways", "text": "Up the escalator to the walkways", "at": [0, 7.5, -140], "size": [48, 4, 6]},
+  {"type": "reach", "name": "the east walkway", "text": "Walkway's shut ahead. Over the bridge on your right", "at": [10.5, 7.5, -170], "size": [8, 4, 30]},
+  {"type": "reach", "name": "the west walkway", "text": "Shut again. Back over the bridge on your left", "at": [-10.5, 7.5, -253], "size": [8, 4, 34]},
+  {"type": "reach", "name": "the last walkway", "text": "Last bridge, on your right", "at": [10.5, 7.5, -326], "size": [8, 4, 20]},
+  {"type": "reach", "name": "the anchor store", "text": "Straight on into Hargrove & Sons", "at": [0, 7.5, -344], "size": [48, 4, 4]}
+ ],
+ "guide": [
+  [0.0, 0.0, -27.0],
+  [-4.0, 0.0, -33.0],
+  [-5.5, 0.0, -43.0],
+  [-1.0, 0.0, -48.0],
+  [0.5, 0.0, -65.0],
+  [-2.5, 0.0, -75.0],
+  [-3.5, 0.0, -85.0],
+  [-5.0, 0.0, -96.5],
+  [-4.5, 5.5, -123.0],
+  [-9.5, 6.0, -127.5],
+  [-11.0, 6.0, -148.0],
+  [-7.0, 6.0, -152.0],
+  [5.0, 6.0, -152.5],
+  [10.0, 6.0, -153.0],
+  [10.5, 6.0, -228.0],
+  [7.0, 6.0, -232.0],
+  [-5.0, 6.0, -232.5],
+  [-10.0, 6.0, -234.0],
+  [-10.5, 6.0, -308.0],
+  [-7.0, 6.0, -312.0],
+  [5.0, 6.0, -312.5],
+  [10.0, 6.0, -314.0],
+  [10.5, 6.0, -344.0]
  ],
  "checkpoints": [
   {"name": "Atrium", "at": [0, 4, -6], "size": [60, 12, 4], "spawn": [0, 0, -4], "objective": 0},
   {"name": "Food court", "at": [0, 4, -80], "size": [60, 12, 6], "spawn": [-3, 0, -77], "objective": 1},
   {"name": "Walkways", "at": [0, 7.5, -142], "size": [48, 4, 4], "spawn": [-10.5, 6, -140], "objective": 2},
-  {"name": "Concourse", "at": [0, 7.5, -240], "size": [48, 4, 4], "spawn": [-10.5, 6, -240], "objective": 2},
-  {"name": "Last bridge", "at": [0, 7.5, -320], "size": [48, 4, 4], "spawn": [10.5, 6, -320], "objective": 2}
+  {"name": "Concourse", "at": [0, 7.5, -240], "size": [48, 4, 4], "spawn": [-10.5, 6, -240], "objective": 4},
+  {"name": "Last bridge", "at": [0, 7.5, -320], "size": [48, 4, 4], "spawn": [10.5, 6, -320], "objective": 5}
  ],
  "radio": [
   {"on": "start", "who": "host", "line": "Welcome to the Meridian Mall, folks! Tonight's main event: one courier versus a whole lot of hungry neighbours."},
@@ -24,8 +52,8 @@
   {"on": "checkpoint:0", "who": "mags", "line": "Careful. Every shot you fire brings more of them."},
   {"at": [0, 3, -36], "size": [60, 12, 6], "who": "mags", "line": "Those ones jump. Watch the ledges up top, not the floor."},
   {"on": "checkpoint:1", "who": "host", "line": "And he's into the food court! Sorry, folks, food court's closed. Has been for twenty years."},
-  {"at": [0, 3, -104], "size": [48, 8, 6], "who": "mags", "line": "He's shut the concourse. Escalator, your left. Then up on the walkways."},
-  {"at": [0, 7.5, -146], "size": [48, 4, 4], "who": "mags", "line": "Over the bridge. Walkway's caved in past the shops. Take the plank, or run the hoarding."},
+  {"at": [0, 3, -85], "size": [60, 8, 6], "who": "mags", "line": "He's shut the concourse. Escalator, your left. Then up on the walkways.", "cue": true},
+  {"at": [-10.5, 7.5, -138], "size": [8, 4, 6], "who": "mags", "line": "Over the bridge. Walkway's caved in past the shops. Take the plank, or run the hoarding.", "cue": true},
   {"at": [0, 5, -180], "size": [48, 12, 6], "who": "host", "line": "This segment is brought to you by the Ward. Clean water, for people who know their place."},
   {"on": "complete", "who": "host", "line": "He made it to the anchor store! Folks, I'm entertained, and I'm furious about it."}
  ],
@@ -159,7 +187,19 @@
   {"fire": [-2.5, 0.2, -313], "size": [1, 1.2, 1]},
   {"prop": "barrel_rust", "at": [-2.5, 0, -313]},
   {"fire": [2.5, 0.2, -325], "size": [1, 1.2, 1]},
-  {"prop": "barrel_rust", "at": [2.5, 0, -325]}
+  {"prop": "barrel_rust", "at": [2.5, 0, -325]},
+  {"chalk": [-10.0, 2.9, -131.75], "point": "up", "size": 2.4, "text": "WALKWAYS"},
+  {"chalk": [-4.5, 0, -91.0], "on": "floor", "point": "up", "size": 2.4},
+  {"light": [-4.5, 3.5, -97.0], "range": 9.0, "energy": 1.8},
+  {"light": [-8.0, 9.5, -127.0], "range": 10.0, "energy": 1.5},
+  {"chalk": [-13.0, 8.4, -156.75], "point": "right", "size": 2.2, "text": "BRIDGE"},
+  {"chalk": [13.0, 8.4, -236.75], "point": "left", "size": 2.2, "text": "BRIDGE"},
+  {"chalk": [-13.0, 8.4, -316.75], "point": "right", "size": 2.2, "text": "BRIDGE"},
+  {"light": [0, 9.5, -152.0], "range": 11.0, "energy": 1.8},
+  {"light": [0, 9.5, -232.0], "range": 11.0, "energy": 1.8},
+  {"light": [0, 9.5, -312.0], "range": 11.0, "energy": 1.8},
+  {"chalk": [10.5, 6, -330.0], "on": "floor", "point": "up", "size": 2.4},
+  {"light": [10.5, 9.5, -341.0], "range": 10.0, "energy": 1.8}
  ],
  "bot_path": [
   [0, 20],

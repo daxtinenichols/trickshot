@@ -8,7 +8,9 @@ extends TestCase
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "doors", "window", "target", "ramp", "loop",
-	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure", "set_piece"]
+	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure", "set_piece", "chalk", "light"]
+const RouteMarker := preload("res://campaign/route_marker.gd")
+const MALL := ["m05_atrium", "m06_anchor_store", "m07_parking_spiral"]
 
 var level: Node3D
 var player: Player
@@ -334,6 +336,7 @@ func test_pursuer_follows_your_path() -> void:
 	p.speed = 5.0
 	p.speed_gain = 0.0
 	p.delay = 1.0
+	p.grace = 0.0
 	# Just the path following: no leash, lunge or shortcuts.
 	p.leash = 1000.0
 	p.lunge_range = 0.0
@@ -358,6 +361,7 @@ func test_pursuer_follows_your_path() -> void:
 ## line he cuts across instead of following your path, and catches you.
 func test_you_cant_circle_the_host() -> void:
 	var p := Pursuer.new()
+	p.grace = 0.0
 	tree.root.add_child(p)
 	p.reset(Vector3.ZERO)
 	# Run 30 m away, then turn and loop back round past him.
@@ -385,6 +389,7 @@ func test_you_cant_circle_the_host() -> void:
 func test_close_to_the_host_is_caught() -> void:
 	var p := Pursuer.new()
 	p.delay = 0.0
+	p.grace = 0.0
 	tree.root.add_child(p)
 	p.reset(Vector3.ZERO)
 	# A long detour that ends right beside where he is.
@@ -417,6 +422,24 @@ func test_the_host_keeps_up_and_lunges() -> void:
 	check(p.lunging, "and that close he lunges (%.1f m)" % p.gap)
 	check(p.current_speed() > 11.5 + 2.0, "faster than you can run (%.1f m/s)" % p.current_speed())
 	check(not p.close_in(9.0), "a set piece never moves him further back")
+	p.queue_free()
+
+
+## A head start: for `grace` seconds after he sets off he can't catch you
+## (or lunge, or sprint to catch up), even if you stand still.
+func test_the_host_gives_you_a_head_start() -> void:
+	var p := Pursuer.new()
+	tree.root.add_child(p)
+	p.reset(Vector3.ZERO)
+	var caught_at := -1
+	for i in 900:
+		p.tick(Vector3(0, 0, -6.0), 1.0 / 60.0)
+		if p.has_caught():
+			caught_at = i
+			break
+	var grace_ticks := int((p.delay + p.grace) * 60.0)
+	check(caught_at >= grace_ticks - 1, "not caught in the first %.1f s (caught at tick %d)" % [p.delay + p.grace, caught_at])
+	check(caught_at > 0 and caught_at < grace_ticks + 30, "but right after it, standing still is caught (tick %d)" % caught_at)
 	p.queue_free()
 
 
@@ -1337,3 +1360,113 @@ func _index_of(id: String) -> int:
 		if all[i].id == id:
 			return i
 	return -1
+
+
+# ------------------------------------------------------------ the way on
+
+## The route mark heads for the next point of the guide line, moves on as
+## you pass points or run on along a later stretch, and keeps stacked
+## floors apart (the car park's laps stand 6.5 m over each other).
+func test_route_marker_follows_the_line() -> void:
+	var pts: Array[Vector3] = [Vector3(0, 0, 0), Vector3(0, 0, -20), Vector3(10, 0, -20), Vector3(10, 0, -40)]
+	check(RouteMarker.advance(pts, 0, Vector3(0, 0, 8)) == 0, "before the start: head for the first point")
+	check(RouteMarker.advance(pts, 0, Vector3(0, 0, -1)) == 1, "past the first point: the next")
+	check(RouteMarker.advance(pts, 1, Vector3(0, 0, -10)) == 1, "halfway down a stretch: its end")
+	check(RouteMarker.advance(pts, 1, Vector3(5, 0, -20.5)) == 2, "on the next stretch: its end")
+	check(RouteMarker.advance(pts, 1, Vector3(10, 0, -41)) == 4, "at the end: all passed")
+	# A lap below: same x and z, 6.5 m down, is not the stretch above.
+	var helix: Array[Vector3] = [Vector3(0, 13, 0), Vector3(0, 13, -30), Vector3(20, 11, -30), Vector3(20, 9, 0), Vector3(0, 7, 0), Vector3(0, 6.5, -30)]
+	check(RouteMarker.advance(helix, 1, Vector3(0, 13, -12)) == 1, "on the top lap: still the top lap's corner")
+	check(RouteMarker.find(helix, Vector3(0, 6.5, -12)) == 5, "respawned a lap down: that lap's stretch")
+	check(RouteMarker.find(helix, Vector3(0, 13, -12)) == 1, "respawned on the top lap: the top lap")
+
+
+## Walking each mall mission's guide line from end to end moves the mark
+## through every point in order, and every point stands on the run: near
+## the bot's line and on a floor.
+func test_mall_guides_lead_to_the_goal() -> void:
+	for id: String in MALL:
+		await _load(_index(id))
+		var guide: Array = run.mission.get("guide", [])
+		check(guide.size() >= 8, "%s has a guide line (%d points)" % [id, guide.size()])
+		var pts: Array[Vector3] = []
+		for g: Array in guide:
+			pts.append(Vector3(g[0], g[1], g[2]))
+		var t := 0
+		var highest := 0
+		var back := false
+		for i in range(1, pts.size()):
+			for k in 20:
+				var at := pts[i - 1].lerp(pts[i], (k + 1) / 20.0)
+				var nt := RouteMarker.advance(pts, t, at)
+				back = back or nt < t
+				t = nt
+				highest = maxi(highest, t)
+		check(not back and t == pts.size(), "%s: the mark runs the whole line in order (ended on %d of %d)" % [id, t, pts.size()])
+		var path: Array = run.mission.bot_path
+		var space := player.get_world_3d().direct_space_state
+		for p in pts:
+			var near := INF
+			for j in range(1, path.size()):
+				var a := Vector2(path[j - 1][0], path[j - 1][1])
+				var b := Vector2(path[j][0], path[j][1])
+				var q := Vector2(p.x, p.z)
+				var ab := b - a
+				var u := clampf((q - a).dot(ab) / maxf(ab.length_squared(), 0.0001), 0.0, 1.0)
+				near = minf(near, q.distance_to(a + ab * u))
+			check(near < 3.5, "%s: guide point %s is on the bot's line (%.1f m off)" % [id, p, near])
+			var ray := PhysicsRayQueryParameters3D.create(p + Vector3(0, 1.0, 0), p + Vector3(0, -1.5, 0), 1)
+			check(not space.intersect_ray(ray).is_empty(), "%s: guide point %s stands on a floor" % [id, p])
+		# The goal text is short enough to read at a glance.
+		for o: Dictionary in run.mission.objectives:
+			check(String(o.get("text", "")).length() <= 56, "%s: short goal \"%s\"" % [id, o.get("text", "")])
+		# Chalk and lights point the way.
+		check(level.builder.get_tree().get_nodes_in_group("chalk").size() >= 4, "%s has courier chalk at its turns" % id)
+		level.queue_free()
+		level = null
+		await tree.process_frame
+
+
+## The high line in the car park skips the second lap's corner: reaching a
+## later "reach" goal counts the ones before it, so nobody is sent back.
+func test_reaching_a_later_goal_counts_the_ones_before() -> void:
+	await _load(_index("m07_parking_spiral"))
+	run.phase = MissionRun.Phase.RUNNING
+	run._begin_objective(1)
+	check(run.current_objective().get("name", "") == "level 2", "heading for level 2")
+	# Straight onto the third lap's corner (level 1's start).
+	run._check_objective(Vector3(-15.5, 7.0, -474.5))
+	check(run.objective == 2, "level 2 counted on reaching level 1's corner (%d)" % run.objective)
+	run._check_objective(Vector3(-15.5, 7.0, -474.5))
+	check(run.objective == 3, "and level 1 itself (%d)" % run.objective)
+
+
+## A line that tells you the way jumps the queue; a line about a place that
+## waited too long is dropped; a conversation queued together waits for
+## its own lines.
+func test_radio_cues_jump_the_queue_and_stale_lines_drop() -> void:
+	await _load(_index("m05_atrium"))
+	var radio: RadioFeed = level.radio
+	radio.queue.clear()
+	radio.current = {}
+	radio.say("host", "One.")
+	radio.say("host", "Two.")
+	radio.say("mags", "Left here.", true)
+	check(radio.queue[0].line == "Left here.", "the cue goes first")
+	radio.queue.clear()
+	radio.say("host", "A long bit of banter that keeps going for quite a while, honestly.")
+	radio.say("host", "Back at the food court!", false, true)
+	radio.advance(0.0)
+	radio.advance(RadioFeed.STALE_AFTER + 1.0)
+	radio.advance(0.0)
+	check(radio.history.all(func(l: Dictionary) -> bool: return l.line != "Back at the food court!"), "a stale place line is dropped")
+	radio.queue.clear()
+	radio.current = {}
+	for k in 4:
+		radio.say("mags", "Line %d of a conversation, said in full before the next one." % k, false, true)
+	var heard := 0
+	for k in 40:
+		radio.advance(1.0)
+		if not radio.current.is_empty() and String(radio.current.line).begins_with("Line "):
+			heard = maxi(heard, int(String(radio.current.line).substr(5, 1)) + 1)
+	check(heard == 4, "a conversation plays to the end (%d of 4)" % heard)

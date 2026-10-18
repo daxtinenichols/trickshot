@@ -70,3 +70,17 @@ func test_the_host_boss_has_his_model_and_gun() -> void:
 	check(e.body != null and e.body.has_bones(), "the Host's skinned model")
 	check(e.body.parts.has("Rifle"), "with his carbine")
 	check(e.body.scale.x > 1.05, "a big man (%.2f)" % e.body.scale.x)
+
+
+## A freshly copied model shows up before the editor imports it (Dax's PC
+## before Project > Reload Current Project): it's read from the .glb file.
+func test_an_unimported_host_model_still_loads() -> void:
+	var copy := "user://unimported_host.glb"
+	DirAccess.copy_absolute(ProjectSettings.globalize_path("res://art/characters/host/host.glb"), ProjectSettings.globalize_path(copy))
+	var body: Node3D = preload("res://enemies/enemy_body.gd").new()
+	w.add_child(body)
+	check(body.load_model(copy), "loads from the file")
+	check(body.has_bones(), "skinned")
+	check(body.parts.has("Rifle") and body.parts.has("HostMesh"), "his own mesh and carbine (%s)" % [body.parts.keys()])
+	body.queue_free()
+	DirAccess.remove_absolute(ProjectSettings.globalize_path(copy))
