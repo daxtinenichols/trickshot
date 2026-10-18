@@ -55,6 +55,10 @@ const F_PAVE := 32  # pavement, cut along an angled street's edge (g.kerb)
 const STREET_PROPS := ["dumpster", "car_wreck", "debris_pile", "tire_stack", "barrel_rust", "street_sign", "crate_stack", "lamp", "lamp"]
 const GROUND_PROPS := ["debris_pile", "car_wreck", "debris_pile", "tire_stack", "barrel_rust", "dumpster"]
 const SKYLINE_PROPS := ["water_tank", "antenna_mast", "billboard", "water_tank"]
+## Room a street or ground prop keeps from the buildings round it.
+const PROP_ROOM := 0.1
+
+const PropKit := preload("res://art/props/prop_kit.gd")
 
 
 ## An area of the course: center (x, z), half size (across, along), yaw (as
@@ -617,7 +621,7 @@ static func _streets(g: Dictionary, mission: Dictionary, rng: RandomNumberGenera
 				var d := rng.randf_range(1.0, 4.0)
 				while d < length - 1.0:
 					var at := c + (Vector2(d - length * 0.5, 0) if along_x else Vector2(0, d - length * 0.5))
-					_street_prop(mission, rng, at, along_x, minf(s.x, s.y))
+					_street_prop(g, mission, rng, at, along_x, minf(s.x, s.y))
 					d += rng.randf_range(9.0, 16.0)
 	# Faded road lines and stains down the middle of the course's streets
 	# (not where its streets are something else: "road_lines": false).
@@ -638,12 +642,14 @@ static func _streets(g: Dictionary, mission: Dictionary, rng: RandomNumberGenera
 			d += 9.0
 
 
-static func _street_prop(mission: Dictionary, rng: RandomNumberGenerator, at: Vector2, along_x: bool, width: float) -> void:
+static func _street_prop(g: Dictionary, mission: Dictionary, rng: RandomNumberGenerator, at: Vector2, along_x: bool, width: float) -> void:
 	var kind: String = STREET_PROPS[rng.randi() % STREET_PROPS.size()]
 	if kind == "car_wreck" and width < 2.4:
 		kind = "debris_pile"
 	var y := 0.16
 	if kind == "lamp":
+		if not _room(g, at, Vector2(0.4, 0.4), 0.0):
+			return
 		# A dead street lamp: pole and arm.
 		mission.pieces.append({"box": [snappedf(at.x, 0.01), y + 3.5, snappedf(at.y, 0.01)], "size": [0.25, 7.0, 0.25], "kind": "NEUTRAL", "look": "RUST", "city": true})
 		mission.pieces.append({"box": [snappedf(at.x, 0.01), y + 6.9, snappedf(at.y, 0.01)], "size": [0.35, 0.2, 0.35], "kind": "NEUTRAL", "look": "RUST", "city": true})
@@ -652,8 +658,11 @@ static func _street_prop(mission: Dictionary, rng: RandomNumberGenerator, at: Ve
 	var yaw := (90.0 if along_x else 0.0) + (180.0 if rng.randf() < 0.5 else 0.0)
 	if kind != "car_wreck":
 		yaw = rng.randf_range(0.0, 360.0)
+	var fire := kind == "car_wreck" and rng.randf() < 0.25
+	if not _room(g, at, _prop_size(kind), yaw):
+		return
 	mission.pieces.append({"prop": kind, "at": [snappedf(at.x, 0.01), y, snappedf(at.y, 0.01)], "yaw": snappedf(yaw, 0.1), "city": true})
-	if kind == "car_wreck" and rng.randf() < 0.25:
+	if fire:
 		mission.pieces.append({"fire": [snappedf(at.x, 0.01), y + 1.0, snappedf(at.y, 0.01)], "size": [1.2, 1.2, 1.6], "city": true})
 
 
@@ -685,6 +694,57 @@ static func _ground(g: Dictionary, mission: Dictionary, rng: RandomNumberGenerat
 				continue
 			var at := _cell(g, i, j)
 			var kind: String = GROUND_PROPS[rng.randi() % GROUND_PROPS.size()]
-			mission.pieces.append({"prop": kind, "at": [snappedf(at.x, 0.01), 0.0, snappedf(at.y, 0.01)], "yaw": snappedf(rng.randf_range(0.0, 360.0), 0.1), "city": true})
-			if rng.randf() < 0.2:
+			var yaw := snappedf(rng.randf_range(0.0, 360.0), 0.1)
+			var fire := rng.randf() < 0.2
+			if not _room(g, at, _prop_size(kind), yaw):
+				continue
+			mission.pieces.append({"prop": kind, "at": [snappedf(at.x, 0.01), 0.0, snappedf(at.y, 0.01)], "yaw": yaw, "city": true})
+			if fire:
 				mission.pieces.append({"fire": [snappedf(at.x, 0.01), 0.6, snappedf(at.y, 0.01)], "size": [1.4, 1.4, 1.4], "city": true})
+
+
+# ---------------------------------------------------------------- props
+
+## A prop's footprint (x, z) in meters.
+static func _prop_size(kind: String) -> Vector2:
+	var s: Vector3 = PropKit.size_of(kind)
+	return Vector2(s.x, s.z)
+
+
+## Whether a prop of footprint `size` turned by `yaw` degrees at `at` stands
+## clear (by PROP_ROOM) of every building, the city's and the course's: each
+## point over it, about every 0.5 m, is on open course ground (a street, a
+## pavement, the ground under a gap or slot), or on the course side of a
+## cut cell's line.
+static func _room(g: Dictionary, at: Vector2, size: Vector2, yaw: float) -> bool:
+	var flags: PackedByteArray = g.flags
+	var cut: Dictionary = g.cut
+	var h := size * 0.5 + Vector2(PROP_ROOM, PROP_ROOM)
+	var r := deg_to_rad(yaw)
+	var ax := Vector2(cos(r), -sin(r))
+	var az := Vector2(sin(r), cos(r))
+	var nx := maxi(1, ceili(h.x * 2.0 / 0.5))
+	var nz := maxi(1, ceili(h.y * 2.0 / 0.5))
+	for b in nz + 1:
+		for a in nx + 1:
+			var p := at + ax * (-h.x + h.x * 2.0 * a / nx) + az * (-h.y + h.y * 2.0 * b / nz)
+			var i := floori((p.x - g.o.x) / CELL)
+			var j := floori((p.y - g.o.y) / CELL)
+			if i < 0 or j < 0 or i >= int(g.nx) or j >= int(g.nz):
+				return false
+			var k := _index(g, i, j)
+			var f: int = flags[k]
+			if f & (F_SOLID | F_BASE) != 0:
+				return false
+			if f & F_COURSE != 0:
+				continue
+			if f & F_PART == 0:
+				return false
+			# A cut cell: open only on the course side of one of its lines.
+			var open := false
+			for l: Vector3 in cut.get(k, []):
+				if Vector2(l.x, l.y).dot(p) < l.z:
+					open = true
+			if not open:
+				return false
+	return true

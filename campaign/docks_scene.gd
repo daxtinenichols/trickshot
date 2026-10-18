@@ -182,7 +182,7 @@ func _build_intact() -> Node3D:
 		for k in 2:
 			_bedroll(n, at + Vector3(-0.6 + k * 1.2, 0, 0.2), false)
 	# Echo holds out the parcel to you; Mags turns from the board.
-	_figure(n, "echo", Vector3(12.2, 0, 7.4), _yaw_to(Vector3(12.2, 0, 7.4), Vector3(19, 0, 15)), "hold_out")
+	_figure(n, "echo", Vector3(12.2, 0, 7.4), _yaw_to(Vector3(12.2, 0, 7.4), Vector3(19, 0, 15)), "holding_out", "")
 	_box(n, Vector3(12.2, 0, 7.4) + Basis(Vector3.UP, _yaw_to(Vector3(12.2, 0, 7.4), Vector3(19, 0, 15))) * Vector3(-0.2, 1.22, 0.62),
 		Vector3(0.34, 0.2, 0.26), _mat(Color(0.62, 0.48, 0.3)), false).name = "Parcel"
 	_figure(n, "mags", Vector3(2.8, 0, 4.0), _yaw_to(Vector3(2.8, 0, 4.0), Vector3(19, 0, 15)), "idle")
@@ -212,20 +212,23 @@ func _build_wrecked() -> Node3D:
 	_box(radio, Vector3.ZERO, Vector3(0.36, 0.22, 0.12), _mat(Color(0.2, 0.22, 0.2)), false)
 	_box(radio, Vector3(0.1, 0.24, 0), Vector3(0.02, 0.3, 0.02), _mat(Color(0.5, 0.5, 0.5)), false)
 	if spec.get("handoff", false):
-		# Mags by the way out, holding his granddad's pistol out to him.
+		# Mags by the way out, holding the pistol out to Parker.
 		var at := Vector3(21.6, 0, 9.0)
 		var yaw := _yaw_to(at, Vector3(24, 0, 5))
-		_figure(n, "mags", at, yaw, "hold_out")
+		var mags := _figure(n, "mags", at, yaw, "holding_out", "pistol")
 		_hand = at + Basis(Vector3.UP, yaw) * Vector3(-0.2, 1.22, 0.62)
-		_pistol = _node(n, "Pistol")
-		_pistol.position = _hand
-		_pistol.rotation.y = yaw
-		_box(_pistol, Vector3(0, 0, 0.05), Vector3(0.05, 0.08, 0.24), _mat(Color(0.15, 0.15, 0.16)), false)
-		_box(_pistol, Vector3(0, -0.07, -0.04), Vector3(0.045, 0.12, 0.06), _mat(Color(0.32, 0.2, 0.12)), false)
+		_pistol = mags.get("held_model") if mags != null else null
+		if _pistol == null:
+			# No figure (or no pistol model): a stand-in on her hand.
+			_pistol = _node(n, "Pistol")
+			_pistol.position = _hand
+			_pistol.rotation.y = yaw
+			_box(_pistol, Vector3(0, 0, 0.05), Vector3(0.05, 0.08, 0.24), _mat(Color(0.15, 0.15, 0.16)), false)
+			_box(_pistol, Vector3(0, -0.07, -0.04), Vector3(0.045, 0.12, 0.06), _mat(Color(0.32, 0.2, 0.12)), false)
 		for k in 2:
 			_bedroll(n, Vector3(13.0 + k * 1.1, 0, -4.0), true)
 	else:
-		_figure(n, "mags", Vector3(13.6, 0, -3.6), _yaw_to(Vector3(13.6, 0, -3.6), Vector3(24, 0, -2)), "sit_floor")
+		_figure(n, "mags", Vector3(13.6, 0, -3.6), _yaw_to(Vector3(13.6, 0, -3.6), Vector3(24, 0, -2)), "sitting")
 		for k in 2:
 			_bedroll(n, Vector3(12.2 + k * 1.0, 0, -5.2 + k * 0.4), true)
 	return n
@@ -372,7 +375,7 @@ func _bedroll(parent: Node3D, at: Vector3, sitting: bool) -> void:
 		_box(parent, at + Vector3(0, 0.14, -0.6), Vector3(0.22, 0.2, 0.24), skin, false)
 
 
-func _figure(parent: Node3D, runner: String, at: Vector3, yaw: float, pose: String) -> Node3D:
+func _figure(parent: Node3D, runner: String, at: Vector3, yaw: float, pose: String, held := "auto") -> Node3D:
 	if Engine.is_editor_hint():
 		return null
 	var script := load(FIGURE_PATH) as Script if ResourceLoader.exists(FIGURE_PATH) else null
@@ -382,6 +385,7 @@ func _figure(parent: Node3D, runner: String, at: Vector3, yaw: float, pose: Stri
 	f.name = "Figure_" + runner
 	f.runner = runner
 	f.pose_name = pose
+	f.held = held
 	f.position = at
 	f.rotation.y = yaw
 	parent.add_child(f)

@@ -947,7 +947,8 @@ func test_yard_pistol_handoff() -> void:
 	await _load(_index("l1_2_the_yard"))
 	var camp: Node3D = level.builder.set_pieces[0]
 	check(camp.get_node("Wrecked").visible, "the camp's still wrecked")
-	var pistol: Node3D = camp.get_node("Wrecked/Pistol")
+	var pistol: Node3D = camp.get("_pistol")
+	check(pistol != null and pistol.get_parent() is Node3D and pistol.get_parent().get("runner") == "mags", "in her hand: the figure's own pistol")
 	check(pistol.visible, "Mags holds the pistol out")
 	var start := MissionBuilder.vec(run.mission.start.at)
 	var run_on := InputFrame.new()
@@ -1858,3 +1859,41 @@ func _cover(shapes: Array, at: Vector2) -> float:
 		if Geometry2D.is_point_in_polygon(at, s[0]):
 			best = maxf(best, float(s[1]))
 	return best
+
+
+## The city's street and ground props (wrecks, dumpsters, rubble) stand
+## clear of every building, never sunk into a facade.
+func test_city_props_stand_clear_of_buildings() -> void:
+	var PropKit_: Script = load("res://art/props/prop_kit.gd")
+	for id: String in ["m01_the_yard", "m04_silt_line", "m08_storm_channels", "m09_rail_bridge"]:
+		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
+		var walls: Array = []
+		for p: Dictionary in m.pieces:
+			if p.has("slab") and float(p.get("top", 6.0)) > 1.0:
+				var poly := PackedVector2Array()
+				for a: Array in p.slab:
+					poly.append(Vector2(a[0], a[1]))
+				walls.append(poly)
+			elif p.has("building"):
+				walls.append(_footprint(Vector2(p.building[0], p.building[2]), Vector2(p.size[0], p.size[1]), float(p.get("yaw", 0.0))))
+		var props := 0
+		var sunk: Array = []
+		for p: Dictionary in m.pieces:
+			if not p.get("city", false) or not p.has("prop") or p.get("collide", true) == false:
+				continue
+			props += 1
+			var s: Vector3 = PropKit_.size_of(p.prop)
+			var foot := _footprint(Vector2(p.at[0], p.at[2]), Vector2(s.x, s.z), float(p.get("yaw", 0.0)))
+			for w: PackedVector2Array in walls:
+				if not Geometry2D.intersect_polygons(foot, w).is_empty():
+					sunk.append("%s at %s" % [p.prop, p.at])
+					break
+		check(props > 10, "%s has city props (%d)" % [id, props])
+		check(sunk.is_empty(), "%s: no city prop in a building (%d: %s)" % [id, sunk.size(), sunk.slice(0, 4)])
+
+
+func _footprint(c: Vector2, s: Vector2, yaw_deg: float) -> PackedVector2Array:
+	var r := deg_to_rad(yaw_deg)
+	var ax := Vector2(cos(r), -sin(r)) * s.x * 0.5
+	var az := Vector2(sin(r), cos(r)) * s.y * 0.5
+	return PackedVector2Array([c - ax - az, c + ax - az, c + ax + az, c - ax + az])
