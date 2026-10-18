@@ -46,13 +46,15 @@ var _shown := {}
 
 ## Loads the model file. Returns false (and leaves the body empty) if it
 ## can't, so the caller can fall back to the placeholder.
+## A model the editor hasn't imported yet (freshly copied, before Project >
+## Reload Current Project) is read straight from the .glb, like RunnerBody.
 func load_model(path: String) -> bool:
-	if not ResourceLoader.exists(path):
-		return false
-	var scene := load(path) as PackedScene
-	if scene == null:
-		return false
-	model = scene.instantiate() as Node3D
+	if _imported(path):
+		var scene := load(path) as PackedScene
+		if scene != null:
+			model = scene.instantiate() as Node3D
+	if model == null:
+		model = _load_gltf_file(path)
 	if model == null:
 		return false
 	# Modeled facing +Z; enemies face -Z.
@@ -72,6 +74,28 @@ func load_model(path: String) -> bool:
 		skeleton = skels[0]
 		_build_reference()
 	return true
+
+
+## True when the editor has imported the asset (its .import file points at
+## an imported copy that exists), so load() won't fail with errors.
+static func _imported(path: String) -> bool:
+	if path == "" or not ResourceLoader.exists(path):
+		return false
+	var cfg := ConfigFile.new()
+	if cfg.load(path + ".import") != OK:
+		return true  # no import file to check against; let load() decide
+	var remap := String(cfg.get_value("remap", "path", ""))
+	return remap == "" or FileAccess.file_exists(remap)
+
+
+static func _load_gltf_file(path: String) -> Node3D:
+	if path == "" or not FileAccess.file_exists(path):
+		return null
+	var doc := GLTFDocument.new()
+	var state := GLTFState.new()
+	if doc.append_from_file(path, state) != OK:
+		return null
+	return doc.generate_scene(state) as Node3D
 
 
 func has_bones() -> bool:
