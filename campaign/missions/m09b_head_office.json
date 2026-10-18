@@ -1007,24 +1007,45 @@
  "chatter": {
   "headshot": [
    {"who": "mags", "line": "Clean."},
-   {"who": "host", "line": "Not on the carpet!"}
+   {"who": "host", "line": "Not on the carpet!"},
+   {"who": "host", "line": "Oi! That was my receptionist!"},
+   {"who": "mags", "line": "Good shot."},
+   {"who": "host", "line": "Right in the face. In my own building. Unbelievable."},
+   {"who": "mags", "line": "That's it. Keep your head down, he's above you."}
   ],
   "bail": [
-   {"who": "host", "line": "Ha! The cables. Everybody trips on the cables."}
+   {"who": "host", "line": "Ha! The cables. Everybody trips on the cables."},
+   {"who": "host", "line": "Ooh, the desk got him! Desk one, courier nil."},
+   {"who": "mags", "line": "Up. He's watching from the balconies."},
+   {"who": "host", "line": "Slipped on a memo! Happens to the best of us."},
+   {"who": "mags", "line": "Get up, kid."}
   ],
   "combo": [
    {"who": "host", "line": "Do you have to do the flips indoors?"},
-   {"who": "mags", "line": "Good. Keep moving, don't let him set up."}
+   {"who": "mags", "line": "Good. Keep moving, don't let him set up."},
+   {"who": "host", "line": "Stop vaulting my furniture!"},
+   {"who": "mags", "line": "Lovely. Keep him running."},
+   {"who": "host", "line": "Folks, he's doing parkour through middle management. I've wanted to do that for years."}
   ],
   "kill": [
-   {"who": "host", "line": "That was accounts. We needed accounts."}
+   {"who": "host", "line": "That was accounts. We needed accounts."},
+   {"who": "host", "line": "There goes payroll. Again."},
+   {"who": "mags", "line": "Down. Keep moving."},
+   {"who": "host", "line": "Who's gonna file all this now? You, Parker?"},
+   {"who": "mags", "line": "Good. Don't stop for the rest."},
+   {"who": "host", "line": "That's a Ward lad. Somebody tell the Commander. Quietly."}
   ],
   "down": [
    {"who": "mags", "line": "Up. He wants you on the floor. Don't give him that."},
-   {"who": "host", "line": "Down! In my lobby! Lovely."}
+   {"who": "host", "line": "Down! In my lobby! Lovely."},
+   {"who": "host", "line": "Courier down in the office! Somebody fetch a stapler. For the wound."},
+   {"who": "mags", "line": "Up. Keep off the open floor."},
+   {"who": "host", "line": "He's down! I could shoot him from up here. I won't. Probably."}
   ],
   "tape": [
-   {"who": "echo", "line": "...he's got a whole floor of tapes up there. Every show. Even the ones where people stopped calling in."}
+   {"who": "echo", "line": "...he's got a whole floor of tapes up there. Every show. Even the ones where people stopped calling in."},
+   {"who": "echo", "line": "...he rehearses in the mirror on the fourth floor. Out loud. Every line, even the 'spontaneous' ones."},
+   {"who": "echo", "line": "...the Ward's man comes up the back stairs on Fridays. Never the lift. Doesn't trust the lift."}
   ]
  }
 }

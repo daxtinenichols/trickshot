@@ -861,27 +861,49 @@
  ],
  "chatter": {
   "headshot": [
-   {"who": "mags", "line": "Clean."}
+   {"who": "mags", "line": "Clean."},
+   {"who": "host", "line": "Not near the tapes! Not near the tapes!"},
+   {"who": "mags", "line": "Good shot."},
+   {"who": "host", "line": "Ah! Right in front of the archive. Show some respect."},
+   {"who": "mags", "line": "That's it. Keep going up."}
   ],
   "bail": [
-   {"who": "host", "line": "Mind the tapes! Those are originals!"}
+   {"who": "host", "line": "Mind the tapes! Those are originals!"},
+   {"who": "host", "line": "Ha! Down he goes, among the classics."},
+   {"who": "mags", "line": "Up. She's close."},
+   {"who": "host", "line": "Careful! That shelf's older than you."},
+   {"who": "mags", "line": "Get up. Go."}
   ],
   "combo": [
    {"who": "host", "line": "I'm bleeding, folks, and he's doing flips. Is that fair? Call in."},
-   {"who": "mags", "line": "That's it. Up."}
+   {"who": "mags", "line": "That's it. Up."},
+   {"who": "host", "line": "He's running across my whole back catalogue! Do you know how long that took me?"},
+   {"who": "mags", "line": "Beautiful. Keep going."},
+   {"who": "host", "line": "Ugh. Fine. Somebody record that, I'll use it later."}
   ],
   "fall": [
-   {"who": "host", "line": "Whoops. Long way down. Trust me, I'd know."}
+   {"who": "host", "line": "Whoops. Long way down. Trust me, I'd know."},
+   {"who": "mags", "line": "Fell. Back up, she's right there."},
+   {"who": "host", "line": "Over the edge! Oh, that's going in the archive."}
   ],
   "kill": [
-   {"who": "host", "line": "That's one of the Ward's. The Commander's gonna write me a letter."}
+   {"who": "host", "line": "That's one of the Ward's. The Commander's gonna write me a letter."},
+   {"who": "host", "line": "That one alphabetised the tapes! Do you know how rare that is?"},
+   {"who": "mags", "line": "Good. Up."},
+   {"who": "host", "line": "Another one gone. I'm running out of staff, Parker. Honestly."},
+   {"who": "mags", "line": "Down. Next."}
   ],
   "down": [
    {"who": "mags", "line": "Get up. She's right above you."},
-   {"who": "host", "line": "He's down! Hang on, let me find a window."}
+   {"who": "host", "line": "He's down! Hang on, let me find a window."},
+   {"who": "host", "line": "He's down in the archive! Filed under 'gone'."},
+   {"who": "mags", "line": "Up. Don't let them pin you in the stacks."},
+   {"who": "host", "line": "Ooh, down he goes. Echo, sweetheart, you might want to look away."}
   ],
   "tape": [
-   {"who": "echo", "line": "...if he moves me to the tower, it'll be the top floor. The studio. I'll leave the vents open."}
+   {"who": "echo", "line": "...if he moves me to the tower, it'll be the top floor. The studio. I'll leave the vents open."},
+   {"who": "echo", "line": "...the first show he ever did is on a shelf in here somewhere. He sounded scared. I've heard it."},
+   {"who": "echo", "line": "...there's a bridge off the roof, straight into the tower. If I'm not here when you get here, that's where they've taken me."}
   ]
  }
 }
