@@ -26,6 +26,9 @@ var speed_gain := 0.1
 var max_speed := 11.4
 ## Seconds he waits before setting off after you start or respawn.
 var delay := 1.2
+## Grace period, seconds after he sets off: he can't catch you or lunge, and
+## doesn't sprint to catch up past the leash, so you get a head start.
+var grace := 4.0
 ## Closer than this and he has you (along your path or in a straight line).
 var catch_distance := 2.2
 ## Closer than this and he lunges: lunge_boost m/s faster.
@@ -69,7 +72,7 @@ var _body: Node3D
 
 
 func configure(d: Dictionary) -> void:
-	for k: String in ["speed", "speed_gain", "max_speed", "delay", "catch_distance", "lunge_range",
+	for k: String in ["speed", "speed_gain", "max_speed", "delay", "grace", "catch_distance", "lunge_range",
 			"lunge_boost", "leash", "catchup_speed", "shortcut_range", "shortcut_ratio"]:
 		if d.has(k):
 			set(k, float(d[k]))
@@ -107,11 +110,18 @@ func current_speed() -> float:
 	if waiting():
 		return 0.0
 	var base := minf(speed + speed_gain * _chase_time, max_speed)
+	if in_grace():
+		return base
 	if path_gap() > leash and path_gap() < INF:
 		base = maxf(base, catchup_speed)
 	if gap < lunge_range:
 		base += lunge_boost
 	return base
+
+
+## Still in the head start after setting off (or waiting to).
+func in_grace() -> bool:
+	return waiting() or _chase_time < grace
 
 
 func total() -> float:
@@ -156,7 +166,7 @@ func tick(target: Vector3, dt: float) -> void:
 	global_position = pos
 	direct = pos.distance_to(target)
 	gap = minf(path_gap() + target.distance_to(crumbs[crumbs.size() - 1]), direct)
-	lunging = not waiting() and gap < lunge_range
+	lunging = not in_grace() and gap < lunge_range
 	velocity = (pos - before) / dt if dt > 0.0 else Vector3.ZERO
 	var face := Vector3(target.x - pos.x, 0, target.z - pos.z) if (cutting or lunging) else Vector3(velocity.x, 0, velocity.z)
 	if face.length() > 0.05:
@@ -164,7 +174,7 @@ func tick(target: Vector3, dt: float) -> void:
 
 
 func has_caught() -> bool:
-	return not waiting() and gap <= catch_distance
+	return not in_grace() and gap <= catch_distance
 
 
 ## A set piece: he took a shortcut and is suddenly `to_gap` m behind you

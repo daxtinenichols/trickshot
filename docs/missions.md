@@ -239,11 +239,13 @@ a recorded take saved under `audio/voices/recorded/` replaces the synthetic one.
 
 ```json
 "pursuer": {"name": "THE HOST", "speed": 10.4, "speed_gain": 0.1, "max_speed": 11.4,
-            "delay": 1.2, "catch_distance": 2.2, "lunge_range": 5.5, "lunge_boost": 3.5,
+            "delay": 1.2, "grace": 4, "catch_distance": 2.2, "lunge_range": 5.5, "lunge_boost": 3.5,
             "leash": 12, "catchup_speed": 15}
 ```
 
-He sets off `delay` seconds after you, follows your exact path, speeds up
+He sets off `delay` seconds after you (at the start and after each
+checkpoint), and for the `grace` seconds after that he can't catch you,
+lunge or sprint to catch up: a head start. He follows your exact path, speeds up
 over time (to just under your sprint), and never drops more than `leash`
 meters behind (past it he runs at `catchup_speed`). You can't circle him:
 within `shortcut_range` (12 m) in a straight line, when your path back to

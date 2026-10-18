@@ -334,6 +334,7 @@ func test_pursuer_follows_your_path() -> void:
 	p.speed = 5.0
 	p.speed_gain = 0.0
 	p.delay = 1.0
+	p.grace = 0.0
 	# Just the path following: no leash, lunge or shortcuts.
 	p.leash = 1000.0
 	p.lunge_range = 0.0
@@ -358,6 +359,7 @@ func test_pursuer_follows_your_path() -> void:
 ## line he cuts across instead of following your path, and catches you.
 func test_you_cant_circle_the_host() -> void:
 	var p := Pursuer.new()
+	p.grace = 0.0
 	tree.root.add_child(p)
 	p.reset(Vector3.ZERO)
 	# Run 30 m away, then turn and loop back round past him.
@@ -385,6 +387,7 @@ func test_you_cant_circle_the_host() -> void:
 func test_close_to_the_host_is_caught() -> void:
 	var p := Pursuer.new()
 	p.delay = 0.0
+	p.grace = 0.0
 	tree.root.add_child(p)
 	p.reset(Vector3.ZERO)
 	# A long detour that ends right beside where he is.
@@ -417,6 +420,24 @@ func test_the_host_keeps_up_and_lunges() -> void:
 	check(p.lunging, "and that close he lunges (%.1f m)" % p.gap)
 	check(p.current_speed() > 11.5 + 2.0, "faster than you can run (%.1f m/s)" % p.current_speed())
 	check(not p.close_in(9.0), "a set piece never moves him further back")
+	p.queue_free()
+
+
+## A head start: for `grace` seconds after he sets off he can't catch you
+## (or lunge, or sprint to catch up), even if you stand still.
+func test_the_host_gives_you_a_head_start() -> void:
+	var p := Pursuer.new()
+	tree.root.add_child(p)
+	p.reset(Vector3.ZERO)
+	var caught_at := -1
+	for i in 900:
+		p.tick(Vector3(0, 0, -6.0), 1.0 / 60.0)
+		if p.has_caught():
+			caught_at = i
+			break
+	var grace_ticks := int((p.delay + p.grace) * 60.0)
+	check(caught_at >= grace_ticks - 1, "not caught in the first %.1f s (caught at tick %d)" % [p.delay + p.grace, caught_at])
+	check(caught_at > 0 and caught_at < grace_ticks + 30, "but right after it, standing still is caught (tick %d)" % caught_at)
 	p.queue_free()
 
 
