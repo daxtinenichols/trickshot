@@ -5,7 +5,8 @@ extends SceneTree
 ##   xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/mission_shots.gd -- <out_dir>
 ## Add a second argument to render only shots whose name contains it, or
 ## "course:<mission id>" for shots down the course itself: from the start
-## and each checkpoint toward the next, at head height and from above.
+## and each checkpoint toward the next, at head height and from above, or
+## "angled:<mission id>" for shots along its diagonal legs (city edges).
 ## Scripts run with -s load before the autoloads, so nothing here is typed
 ## with classes that need them.
 
@@ -99,6 +100,10 @@ func _run() -> void:
 
 	if only.begins_with("course:"):
 		await _course(campaign, only.trim_prefix("course:"))
+		quit()
+		return
+	if only.begins_with("angled:"):
+		await _angled(campaign, only.trim_prefix("angled:"))
 		quit()
 		return
 	if only != "":
@@ -202,6 +207,45 @@ func _course(campaign: Script, id: String) -> void:
 			await _frames(8)
 			_save("%s_course_%02d_%s" % [id, i, v[0]])
 			cam.queue_free()
+	level.queue_free()
+	await _frames(2)
+
+
+## Along each diagonal leg: at head height down the leg and from above
+## and behind, so the city's fronts and kerbs beside it show.
+func _angled(campaign: Script, id: String) -> void:
+	var level: Node = await _load_mission(campaign, id)
+	var m: Dictionary = level.builder.mission
+	var legs: Array = m.get("route_legs", [])
+	var space := (level as Node3D).get_world_3d().direct_space_state
+	_hide_ui(level, true)
+	var n := 0
+	for i in legs.size() - 1:
+		var yaw: float = legs[i][2]
+		var y := fposmod(yaw, PI * 0.5)
+		if y < 0.01 or y > PI * 0.5 - 0.01:
+			continue
+		var o := Vector3(legs[i][0], 0, legs[i][1])
+		var fwd := Vector3(-sin(yaw), 0, -cos(yaw))
+		var length: float = float(legs[i][3]) - float(legs[i + 1][3])
+		for v: Array in [["eye", 0.25, Vector3(0, 1.7, 0), 0.0], ["high", 0.2, Vector3(0, 14.0, 0), 12.0], ["mid", 0.55, Vector3(0, 1.7, 0), 0.0]]:
+			var at := o + fwd * length * float(v[1])
+			var q := PhysicsRayQueryParameters3D.create(at + Vector3(0, 200, 0), at - Vector3(0, 10, 0))
+			var hit := space.intersect_ray(q)
+			if not hit.is_empty():
+				at.y = (hit.position as Vector3).y
+			var cam := Camera3D.new()
+			cam.cull_mask &= ~4
+			cam.fov = 75.0
+			cam.far = 600.0
+			level.add_child(cam)
+			cam.look_at_from_position(at + v[2] - fwd * float(v[3]), at + fwd * 30.0 + Vector3(0, 1.0, 0))
+			cam.make_current()
+			await _frames(8)
+			_save("%s_leg%d_%s" % [id.get_file().get_basename(), i, v[0]])
+			cam.queue_free()
+		n += 1
+	print("diagonal legs: ", n)
 	level.queue_free()
 	await _frames(2)
 

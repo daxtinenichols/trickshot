@@ -469,6 +469,12 @@ func test_the_host_has_his_own_model() -> void:
 		check(model != null and model.scene_file_path.ends_with("host.glb"), "host.glb (%s)" % (model.scene_file_path if model else "none"))
 		var skel: Skeleton3D = body.get("skeleton")
 		check(skel != null and skel.find_bone("LeftUpperLeg") >= 0, "on the runners' skeleton")
+		# The first-person camera skips the runner's own layer; he must not be on it.
+		var cull: int = 0xFFFFF & ~RunnerBody.LAYER  # what ArtLook sets on the player's camera
+		var meshes := model.find_children("*", "MeshInstance3D", true, false) if model else []
+		check(not meshes.is_empty(), "he has meshes")
+		for mi: MeshInstance3D in meshes:
+			check(mi.layers & cull != 0, "%s shows in first person (layers %d)" % [mi.name, mi.layers])
 
 
 ## The set pieces in Signal Out: a beam falls and only blocks once it has
@@ -1270,7 +1276,7 @@ func test_route_45_degree_corners() -> void:
 	var diagonal := false
 	var bank_yaw := INF
 	for p: Dictionary in m.pieces:
-		if p.has("slab"):
+		if p.has("slab") and not p.get("city", false):
 			slabs += 1
 		if p.has("building") and is_equal_approx(fposmod(float(p.get("yaw", 0.0)), 90.0), 45.0):
 			diagonal = true
@@ -1614,3 +1620,108 @@ func test_radio_cues_jump_the_queue_and_stale_lines_drop() -> void:
 		if not radio.current.is_empty() and String(radio.current.line).begins_with("Line "):
 			heard = maxi(heard, int(String(radio.current.line).substr(5, 1)) + 1)
 	check(heard == 4, "a conversation plays to the end (%d of 4)" % heard)
+
+
+## Along diagonal legs and 45 degree corners the city's fronts and kerbs
+## run straight beside the course, not in 2 m steps: just past the slot (or
+## pavement) beside a diagonal roof or street there is always a building,
+## standing clear of the roofs, and just inside it never is; the kerb is
+## straight too.
+func test_city_edges_run_straight_along_angled_legs() -> void:
+	var City_: Script = load("res://campaign/city.gd")
+	var roofs := Route_.expand({"id": "t_edges", "route": [{"roof": 40, "y": 8}, {"turn": "left", "angle": 45, "size": 22},
+		{"roof": 60}, {"gap": 5}, {"roof": 60}, {"turn": "right", "angle": 45, "size": 22}, {"roof": 40}]})
+	var city := _city_shapes(roofs)
+	var sides := 0
+	var gaps := 0
+	var pokes := 0
+	var low := 0
+	for p: Dictionary in roofs.pieces:
+		if not p.has("building") or p.get("city", false) or not is_equal_approx(fposmod(float(p.get("yaw", 0.0)), 90.0), 45.0):
+			continue
+		var yaw := deg_to_rad(float(p.yaw))
+		var c := Vector2(p.building[0], p.building[2])
+		var across := Vector2(cos(yaw), -sin(yaw))
+		var along := Vector2(sin(yaw), cos(yaw))
+		var hw: float = float(p.size[0]) * 0.5 + City_.ROOF_MARGIN
+		var d := -float(p.size[1]) * 0.5 + 2.0
+		while d < float(p.size[1]) * 0.5 - 2.0:
+			for side: float in [-1.0, 1.0]:
+				sides += 1
+				var out := _cover(city.buildings, c + along * d + across * side * (hw + 0.3))
+				if out < 0.0:
+					gaps += 1
+				elif out < float(p.building[1]) + City_.CLEAR:
+					low += 1
+				if _cover(city.buildings, c + along * d + across * side * (hw - 0.3)) >= 0.0:
+					pokes += 1
+			d += 1.0
+	check(sides > 200, "diagonal roofs to check (%d)" % sides)
+	check(gaps == 0, "a front straight along the slot beside diagonal roofs (%d gaps of %d)" % [gaps, sides])
+	check(pokes == 0, "and none pokes into the slot (%d)" % pokes)
+	check(low == 0, "fronts stand clear of the roofs (%d too low)" % low)
+	# A street: pavement right up to a straight kerb, fronts behind it.
+	var street := Route_.expand({"id": "t_edges_street", "route": [{"street": 40}, {"turn": "left", "angle": 45, "size": 22},
+		{"street": 80}, {"turn": "right", "angle": 45, "size": 22}, {"street": 40}]})
+	city = _city_shapes(street)
+	var leg: Array = street.route_legs[1]
+	var o := Vector2(leg[0], leg[1])
+	var yaw: float = leg[2]
+	var fwd := Vector2(-sin(yaw), -cos(yaw))
+	var right := Vector2(cos(yaw), -sin(yaw))
+	var length: float = float(leg[3]) - float(street.route_legs[2][3]) - 11.0
+	var kerb := 0
+	var fronts := 0
+	var n := 0
+	# (Past the corners, which are wider than the street, plus their margin.)
+	var d := 16.0
+	while d < length - 5.0:
+		for side: float in [-1.0, 1.0]:
+			n += 1
+			var at := o + fwd * d
+			var w := Route_.WIDTH * 0.5
+			if _cover(city.pavements, at + right * side * (w + 0.3)) < 0.0 or _cover(city.pavements, at + right * side * (w - 0.3)) >= 0.0:
+				kerb += 1
+			if _cover(city.buildings, at + right * side * (w + City_.STREET_MARGIN + 0.3)) < 0.0 \
+					or _cover(city.buildings, at + right * side * (w + City_.STREET_MARGIN - 0.3)) >= 0.0:
+				fronts += 1
+		d += 1.0
+	check(n > 100, "a diagonal street to check (%d)" % n)
+	check(kerb == 0, "a straight kerb along the diagonal street (%d off of %d)" % [kerb, n])
+	check(fronts == 0, "straight fronts behind its pavement (%d off of %d)" % [fronts, n])
+
+
+## The city's buildings and pavements as outlines [PackedVector2Array, top].
+func _city_shapes(m: Dictionary) -> Dictionary:
+	var out := {"buildings": [], "pavements": []}
+	for p: Dictionary in m.pieces:
+		if not p.get("city", false):
+			continue
+		var poly := PackedVector2Array()
+		var top := 0.0
+		if p.has("slab"):
+			for a: Array in p.slab:
+				poly.append(Vector2(a[0], a[1]))
+			top = float(p.top)
+		elif p.has("building") or (p.has("box") and p.get("look", "") == "TILE"):
+			var c: Array = p.get("building", p.get("box"))
+			var s := Vector2(p.size[0], p.size[1]) if p.has("building") else Vector2(p.size[0], p.size[2])
+			var yaw := deg_to_rad(float(p.get("yaw", 0.0)))
+			var ax := Vector2(cos(yaw), -sin(yaw)) * s.x * 0.5
+			var az := Vector2(sin(yaw), cos(yaw)) * s.y * 0.5
+			var mid := Vector2(c[0], c[2])
+			poly = PackedVector2Array([mid - ax - az, mid + ax - az, mid + ax + az, mid - ax + az])
+			top = float(c[1]) if p.has("building") else float(c[1]) + float(p.size[1]) * 0.5
+		else:
+			continue
+		(out.buildings if top > 1.0 else out.pavements).append([poly, top])
+	return out
+
+
+## The top of the highest outline over a point, or -1 for none.
+func _cover(shapes: Array, at: Vector2) -> float:
+	var best := -1.0
+	for s: Array in shapes:
+		if Geometry2D.is_point_in_polygon(at, s[0]):
+			best = maxf(best, float(s[1]))
+	return best

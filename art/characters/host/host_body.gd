@@ -20,6 +20,8 @@ const SCALE := 1.1
 ## How fast each pose eases in and out (1/s).
 ## Dropping in after a shortcut: from this high, over this many ticks.
 const DROP_HEIGHT := 4.0
+## The layer every camera renders (not RunnerBody.LAYER).
+const WORLD_LAYER := 1
 const DROP_TICKS := 26
 const RATES := {"run": 10.0, "fall": 7.0, "lunge": 9.0, "land": 14.0, "idle": 6.0}
 
@@ -49,6 +51,11 @@ func _ready() -> void:
 	body.runner = "host"
 	add_child(body)
 	body.pose_override = RunnerPoses.idle()
+	# RunnerBody draws on its own layer, which the first-person camera
+	# skips (so you don't see your own body). He's not you: everyone sees him.
+	if body.model != null:
+		for mi: MeshInstance3D in body.model.find_children("*", "MeshInstance3D", true, false):
+			mi.layers = WORLD_LAYER
 	# His carbine is for the Head Office fight (enemies/host_boss.gd).
 	var gun: Node3D = body.model.find_child("Rifle", true, false) if body.model else null
 	if gun != null:
