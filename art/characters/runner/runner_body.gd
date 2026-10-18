@@ -28,6 +28,8 @@ const MODEL := preload("res://art/characters/runner/runner.glb")
 const MODELS := {
 	"parker": "res://art/characters/runner/runner.glb",
 	"echo": "res://art/characters/runner/echo.glb",
+	# Not a runner: the Host in the chase (art/characters/host/host_body.gd).
+	"host": "res://art/characters/host/host.glb",
 }
 const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
 const MotionTrails := preload("res://art/fx/motion_trails.gd")
