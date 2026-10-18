@@ -3,7 +3,7 @@
 A campaign mission is one JSON file in `campaign/missions/`. It holds the
 layout, checkpoints, objectives and every radio line, so a new level or a
 rewrite of the story needs no code. `campaign/campaign.json` lists all
-thirteen missions of *Dead Air* in order; a mission with a `file` is
+fifteen missions of *Dead Air* in order; a mission with a `file` is
 playable, one without shows its story beat in the campaign menu as "coming
 later".
 
@@ -95,7 +95,7 @@ Features on a roof, `at` meters from its start:
 | `{"hop": true, "side": -1}` | a wall hop pair |
 | `{"checkpoint": "Name", "objective": 1}` | a checkpoint; objectives and radio can use `"at": "@Name"`, and `"at": "end"` for the route's end |
 | `{"encounter": "id", "length": 40, "raiders": [[x, d, wake]], "mutants": [[x, d]], "troopers": [[x, d, wake]], "drones": [[x, d, height]]}` | enemies (d from the feature); raiders and troopers get sandbags 3 m in front, drones hover `height` m up |
-| `"enemies": [{"type": "shield", "x": 2, "d": 20, "wake": 1, "height": 4}]` (in an encounter) | any enemy type, placed like troopers: raiders, troopers and marksmen get sandbags (`"cover": true/false` overrides), `*drone` types hover `height` m up, crawlers, leapers and brutes are leashed to their patch; other fields set the enemy's settings |
+| `"enemies": [{"type": "shield", "x": 2, "d": 20, "wake": 1, "height": 4}]` (in an encounter) | any enemy type, placed like troopers: raiders, troopers and marksmen get sandbags (`"cover": true/false` overrides), `*drone` types hover `height` m up, crawlers, leapers and brutes are leashed to their patch, `"elevation": 3.5` stands one on a balcony or catwalk that high over the roof; other fields set the enemy's settings |
 | `{"piece": {"bank": [4, 0, -10], "length": 10, "side": 1}, "length": 12}` | any mission piece in the roof's frame (x across, y up from the roof, z from this spot, negative further along), turned with its leg; `length` m of roof kept clear of clutter |
 | `{"tape": "id", "x": 4.6, "height": 0}` | a lost tape |
 | `{"radio": {"who", "line"}, "radius": 7}` | a radio line played here |
@@ -194,10 +194,13 @@ has to do it to go on.
 | `combo` | `multiplier` | you bank a combo at that multiplier or more |
 | `shoot` | `count`, `headshots` (true = only headshot kills count) | that many target kills since the objective began (a bonus goal by default) |
 | `collect` | `count` (default: every tape) | that many tapes found |
+| `event` | `event` (an enemy's story event, like `host:hit`), `count` | it happened that many times since the goal opened (a bonus goal: give it `"optional": true`) |
 | `clear` | `encounter` (its id) | that encounter is cleared: every enemy down, or out of the fight like a spared Juno |
 | `duel` | `encounter` (its id), `radius` (4 m) | its boss (Juno) is shot down, or you get within `radius` of her and she concedes; then you spare her or not |
 
-`text` is what the HUD shows; without it a default is written.
+`text` is what the HUD shows; without it a default is written. A bonus with
+`"until": "end"` stays open for the rest of the mission instead of closing
+with the next required objective (the Host hit bonus in Head Office).
 
 ### Radio
 
@@ -212,7 +215,10 @@ Story lines play once, queued, without ever stopping the game:
 `start` (mission loads), `go` (you leave the start), `objective:N` (objective
 N begins), `done:N`, `checkpoint:N`, `complete`, `time:SECONDS`, `fall`,
 `caught`, `down`, `tape`, `kill:TYPE` (the first kill of an enemy listed by
-type, like `kill:camera_drone`). Or use `at` with `radius`/`size` to play when you reach a
+type, like `kill:camera_drone`). An enemy with a `story_event(name)` signal adds its own events, played
+as sent and numbered through the run: the Host in Head Office sends
+`host:hit` and `host:run`, so `host:hit:1` is the first hit and `host:hit:2` the
+second. Or use `at` with `radius`/`size` to play when you reach a
 spot. `"if": "m07_parking_spiral.fate=spared"` plays a line only when an
 earlier mission saved that story choice (a boss's `fate:` event saves its
 mission's `fate`).

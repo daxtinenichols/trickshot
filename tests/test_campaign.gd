@@ -71,12 +71,12 @@ func _index(id: String) -> int:
 
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
-	check(all.size() == 13, "13 missions (%d)" % all.size())
+	check(all.size() == 15, "15 missions (%d)" % all.size())
 	check(Campaign.acts().size() == 3, "three acts")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
-	check(Campaign.entry(12).get("unlocks", "") == "echo", "the finale unlocks Echo")
+	check(Campaign.entry(all.size() - 1).get("unlocks", "") == "echo", "the finale unlocks Echo")
 	for id: String in ["m00_dawn_run", "m01_the_yard", "m02_on_air", "m12_signal_out"]:
 		check(Campaign.is_built(_index(id)), "%s is built" % id)
 
