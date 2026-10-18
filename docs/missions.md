@@ -327,8 +327,20 @@ The Meridian Mall missions (m05-m07) are laid out by hand on the mall
 the mission adds its dressing, gates, enemies and radio as ordinary
 pieces. Each one runs between two of the mall's hand-off points, in order:
 m05 Atrium from `ENTRY` to `ANCHOR_ENTRY`, m06 Anchor Store from
-`ANCHOR_ENTRY` to `ANCHOR_EXIT` (the store roof), and m07 Parking Spiral
-from `ANCHOR_EXIT` across a skybridge to a car park past the mall's `EXIT`.
+`ANCHOR_ENTRY` to `ANCHOR_EXIT` (the skybridge door at the back corner of
+the store's top floor), and m07 Parking Spiral from `ANCHOR_EXIT` along the
+covered skybridge to a walled car park past the mall's `EXIT`. The whole
+run stays indoors: the mall's roofs can't be reached, the dock doors are
+shuttered, and burnt-out shops close the lot off from the ground round the
+building. m06 and m07 set `"base_set": {"skybridge": true}`.
+
+- `"pits": {"y": 3, "streets": [regions]}` works here too: m05 makes the
+  wing's concourse floor a pit (anywhere below 3 m outside its one region),
+  so the run stays on the walkways, crossing at every bridge.
+- `campaign/tools/reach_probe.gd` floods a mission (or map scene) from its
+  start with generous movement limits and prints where a runner could get
+  to above a height or past a z: run it after changing a layout to find
+  ways off the course.
 
 - `"open_exit": true` opens the base map's far edge (as a route does), so
   pieces can carry on past it.

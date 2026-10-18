@@ -694,10 +694,15 @@ func test_sandbox_edges_closed() -> void:
 	_check_closed(Vector3(10, 0, -27.5), Vector2(320, 285))
 
 
-## The campaign's hand-off points: the exit and the store's roof are real
-## ground, and the far edge opens on request.
+## The campaign's hand-off points: the exit and the skybridge door (built
+## the way m06 and m07 build the mall) are real ground, and the far edge
+## opens on request.
 func test_mall_campaign_points() -> void:
-	await _load(MALL)
+	CourseTimer.persist = false
+	level = MALL.instantiate()
+	level.get_node("Builder").set("skybridge", true)
+	tree.root.add_child(level)
+	await tree.physics_frame
 	var space := level.get_world_3d().direct_space_state
 	for xf: Transform3D in [MallBuilder.EXIT, MallBuilder.ANCHOR_ENTRY, MallBuilder.ANCHOR_EXIT]:
 		var q := PhysicsRayQueryParameters3D.create(xf.origin + Vector3(0, 1, 0), xf.origin + Vector3(0, -1, 0), 1)
@@ -747,9 +752,10 @@ func test_rooftops_hide_course_marks() -> void:
 	check(counts[1][1] == counts[0][1] and counts[1][4] == counts[0][4], "same roofs and spawns either way")
 
 
-## The department store's roof access really climbs: mantle up the steps
-## from the sales floor onto the roof.
-func test_mall_roof_access() -> void:
+## The department store's roof is shut: where the roof hatch used to be,
+## climbing at the wall gets nowhere near the roof, and the dock's back doors
+## are shuttered.
+func test_mall_roof_and_back_closed() -> void:
 	await _load(MALL)
 	player.respawn(Transform3D(Basis.IDENTITY, Vector3(14, MallBuilder.UPPER_Y, -350)))
 	await _step(10)
@@ -757,7 +763,6 @@ func test_mall_roof_access() -> void:
 	var best := -INF
 	for i in 400:
 		var f := _steer(14.0)
-		# Jump at each step face, like a person would.
 		var pos := player.global_position
 		var q := PhysicsRayQueryParameters3D.create(pos + Vector3(0, 0.6, 0), pos + Vector3(0, 0.6, -1.4), 1)
 		q.exclude = [player.get_rid()]
@@ -767,9 +772,39 @@ func test_mall_roof_access() -> void:
 		player.scripted_input = f
 		await tree.physics_frame
 		best = maxf(best, player.global_position.y)
-		if best > MallBuilder.ROOF_Y + 0.3:
+	check(best < MallBuilder.ROOF_Y, "no way up to the roof (best y %.2f)" % best)
+	for x: float in [-13.0, 0.0, 13.0]:
+		var d := PhysicsRayQueryParameters3D.create(Vector3(x, 1.5, MallBuilder.DOCK_BACK + 3.0), Vector3(x, 1.5, MallBuilder.DOCK_BACK - 3.0), 1)
+		check(not space.intersect_ray(d).is_empty(), "dock door at x %.0f is shut" % x)
+
+
+## With skybridge, the covered way leaves the sales floor at ANCHOR_EXIT:
+## a bot walks from there through both turns and up to the dock wall.
+func test_mall_skybridge() -> void:
+	CourseTimer.persist = false
+	level = MALL.instantiate()
+	level.get_node("Builder").set("skybridge", true)
+	tree.root.add_child(level)
+	player = level.get_node("Player")
+	player.use_device_input = false
+	player.scripted_input = InputFrame.new()
+	await tree.physics_frame
+	player.respawn(MallBuilder.ANCHOR_EXIT)
+	await _step(10)
+	var points := [Vector2(15, -402), Vector2(13, -406), Vector2(2, -406), Vector2(0, -410), Vector2(0, -429)]
+	var next := 0
+	for i in 900:
+		var pos := player.global_position
+		if next < points.size() and Vector2(pos.x, pos.z).distance_to(points[next]) < 1.5:
+			next += 1
+		if next >= points.size():
 			break
-	check(best > MallBuilder.ROOF_Y + 0.3, "reached the roof (best y %.2f, at %s)" % [best, player.global_position])
+		var to: Vector2 = points[next] - Vector2(pos.x, pos.z)
+		player.set_view(atan2(-to.x, -to.y), 0.0)
+		player.scripted_input = InputFrame.make(Vector2(0, 1))
+		await tree.physics_frame
+	check(next >= points.size(), "walks the skybridge to the dock wall (at %s)" % player.global_position)
+	check(player.global_position.y > MallBuilder.SKY_END.y - 0.5, "climbed to the end (y %.2f)" % player.global_position.y)
 
 
 ## The old parking-lot kerb used to cross the north wing's concourse at
