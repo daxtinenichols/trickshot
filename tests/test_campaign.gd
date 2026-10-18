@@ -581,7 +581,7 @@ func _bot_run(label: String, alt := false) -> void:
 	var health := PlayerHealth.ensure(player)
 	health.can_die = false
 	run.event.connect(func(e: String) -> void:
-		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear"]:
+		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear", "duel"]:
 			for enc: Node3D in level.builder.encounters:
 				for en: Node in enc.enemies:
 					if not en.is_dead:
@@ -734,7 +734,7 @@ func test_hand_made_missions_can_be_finished() -> void:
 
 func _auto_shoot_objectives() -> void:
 	run.event.connect(func(e: String) -> void:
-		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear"]:
+		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear", "duel"]:
 			for enc: Node3D in level.builder.encounters:
 				for en: Node in enc.enemies:
 					if not en.is_dead:
@@ -845,6 +845,32 @@ func test_juno_fate_picks_the_line() -> void:
 		level.queue_free()
 		level = null
 		await tree.process_frame
+
+
+## m07: fighting is never required. Running up to Juno ends the duel without
+## a shot fired, and she's left kneeling for the spare-or-not choice.
+func test_reaching_juno_ends_the_duel() -> void:
+	await _load(_index_of("m07_parking_spiral"))
+	var duel := -1
+	for k in run.objectives.size():
+		if run.objectives[k].get("type", "") == "duel":
+			duel = k
+	check(duel >= 0, "m07 has a duel objective")
+	var juno: Node3D = run.duel_boss("Juno")
+	check(juno != null, "the duel's boss is Juno")
+	if duel < 0 or juno == null:
+		return
+	run._begin_objective(duel)
+	await _step(5)
+	check(run.objective == duel, "the duel isn't over from far away")
+	player.global_position = juno.global_position + Vector3(0, 0, 2.5)
+	await _step(3)
+	check(run.objective == duel + 1, "reaching Juno ends the duel (objective %d)" % run.objective)
+	check(juno.is_beaten and juno.fate == "" and not juno.is_dead, "she kneels and it's your call")
+	check(run.kills == 0, "without a shot fired")
+	level.queue_free()
+	level = null
+	await tree.process_frame
 
 
 ## m05: the arena's shots wake its sleeping Hollows.

@@ -95,6 +95,13 @@ func _beat() -> void:
 	beaten.emit()
 
 
+## Reaching her ends the duel too (fighting is never required): she drops
+## to a knee as if shot down, and the spare-or-not choice follows.
+func concede() -> void:
+	if not is_beaten and not is_dead:
+		_beat()
+
+
 func _decide(f: String) -> void:
 	fate = f
 	fate_decided.emit(f)

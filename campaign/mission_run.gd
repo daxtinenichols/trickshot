@@ -203,6 +203,8 @@ func _check_objective(pos: Vector3) -> void:
 			done = _shoot_progress(o) >= int(o.get("count", 1))
 		"clear":
 			done = encounter_cleared(String(o.get("encounter", "")))
+		"duel":
+			done = _duel_done(o, pos)
 		"collect":
 			done = tapes_found.size() >= int(o.get("count", builder.tapes.size()))
 	if done:
@@ -220,6 +222,30 @@ func encounter_cleared(id: String) -> bool:
 		if enc.get_meta("id", "") == id:
 			return enc.phase == enc.Phase.CLEARED
 	return false
+
+
+## A boss duel (Juno) ends when she's shot down or you reach her: within
+## `radius` m she concedes. Either way the spare-or-not choice follows.
+func _duel_done(o: Dictionary, pos: Vector3) -> bool:
+	var boss := duel_boss(String(o.get("encounter", "")))
+	if boss == null:
+		return true
+	if boss.get("is_beaten") or boss.get("is_dead"):
+		return true
+	if boss.global_position.distance_to(pos) <= float(o.get("radius", 4.0)):
+		boss.concede()
+		return true
+	return false
+
+
+## The enemy in that encounter who can concede (Juno), or null.
+func duel_boss(id: String) -> Node3D:
+	for enc: Node3D in builder.encounters:
+		if enc.get_meta("id", "") == id:
+			for e: Node in enc.enemies:
+				if e.has_method("concede"):
+					return e
+	return null
 
 
 func _shoot_progress(o: Dictionary) -> int:
