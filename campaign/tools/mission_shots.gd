@@ -22,7 +22,11 @@ const SHOTS := [
 	["m03_glass_district", Vector3(-12, 18, -236), Vector3(0, 11, -275), "m03_toll_roof"],
 	["m03_glass_district", Vector3(-50, 75, 30), Vector3(0, 10, -280), "m03_overview"],
 	["m03_glass_district", Vector3(-60.1, 16, -250.1), Vector3(-88.4, 15.5, -278.4), "m03_offices"],
+	["m03_glass_district", Vector3(-358, 13, -712), Vector3(-347.9, 7, -790), "m03_bridge"],
+	["m03_glass_district", Vector3(-395, 7, -790), Vector3(-347.9, 6, -835), "m03_bridge_side"],
 	["m04_silt_line", Vector3(-10, 6, 8), Vector3(0, 0, -40), "m04_silt"],
+	["m04_silt_line", Vector3(-3, 1.8, 3), Vector3(0, 6, -40), "m04_wreck"],
+	["m04_silt_line", Vector3(-22, 16, 40), Vector3(0, 3, -30), "m04_wreck_behind"],
 	["m04_silt_line", Vector3(-14, 14, -215), Vector3(0, 6, -260), "m04_overpass"],
 	# Act 2: the mall.
 	["m05_atrium", Vector3(-8, 9, -6), Vector3(2, 2, -40), "act2_m05_arena"],
