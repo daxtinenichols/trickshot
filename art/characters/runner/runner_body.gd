@@ -21,6 +21,14 @@ extends Node3D
 ## determinism. Shown on LAYER, which only third-person cameras render.
 
 const MODEL := preload("res://art/characters/runner/runner.glb")
+## Every runner's model, picked by the player's "runner" meta (set by
+## campaign missions: "parker" or "echo"). They share one skeleton, so every
+## pose works on each. Loaded by path: a model that isn't imported yet falls
+## back to Parker instead of breaking the body.
+const MODELS := {
+	"parker": "res://art/characters/runner/runner.glb",
+	"echo": "res://art/characters/runner/echo.glb",
+}
 const TOON_SHADER := preload("res://art/shaders/toon.gdshader")
 const MotionTrails := preload("res://art/fx/motion_trails.gd")
 ## Render layer 2: the first-person camera skips it, third-person cameras
@@ -54,6 +62,9 @@ var player: Player
 var model: Node3D
 var skeleton: Skeleton3D
 var trails: Node3D
+## Which runner's model is shown. Set it before adding the body to the tree
+## (e.g. for a stand-in character), or let the player's "runner" meta pick.
+var runner := "parker"
 ## When set, the body holds this pose instead of following the player.
 ## Used by the pose preview tool.
 var pose_override: Dictionary = {}
@@ -92,7 +103,38 @@ var _grounded := 1.0
 
 func _ready() -> void:
 	top_level = true
-	model = MODEL.instantiate()
+	var parent := get_parent()
+	if parent != null and parent.has_meta("runner"):
+		runner = String(parent.get_meta("runner"))
+	_load_model()
+	for k: String in BLEND_RATE:
+		_weights[k] = 0.0
+	_weights["idle"] = 1.0
+
+
+## Swaps the shown model ("parker", "echo"). Call it before anything is
+## attached to the skeleton (the gun look's hand); setup() does it for you.
+func set_runner(runner_name: String) -> void:
+	if runner_name == runner and model != null:
+		return
+	runner = runner_name
+	if model != null:
+		remove_child(model)
+		model.free()
+	_load_model()
+
+
+func _load_model() -> void:
+	var scene: PackedScene = MODEL
+	var path: String = MODELS.get(runner, "")
+	if runner != "parker":
+		var res: Resource = load(path) if path != "" and ResourceLoader.exists(path) else null
+		if res is PackedScene:
+			scene = res
+		else:
+			push_warning("RunnerBody: no model for runner '%s' (%s), showing Parker (reload the project if it was just added)" % [runner, path])
+	model = scene.instantiate()
+	model.name = "Model"
 	add_child(model)
 	skeleton = model.find_children("*", "Skeleton3D", true, false)[0]
 	var mat := ShaderMaterial.new()
@@ -103,14 +145,16 @@ func _ready() -> void:
 	for mi: MeshInstance3D in model.find_children("*", "MeshInstance3D", true, false):
 		mi.material_override = mat
 		mi.layers = LAYER
+	_bones.clear()
+	_ref_local.clear()
+	_ref_global.clear()
 	_build_reference()
-	for k: String in BLEND_RATE:
-		_weights[k] = 0.0
-	_weights["idle"] = 1.0
 
 
 func setup(p: Player) -> void:
 	player = p
+	if p.has_meta("runner"):
+		set_runner(String(p.get_meta("runner")))
 	_heading = PI
 	_last_yaw = p.yaw
 	p.landed.connect(_on_landed)

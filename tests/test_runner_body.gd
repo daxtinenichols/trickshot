@@ -56,6 +56,46 @@ func test_body_builds_and_attaches() -> void:
 	check_between(head, 1.45, 1.7, "head joint at standing height")
 
 
+func test_runner_meta_picks_the_model() -> void:
+	_w = TestWorld.new()
+	tree.root.add_child(_w)
+	_w.add_floor()
+	var p := _w.spawn_player(Vector3(0, 0.05, 0))
+	p.set_meta("runner", "echo")
+	_rig = ArtLook.ensure_body(p)
+	check(_rig.runner == "echo", "the runner meta picks Echo")
+	check(String(_rig.model.scene_file_path).ends_with("echo.glb"), "Echo's model is shown (%s)" % _rig.model.scene_file_path)
+	for b: String in ["Hips", "Head", "LeftHand", "RightFoot", "LeftToes"]:
+		check(_rig.skeleton.find_bone(b) >= 0, "Echo has bone %s" % b)
+	await _hold(p, Player.State.SLIDE, 20)
+	var hips := _hips_height()
+	check_between(hips, 0.05, 0.6, "Echo slides low on Parker's slide pose (hips %.2f)" % hips)
+	# Swapping back rebuilds the skeleton and keeps the layers.
+	_rig.set_runner("parker")
+	check(String(_rig.model.scene_file_path).ends_with("runner.glb"), "back to Parker's model")
+	for m: MeshInstance3D in _rig.model.find_children("*", "MeshInstance3D", true, false):
+		check(m.layers == RunnerBody.LAYER, "swapped model on layer 2")
+	_rig.set_runner("nobody")
+	check(String(_rig.model.scene_file_path).ends_with("runner.glb"), "unknown runner falls back to Parker")
+
+
+func test_figure_stands_in_the_level() -> void:
+	_w = TestWorld.new()
+	tree.root.add_child(_w)
+	var fig: Node3D = load("res://art/characters/runner/runner_figure.gd").new()
+	fig.runner = "echo"
+	_w.add_child(fig)
+	fig.global_position = Vector3(3, 0, -2)
+	for i in 4:
+		await tree.process_frame
+	var body: Node3D = fig.get_node("RunnerBody")
+	check(body.runner == "echo", "figure shows Echo")
+	check(body.global_position.distance_to(fig.global_position) < 0.01, "body stands where the figure is")
+	var feet: float = body.bone_world_position("LeftFoot").y
+	check_between(feet, -0.05, 0.25, "figure's feet on the floor (%.2f)" % feet)
+	check(fig.get_node_or_null("Blocker") != null, "figure blocks the player")
+
+
 func test_layers_and_cull_masks() -> void:
 	var p := _make()
 	var meshes := _rig.find_children("*", "MeshInstance3D", true, false)

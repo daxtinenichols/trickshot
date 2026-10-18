@@ -231,6 +231,7 @@ two or three seconds gets you caught.
 | `{"mark": [x, y, z], "size": [w, d], "color": "#f57320"}` | painted floor mark |
 | `{"tape": [x, y, z], "id": "m02_tape_container"}` | a lost broadcast tape (collectible); ids must be unique |
 | `{"fire": [x, y, z], "size": [w, h, d]}` | flames and light, no collision |
+| `{"figure": "echo", "at": [x, y, z], "yaw": 0, "pose": "arms_crossed"}` | a runner standing in the level as a character (Echo in the Dead Air studio): faces +Z, watches the camera, blocks the player; poses `idle`, `arms_crossed` |
 | `{"encounter": "name", "area": {...}, "raiders": [...], "mutants": [...], "cover": [...]}` | enemies (below) |
 
 ### Enemies

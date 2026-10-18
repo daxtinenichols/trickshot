@@ -8,7 +8,7 @@ extends TestCase
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
-	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab"]
+	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure"]
 
 var level: Node3D
 var player: Player
@@ -353,6 +353,24 @@ func test_beating_the_finale_unlocks_echo() -> void:
 	Campaign.set_runner("echo")
 	check(Campaign.runner_for(_index("m02_on_air")) == "echo", "and playable in other missions")
 	check(Campaign.runner_for(_index("m00_dawn_run")) == "parker", "except where the story says otherwise")
+
+
+func test_echo_waits_in_the_studio_and_runs_the_finale() -> void:
+	await _load(_index("m11_dead_air"))
+	var echo: Node3D = level.find_child("Figure_echo", true, false)
+	check(echo != null, "Echo stands in the Dead Air studio")
+	if echo != null:
+		var goal: Dictionary = run.mission.objectives[-1]
+		var end := MissionBuilder.vec(goal.at)
+		var d := Vector2(echo.global_position.x - end.x, echo.global_position.z - end.z).length()
+		check(d < 10.0, "next to the 'Get to Echo' goal (%.1f m)" % d)
+		check(absf(echo.global_position.y - (end.y - 2.0)) < 0.5, "standing on the studio floor")
+	level.queue_free()
+	await tree.process_frame
+	await _load(_index("m12_signal_out"))
+	ArtLook.attach_to_player(player)
+	var body: Node = player.get_node("RunnerBody")
+	check(body.runner == "echo", "Signal Out shows Echo's model")
 
 
 # ---------------------------------------------------------------- full runs
