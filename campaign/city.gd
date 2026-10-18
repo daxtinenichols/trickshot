@@ -121,7 +121,7 @@ static func _piece_areas(pieces: Array) -> Array:
 			var d := b - a
 			out.append(area((a + b) * 0.5, Vector2(1.0, d.length() * 0.5 + 1.0), atan2(d.x, d.y), float(p.from[1]) + 1.0, PIECE_MARGIN))
 		else:
-			for k: String in ["loop", "quarter_pipe", "bank", "door", "window", "target"]:
+			for k: String in ["loop", "quarter_pipe", "bank", "door", "doors", "window", "target"]:
 				if p.has(k):
 					var c: Array = p[k]
 					out.append(area(Vector2(c[0], c[2]), Vector2(8, 8), 0.0, float(c[1]) + 4.0, PIECE_MARGIN))

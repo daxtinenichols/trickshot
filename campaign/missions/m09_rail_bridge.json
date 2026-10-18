@@ -81,14 +81,15 @@
    {"prop": "shipping_container", "x": 4.6, "at": 70, "yaw": 90}
   ]},
   {"join": true},
-  {"roof": 90, "do": [
+  {"roof": 90, "interior": 7, "do": [
    {"checkpoint": "Station", "at": 4, "objective": 4},
    {"label": "WEST CENTRAL", "at": 6, "size": 1.1},
-   {"encounter": "station squad", "at": 10, "length": 62, "troopers": [[-3.6, 18, 0], [3.6, 26, 0.6], [-3.6, 40, 1.2]], "enemies": [{"type": "shield", "x": 3.6, "d": 34, "wake": 0.9}, {"type": "marksman", "x": -3.8, "d": 54, "wake": 1.4}, {"type": "gun_drone", "x": -2, "d": 22, "height": 4}, {"type": "gun_drone", "x": 2, "d": 46, "height": 4}]}
+   {"encounter": "station squad", "at": 10, "length": 62, "troopers": [[-3.6, 18, 0], [3.6, 26, 0.6], [-3.6, 40, 1.2]], "enemies": [{"type": "shield", "x": 3.6, "d": 34, "wake": 0.9}, {"type": "marksman", "x": -3.8, "d": 54, "wake": 1.4}, {"type": "gun_drone", "x": -2, "d": 22, "height": 4}, {"type": "gun_drone", "x": 2, "d": 46, "height": 4}]},
+   {"door": 0, "at": 76}
   ]},
   {"turn": "right", "angle": 45, "size": 22},
   {"roof": 62, "do": [
-   {"window": 3.3, "at": 24}
+   {"hole": 3.3, "style": "wagon", "at": 24}
   ]},
   {"turn": "right", "angle": 45, "size": 22},
   {"roof": 40, "do": [

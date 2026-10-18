@@ -84,6 +84,64 @@ func test_combo_damage_scales_and_caps() -> void:
 	check_near(c.damage_multiplier(), 3.0, 0.001, "at top speed it would be 4x, capped at 3x")
 
 
+# ------------------------------------------------------------------ flow (style is speed)
+
+func test_flow_rises_with_variety_and_flips_count_double() -> void:
+	var p := await _setup()
+	check_near(c.flow(), 0.0, 0.001, "no combo, no flow")
+	check_near(p.cruise_speed(), p.tuning.top_speed, 0.001, "cruise is top speed with no flow")
+	for t in [&"slide", &"vault", &"mantle"]:
+		c.on_trick(t, {})
+	check_near(c.flow(), 1.5, 0.001, "three different tricks: 3 x 0.5 = 1.5 m/s (got %.2f)" % c.flow())
+	c.on_trick(&"backflip", {})
+	check_near(c.flow(), 2.5, 0.001, "a flip counts double: +1.0 (got %.2f)" % c.flow())
+	c.on_trick(&"slide", {})
+	check_near(c.flow(), 2.8, 0.001, "a repeat adds 60%%: +0.3 (got %.2f)" % c.flow())
+	check_near(p.cruise_speed(), p.tuning.top_speed + 2.8, 0.001, "the player's cruise speed reads the combo's flow")
+	c.bail(&"test")
+	c.on_trick(&"vault", {"quality": 1.0})
+	check_near(c.flow(), 0.625, 0.001, "a perfect trick adds 1.25x (got %.3f)" % c.flow())
+
+
+func test_flow_fades_after_a_clean_bank() -> void:
+	await _setup()
+	for t in [&"slide", &"vault", &"mantle", &"backflip"]:
+		c.on_trick(t, {})
+	c.bank()
+	check_near(c.flow(), 2.5, 0.001, "banking keeps the flow for now (got %.2f)" % c.flow())
+	c.tick(1.5)
+	check_near(c.flow(), 1.25, 0.01, "halfway through the 3 s fade: half (got %.2f)" % c.flow())
+	c.on_trick(&"hop", {})
+	check_near(c.flow(), 1.25, 0.01, "a new combo doesn't drop you below the fading flow (got %.2f)" % c.flow())
+	c.tick(1.6)
+	check_near(c.flow(), 0.5, 0.01, "once the old flow fades below the new combo's, the new one counts (got %.2f)" % c.flow())
+
+
+func test_bail_drops_flow_at_once() -> void:
+	await _setup()
+	for t in [&"slide", &"vault", &"mantle"]:
+		c.on_trick(t, {})
+	c.on_trick(&"crash", {})
+	check_near(c.flow(), 0.0, 0.001, "a bail drops flow to nothing (got %.2f)" % c.flow())
+	for t in [&"slide", &"vault"]:
+		c.on_trick(t, {})
+	c.bank()
+	c.on_trick(&"crash", {})
+	check_near(c.flow(), 0.0, 0.001, "a crash while the last combo's flow fades drops it too (got %.2f)" % c.flow())
+
+
+func test_repeat_scale_for_flip_kicks() -> void:
+	await _setup()
+	c.on_trick(&"backflip", {})
+	check_near(c.repeat_scale([&"backflip"], 1), 1.0, 0.001, "first backflip in the combo: full")
+	c.on_trick(&"backflip", {})
+	check_near(c.repeat_scale([&"backflip"], 1), 0.6, 0.001, "second: 60%")
+	check_near(c.repeat_scale([&"backflip"], 2), 1.6, 0.001, "a double flip as the first: 1 + 0.6")
+	c.on_trick(&"spin_360", {})
+	c.on_trick(&"spin_720", {})
+	check_near(c.repeat_scale([&"spin_360", &"spin_720"], 2), 1.6, 0.001, "a 720 counts two turns")
+
+
 # ------------------------------------------------------------------ in play
 
 func test_coming_to_rest_banks() -> void:

@@ -15,6 +15,8 @@ const PropKit := preload("res://art/props/prop_kit.gd")
 const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
 ## A runner standing in the level as a character (Echo in the studio).
 const FIGURE_SCRIPT_PATH := "res://art/characters/runner/runner_figure.gd"
+## Scripted chase moments (falling beams, the Host's shortcuts, blasts).
+const SET_PIECE_SCRIPT_PATH := "res://campaign/set_piece.gd"
 # Enemies load by path, not class_name (a stale class cache has broken
 # scenes before).
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
@@ -38,6 +40,8 @@ var mission := {}
 var tapes: Array[Dictionary] = []
 ## Enemy encounters (EnemyEncounter nodes), in the order they appear.
 var encounters: Array[Node3D] = []
+## Set pieces (campaign/set_piece.gd), in route order. MissionRun ticks them.
+var set_pieces: Array[Node3D] = []
 ## The base map's builder, when the mission builds on one.
 var base: SandboxBuilder
 
@@ -61,6 +65,7 @@ func build() -> void:
 	zone_names.clear()
 	tapes.clear()
 	encounters.clear()
+	set_pieces.clear()
 	mission = Campaign.load_mission_file(resolved_path())
 	if mission.is_empty():
 		_box(Vector3(0, -0.5, 0), Vector3(40, 1, 40), Kind.FLOOR)
@@ -122,6 +127,8 @@ func _piece(p: Dictionary) -> void:
 		var b := _box_basis(vec(p.box), vec(p.get("size", [1, 1, 1]), Vector3.ONE), basis, kind)
 		if p.has("look"):
 			b.set_meta("look", p.look)
+		for k: String in p.get("meta", {}):
+			b.set_meta(k, p.meta[k])
 	elif p.has("building"):
 		# A building from the street up to its roof: [x, roof_y, z] and
 		# size [width, depth]. Its sides look like a ruined facade.
@@ -148,6 +155,10 @@ func _piece(p: Dictionary) -> void:
 		_door(vec(p.door))
 		if yaw != 0.0 and not Engine.is_editor_hint():
 			_root.get_child(-1).rotation.y = yaw
+	elif p.has("doors"):
+		# Double doors DOORS_WIDTH wide, bottom center at "doors": kick
+		# either leaf and both open.
+		_double_doors(Transform3D(basis, vec(p.doors)))
 	elif p.has("window"):
 		var s: Array = p.get("size", [2.2, 1.4])
 		_window(vec(p.window), Vector2(s[0], s[1]))
@@ -178,10 +189,31 @@ func _piece(p: Dictionary) -> void:
 		_fire(vec(p.fire), vec(p.get("size", [2, 1.5, 2]), Vector3(2, 1.5, 2)))
 	elif p.has("encounter"):
 		_encounter(p)
+	elif p.has("set_piece"):
+		_set_piece(p)
 	elif p.has("figure"):
 		_figure(String(p.figure), Transform3D(basis, vec(p.get("at", [0, 0, 0]))), String(p.get("pose", "")))
 	else:
 		push_warning("MissionBuilder: unknown piece %s" % p)
+
+
+func _double_doors(xf: Transform3D) -> void:
+	if Engine.is_editor_hint():
+		return
+	var leaves: Array[Node3D] = []
+	for side: float in [-1.0, 1.0]:
+		var leaf: StaticBody3D = DOOR_SCRIPT.new()
+		# Hinges at the outer edges: the left leaf's panel runs +X from its
+		# hinge, the right one's -X. Placed before it enters the tree, where
+		# it takes its closed pose.
+		var turn := Basis.IDENTITY if side < 0.0 else Basis(Vector3.UP, PI)
+		leaf.transform = Transform3D(xf.basis * turn, xf * Vector3(side * DOOR_SCRIPT.WIDTH, 0, 0))
+		leaf.set_meta("leaf", leaves.size())
+		leaves.append(leaf)
+	leaves[0].set_meta("mate", leaves[1])
+	leaves[1].set_meta("mate", leaves[0])
+	for leaf in leaves:
+		_root.add_child(leaf)
 
 
 ## A prism from the street (y 0) up to `top` over a convex footprint.
@@ -199,6 +231,18 @@ func _figure(runner: String, xf: Transform3D, pose: String) -> void:
 		f.pose_name = pose
 	f.transform = xf
 	_root.add_child(f)
+
+
+func _set_piece(p: Dictionary) -> void:
+	var script := load(SET_PIECE_SCRIPT_PATH) as Script if ResourceLoader.exists(SET_PIECE_SCRIPT_PATH) else null
+	if script == null or not script.can_instantiate():
+		push_warning("MissionBuilder: couldn't load %s, skipping a set piece" % SET_PIECE_SCRIPT_PATH)
+		return
+	var sp: Node3D = script.new()
+	sp.name = "SetPiece_%s_%d" % [p.set_piece, set_pieces.size()]
+	_root.add_child(sp)
+	sp.setup(p)
+	set_pieces.append(sp)
 
 
 func _slab(corners: Array, top: float) -> StaticBody3D:

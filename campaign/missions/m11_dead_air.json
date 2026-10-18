@@ -29,20 +29,20 @@
    {"radio": {"who": "mags", "line": "The armoured ones are slow. Don't trade with them. Get past."}, "at": 8, "radius": 8},
    {"slide": true, "at": 76}
   ]},
-  {"roof": 50, "y": 49, "do": [
+  {"roof": 50, "y": 49, "indoors": 4.6, "do": [
    {"piece": {"box": [0, 4.6, -24.0], "size": [12.6, 0.4, 48.0], "kind": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [-6.15, 2.3, -24.0], "size": [0.3, 4.6, 48.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [6.15, 2.3, -24.0], "size": [0.3, 4.6, 48.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"checkpoint": "Offices", "at": 4, "objective": 1},
-   {"hurdles": true, "at": 26}
+   {"door": 0, "look": "TILE", "at": 26}
   ]},
   {"turn": "left", "size": 20},
-  {"roof": 80, "do": [
+  {"roof": 80, "indoors": 4.6, "do": [
    {"piece": {"box": [0, 4.6, -39.0], "size": [12.6, 0.4, 78.0], "kind": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [-6.15, 2.3, -39.0], "size": [0.3, 4.6, 78.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [6.15, 2.3, -39.0], "size": [0.3, 4.6, 78.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"encounter": "offices", "at": 6, "length": 50, "raiders": [[-3.6, 12, 0], [3.6, 20, 0.5], [-3.6, 34, 1.0]], "enemies": [{"type": "hunter", "x": 3, "d": 28, "wake": 0.6}, {"type": "hunter", "x": -3, "d": 44, "wake": 1.2}]},
-   {"window": 3.3, "at": 64}
+   {"glass": 3.3, "at": 64}
   ]},
   {"roof": 40, "y": 52, "do": [
    {"piece": {"box": [0, 4.6, -19.0], "size": [12.6, 0.4, 38.0], "kind": "NEUTRAL"}, "at": 0},
@@ -110,11 +110,11 @@
    {"checkpoint": "Studio", "at": 4, "objective": 3},
    {"encounter": "studio guard", "at": 8, "length": 36, "raiders": [[-3.6, 12, 0], [3.6, 20, 0.6]], "enemies": [{"type": "heavy", "x": 0, "d": 30, "wake": 0.8, "cover": false}]}
   ]},
-  {"roof": 40, "do": [
+  {"roof": 40, "indoors": 4.6, "do": [
    {"piece": {"box": [0, 4.6, -19.0], "size": [12.6, 0.4, 38.0], "kind": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [-6.15, 2.3, -19.0], "size": [0.3, 4.6, 38.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [6.15, 2.3, -19.0], "size": [0.3, 4.6, 38.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
-   {"hurdles": true, "at": 18}
+   {"door": 0, "look": "TILE", "at": 18}
   ]},
   {"roof": 60, "do": [
    {"piece": {"box": [0, 4.6, -29.0], "size": [12.6, 0.4, 58.0], "kind": "NEUTRAL"}, "at": 0},

@@ -7,8 +7,8 @@ extends TestCase
 
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
-const PIECE_KEYS := ["box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
-	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure"]
+const PIECE_KEYS := ["box", "building", "prop", "row", "door", "doors", "window", "target", "ramp", "loop",
+	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure", "set_piece"]
 
 var level: Node3D
 var player: Player
@@ -334,6 +334,10 @@ func test_pursuer_follows_your_path() -> void:
 	p.speed = 5.0
 	p.speed_gain = 0.0
 	p.delay = 1.0
+	# Just the path following: no leash, lunge or shortcuts.
+	p.leash = 1000.0
+	p.lunge_range = 0.0
+	p.shortcut_range = 0.0
 	tree.root.add_child(p)
 	p.reset(Vector3.ZERO)
 	# You run 10 m/s down -Z for 2 s; he waits 1 s, then runs 5 m/s.
@@ -348,6 +352,116 @@ func test_pursuer_follows_your_path() -> void:
 	check(p.has_caught(), "stopping gets you caught")
 	check(p.point_at(7.5).distance_to(Vector3(0, 0, -7.5)) < 0.3, "positions lie on your path")
 	p.queue_free()
+
+
+## Running rings round him doesn't work: when you're close in a straight
+## line he cuts across instead of following your path, and catches you.
+func test_you_cant_circle_the_host() -> void:
+	var p := Pursuer.new()
+	tree.root.add_child(p)
+	p.reset(Vector3.ZERO)
+	# Run 30 m away, then turn and loop back round past him.
+	var at := Vector3.ZERO
+	var caught_at := -1
+	for i in 900:
+		var t := i / 60.0
+		if t < 2.6:
+			at = Vector3(0, 0, -11.5 * t)
+		else:
+			# A circle of radius 9 m back toward where he's coming from.
+			var a := (t - 2.6) * 11.5 / 9.0
+			at = Vector3(9.0 - 9.0 * cos(a), 0, -30.0 + 9.0 * sin(a))
+		p.tick(at, 1.0 / 60.0)
+		if p.has_caught():
+			caught_at = i
+			break
+	check(caught_at > 0, "circling back past him gets you caught (at tick %d)" % caught_at)
+	check(p.cutting or p.lunging, "he came straight at you")
+	p.queue_free()
+
+
+## Close is caught: a couple of meters away in a straight line counts even
+## when your path between you is long.
+func test_close_to_the_host_is_caught() -> void:
+	var p := Pursuer.new()
+	p.delay = 0.0
+	tree.root.add_child(p)
+	p.reset(Vector3.ZERO)
+	# A long detour that ends right beside where he is.
+	for i in 60:
+		p.tick(Vector3(0, 0, -0.5 * i), 1.0 / 60.0)
+	for i in 40:
+		p.tick(Vector3(0.5 * i, 0, -30), 1.0 / 60.0)
+	for i in 40:
+		p.tick(Vector3(20, 0, -30 + 0.5 * i), 1.0 / 60.0)
+	var gap_before := p.path_gap()
+	var near := p.pos + Vector3(1.6, 0, 0)
+	p.tick(near, 1.0 / 60.0)
+	check(gap_before > 20.0, "your path is long (%.1f m)" % gap_before)
+	check(p.has_caught(), "but %.1f m away in a straight line is caught" % p.direct)
+	p.queue_free()
+
+
+## He's quicker than you think: past the leash he sprints to catch up, and
+## inside lunge range he lunges.
+func test_the_host_keeps_up_and_lunges() -> void:
+	var p := Pursuer.new()
+	tree.root.add_child(p)
+	p.reset(Vector3.ZERO)
+	for i in 900:
+		p.tick(Vector3(0, 0, -11.5 * (i + 1) / 60.0), 1.0 / 60.0)
+	check(p.gap <= p.leash + 1.0, "a flat-out sprint can't shake him past the leash (%.1f m)" % p.gap)
+	check(p.current_speed() >= p.max_speed, "he runs at least %.1f m/s" % p.max_speed)
+	check(p.close_in(5.0), "a set piece brings him in")
+	p.tick(Vector3(0, 0, -11.5 * 901 / 60.0), 1.0 / 60.0)
+	check(p.lunging, "and that close he lunges (%.1f m)" % p.gap)
+	check(p.current_speed() > 11.5 + 2.0, "faster than you can run (%.1f m/s)" % p.current_speed())
+	check(not p.close_in(9.0), "a set piece never moves him further back")
+	p.queue_free()
+
+
+func test_the_host_has_his_own_model() -> void:
+	await _load(_index("m12_signal_out"))
+	var host: Node = run.pursuer.get_node_or_null("HostBody")
+	check(host != null, "the Host has a body")
+	var body: Node = host.get("body") if host != null else null
+	check(body != null and body.runner == "host", "shown with the Host's model")
+	if body != null:
+		var model: Node = body.get("model")
+		check(model != null and model.scene_file_path.ends_with("host.glb"), "host.glb (%s)" % (model.scene_file_path if model else "none"))
+		var skel: Skeleton3D = body.get("skeleton")
+		check(skel != null and skel.find_bone("LeftUpperLeg") >= 0, "on the runners' skeleton")
+
+
+## The set pieces in Signal Out: a beam falls and only blocks once it has
+## landed, the Host cuts in close, and going back to a checkpoint resets
+## them.
+func test_signal_out_set_pieces() -> void:
+	await _load(_index("m12_signal_out"))
+	var kinds := {}
+	for sp: Node3D in level.builder.set_pieces:
+		kinds[sp.kind] = kinds.get(sp.kind, 0) + 1
+	check(kinds.get("debris", 0) >= 3 and kinds.get("host", 0) >= 3 and kinds.get("blast", 0) >= 2 and kinds.get("mast", 0) >= 2,
+		"falling beams, shortcuts, blasts and masts (%s)" % kinds)
+	var beam: Node3D = null
+	for sp: Node3D in level.builder.set_pieces:
+		if sp.kind == "debris":
+			beam = sp
+			break
+	var shapes := beam.find_children("*", "CollisionShape3D", true, false)
+	check(not shapes.is_empty() and shapes.all(func(c: CollisionShape3D) -> bool: return c.disabled), "a beam isn't solid before it falls")
+	await _step(5)
+	player.global_position = beam.trigger
+	await _step(2)
+	check(beam.fired, "it falls when you get near")
+	await _step(40)
+	check(shapes.all(func(c: CollisionShape3D) -> bool: return not c.disabled), "and blocks the run once it lands")
+	var top := beam.global_transform * Vector3(0, 1.6, 0)
+	var q := PhysicsRayQueryParameters3D.create(top + Vector3(0, 0.5, 0), top - Vector3(0, 3, 0), 1)
+	var hit := player.get_world_3d().direct_space_state.intersect_ray(q)
+	check(not hit.is_empty() and hit.collider.get_parent() == beam.get_node("Beam"), "lying across the roof")
+	run._back_to_checkpoint()
+	check(not beam.fired and shapes.all(func(c: CollisionShape3D) -> bool: return c.disabled), "a checkpoint puts it back")
 
 
 func test_standing_still_in_the_chase_gets_you_caught() -> void:
@@ -504,6 +618,8 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 					f.crouch_held = true
 				"roll":
 					roll_armed = true
+				"kick":
+					f.kick_pressed = true
 			next += 1
 		if roll_armed and player.state == Player.State.AIR and player.velocity.y < 0.0:
 			var q := PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 1.2, 1)
@@ -758,6 +874,46 @@ func test_route_turns_and_forks() -> void:
 	check(end[1] == 7.0, "on the last roof")
 
 
+const BREACH := "res://tests/fixtures/route_breach.json"
+
+
+## Ways through a wall: glass hangs from a sill (never on the floor), holes
+## have no glass in them, doors come in pairs that open together, and a bot
+## runs through all of them: jumping the glass, kicking the doors, sliding
+## the holes.
+func test_route_glass_doors_and_holes() -> void:
+	var m := Campaign.load_mission_file(BREACH)
+	var panes := 0
+	var openings := {}
+	for p: Dictionary in m.pieces:
+		if p.has("window"):
+			panes += 1
+			check(float(p.window[1]) > 0.5, "glass sits on a sill, not the floor (%s)" % [p.window])
+		if p.get("meta", {}).has("opening"):
+			openings[p.meta.opening] = true
+	check(panes == 2, "two panes, both in walls with glass (%d)" % panes)
+	for style: String in ["fence", "broken", "shutter", "duct", "wagon"]:
+		check(openings.has(style), "a %s hole" % style)
+	await _load_file(BREACH)
+	var doors := tree.get_nodes_in_group("doors").filter(func(d: Node) -> bool: return level.is_ancestor_of(d))
+	check(doors.size() == 4, "two double doors (%d leaves)" % doors.size())
+	var glass := tree.get_nodes_in_group("windows").filter(func(w: Node) -> bool: return level.is_ancestor_of(w))
+	var opened := {}
+	var broken := {}
+	for d: Node in doors:
+		opened[d] = false
+	var watch := func() -> void:
+		for d: Node in doors:
+			opened[d] = opened[d] or d.is_open
+		for w: Node in glass:
+			broken[w] = broken.get(w, false) or w.is_broken
+	tree.physics_frame.connect(watch)
+	await _bot_run("breach", false)
+	tree.physics_frame.disconnect(watch)
+	check(opened.values().all(func(o: bool) -> bool: return o), "the bot kicked both pairs open, each leaf swinging (%s)" % [opened.values()])
+	check(broken.size() == 2 and broken.values().all(func(b: bool) -> bool: return b), "and jumped through both panes (%s)" % [broken.values()])
+
+
 ## The city round a route: blocks fill the ground next to the course
 ## without touching any of its roofs, and every block beside a roof stands
 ## too tall to climb onto from it.
@@ -939,6 +1095,8 @@ func _run_path(path: Array, max_frames := 6000) -> bool:
 					crouch_until = i + 30
 				"roll":
 					roll_armed = true
+				"kick":
+					f.kick_pressed = true
 			next += 1
 		if OS.has_environment("ROUTE_LOG") and i % 10 == 0:
 			print("  t%4d pos %s wp %d state %s speed %.1f obj %d falls %d" % [i, pos.snapped(Vector3.ONE * 0.01), next, Player.State.keys()[player.state], player.horizontal_speed(), run.objective, run.falls])

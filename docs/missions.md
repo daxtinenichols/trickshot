@@ -62,7 +62,7 @@ See `m03_glass_district.json`.
 "route": [
  {"roof": 52, "do": [{"hurdles": true, "at": 14}, {"slide": true, "at": 30}]},
  {"gap": 5},
- {"roof": 64, "do": [{"checkpoint": "Office roofs", "at": 3}, {"window": 3.3, "at": 22}]},
+ {"roof": 64, "interior": 4.5, "do": [{"checkpoint": "Office roofs", "at": 3}, {"glass": 3.3, "at": 22}]},
  {"wallrun": 12, "side": 1},
  {"roof": 44, "y": 17, "do": [...]},
  {"ramp_down": 0, "length": 22}
@@ -72,7 +72,7 @@ See `m03_glass_district.json`.
 | segment | |
 |---|---|
 | `{"roof": length, "y": h, "width": 12, "do": [...]}` | a roof (y 0 is the street). Higher than the roof before and straight on: a yellow face to climb (3 m max). Lower after a gap: a drop (roll from 3.5 m) |
-| `{"roof": 80, "y": 1, "interior": 6}` | the inside of a building: walls and a roof `interior` m over the floor, with skylights every 10 m (a warehouse, an office floor). Enter by ramp or straight on; climb out to a higher roof at its end |
+| `{"roof": 80, "y": 1, "interior": 6}` | the inside of a building: walls and a roof `interior` m over the floor, with skylights every 10 m (a warehouse, an office floor). Enter by ramp or straight on; climb out to a higher roof at its end. `"indoors": h` instead tells `glass`, `door` and `hole` walls how high the ceiling is when the mission builds its own walls (m11) |
 | `{"roof": 26, "bridge": true, "beyond": 150}` | a bridge deck on piers instead of a building (railings, girders); `beyond` m more of the span carry on past its end, seen but not run (m03's Silt bridge) |
 | `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof |
 | `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
@@ -89,7 +89,9 @@ Features on a roof, `at` meters from its start:
 |---|---|
 | `{"hurdles": true}` | a row of road barriers to vault |
 | `{"slide": true}` | a bar to slide under (12 m of ground before it) |
-| `{"window": x}` | a wall across with a low window at x to slide through |
+| `{"glass": x, "look": "TILE"}` | indoors only: a wall across the room with a window at x to jump through (sill 0.8 m, glass up to 3.4 m, 3 m wide); running into the sill without jumping is a bonk |
+| `{"door": x, "look": "FACADE"}` | a wall across with double doors at x (2.2 m wide): kick one and both swing open, no speed lost if you kick in time |
+| `{"hole": x, "style": "broken"}` | a gap 1.3 m high at x to slide through, as something that belongs there: indoors `broken` (a hole knocked through a brick wall, the default) or `shutter` (a loading shutter jammed part way down); outdoors `fence` (a raider hoarding with its bottom sheet torn out, the default), `duct` (a big air duct on legs across the roof) or `wagon` (a derailed goods wagon across the tracks). `{"window": x}` is the old name for a hole |
 | `{"hop": true, "side": -1}` | a wall hop pair |
 | `{"checkpoint": "Name", "objective": 1}` | a checkpoint; objectives and radio can use `"at": "@Name"`, and `"at": "end"` for the route's end |
 | `{"encounter": "id", "length": 40, "raiders": [[x, d, wake]], "mutants": [[x, d]], "troopers": [[x, d, wake]], "drones": [[x, d, height]]}` | enemies (d from the feature); raiders and troopers get sandbags 3 m in front, drones hover `height` m up |
@@ -99,6 +101,7 @@ Features on a roof, `at` meters from its start:
 | `{"radio": {"who", "line"}, "radius": 7}` | a radio line played here |
 | `{"prop": "car_wreck", "x": -4, "yaw": 80}`, `{"label": "text"}`, `{"mark": "#f57320"}` | dressing |
 | `{"lane": x}` | where the test bot runs from here |
+| `{"set_piece": "debris", "as": "slide", "at": 46, "trigger": 20}` | a chase set piece (see The chase) |
 
 Everything after a corner is laid out turned with the run (checkpoints
 face along it). Two 45° corners make a 90° turn with a diagonal stretch
@@ -229,25 +232,42 @@ a recorded take saved under `audio/voices/recorded/` replaces the synthetic one.
 ### The chase
 
 ```json
-"pursuer": {"name": "THE HOST", "speed": 7.6, "speed_gain": 0.03, "max_speed": 9.4,
-            "delay": 2.5, "catch_distance": 1.6, "leash": 22, "catchup_speed": 12.5}
+"pursuer": {"name": "THE HOST", "speed": 10.4, "speed_gain": 0.1, "max_speed": 11.4,
+            "delay": 1.2, "catch_distance": 2.2, "lunge_range": 5.5, "lunge_boost": 3.5,
+            "leash": 12, "catchup_speed": 15}
 ```
 
 He sets off `delay` seconds after you, follows your exact path, speeds up
-over time, and never drops more than `leash` meters behind (past it he runs
-at `catchup_speed`). Within `catch_distance` you're caught and go back to
-the last checkpoint. A clean run keeps him about `leash` behind; a stop of
-two or three seconds gets you caught.
+over time (to just under your sprint), and never drops more than `leash`
+meters behind (past it he runs at `catchup_speed`). You can't circle him:
+within `shortcut_range` (12 m) in a straight line, when your path back to
+him is much longer, he cuts straight across. Inside `lunge_range` he lunges
+`lunge_boost` m/s faster, and within `catch_distance` (along your path or in
+a straight line) you're caught and go back to the last checkpoint. A clean
+run keeps him about `leash` behind; any stumble puts him on your back. He's
+the Host's own model (art/characters/host, built by art/source/build_host.py
+on the runners' skeleton).
+
+Chase set pieces (route feature `{"set_piece": kind, "at": d, "trigger": d}`,
+`x` across; campaign/set_piece.gd) fire once when you reach the trigger and
+reset at checkpoints: `"debris"` a burning beam crashes across the roof and
+stays as an obstacle (`"as": "slide"` or `"hurdle"`; solid once landed),
+`"host"` he cuts through the building and drops in `gap` m behind you,
+`"blast"` an explosion beside the run (`size`), `"mast"` a lattice mast
+(`height`, `fall_yaw` degrees from the run) topples over. Events: `host_close`
+(a shortcut), `host_near` (he's within 6 m), `set_piece:<kind>`; chatter can
+react to any of them.
 
 ### Pieces
 
 | piece | fields |
 |---|---|
 | `{"building": [x, roof_y, z], "size": [w, d]}` | a building from the street to its roof (ruined facade look); `"look": "TOWER"` dresses it as the broadcast tower (scaffold, aviation paint, lattice mast on the roof) |
-| `{"box": [x, y, z], "size": [w, h, d], "kind": "WALLRUN"}` | a block; kind is the color language: `FLOOR`, `NEUTRAL`, `WALLRUN` (blue), `PARKOUR` (yellow), `SLIDE` (green), `SURFACE`; `look` overrides the art look (e.g. `FACADE`); `yaw` in degrees |
+| `{"box": [x, y, z], "size": [w, h, d], "kind": "WALLRUN"}` | a block; kind is the color language: `FLOOR`, `NEUTRAL`, `WALLRUN` (blue), `PARKOUR` (yellow), `SLIDE` (green), `SURFACE`; `look` overrides the art look (e.g. `FACADE`, `BRICK`, `CORRUGATED`, `TILE`, `RUST`); `yaw` in degrees; `meta` sets body metas |
 | `{"prop": "car_wreck", "at": [x, y, z], "yaw": 70}` | a prop from the kit (below) |
 | `{"row": "barricade_jersey", "from": [..], "to": [..], "count": 6}` | a row of one prop |
 | `{"door": [x, y, z]}` | kickable door, hinge at the point |
+| `{"doors": [x, y, z]}` | double doors, bottom center at the point: kick either leaf and both open |
 | `{"window": [x, y, z], "size": [2.2, 1.4]}` | breakable window, bottom center |
 | `{"target": [x, y, z], "motion": "strafe", "amplitude": 3, "speed": 3}` | shooting target: `static`, `strafe`, `bob`, `circle` |
 | `{"ramp": [top], "to": [bottom], "width": 4, "kind": "SLIDE"}` | flat ramp |
