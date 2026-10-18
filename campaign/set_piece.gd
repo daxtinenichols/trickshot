@@ -320,9 +320,10 @@ func _build_skybridge() -> void:
 	gate.collision_mask = 0
 	gate.set_meta("kind", "NEUTRAL")
 	add_child(gate)
-	_part(gate, Vector3(0, 1.7, 0), Vector3(width - 0.4, 3.4, 0.12), glass, false)
+	# Glass and posts stand a hair inside the bottom rail, not flush with it.
+	_part(gate, Vector3(0, 1.72, 0), Vector3(width - 0.4, 3.36, 0.12), glass, false)
 	for x: float in [-width * 0.5 + 0.2, -1.6, 1.6, width * 0.5 - 0.2]:
-		_part(gate, Vector3(x, 1.85, 0), Vector3(0.18, 3.7, 0.24), steel, false)
+		_part(gate, Vector3(x, 1.851, 0), Vector3(0.18, 3.698, 0.24), steel, false)
 	_part(gate, Vector3(0, 3.7, 0), Vector3(width, 0.4, 0.3), steel, false)
 	_part(gate, Vector3(0, 0.06, 0), Vector3(width, 0.12, 0.3), steel, false)
 	var wall := CollisionShape3D.new()

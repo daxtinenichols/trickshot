@@ -127,8 +127,10 @@ func _build_geometry() -> void:
 	var o := origin
 	# Back and side walls (wallrun).
 	_box(o + Vector3(0, 3, 52), Vector3(56, 6, 1), "WALLRUN")
-	_box(o + Vector3(-27, 3, 12), Vector3(1, 6, 80), "WALLRUN")
-	_box(o + Vector3(27, 3, 12), Vector3(1, 6, 80), "WALLRUN")
+	# Side walls stop at the back wall instead of running into it, so the
+	# two dresses don't flicker in the corner.
+	_box(o + Vector3(-27, 3, 11.75), Vector3(1, 6, 79.5), "WALLRUN")
+	_box(o + Vector3(27, 3, 11.75), Vector3(1, 6, 79.5), "WALLRUN")
 	# Low cover rows, nearest first.
 	for wall: Array in [
 		[Vector3(-12, 0, -6), 6.0], [Vector3(7, 0, -8), 5.0],

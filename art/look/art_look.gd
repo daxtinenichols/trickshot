@@ -97,6 +97,7 @@ var _swapped: Array = []  # [GeometryInstance3D, original material]
 var _env_backup := {}
 var _attached: Array = []  # nodes this look added, removed when turned off
 var _hidden: Array = []  # graybox meshes a dress replaced, shown again when off
+var _marks := 0  # floor marks laid so far (layer_box)
 ## Dress obstacles as the city (concrete, brick, crates, hoardings). Off
 ## keeps the color-coded blocks under the weathered look.
 var dress_obstacles := true
@@ -169,6 +170,10 @@ func wasteland_material(kind: String, color := Color.TRANSPARENT, grid := 0.0) -
 		m.set_shader_parameter("grid_strength", grid)
 		# Dust settles on everything flat except steep runnable curves.
 		m.set_shader_parameter("dust_amount", 0.25 if kind == "SURFACE" else 0.45)
+		# Its drawing order (box_grow); a look in a map's own color sits
+		# half a step above the plain one.
+		var layer := float(LAYERS.find(kind)) if LAYERS.has(kind) else LAYERS.size() * 0.5
+		m.set_meta("layer", layer + (0.5 if color != PALETTE.get(kind, PALETTE.NEUTRAL) else 0.0))
 		_world_materials[key] = m
 	return _world_materials[key]
 
@@ -230,6 +235,47 @@ func _restyle_geometry(g: GeometryInstance3D) -> void:
 	elif dress_obstacles and body is StaticBody3D and g is MeshInstance3D and LOOK_DRESSES.has(kind) \
 			and not body.has_node("Dress"):
 		_dress(body, g, LOOK_DRESSES[kind])
+	if g is MeshInstance3D:
+		layer_box(g)
+
+
+## Drawing order for looks laid flush on each other, lowest first: ground and
+## buildings under details. See box_grow.
+const LAYERS := ["FLOOR", "TILE", "FACADE", "BRICK", "TOWER", "TOWER_BASE", "NEUTRAL", "CORRUGATED",
+	"WOOD", "SURFACE", "WALLRUN", "SLIDE", "PARKOUR", "RUST", "SIGN"]
+
+
+## How far (m) a box grows on every side when drawn, so boxes laid flush on
+## each other (a climb plate on a wall, a slab edge in a wall, two city blocks
+## side by side) never share a plane and flicker through each other. The
+## look's LAYERS order (`layer`, from the material) decides which draws on
+## top, 0.3 mm a step: 1 mm for the ground up to 5.4 mm for a sign. Thinner
+## boxes grow a hair more, so two of one look keep apart too. Visual only;
+## collision is untouched. A dressed box grows less, under its dress pieces
+## (see _layer_dress).
+static func box_grow(size: Vector3, layer: float) -> float:
+	var thin := maxf(minf(size.x, minf(size.y, size.z)), 0.0)
+	return 0.001 + 0.0003 * layer + 0.00008 * clampf(1.0 - thin * 0.5, 0.0, 1.0)
+
+
+func layer_box(g: MeshInstance3D) -> void:
+	if g.mesh is PlaneMesh or g.mesh is QuadMesh:
+		# Floor marks lie on the floor and on each other: each one lifts
+		# 0.5 mm more than the last, in a cycle of 8.
+		var lift := 0.0005 * (1 + _marks % 8)
+		_marks += 1
+		g.set_instance_shader_parameter("face_lift", lift)
+		g.set_meta("face_lift", lift)
+	elif g.mesh is BoxMesh and g.material_override:
+		var layer: float = g.material_override.get_meta("layer", LAYERS.size() * 0.5)
+		var grow := box_grow((g.mesh as BoxMesh).size, layer)
+		if g.get_parent().has_node("Dress"):
+			# A dressed box stays under its dress pieces (2 mm and up) but
+			# apart from other dressed boxes it touches.
+			grow = 0.0005 + 0.0001 * layer
+		g.set_instance_shader_parameter("box_grow", grow)
+		# The dummy renderer (headless audits) doesn't keep instance uniforms.
+		g.set_meta("box_grow", grow)
 
 
 ## Dresses a gameplay obstacle (or a whole building) as part of the city.
@@ -241,8 +287,24 @@ func _dress(body: Node3D, core: MeshInstance3D, style := "") -> void:
 	var node: Node = dresser.dress(body, core, self, style)
 	if node != null:
 		_attached.append(node)
+		_layer_dress(node)
 		if not core.visible:
 			_hidden.append(core)
+
+
+## A dress lays its pieces on the box and on each other, often flush, base
+## first and details after. Each piece grows (see box_grow) 0.25 mm more than
+## the one before, in a cycle of 16 (each other cycle half a step up), all
+## above the box itself (2 to 5.9 mm),
+## so a later piece always draws over an earlier one in the same plane.
+func _layer_dress(dress: Node) -> void:
+	var i := 0
+	for mi: Node in dress.find_children("*", "MeshInstance3D", true, false):
+		if (mi as MeshInstance3D).mesh is BoxMesh:
+			var grow := 0.002 + 0.00025 * (i % 16) + 0.000125 * (i / 16 % 2)
+			mi.set_instance_shader_parameter("box_grow", grow)
+			mi.set_meta("box_grow", grow)
+			i += 1
 
 
 ## Dresses a practice target as junk to shoot at. Visual only.
@@ -253,6 +315,7 @@ func _dress_target(target: Node3D) -> void:
 	var node: Node = dresser.dress(target, self, _hidden)
 	if node != null:
 		_attached.append(node)
+		_layer_dress(node)
 
 
 func _kind_for(g: Node, base: Color) -> String:

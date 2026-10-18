@@ -317,7 +317,9 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 		var rise: float = float(seg.y) - st.y
 		if rise > 0.5 and is_equal_approx(st.z, st.roof_end):
 			# Straight on from a lower roof: a yellow face to climb (3 m max).
-			_add(st, {"box": [0, st.y + rise * 0.5, st.z - 0.15], "size": [WIDTH, rise, 0.3], "kind": "PARKOUR"})
+			# 2 cm proud of the wall and just inside its top and sides, so
+			# the two looks never share a plane (they flickered).
+			_add(st, {"box": [0, st.y + (rise - 0.02) * 0.5, st.z - 0.13], "size": [WIDTH - 0.04, rise - 0.02, 0.3], "kind": "PARKOUR"})
 			st.bot.append([st.z + 1.8, "jump", NAN])
 		var drop: float = st.y - float(seg.y)
 		if drop >= 3.5 and not st.bot.is_empty() and st.bot[-1][1] == "jump":
