@@ -454,6 +454,12 @@ func test_the_host_has_his_own_model() -> void:
 		check(model != null and model.scene_file_path.ends_with("host.glb"), "host.glb (%s)" % (model.scene_file_path if model else "none"))
 		var skel: Skeleton3D = body.get("skeleton")
 		check(skel != null and skel.find_bone("LeftUpperLeg") >= 0, "on the runners' skeleton")
+		# The first-person camera skips the runner's own layer; he must not be on it.
+		var cull: int = 0xFFFFF & ~RunnerBody.LAYER  # what ArtLook sets on the player's camera
+		var meshes := model.find_children("*", "MeshInstance3D", true, false) if model else []
+		check(not meshes.is_empty(), "he has meshes")
+		for mi: MeshInstance3D in meshes:
+			check(mi.layers & cull != 0, "%s shows in first person (layers %d)" % [mi.name, mi.layers])
 
 
 ## The set pieces in Signal Out: a beam falls and only blocks once it has
