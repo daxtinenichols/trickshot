@@ -201,10 +201,9 @@ const COURSE_ROUTE := [
 	[90.6, "jump", 0.3],     # hurdle at -92
 	[102.2, "jump", 0.3],    # climb face at -104
 	[110.5, "crouch", 0.3],  # hole at -114: slide through
-	[118.0, "crouch", 0.3],  # and on to the drop, so a fast run's landing roll stops short of the hurdle
 	[122.0, "roll", 0.3],    # drop to R5
 	[130.0, "", 1.5],
-	[140.6, "jump", 1.5],    # hurdles at -142, -152, -162
+	[140.6, "jump", 1.5],    # hurdles at -142 (out of the landing roll), -152, -162
 	[150.6, "jump", 1.5],
 	[160.6, "jump", 1.5],
 	[171.3, "jump", 1.5],    # gap to R6

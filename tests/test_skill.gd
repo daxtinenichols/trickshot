@@ -292,6 +292,47 @@ func test_flow_raises_cruise_and_running_holds_it() -> void:
 	check(after < top + 2.5 and after > top + 1.5, "with flow gone, the extra bleeds like any overspeed (%.2f)" % after)
 
 
+## A roll that runs into a hurdle: jump once it's halfway through and you
+## vault it at the roll's speed instead of stopping dead.
+func _roll_into_hurdle(jump: bool) -> Array:
+	var w := _world()
+	w.add_box(Vector3(0, -0.5, -20), Vector3(10, 1, 80))
+	w.add_box(Vector3(0, 0.45, -5.2), Vector3(6, 0.9, 0.4))  # hurdle, face 5 m ahead
+	var p := w.spawn_player(Vector3(0, 0.05, 0))
+	await w.step(20)
+	p._start_roll(1.0, &"landing_roll", 0.0, Vector3(0, 0, -14), 0.0)
+	var before := p.horizontal_speed()
+	var seen := [false, INF]
+	var f := _fwd_jump() if jump else _fwd()
+	await w.step_until(func() -> bool:
+		seen[0] = seen[0] or p.state == Player.State.VAULT
+		seen[1] = minf(seen[1], p.horizontal_speed())
+		return p.global_position.z < -7.0 or (p.state != Player.State.ROLL and p.horizontal_speed() < 1.0), 120, f)
+	return [before, seen[0], seen[1], p.global_position.z]
+
+
+func test_jump_out_of_a_roll_vaults_the_hurdle_at_full_speed() -> void:
+	var out := await _roll_into_hurdle(true)
+	check(out[1], "jumping out of the roll vaults the hurdle")
+	check(out[3] < -7.0, "and carries on past it (z %.1f)" % out[3])
+	check(out[2] >= out[0] - 0.05, "without losing speed (%.2f -> lowest %.2f m/s)" % [out[0], out[2]])
+
+
+func test_first_half_of_a_roll_is_committed() -> void:
+	var w := _world()
+	w.add_floor()
+	var p := w.spawn_player(Vector3(0, 0.05, 0))
+	await w.step(20)
+	p._start_roll(1.0, &"landing_roll", 0.0, Vector3(0, 0, -12), 0.0)
+	var half: float = p.tuning.roll_time * p.tuning.roll_jump_cancel
+	var frames := [0]
+	await w.step_until(func() -> bool:
+		frames[0] += 1
+		return p.state != Player.State.ROLL, 60, _fwd_jump())
+	check(p.state == Player.State.AIR, "a held jump fires out of the roll (%s)" % Player.State.keys()[p.state])
+	check_near(frames[0] / 60.0, half, 2.0 / 60.0, "once it's halfway through (%.3f s, half %.3f s)" % [frames[0] / 60.0, half])
+
+
 func _move_at_speed(box_center: Vector3, box_size: Vector3, press_dz: float) -> Array:
 	var w := _world()
 	w.add_box(box_center, box_size)

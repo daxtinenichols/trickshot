@@ -165,6 +165,9 @@ extends Resource
 ## Press crouch within this many seconds before touching down to roll.
 @export_range(0.0, 1.0, 0.01) var roll_window := 0.3
 @export_range(0.05, 2.0, 0.01) var roll_time := 0.45
+## Once a roll is this far through (0..1), jump gets you out of it: a vault,
+## climb or jump at the roll's speed. Before that the roll is committed.
+@export_range(0.0, 1.0, 0.05) var roll_jump_cancel := 0.5
 ## Speed added along your heading by a clean roll.
 @export_range(0.0, 10.0, 0.1) var roll_boost := 1.0
 ## Fraction of horizontal speed kept after a hard landing.

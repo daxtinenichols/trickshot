@@ -1099,6 +1099,17 @@ func _start_roll(quality: float, trick_name: StringName, spin_from: float, h: Ve
 
 
 func _tick_roll(f: InputFrame, wish: Vector3, delta: float) -> void:
+	# Past the committed part, jump gets you out the way a ground jump
+	# would (an obstacle or climb first), keeping the roll's speed.
+	if state_time >= tuning.roll_time * tuning.roll_jump_cancel and _jump_buffer <= tuning.jump_buffer and _can_stand():
+		_set_height(tuning.stand_height)
+		if _try_obstacle(f, true):
+			return
+		if _try_wall_climb(f, true):
+			return
+		_jump()
+		_tick_air(f, wish, delta)
+		return
 	_set_height(tuning.crouch_height)
 	velocity = MovementMath.accelerate(velocity, wish.normalized(), 1.0 * wish.length(), 4.0, delta)
 	velocity.y -= tuning.gravity * delta
