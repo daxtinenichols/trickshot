@@ -545,7 +545,8 @@ class _Dress:
 	func track() -> void:
 		core_as("WALLRUN", TRACK_PAINT)
 		var rust := mat("RUST")
-		for x in [-s.x * 0.5 + 0.05, s.x * 0.5 - 0.05]:
+		# 5 mm proud of the plate's ends, not flush (they flickered).
+		for x in [-s.x * 0.5 + 0.045, s.x * 0.5 - 0.045]:
 			raw(Vector3(x, 0.04, 0), Vector3(0.1, s.y + 0.08, s.z + 0.02), rust)
 		# A rib under the plate, and one more at the far end of long strips.
 		var ribs := [0.0] if s.z < 1.6 else [-s.z * 0.5 + 0.1, s.z * 0.5 - 0.1]
@@ -613,7 +614,8 @@ class _Dress:
 			for i in n + 1:
 				var t := -span * 0.5 + span * i / n
 				for sgn in [-1.0, 1.0]:
-					raw(nrm * sgn * (depth * 0.5 + 0.2) + run * t, nrm.abs() * 0.4 + run.abs() * 0.7 + Vector3.UP * s.y, fin)
+					# 2 cm short of the roof and ground: their tops flickered in the roof deck.
+					raw(nrm * sgn * (depth * 0.5 + 0.2) + run * t, nrm.abs() * 0.4 + run.abs() * 0.7 + Vector3.UP * (s.y - 0.04), fin)
 					if slots and i < n and s.y > 20.0:
 						raw(nrm * sgn * (depth * 0.5 + 0.01) + run * (t + span / n * 0.5) + Vector3.UP * 2.0,
 							nrm.abs() * 0.04 + run.abs() * (span / n * 0.35) + Vector3.UP * (s.y - 14.0), slot)

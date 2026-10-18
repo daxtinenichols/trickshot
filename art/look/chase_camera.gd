@@ -50,6 +50,7 @@ var _active := false
 var _zoom := 5.2  # smoothed distance
 var _pull := 9999.0  # wall pull-in, smoothed
 var _aim_dist := 60.0  # distance along the view to what it's aimed at, smoothed
+var _probe := SphereShape3D.new()  # the lens, for keeping it out of walls
 
 
 static func register_actions() -> void:
@@ -73,6 +74,7 @@ func _ready() -> void:
 	near = 0.05
 	far = 600.0
 	cull_mask = 0xFFFFF & ~Pistol.VIEW_LAYER
+	_probe.radius = 0.12
 	register_actions()
 	_zoom = distance
 
@@ -163,7 +165,8 @@ func _place(real_delta: float) -> void:
 		_pull = hit
 	else:
 		_pull = lerpf(_pull, hit, 1.0 - exp(-5.0 * real_delta))
-	var d := maxf(minf(want, _pull - 0.3), 0.4)
+	# _pull already keeps the lens clear of the wall; never push it back in.
+	var d := clampf(minf(want, _pull - 0.1), 0.0, want)
 	var pos := origin + back * d
 	# Look at what the first-person view is aimed at. The distance along the
 	# view ray is smoothed so sweeping across an edge doesn't jerk the view.
@@ -193,10 +196,17 @@ func _aim_hit_distance() -> float:
 	return 120.0 if r.is_empty() else maxf(from.distance_to(r.position), 0.5)
 
 
+## How far the camera can go from `from` along `dir` before it touches a
+## wall: a ball the size of the lens's view at the near plane, not a thin
+## ray, which slipped past corners and edges and let the view into walls.
 func _wall_distance(from: Vector3, dir: Vector3, length: float) -> float:
 	if not is_inside_tree():
 		return length
-	var q := PhysicsRayQueryParameters3D.create(from, from + dir * length, 1)
+	var q := PhysicsShapeQueryParameters3D.new()
+	q.shape = _probe
+	q.transform = Transform3D(Basis.IDENTITY, from)
+	q.motion = dir * length
+	q.collision_mask = 1
 	q.exclude = [player.get_rid()]
-	var r := get_world_3d().direct_space_state.intersect_ray(q)
-	return length if r.is_empty() else from.distance_to(r.position)
+	var r := get_world_3d().direct_space_state.cast_motion(q)
+	return length * r[0] if r.size() > 0 else length

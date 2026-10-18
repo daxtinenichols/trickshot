@@ -372,6 +372,35 @@ func test_chase_camera_looks_down_on_the_runner() -> void:
 	cam.queue_free()
 
 
+## A thin post just beside the line from the runner to the lens: a thin ray
+## slips past it, but the lens would sit half inside it.
+func test_chase_camera_stays_out_of_thin_posts() -> void:
+	ArtLook.ensure_body(player)
+	var cam: Camera3D = preload("res://art/look/chase_camera.gd").new()
+	level.add_child(cam)
+	cam.setup(player)
+	cam.set_active(true)
+	await tree.process_frame
+	var post := StaticBody3D.new()
+	var shape := CollisionShape3D.new()
+	shape.shape = BoxShape3D.new()
+	(shape.shape as BoxShape3D).size = Vector3(0.1, 6.0, 0.1)
+	post.add_child(shape)
+	level.add_child(post)
+	post.global_position = cam.global_position + cam.global_basis.x * 0.08
+	for i in 3:
+		await tree.physics_frame
+		await tree.process_frame
+	var q := PhysicsShapeQueryParameters3D.new()
+	q.shape = SphereShape3D.new()
+	(q.shape as SphereShape3D).radius = 0.07
+	q.transform = Transform3D(Basis.IDENTITY, cam.global_position)
+	var hits := level.get_world_3d().direct_space_state.intersect_shape(q)
+	check(hits.filter(func(h): return h.collider == post).is_empty(), "the lens stays out of the post")
+	cam.set_active(false)
+	cam.queue_free()
+
+
 func _wheel(cam: Node, button: MouseButton) -> void:
 	var e := InputEventMouseButton.new()
 	e.button_index = button
@@ -496,6 +525,14 @@ func test_gun_look_replaces_the_test_pistol_visuals() -> void:
 	var look: GunLook = player.get_node("GunLook")
 	check(not gun.builtin_visuals, "test pistol boxes and effects off")
 	check(look.fp_model.get_parent() == gun.view_model, "first-person model rides the view model")
+	var fp_mats: Array = look.fp_model.find_children("*", "MeshInstance3D", true, false).map(
+		func(mi: MeshInstance3D) -> Variant: return (mi.material_override as ShaderMaterial).get_shader_parameter("depth_scale")).filter(
+		func(d: Variant) -> bool: return d != null)
+	check(fp_mats.size() >= 2 and fp_mats.all(func(d: Variant) -> bool: return float(d) < 0.2),
+		"first-person gun draws over walls instead of poking through them")
+	var tp_mats: Array = look.held_model.find_children("*", "MeshInstance3D", true, false).map(
+		func(mi: MeshInstance3D) -> Variant: return (mi.material_override as ShaderMaterial).get_shader_parameter("depth_scale"))
+	check(tp_mats.all(func(d: Variant) -> bool: return d == null or is_equal_approx(float(d), 1.0)), "the held gun keeps normal depth")
 	var hand := look.held_model.get_parent() as BoneAttachment3D
 	check(hand != null and hand.bone_name == "RightHand", "third-person gun is in the right hand")
 	level.go_to_zone(9)
