@@ -688,8 +688,12 @@ static func _hole(st: Dictionary, z: float, x: float, style: String) -> void:
 			_add(st, {"box": [x, y + 3.0 - 0.2, z - 0.35], "size": [3.6, 0.4, 0.4], "kind": "NEUTRAL", "look": "RUST"})
 			_add(st, {"box": [x, y + HOLE_TOP + 0.05, z - 0.22], "size": [3.4, 0.1, 0.14], "kind": "NEUTRAL", "look": "RUST"})
 		"duct":
-			# Square duct on legs, end to end across the roof.
-			_add(st, {"box": [0, y + HOLE_TOP + 0.55, z], "size": [half * 2.0, 1.1, 1.3], "kind": "NEUTRAL", "look": "RUST", "meta": tag})
+			# Square sheet-metal duct on legs, end to end across the roof,
+			# with a leg either side of the gap so it reads as the way under.
+			_add(st, {"box": [0, y + HOLE_TOP + 0.55, z], "size": [half * 2.0, 1.1, 1.3], "kind": "NEUTRAL", "look": "CORRUGATED", "meta": tag})
+			for lx: float in [x - HOLE_WIDTH * 0.5 - 0.15, x + HOLE_WIDTH * 0.5 + 0.15]:
+				if absf(lx) < half - 1.4:
+					_add(st, {"box": [lx, y + HOLE_TOP * 0.5, z], "size": [0.25, HOLE_TOP, 0.9], "kind": "NEUTRAL", "look": "RUST"})
 			# It comes up out of the roof at the end away from the gap, on a
 			# leg at the other.
 			var riser := -1.0 if x > 0.0 else 1.0
@@ -698,7 +702,9 @@ static func _hole(st: Dictionary, z: float, x: float, style: String) -> void:
 		"wagon":
 			# A goods wagon on its side across the line, its body held off
 			# the deck by the bogies at its ends.
-			_add(st, {"box": [0, y + HOLE_TOP + 1.4, z], "size": [half * 2.0 + 1.0, 2.8, 2.9], "kind": "NEUTRAL", "look": "RUST", "meta": tag})
+			_add(st, {"box": [0, y + HOLE_TOP + 1.4, z], "size": [half * 2.0 + 1.0, 2.8, 2.9], "kind": "NEUTRAL", "look": "CORRUGATED", "meta": tag})
+			# Its chassis along the bottom edge.
+			_add(st, {"box": [0, y + HOLE_TOP + 0.15, z + 1.2], "size": [half * 2.0 + 1.0, 0.3, 0.5], "kind": "NEUTRAL", "look": "RUST"})
 			for side: float in [-1.0, 1.0]:
 				var bx := side * (half - 0.4)
 				if absf(bx - x) > HOLE_WIDTH * 0.5 + 0.6:
