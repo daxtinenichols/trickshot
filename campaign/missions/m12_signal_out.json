@@ -16,7 +16,7 @@
    {"piece": {"fire": [4.6, 0, -3.2], "size": [2, 1.6, 2]}, "at": 0},
    {"prop": "radio_set", "x": 3.8, "at": 5, "yaw": 200},
    {"prop": "generator", "x": -4.6, "at": 6, "yaw": 90},
-   {"radio": {"who": "parker", "line": "Barriers. Jump into them and you'll go over without slowing."}, "at": 8, "radius": 5},
+   {"radio": {"who": "parker", "line": "Barriers. Jump into 'em, you'll go over without slowing down."}, "at": 8, "radius": 5},
    {"hurdles": true, "at": 14},
    {"piece": {"fire": [-5, 0, -18], "size": [1.6, 1.2, 1.6]}, "at": 0},
    {"radio": {"who": "parker", "line": "Bar ahead. Slide under it."}, "at": 24, "radius": 4},
@@ -34,7 +34,7 @@
   {"roof": 64, "y": 48, "do": [
    {"prop": "loudspeaker_pole", "x": -5.2, "at": 20, "yaw": 40},
    {"piece": {"fire": [-3, 0, -26], "size": [2, 1.4, 1.6]}, "at": 0},
-   {"radio": {"who": "parker", "line": "Gap's too wide to jump. Wall on your right, run it."}, "at": 44, "radius": 7}
+   {"radio": {"who": "parker", "line": "Too wide to jump. Wall on your right. Run it."}, "at": 44, "radius": 7}
   ]},
   {"wallrun": 12, "side": 1},
   {"roof": 50, "do": [
@@ -51,7 +51,7 @@
    {"hurdles": true, "at": 14},
    {"piece": {"fire": [4.8, 0, -24], "size": [1.6, 1.2, 1.6]}, "at": 0},
    {"prop": "vent_stack", "x": -5, "at": 30},
-   {"radio": {"who": "parker", "line": "Big drop. Crouch right before you land and roll out of it."}, "at": 52, "radius": 6}
+   {"radio": {"who": "parker", "line": "Big drop. Crouch right before you land, then roll."}, "at": 52, "radius": 6}
   ]},
   {"gap": 7},
   {"roof": 58, "y": 38, "do": [
@@ -93,26 +93,26 @@
   ]}
  ],
  "radio": [
-  {"on": "start", "who": "host", "line": "Change of programming, Port Calder! Our courier is pinned under my antenna, and his wife is making a break for it."},
-  {"on": "start", "who": "parker", "line": "Echo. Run. Don't look back, don't stop. I'll talk you down."},
+  {"on": "start", "who": "host", "line": "Change of plans, Port Calder! Our courier's stuck under my antenna, and the wife's making a run for it!"},
+  {"on": "start", "who": "parker", "line": "Echo. Run. Don't look back. I'll talk you down."},
   {"on": "go", "who": "echo", "line": "Running. Talk to me, Parker."},
-  {"on": "checkpoint:0", "who": "host", "line": "I used to chase the ratings, darling. Now I'm chasing you. So much more fun."},
+  {"on": "checkpoint:0", "who": "host", "line": "I used to chase ratings, darling. This is way more fun."},
   {"on": "checkpoint:1", "who": "echo", "line": "He's still behind me. I can hear him laughing."},
-  {"on": "checkpoint:2", "who": "host", "line": "Slowing down? I can hear you breathing on my frequency, sweetheart."},
+  {"on": "checkpoint:2", "who": "host", "line": "Slowing down, sweetheart? I can hear you breathing."},
   {"on": "complete", "who": "host", "line": "Where are you taking me, Echo? That's... that's the Silt. What are those... Echo? ECHO!"},
-  {"on": "complete", "who": "echo", "line": "That's the end of the show, Port Calder."},
+  {"on": "complete", "who": "echo", "line": "And that's the show, Port Calder."},
   {"on": "complete", "who": "parker", "line": "Echo?"},
-  {"on": "complete", "who": "echo", "line": "I'm here. Hold on. I'm coming back for you."},
-  {"on": "complete", "who": "mags", "line": "Line camp to anyone listening. They're home. Both of them."},
-  {"on": "complete", "who": "echo", "line": "Port Calder, this is Echo and Parker on the tower frequency. The show's over."},
+  {"on": "complete", "who": "echo", "line": "I'm here. Hang on. I'm coming back for you."},
+  {"on": "complete", "who": "mags", "line": "Line camp to anyone out there. They made it. Both of them."},
+  {"on": "complete", "who": "echo", "line": "Port Calder, it's Echo. And Parker. The show's over."},
   {"on": "complete", "who": "parker", "line": "Go outside. It's a nice day."},
   {"on": "complete", "if": "m07_parking_spiral.fate=spared", "who": "juno", "line": "Not bad, courier. Not bad."}
  ],
  "chatter": {
   "caught": [
    {"who": "host", "line": "Gotcha! Oh, don't cry, darling. We'll do another take."},
-   {"who": "host", "line": "Caught! The audience loves a rerun."},
-   {"who": "parker", "line": "Echo, keep moving! Don't let him close the gap!"}
+   {"who": "host", "line": "Caught you! Folks love a rerun."},
+   {"who": "parker", "line": "Keep moving, Echo! Don't let him close in!"}
   ],
   "bail": [
    {"who": "host", "line": "Ooh, tripped! I'm right behind you."},
@@ -122,7 +122,7 @@
    {"who": "host", "line": "Not the Silt yet, sweetheart. I want you on air."}
   ],
   "combo": [
-   {"who": "host", "line": "Show-off. You two really are made for each other."},
+   {"who": "host", "line": "Show-off. God, you two deserve each other."},
    {"who": "parker", "line": "That's it. That's my girl."}
   ]
  },

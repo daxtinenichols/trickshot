@@ -17,16 +17,16 @@
   {"name": "Concourse", "at": [0, 5, -238], "size": [48, 12, 4], "spawn": [0, 0, -236], "objective": 2}
  ],
  "radio": [
-  {"on": "start", "who": "host", "line": "Welcome, welcome, welcome to the Meridian Mall! Tonight's main event: one courier, one atrium, and a whole lot of hungry neighbours."},
-  {"on": "start", "who": "mags", "line": "It's an arena, Parker. Don't fight it. Run through it."},
-  {"on": "go", "who": "host", "line": "Release the Hollows!"},
-  {"on": "checkpoint:0", "who": "mags", "line": "Every shot rings the dinner bell. Make them count."},
-  {"at": [0, 3, -36], "size": [60, 12, 6], "who": "mags", "line": "Those ones jump. Watch the ledges above you, not the floor."},
-  {"on": "checkpoint:1", "who": "host", "line": "And he's into the food court, folks. Sadly, the food court is closed. Permanently."},
-  {"at": [0, 3, -104], "size": [48, 8, 6], "who": "mags", "line": "He's shuttered the concourse. Escalator on your left, then the walkways."},
-  {"at": [0, 7.5, -146], "size": [48, 4, 4], "who": "mags", "line": "Cross the bridge. The walkway's caved in past the shops: drop through, or run the hoarding."},
+  {"on": "start", "who": "host", "line": "Welcome to the Meridian Mall, folks! Tonight's main event: one courier versus a whole lot of hungry neighbours."},
+  {"on": "start", "who": "mags", "line": "It's an arena, Parker. You don't have to fight. Just get through it."},
+  {"on": "go", "who": "host", "line": "Open the gates! Let 'em out!"},
+  {"on": "checkpoint:0", "who": "mags", "line": "Careful. Every shot you fire brings more of them."},
+  {"at": [0, 3, -36], "size": [60, 12, 6], "who": "mags", "line": "Those ones jump. Watch the ledges up top, not the floor."},
+  {"on": "checkpoint:1", "who": "host", "line": "And he's into the food court! Sorry, folks, food court's closed. Has been for twenty years."},
+  {"at": [0, 3, -104], "size": [48, 8, 6], "who": "mags", "line": "He's shut the concourse. Escalator, your left. Then up on the walkways."},
+  {"at": [0, 7.5, -146], "size": [48, 4, 4], "who": "mags", "line": "Over the bridge. Walkway's caved in past the shops. Drop through, or run the hoarding."},
   {"at": [0, 5, -180], "size": [48, 12, 6], "who": "host", "line": "This segment is brought to you by the Ward. Clean water, for people who know their place."},
-  {"on": "complete", "who": "host", "line": "He made it to the anchor store! Ladies and gentlemen, I have never been so annoyed to be entertained."}
+  {"on": "complete", "who": "host", "line": "He made it to the anchor store! Folks, I'm entertained, and I'm furious about it."}
  ],
  "chatter": {
   "kill": [
@@ -34,21 +34,21 @@
    {"who": "mags", "line": "Good. Now keep moving."}
   ],
   "headshot": [
-   {"who": "host", "line": "Right between the eyes! Somebody get me a replay."}
+   {"who": "host", "line": "Right between the eyes! Run that back!"}
   ],
   "down": [
    {"who": "host", "line": "Ooh! That one's going in the highlights."},
-   {"who": "mags", "line": "Up. You don't stand still in an arena."}
+   {"who": "mags", "line": "Up. Don't stand still in here."}
   ],
   "bail": [
    {"who": "host", "line": "He's down! No, he's up. Disappointing."}
   ],
   "combo": [
    {"who": "host", "line": "Folks, I hate to say it, but that was beautiful."},
-   {"who": "mags", "line": "That's it. Give them something to watch."}
+   {"who": "mags", "line": "That's it. Give 'em a show."}
   ],
   "tape": [
-   {"who": "echo", "line": "...this mall was the last place in Port Calder with clean taps. Ask who turned them off."}
+   {"who": "echo", "line": "...this mall had the last clean taps in Port Calder. Somebody turned them off. Ask who."}
   ]
  },
  "pieces": [

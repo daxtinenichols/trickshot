@@ -10,40 +10,40 @@
   {"type": "reach", "name": "the relay mast", "text": "Get past the Static's relay mast", "at": "end"}
  ],
  "radio": [
-  {"on": "start", "who": "mags", "line": "Warehouse roofs. The Static use them as a lookout post, so keep your feet fast and your head down."},
-  {"on": "go", "who": "host", "line": "Ladies, gentlemen and whatever's left of you: our courier has left the building!"},
-  {"on": "go", "who": "host", "line": "His name is Parker, he runs for a living, and today he's running for love. Parker, darling, you're on the air."},
-  {"on": "checkpoint:0", "who": "host", "line": "Let's keep it interesting. Folks, you can bet on this. Odds are he's in the Silt by lunch."},
-  {"on": "checkpoint:1", "who": "mags", "line": "Two walls ahead. Run the first one, then jump and kick off the second. That's a wall hop."},
-  {"on": "objective:1", "who": "host", "line": "Lookouts! Say hello to the man of the hour."},
+  {"on": "start", "who": "mags", "line": "Warehouse roofs. Static use 'em for lookouts. Head down, keep moving."},
+  {"on": "go", "who": "host", "line": "Ladies, gentlemen, and... whatever the rest of you are. Our courier has left the building!"},
+  {"on": "go", "who": "host", "line": "His name's Parker. Runs for a living. Today? Running for love. Ugh, I know. Parker, darling, you're on the air."},
+  {"on": "checkpoint:0", "who": "host", "line": "Let's make it interesting, folks. Bets are open. My money says he's in the Silt by lunch."},
+  {"on": "checkpoint:1", "who": "mags", "line": "Two walls up ahead. Run the first, then jump and kick off the second one. Wall hop."},
+  {"on": "objective:1", "who": "host", "line": "Lookouts! Boys, say hi to the man of the hour."},
   {
    "on": "objective:1",
    "who": "mags",
-   "line": "Three gunners. Watch for the red laser: that's a shot coming, so move. Click the mouse wheel when it gets busy: time slows for a few seconds. Use it."
+   "line": "Three gunners. Red laser on you means a shot's coming, so move. And if it gets busy, click the mouse wheel. Slows everything down for a few seconds."
   },
-  {"on": "done:1", "who": "host", "line": "Oh, he shoots too. Echo, darling, you never mentioned that."},
-  {"on": "objective:2", "who": "mags", "line": "That mast is their relay. Get past it and you're out of their sight. Wall on your left this time."},
-  {"on": "complete", "who": "host", "line": "He's quick, folks! Quicker than my last three couriers, may they rest in pieces."},
-  {"on": "complete", "who": "host", "line": "Stay tuned. Next on the show: the Glass District, where the windows are sharp and my toll collectors are sharper."},
-  {"on": "complete", "who": "mags", "line": "Ignore him. Catch your breath, then we go."},
-  {"on": "kill:camera_drone", "who": "host", "line": "That was a very expensive drone, Parker. I'm adding it to your tab."}
+  {"on": "done:1", "who": "host", "line": "Oh, he shoots too! Echo, sweetheart, you never told me that."},
+  {"on": "objective:2", "who": "mags", "line": "That mast's their relay. Get past it and they lose you. Wall's on your left this time."},
+  {"on": "complete", "who": "host", "line": "He's quick, folks! Quicker than the last three couriers I had. Rest in pieces, boys."},
+  {"on": "complete", "who": "host", "line": "Don't go anywhere. Coming up, the Glass District. Mind the windows. And my toll boys. They bite."},
+  {"on": "complete", "who": "mags", "line": "Don't listen to him. Breathe. Then we go."},
+  {"on": "kill:camera_drone", "who": "host", "line": "That was an expensive drone, Parker! That's going on your tab."}
  ],
  "chatter": {
   "bail": [
    {"who": "host", "line": "Ooh! That one's going in the highlights."},
-   {"who": "host", "line": "Did everyone hear that? I think that was his pride."},
+   {"who": "host", "line": "Ooh. Hear that, folks? Pretty sure that was his pride."},
    {"who": "host", "line": "Down he goes! Echo, you married this?"}
   ],
   "combo": [
-   {"who": "host", "line": "Look at him go! Echo, are you watching? Oh, you're tied up. Ha!"},
+   {"who": "host", "line": "Look at him go! Echo, you watching this? Oh, right. You're tied up."},
    {"who": "host", "line": "Moves like that, I might have to start paying him."},
-   {"who": "host", "line": "The phones are ringing, folks. Well, they would be, if we had phones."}
+   {"who": "host", "line": "The phones are ringing off the hook! Okay, we don't have phones. But they would be."}
   ],
-  "fall": [{"who": "host", "line": "And he's down! A quick dust bath in the Silt."}, {"who": "mags", "line": "Back up you go. Don't give him the satisfaction."}],
-  "kill": [{"who": "host", "line": "Somebody tell payroll."}, {"who": "host", "line": "That was a good lookout. He looked out. Briefly."}],
+  "fall": [{"who": "host", "line": "And he's down! Little dust bath for our boy."}, {"who": "mags", "line": "Back up you go. Don't give him the satisfaction."}],
+  "kill": [{"who": "host", "line": "Somebody tell payroll."}, {"who": "host", "line": "Good lookout, that one. Looked out for about a second."}],
   "down": [
-   {"who": "host", "line": "And our courier takes a nap! Somebody fetch him a pillow."},
-   {"who": "mags", "line": "Up. Don't stand still in their sights: run, then shoot."}
+   {"who": "host", "line": "And our courier's taking a nap! Somebody get the man a pillow."},
+   {"who": "mags", "line": "Up. Don't stand there in their sights. Run, then shoot."}
   ],
   "headshot": [{"who": "host", "line": "Right through the headset. Rude."}, {"who": "mags", "line": "Clean."}]
  },
@@ -52,7 +52,7 @@
    "roof": 62,
    "do": [
     {"label": "ON AIR", "at": 6, "size": 1.2},
-    {"radio": {"who": "mags", "line": "Road barriers. Jump into them and you'll vault without slowing."}, "at": 10, "radius": 5},
+    {"radio": {"who": "mags", "line": "Barriers. Jump right into 'em and you'll vault without losing speed."}, "at": 10, "radius": 5},
     {"hurdles": true, "at": 22},
     {"slide": true, "at": 42}
    ]
@@ -65,7 +65,7 @@
     {"prop": "shipping_container", "x": -3.4, "at": 14},
     {"tape": "m02_tape_container", "x": -3.4, "height": 2.6, "at": 14},
     {"hurdles": "crate_wood", "at": 36},
-    {"radio": {"who": "mags", "line": "Gap's too wide. Wall on the right, same as home."}, "at": 58}
+    {"radio": {"who": "mags", "line": "Too wide to jump. Wall on the right, like back home."}, "at": 58}
    ]
   },
   {"wallrun": 12, "side": 1},

@@ -20,18 +20,18 @@
   {"name": "Service road", "at": [0, 3, -580], "size": [40, 8, 4], "spawn": [0, 0, -580], "objective": 3}
  ],
  "radio": [
-  {"on": "start", "who": "mags", "line": "Juno. She ran the Line with you, Parker. She knows every trick you've got."},
+  {"on": "start", "who": "mags", "line": "That's Juno. She ran the Line with you, Parker. She knows all your tricks."},
   {"on": "start", "who": "juno", "line": "Hey, Parker. Long time. Still running for other people?"},
   {"on": "go", "who": "parker", "line": "Still running."},
-  {"at": [0, 16, -445], "size": [8, 6, 6], "who": "mags", "line": "Skybridge to the car park. It climbs. Slide it if you've got the speed."},
-  {"on": "checkpoint:0", "who": "host", "line": "Folks, it's the rematch nobody asked for and everybody wants!"},
-  {"at": [-15.5, 19, -492], "size": [9, 5, 6], "who": "mags", "line": "Those ones run like you do. They'll come at you from the side. Keep moving."},
-  {"on": "checkpoint:1", "who": "juno", "line": "You were always the fast one. I was always the one who got paid."},
+  {"at": [0, 16, -445], "size": [8, 6, 6], "who": "mags", "line": "Skybridge to the car park. It goes uphill. Slide it if you've got the speed."},
+  {"on": "checkpoint:0", "who": "host", "line": "Folks, it's a rematch! Nobody asked for it, and you're all gonna love it."},
+  {"at": [-15.5, 19, -492], "size": [9, 5, 6], "who": "mags", "line": "These ones run like you. They'll come at you from the side. Don't stop."},
+  {"on": "checkpoint:1", "who": "juno", "line": "You were always faster. I'm the one getting paid, though."},
   {"on": "checkpoint:2", "who": "juno", "line": "Come on, then. Show the city."},
   {"on": "fate:spared", "who": "juno", "line": "Go on. Get her. Before I change my mind."},
   {"on": "fate:not_spared", "who": "mags", "line": "...She was one of ours, once. Keep going."},
-  {"on": "complete", "who": "host", "line": "Well. Our ratings are through the roof, and every single one of you is cheering for the wrong man."},
-  {"on": "complete", "who": "host", "line": "Let's take a short break for a word from our sponsor."},
+  {"on": "complete", "who": "host", "line": "Well. Ratings are through the roof. And you're all cheering for the wrong guy. Every one of you."},
+  {"on": "complete", "who": "host", "line": "Let's, uh... let's take a quick break. Word from our sponsor."},
   {"on": "complete", "who": "vell", "line": "Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it."},
   {"on": "complete", "who": "mags", "line": "Parker. Those aren't raiders."}
  ],
@@ -52,10 +52,10 @@
   ],
   "combo": [
    {"who": "juno", "line": "Show-off. You haven't changed."},
-   {"who": "host", "line": "Look at those lines! The phones are ringing off the hook."}
+   {"who": "host", "line": "Look at those lines! Somebody stop him, he's making me look bad."}
   ],
   "tape": [
-   {"who": "echo", "line": "...Juno once ran a parcel through a fire for us. Ask her about it, if you get the chance."}
+   {"who": "echo", "line": "...Juno ran a parcel through a fire for us once. Ask her about it sometime."}
   ]
  },
  "pieces": [

@@ -1,240 +1,235 @@
 who,file,where,line
-echo,echo/9683fed05a38.ogg,brief: Ending (after m12),"Port Calder, this is Echo and Parker on the tower frequency. The show's over."
-juno,juno/10ec5191ae01.ogg,brief: Ending (after m12),"Not bad, courier. Not bad."
-mags,mags/fa7d7d743b5c.ogg,brief: Ending (after m12),Line camp to anyone listening. They're home. Both of them.
-parker,parker/8597ccba91c4.ogg,brief: Ending (after m12),Go outside. It's a nice day.
-mags,mags/d845924261cc.ogg,brief: m08 Storm Channels,Helmet's off. Finish it.
-echo,echo/5d5215cb0a44.ogg,brief: m10 The Climb,"Got that one on camera, courier. The whole city saw it."
-host,host/4482187d2eb1.ogg,m00_dawn_run,Today's show: a courier comes home to an empty camp. His lovely wife? Gone. Tragic. Riveting.
-host,host/4a7c27fa2869.ogg,m00_dawn_run,"Echo's with me, fixing my tower. Parker, darling, come and get her. The whole city's listening."
-host,host/d77455611575.ogg,m00_dawn_run,"Goooood morning, Port Calder! This is the Host, on the only frequency you've got left."
-mags,mags/215ef369dac6.ogg,m00_dawn_run,Big drop. Crouch just before you land and roll out of it.
-mags,mags/36454350dc76.ogg,m00_dawn_run,"Feet on the roofs, Parker. Roofs."
-mags,mags/5cd4a5050175.ogg,m00_dawn_run,"Ouch. Walk it off. Well, run it off."
-mags,mags/62a4df437e08.ogg,m00_dawn_run,Parker... the camp's gone quiet. Echo isn't answering.
-mags,mags/727a292cca8c.ogg,m00_dawn_run,That's the Silt down there. Climb back up and try that again.
-mags,mags/734c48461b2c.ogg,m00_dawn_run,"Parcel's in. That's breakfast earned. Come home, kid."
+host,host/0a691e14c4bb.ogg,m00_dawn_run,"Echo's up here with me, fixing my tower. Lovely hands. Parker, darling, come and get her. Everybody's listening."
+host,host/4251fff3f2c3.ogg,m00_dawn_run,"Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you."
+host,host/fcdbdbfa72b7.ogg,m00_dawn_run,"So, today's show. We've got a courier, comes home, and his camp's empty. Wife's gone. I know! Awful. I can't stop listening either."
+mags,mags/20f62f5c28a3.ogg,m00_dawn_run,Parker... camp's gone quiet. I can't raise Echo.
+mags,mags/24da353c44d1.ogg,m00_dawn_run,"Morning, Parker. Got one for you. High roof, past the fish market. Breakfast's on when you're back, so don't dawdle."
+mags,mags/4b00d962985a.ogg,m00_dawn_run,"That's the Silt, kid. Get back up and go again."
+mags,mags/4b0a0f53f937.ogg,m00_dawn_run,Who're you showing off for? The pigeons?
+mags,mags/56ce9c79db39.ogg,m00_dawn_run,"Ooh. Walk it off. Run it off, I mean."
+mags,mags/779a48bbb9f8.ogg,m00_dawn_run,"Rails coming up. Don't hop 'em, jump right into them. Vault keeps your speed."
 mags,mags/7bcf5e951f4d.ogg,m00_dawn_run,Up you get.
-mags,mags/80864e356abf.ogg,m00_dawn_run,Low bar. Crouch and slide under it.
 mags,mags/853a21a8a03f.ogg,m00_dawn_run,Something's wrong. Move.
-mags,mags/949b035f78b5.ogg,m00_dawn_run,Parker. Don't you dare go alone. Come to the yard first.
-mags,mags/964515274c60.ogg,m00_dawn_run,"Jump into those rails, don't just hop them. A vault keeps your speed."
-mags,mags/a2b3ba834a1c.ogg,m00_dawn_run,Gap's too wide to jump. Run the wall.
-mags,mags/a8b1f8140cee.ogg,m00_dawn_run,"High roof's up that wall. Straight at it, and jump."
-mags,mags/e428daab6715.ogg,m00_dawn_run,"Look at you, showing off for the pigeons."
-mags,mags/e4429eea88d1.ogg,m00_dawn_run,"That door's been stuck since the storm. Kick it, or slide under the window like a civilised person."
-mags,mags/f46641533597.ogg,m00_dawn_run,"Morning, Parker. One parcel, the high roof past the fish market. Don't let breakfast get cold."
+mags,mags/93f8621b92a6.ogg,m00_dawn_run,"That door's been stuck since the storm. Kick it in. Or use the window, if you're feeling polite."
+mags,mags/9f1db2af63ce.ogg,m00_dawn_run,You won't jump that one. Run the wall.
+mags,mags/ae6aa9e940b9.ogg,m00_dawn_run,"Parker. Parker, listen to me. You are not going alone. Yard first."
+mags,mags/b0d97ce749d8.ogg,m00_dawn_run,High roof's up that wall. Go straight at it and jump.
+mags,mags/be6b5c1db041.ogg,m00_dawn_run,Low bar. Get down and slide it.
+mags,mags/e6fc8095e272.ogg,m00_dawn_run,"Parcel's in. Good. Come on home, kid."
+mags,mags/eaf8f6b72c25.ogg,m00_dawn_run,Big drop here. Crouch right before you hit and roll it out.
+mags,mags/efb3599d8305.ogg,m00_dawn_run,"Roofs, Parker. Stay on the roofs."
 parker,parker/2ec145339eb1.ogg,m00_dawn_run,On my way.
-host,host/4af70d1e5d54.ogg,m01_the_yard,"Still in the playground, Parker? Echo says you were always late. I'm starting to see it."
-mags,mags/0f8a7b75c831.ogg,m01_the_yard,"South gate. The warehouses, then the city. I'll be in your ear the whole way."
-mags,mags/0fe656f9e685.ogg,m01_the_yard,Here. Your granddad's pistol. It's older than you and it still shoots straighter than you.
-mags,mags/2149f5235e66.ogg,m01_the_yard,Last thing. Put it all together. Shots in the middle of a combo count for more.
-mags,mags/2476023bc7e1.ogg,m01_the_yard,"Now the heads. The Static wear scrap on their chests, not their faces."
+host,host/0887825329c9.ogg,m01_the_yard,"Still on the playground, Parker? Echo says you're always late. She's not wrong, is she?"
+mags,mags/10789efdd7c3.ogg,m01_the_yard,"South gate, then the warehouses. I'll be in your ear the whole way, okay?"
 mags,mags/30d651da76a3.ogg,m01_the_yard,Again. Smoother.
-mags,mags/68a2be580995.ogg,m01_the_yard,Alright. You're as ready as anyone's ever been for something this stupid.
-mags,mags/6d1244854e55.ogg,m01_the_yard,"Vault, slide, flip, wallrun. String three different ones together before your feet settle."
-mags,mags/79cd1caf7f38.ogg,m01_the_yard,"That's the stuff. The Host's listeners eat that up, and right now you need them hungry."
+mags,mags/47ce781277b0.ogg,m01_the_yard,Just come back. Both of you.
+mags,mags/54b311f2a2eb.ogg,m01_the_yard,"There it is. His listeners love that stuff, and right now you want them on your side."
+mags,mags/600ac6ef6bb6.ogg,m01_the_yard,"Feet first, kid. Not face."
+mags,mags/95b7d792e16a.ogg,m01_the_yard,I know you want to go after her. You're running the yard first. Once. Humor me.
+mags,mags/97409e0723e8.ogg,m01_the_yard,"Here. This was your granddad's. Older than you, and it still shoots better than you do."
 mags,mags/a1dda251abf6.ogg,m01_the_yard,Good. Keep moving while you shoot.
 mags,mags/a82a0d6d117c.ogg,m01_the_yard,Don't let it go to your head.
 mags,mags/ae4d03ea7286.ogg,m01_the_yard,Now that's a courier.
-mags,mags/ca40a47f539c.ogg,m01_the_yard,"Before you go running off after her, you're going through the yard. Once. For me."
+mags,mags/c00c1b68164d.ogg,m01_the_yard,Now go for the heads. The Static plate their chests. Not their faces.
+mags,mags/df31a3f20e0f.ogg,m01_the_yard,Scrap dummies. Hit 'em while you're moving. Nobody out there's gonna stand still for you.
 mags,mags/e6774f3afd9c.ogg,m01_the_yard,Clean.
-mags,mags/e8fa883e7f16.ogg,m01_the_yard,"Land it on your feet, not your face."
+mags,mags/f327e5fd6bc7.ogg,m01_the_yard,Last one. All of it at once. Shoot mid-combo and it counts for more.
 mags,mags/f5f3e080903a.ogg,m01_the_yard,Ha! Right between the eyes.
 mags,mags/f70f7d2f00ab.ogg,m01_the_yard,Sloppy. The Static won't wait for you to get up.
-mags,mags/f8597ee385cf.ogg,m01_the_yard,Thank me by coming back. Both of you.
-mags,mags/fc69b797552e.ogg,m01_the_yard,The scrap dummies. Hit them on the move: still targets are for still people.
+mags,mags/fa2124529d1c.ogg,m01_the_yard,"Chain three different moves before your feet settle. Vault, slide, flip, wall, whatever you like. Just don't stop."
+mags,mags/faeb0f051c17.ogg,m01_the_yard,Alright. That's as ready as anybody gets for something this stupid.
 parker,parker/ed0027ce9a4f.ogg,m01_the_yard,"Thanks, Mags."
-host,host/09023f3fea80.ogg,m02_on_air,"His name is Parker, he runs for a living, and today he's running for love. Parker, darling, you're on the air."
-host,host/138ff1bd221e.ogg,m02_on_air,"Stay tuned. Next on the show: the Glass District, where the windows are sharp and my toll collectors are sharper."
 host,host/13e9a4c4e004.ogg,m02_on_air,Ooh! That one's going in the highlights.
-host,host/25ca6c030297.ogg,m02_on_air,"He's quick, folks! Quicker than my last three couriers, may they rest in pieces."
+host,host/1d09e260d872.ogg,m02_on_air,"Oh, he shoots too! Echo, sweetheart, you never told me that."
 host,host/2b277247d46c.ogg,m02_on_air,"Down he goes! Echo, you married this?"
-host,host/2ceea920f8eb.ogg,m02_on_air,"The phones are ringing, folks. Well, they would be, if we had phones."
-host,host/364b67b60a41.ogg,m02_on_air,And our courier takes a nap! Somebody fetch him a pillow.
+host,host/587c89644a11.ogg,m02_on_air,"Ladies, gentlemen, and... whatever the rest of you are. Our courier has left the building!"
+host,host/6fd581e99c19.ogg,m02_on_air,"His name's Parker. Runs for a living. Today? Running for love. Ugh, I know. Parker, darling, you're on the air."
 host,host/7afc543ba5c8.ogg,m02_on_air,Right through the headset. Rude.
-host,host/7c145d540c78.ogg,m02_on_air,"Oh, he shoots too. Echo, darling, you never mentioned that."
+host,host/819bb28777e7.ogg,m02_on_air,"He's quick, folks! Quicker than the last three couriers I had. Rest in pieces, boys."
 host,host/823b3e32af47.ogg,m02_on_air,"Moves like that, I might have to start paying him."
-host,host/9f44efadbfa8.ogg,m02_on_air,Lookouts! Say hello to the man of the hour.
-host,host/b5635cc52793.ogg,m02_on_air,"Ladies, gentlemen and whatever's left of you: our courier has left the building!"
-host,host/c55a8f2bd726.ogg,m02_on_air,"Let's keep it interesting. Folks, you can bet on this. Odds are he's in the Silt by lunch."
-host,host/e3d51141dd21.ogg,m02_on_air,That was a good lookout. He looked out. Briefly.
-host,host/ee6686ac9bf5.ogg,m02_on_air,Did everyone hear that? I think that was his pride.
+host,host/a0086f7eff96.ogg,m02_on_air,"Look at him go! Echo, you watching this? Oh, right. You're tied up."
+host,host/aa9a9432743b.ogg,m02_on_air,"Ooh. Hear that, folks? Pretty sure that was his pride."
+host,host/abec38ead5d4.ogg,m02_on_air,"Let's make it interesting, folks. Bets are open. My money says he's in the Silt by lunch."
+host,host/b10d9fcfbc0a.ogg,m02_on_air,"Lookouts! Boys, say hi to the man of the hour."
+host,host/c2f4a8b46074.ogg,m02_on_air,And he's down! Little dust bath for our boy.
+host,host/e3c100ff853f.ogg,m02_on_air,"Good lookout, that one. Looked out for about a second."
+host,host/e7eae58a9161.ogg,m02_on_air,"Don't go anywhere. Coming up, the Glass District. Mind the windows. And my toll boys. They bite."
+host,host/ecb56dcf0bbe.ogg,m02_on_air,And our courier's taking a nap! Somebody get the man a pillow.
+host,host/ee635291ef01.ogg,m02_on_air,"That was an expensive drone, Parker! That's going on your tab."
 host,host/f3e68b6d2520.ogg,m02_on_air,Somebody tell payroll.
-host,host/f70f627acf45.ogg,m02_on_air,"Look at him go! Echo, are you watching? Oh, you're tied up. Ha!"
-host,host/fb39caec6804.ogg,m02_on_air,And he's down! A quick dust bath in the Silt.
-host,host/fe416dee49a5.ogg,m02_on_air,"That was a very expensive drone, Parker. I'm adding it to your tab."
-mags,mags/2cfaa97f394a.ogg,m02_on_air,"Two walls ahead. Run the first one, then jump and kick off the second. That's a wall hop."
-mags,mags/3fa6a3552198.ogg,m02_on_air,"Gap's too wide. Wall on the right, same as home."
-mags,mags/72432678acf5.ogg,m02_on_air,"Ignore him. Catch your breath, then we go."
-mags,mags/7c6ed61fef0e.ogg,m02_on_air,"Three gunners. Watch for the red laser: that's a shot coming, so move. Click the mouse wheel when it gets busy: time slows for a few seconds. Use it."
+host,host/f96de064d2e7.ogg,m02_on_air,"The phones are ringing off the hook! Okay, we don't have phones. But they would be."
+mags,mags/1a882e3299c1.ogg,m02_on_air,"Warehouse roofs. Static use 'em for lookouts. Head down, keep moving."
+mags,mags/1e6c8b1fdb53.ogg,m02_on_air,"Three gunners. Red laser on you means a shot's coming, so move. And if it gets busy, click the mouse wheel. Slows everything down for a few seconds."
+mags,mags/23374efa946c.ogg,m02_on_air,"Too wide to jump. Wall on the right, like back home."
+mags,mags/3cfaafc535fb.ogg,m02_on_air,Don't listen to him. Breathe. Then we go.
+mags,mags/6154b8c3b1bd.ogg,m02_on_air,"Two walls up ahead. Run the first, then jump and kick off the second one. Wall hop."
+mags,mags/88931627a008.ogg,m02_on_air,"Up. Don't stand there in their sights. Run, then shoot."
 mags,mags/93423324c7d4.ogg,m02_on_air,Back up you go. Don't give him the satisfaction.
-mags,mags/d41f3ac6adbc.ogg,m02_on_air,That mast is their relay. Get past it and you're out of their sight. Wall on your left this time.
-mags,mags/d709bc7061ae.ogg,m02_on_air,"Warehouse roofs. The Static use them as a lookout post, so keep your feet fast and your head down."
-mags,mags/dd5cedc3fc8b.ogg,m02_on_air,Road barriers. Jump into them and you'll vault without slowing.
-mags,mags/f83222cbff0c.ogg,m02_on_air,"Up. Don't stand still in their sights: run, then shoot."
-echo,echo/7aa93116c0b3.ogg,m03_glass_district,"...weather on the west side: glass, glass, and more glass. Bring a broom. Back to you, sweetheart."
-echo,echo/7da312ce652f.ogg,m03_glass_district,"...if anyone finds this: west, always west. He keeps the keys on his belt."
+mags,mags/a92e89e98436.ogg,m02_on_air,That mast's their relay. Get past it and they lose you. Wall's on your left this time.
+mags,mags/ed6b9341adaf.ogg,m02_on_air,Barriers. Jump right into 'em and you'll vault without losing speed.
+echo,echo/8ed816c39ddb.ogg,m03_glass_district,"...and the weather out west is, uh, glass. Mostly glass. Bring a broom. Back to you."
+echo,echo/9e0a01af03f1.ogg,m03_glass_district,"...if anyone finds this, go west. Keep going west. He keeps the keys on his belt."
 host,host/0fc8992e1fd8.ogg,m03_glass_district,"Street level! Mind the Silt, darling."
-host,host/2ead6d8dbadf.ogg,m03_glass_district,"That spotter had a family. Well, a dog. Well, a rat he called a dog."
+host,host/19b497264973.ogg,m03_glass_district,"Now, the Glass District's got a toll, folks. And Parker doesn't strike me as a guy who pays tolls."
 host,host/4027bb46f7fe.ogg,m03_glass_district,"He's at the bridge, folks. Shame about the bridge."
-host,host/995c9f9d2db2.ogg,m03_glass_district,"Folks, the Glass District charges a toll. Parker doesn't look like a man who pays tolls."
-host,host/aeb04585e2cb.ogg,m03_glass_district,"Good morning, Glass District! Our courier is coming through, and he is not slowing down."
-host,host/b329b3cfa116.ogg,m03_glass_district,"The man is a highlight reel. A dusty, bleeding highlight reel."
-host,host/dfa234cc58ca.ogg,m03_glass_district,"Through the window, off the roof, into my heart."
+host,host/6c8470b3330b.ogg,m03_glass_district,"The man's a walking highlight reel. A bleeding one, but still."
+host,host/9c8cb8fda15c.ogg,m03_glass_district,"Morning, Glass District! Heads up, our courier's coming through, and he is not slowing down."
+host,host/a20148abc5f1.ogg,m03_glass_district,"Through the window and right into my heart, folks."
+host,host/f541c9882dd3.ogg,m03_glass_district,"That spotter had a family, you know. Well. A rat. He called it Biscuit."
 host,host/f7ad9b836886.ogg,m03_glass_district,My spotters! Do you know how hard it is to find people who can count to three?
 host,host/fb3b98c1472d.ogg,m03_glass_district,Glass everywhere. Somebody sweep that up.
-mags,mags/03a1e47f95cc.ogg,m03_glass_district,Spotters on the toll roof. They call your position to the Host. Shut them up.
-mags,mags/06368a8a29be.ogg,m03_glass_district,"Don't trade shots standing still. Run, then shoot."
 mags,mags/16ac0e2d6fd7.ogg,m03_glass_district,"Back up. Same line, faster."
-mags,mags/16bb45f50b4a.ogg,m03_glass_district,Higher roof. Run at the ledge and jump. You'll climb it.
-mags,mags/8db5e0605523.ogg,m03_glass_district,"Parker, wait. Something's wrong with that bridge."
-mags,mags/a92488b4b3ce.ogg,m03_glass_district,That bridge is the only way over the Silt. Get across before he thinks of something.
-mags,mags/c33b1358b5f8.ogg,m03_glass_district,That's it. Keep it flowing.
-mags,mags/d930eee8d82a.ogg,m03_glass_district,"Glass District. Office roofs all the way to the toll tower, then the bridge over the Silt."
-mags,mags/ea27b9c35539.ogg,m03_glass_district,"Wall hop ahead. Run the first wall, jump to the second."
-mags,mags/fc932a0ecbe7.ogg,m03_glass_district,Windows. Don't stop to open them: slide straight through.
-echo,echo/0f635e1d75e5.ogg,m04_silt_line,"...and the traffic on the overpass is one man, heading west, fast. Drive safe, darling."
-echo,echo/116562b5e71b.ogg,m04_silt_line,...the Silt isn't empty. The Hollows were people once. Don't let him tell you otherwise.
-host,host/2ce1e2566767.ogg,m04_silt_line,"Meridian Mall, folks! Our arena! Parker, darling, you've just walked into the main event."
+mags,mags/4e878892114a.ogg,m03_glass_district,"Wall hop. First wall, then jump to the second."
+mags,mags/54f4024888fa.ogg,m03_glass_district,"Glass District. Office roofs to the toll tower, then the bridge."
+mags,mags/9fa72c651fee.ogg,m03_glass_district,"Don't stand there trading shots. Run, then shoot."
+mags,mags/a210b66f7cfa.ogg,m03_glass_district,"Spotters on the toll roof. They're calling you in to him. Shut 'em up, or just get past."
+mags,mags/a276417000c2.ogg,m03_glass_district,"Higher roof. Run at the ledge and jump, you'll get up."
+mags,mags/b46e27e4e683.ogg,m03_glass_district,"Parker, hang on. Something's off with that bridge."
+mags,mags/d0eb6514f5e0.ogg,m03_glass_district,That bridge is the only way over the Silt. Get across before he gets ideas.
+mags,mags/dee005cac9e1.ogg,m03_glass_district,"Windows. Don't stop, just slide straight through."
+mags,mags/e0094ecd2f2b.ogg,m03_glass_district,That's it. Keep it going.
+echo,echo/5ba047dfc9fe.ogg,m04_silt_line,...the Silt's not empty. The Hollows used to be people. Whatever he says.
+echo,echo/f9b6c8b6260d.ogg,m04_silt_line,"...traffic on the overpass: one guy, heading west, real fast. Drive safe, courier."
 host,host/3b4114e031c7.ogg,m04_silt_line,Face first in the Silt! That'll stain.
-host,host/4cbb5c822b4e.ogg,m04_silt_line,"He climbed out! Folks, nobody climbs out of the Silt. I'm going to need a bigger bridge."
-host,host/737fa3dc6690.ogg,m04_silt_line,He's dancing in the Silt! Somebody give the crawlers a lesson.
-host,host/9fd29375b52f.ogg,m04_silt_line,Dinner is served!
-host,host/d577c006852d.ogg,m04_silt_line,"Oops. Did that bridge fall down? Bridges are so old these days. Say hi to the Silt for me, Parker."
-mags,mags/1eb3d5d8697a.ogg,m04_silt_line,"Parker! You're in the Silt. Whatever lives down there, don't let it catch you standing."
+host,host/49c86c9adbed.ogg,m04_silt_line,"Meridian Mall, folks! The arena! Parker, darling, you just walked into the main event."
+host,host/77196c6c29f7.ogg,m04_silt_line,Dinner's served!
+host,host/97a89bf168ae.ogg,m04_silt_line,"Look at him dance down there! Come on, crawlers, keep up."
+host,host/9cbe245766c3.ogg,m04_silt_line,"He climbed out! Nobody climbs out of the Silt, folks. Okay. Bigger bridge next time."
+host,host/e4d64c146d96.ogg,m04_silt_line,"Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker."
+mags,mags/0cf037e95d9c.ogg,m04_silt_line,"You're alive. Okay. Okay, good. Run. It's not the dust you need to worry about."
+mags,mags/237ef5a1f2e3.ogg,m04_silt_line,"Parker! You're in the Silt. Whatever's down there, don't let it catch you standing still."
 mags,mags/3132e30bc824.ogg,m04_silt_line,Don't fight them all. Run.
-mags,mags/9067a0ea8fea.ogg,m04_silt_line,You're alive. Good. Run. The dust down there isn't the dangerous part.
+mags,mags/4e63645b9fe6.ogg,m04_silt_line,"Get up on the overpass. Runs straight to the mall, and the mall's the only way through the center."
 mags,mags/a5071ba30d27.ogg,m04_silt_line,You stopped. Never stop down there.
 mags,mags/a693eaabc851.ogg,m04_silt_line,That's how you outrun them. Don't stop.
-mags,mags/a76e1689bf01.ogg,m04_silt_line,Crawlers. They're fast over short distances. Keep your speed and they can't keep up.
-mags,mags/d435f7680393.ogg,m04_silt_line,Up on the overpass. It runs straight to the mall. The mall is the only way across the center.
-echo,echo/a9a5c651ac5b.ogg,m05_atrium,...this mall was the last place in Port Calder with clean taps. Ask who turned them off.
-host,host/0b0d37182ddd.ogg,m05_atrium,"Welcome, welcome, welcome to the Meridian Mall! Tonight's main event: one courier, one atrium, and a whole lot of hungry neighbours."
+mags,mags/d4be5e3d5595.ogg,m04_silt_line,"Crawlers. Quick off the mark, but they tire. Keep your speed up and they can't hang."
+echo,echo/52df68f3cfa3.ogg,m05_atrium,...this mall had the last clean taps in Port Calder. Somebody turned them off. Ask who.
 host,host/1bf0e8ecbd18.ogg,m05_atrium,And down goes another one! The crowd goes mild.
-host,host/3e1c174b39bb.ogg,m05_atrium,Right between the eyes! Somebody get me a replay.
+host,host/2afb56b748ca.ogg,m05_atrium,"Welcome to the Meridian Mall, folks! Tonight's main event: one courier versus a whole lot of hungry neighbours."
+host,host/2df4ee35bb51.ogg,m05_atrium,Right between the eyes! Run that back!
+host,host/3dc63811d762.ogg,m05_atrium,Open the gates! Let 'em out!
+host,host/55b2702b40bd.ogg,m05_atrium,"He made it to the anchor store! Folks, I'm entertained, and I'm furious about it."
+host,host/7f2e7d76d18d.ogg,m05_atrium,"And he's into the food court! Sorry, folks, food court's closed. Has been for twenty years."
 host,host/9cf1a94483e5.ogg,m05_atrium,"He's down! No, he's up. Disappointing."
-host,host/acb41f3aa912.ogg,m05_atrium,"And he's into the food court, folks. Sadly, the food court is closed. Permanently."
 host,host/b1e39bd5d2e1.ogg,m05_atrium,"This segment is brought to you by the Ward. Clean water, for people who know their place."
 host,host/bbc5297ca8e7.ogg,m05_atrium,"Folks, I hate to say it, but that was beautiful."
-host,host/dc926fa57b9e.ogg,m05_atrium,"He made it to the anchor store! Ladies and gentlemen, I have never been so annoyed to be entertained."
-host,host/e12ba332ae93.ogg,m05_atrium,Release the Hollows!
-mags,mags/1f0393a669f4.ogg,m05_atrium,"It's an arena, Parker. Don't fight it. Run through it."
+mags,mags/0fe0e9007fd4.ogg,m05_atrium,"Those ones jump. Watch the ledges up top, not the floor."
+mags,mags/22b70fb7b16f.ogg,m05_atrium,Careful. Every shot you fire brings more of them.
 mags,mags/33fa6cd110f3.ogg,m05_atrium,Good. Now keep moving.
-mags,mags/3a0cc13fc63e.ogg,m05_atrium,That's it. Give them something to watch.
-mags,mags/48e0ac36c126.ogg,m05_atrium,"He's shuttered the concourse. Escalator on your left, then the walkways."
-mags,mags/53097b3c07a0.ogg,m05_atrium,Every shot rings the dinner bell. Make them count.
-mags,mags/a37ca5a54dd6.ogg,m05_atrium,Up. You don't stand still in an arena.
-mags,mags/a88e167acfa9.ogg,m05_atrium,"Those ones jump. Watch the ledges above you, not the floor."
-mags,mags/ddcde988f651.ogg,m05_atrium,"Cross the bridge. The walkway's caved in past the shops: drop through, or run the hoarding."
+mags,mags/73765d680685.ogg,m05_atrium,"He's shut the concourse. Escalator, your left. Then up on the walkways."
+mags,mags/9951e2d3a4e2.ogg,m05_atrium,"It's an arena, Parker. You don't have to fight. Just get through it."
+mags,mags/d24362fcde23.ogg,m05_atrium,"Over the bridge. Walkway's caved in past the shops. Drop through, or run the hoarding."
+mags,mags/d314b2c51eb2.ogg,m05_atrium,Up. Don't stand still in here.
+mags,mags/d388644583e4.ogg,m05_atrium,That's it. Give 'em a show.
 echo,echo/345909eec15a.ogg,m06_anchor_store,"Keep the porch light on, courier. I'm coming home."
-echo,echo/7b290bb44108.ogg,m06_anchor_store,"...Hargrove's sold radios to half the city. Every one of them still works, if you know how to listen."
+echo,echo/b40fd9fa213c.ogg,m06_anchor_store,...Hargrove's sold radios to half this city. They all still work. You just have to know how to listen.
 host,host/0eaa037ff4da.ogg,m06_anchor_store,"Mind the floor, it's freshly ruined."
 host,host/134f087e95f2.ogg,m06_anchor_store,"Oh, that's a returns-desk situation."
-host,host/1514753f9730.ogg,m06_anchor_store,Is he shopping or showing off? Both. It's both.
 host,host/155a1ba155d0.ogg,m06_anchor_store,"Technical difficulties, folks. Nobody touch anything."
+host,host/64618e95e6dc.ogg,m06_anchor_store,He's on the roof! And guess who's waiting for him over at the car park. Go on. Guess.
 host,host/76f5be22ddd8.ogg,m06_anchor_store,Clean-up in aisle four!
-host,host/b17ca60e00ca.ogg,m06_anchor_store,Our courier's on the roof. And guess who's waiting for him on the car park? An old friend.
+host,host/acbd0aecdf1a.ogg,m06_anchor_store,"Is he shopping or showing off? Bit of both, I think."
 host,host/cb16264e78cf.ogg,m06_anchor_store,"Now, Parker, while you're browsing, a word from our... what is that? Who's on my frequency?"
 host,host/d2aa9b499d45.ogg,m06_anchor_store,And our courier's in the bargain bin!
-mags,mags/1161a1688e84.ogg,m06_anchor_store,That drone's painting you for the shooters. Knock it down.
+mags,mags/1d1d3d07867f.ogg,m06_anchor_store,"Department store. There's a roof hatch, top floor, back corner. Up you go."
+mags,mags/265d3b6553f5.ogg,m06_anchor_store,"Big lads with the shields. Get round 'em, or shoot what the shield doesn't cover."
 mags,mags/77fcd01a3e44.ogg,m06_anchor_store,"Up. Get round them, don't stand in front of them."
-mags,mags/87a55f1e8447.ogg,m06_anchor_store,"Big ones with the scrap shields. Get round them, or hit them where the shield isn't."
+mags,mags/850f16288b3f.ogg,m06_anchor_store,"That was her. She's alive. She's in his wires, Parker. Go. Run."
+mags,mags/aa397f3f1475.ogg,m06_anchor_store,That drone's spotting you for the shooters. Knock it down if you can.
 mags,mags/ae8b8b16a601.ogg,m06_anchor_store,"Good. Up, up, up."
-mags,mags/d39b3981b95d.ogg,m06_anchor_store,"That was her. She's alive, and she's in his wires. Now run."
-mags,mags/da7cdbd72a85.ogg,m06_anchor_store,"Department store. Roof hatch is on the top floor, back corner. Go up."
-mags,mags/fda929a621a6.ogg,m06_anchor_store,"He's shuttered the east side. Go round, through electronics."
+mags,mags/c71a9c8af62d.ogg,m06_anchor_store,East side's shuttered. Go round. Through electronics.
 parker,parker/01016cdfc25b.ogg,m06_anchor_store,That was her.
-echo,echo/f3123150ee28.ogg,m07_parking_spiral,"...Juno once ran a parcel through a fire for us. Ask her about it, if you get the chance."
+echo,echo/a486941125cb.ogg,m07_parking_spiral,...Juno ran a parcel through a fire for us once. Ask her about it sometime.
 host,host/022d79d85df0.ogg,m07_parking_spiral,"Oh, he's eaten the concrete! Somebody park on him."
 host,host/0a3299d1e2e9.ogg,m07_parking_spiral,Another hunter down! I'm docking their pay. Posthumously.
-host,host/252fe66197de.ogg,m07_parking_spiral,"Folks, it's the rematch nobody asked for and everybody wants!"
-host,host/5d8424a22176.ogg,m07_parking_spiral,Let's take a short break for a word from our sponsor.
-host,host/6b8a120a7a13.ogg,m07_parking_spiral,Look at those lines! The phones are ringing off the hook.
-host,host/d16292297c4b.ogg,m07_parking_spiral,"Well. Our ratings are through the roof, and every single one of you is cheering for the wrong man."
+host,host/759354689746.ogg,m07_parking_spiral,"Look at those lines! Somebody stop him, he's making me look bad."
+host,host/796b695002bd.ogg,m07_parking_spiral,"Folks, it's a rematch! Nobody asked for it, and you're all gonna love it."
+host,host/ac345ddc75c1.ogg,m07_parking_spiral,"Let's, uh... let's take a quick break. Word from our sponsor."
+host,host/ac5b930cad34.ogg,m07_parking_spiral,Well. Ratings are through the roof. And you're all cheering for the wrong guy. Every one of you.
 juno,juno/01d93da82adc.ogg,m07_parking_spiral,"Up you get, courier. I'm not done with you."
 juno,juno/0302603c8a15.ogg,m07_parking_spiral,"Come on, then. Show the city."
 juno,juno/47564894795a.ogg,m07_parking_spiral,Show-off. You haven't changed.
-juno,juno/54318d797ce8.ogg,m07_parking_spiral,You were always the fast one. I was always the one who got paid.
 juno,juno/7d22cfe1caa7.ogg,m07_parking_spiral,Clean. Mags teach you that?
 juno,juno/b3206fff7eeb.ogg,m07_parking_spiral,Go on. Get her. Before I change my mind.
 juno,juno/c18327de7e7f.ogg,m07_parking_spiral,"That one owed me money. Thanks, I guess."
 juno,juno/d2f018acaa8b.ogg,m07_parking_spiral,"Hey, Parker. Long time. Still running for other people?"
-mags,mags/5934990935cc.ogg,m07_parking_spiral,"Juno. She ran the Line with you, Parker. She knows every trick you've got."
+juno,juno/f597815396fa.ogg,m07_parking_spiral,"You were always faster. I'm the one getting paid, though."
+mags,mags/0d0cd901d1e9.ogg,m07_parking_spiral,Skybridge to the car park. It goes uphill. Slide it if you've got the speed.
+mags,mags/872db94bfb68.ogg,m07_parking_spiral,"That's Juno. She ran the Line with you, Parker. She knows all your tricks."
 mags,mags/88ee06369b0c.ogg,m07_parking_spiral,"...She was one of ours, once. Keep going."
-mags,mags/8b495fed5a1b.ogg,m07_parking_spiral,Skybridge to the car park. It climbs. Slide it if you've got the speed.
-mags,mags/cf6015bb75bc.ogg,m07_parking_spiral,Those ones run like you do. They'll come at you from the side. Keep moving.
+mags,mags/9d1fe8a5b3c5.ogg,m07_parking_spiral,These ones run like you. They'll come at you from the side. Don't stop.
 mags,mags/d2cebe619243.ogg,m07_parking_spiral,Parker. Those aren't raiders.
 mags,mags/dcfa2258e4ae.ogg,m07_parking_spiral,Up. She wants you to stop. Don't.
 parker,parker/5a94878ac718.ogg,m07_parking_spiral,Still running.
 vell,vell/72d50fc862b7.ogg,m07_parking_spiral,Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it.
-echo,echo/2112d68f9295.ogg,m08_storm_channels,...the Ward closed the channels the year the rain stopped. Nobody asked who opened them.
-host,host/5f0e606f4878.ogg,m08_storm_channels,"Careful, Parker. The sponsor bills for damage to the concrete."
+echo,echo/d09ba998a3a6.ogg,m08_storm_channels,...the Ward closed the channels the year the rain stopped. Nobody ever asked why.
+host,host/0ad98b21abf1.ogg,m08_storm_channels,"Lovely line, Parker. The Ward hates that, by the way."
+host,host/1f25e4904ad1.ogg,m08_storm_channels,"And we're back, Port Calder. Our sponsors are watching tonight, so... Parker, darling, could you die quietly?"
+host,host/453c4d4a08d8.ogg,m08_storm_channels,Careful! The sponsor charges for concrete.
 host,host/6c25637a404f.ogg,m08_storm_channels,"Oh, that's one of the sponsor's. Somebody start the paperwork."
-host,host/6e85c2e2c280.ogg,m08_storm_channels,"Folks, a reminder from our sponsor that water is a privilege. Parker is drinking it right now. Without paying."
+host,host/845b96dda08b.ogg,m08_storm_channels,Down he goes! And... we'll be right back.
+host,host/b1eb6c34a2a6.ogg,m08_storm_channels,"Quick reminder from the sponsor, folks: water's a privilege. Parker's probably drinking some right now. For free."
 host,host/cd57b8fb8463.ogg,m08_storm_channels,You heard the man. Whatever it costs. I'll send him the bill.
-host,host/d25a3c8000f6.ogg,m08_storm_channels,"Down he goes, on the Ward's dime. Commercial break!"
-host,host/dc4dbf9a5726.ogg,m08_storm_channels,"Back on the air, Port Calder, with our generous sponsors watching. Parker, darling, please die quietly."
-host,host/eb8a4344c997.ogg,m08_storm_channels,"Lovely line, Parker. I'm told the Ward finds it very irritating."
-mags,mags/1ae6e3f4cc46.ogg,m08_storm_channels,They work in teams and they don't miss twice. Don't stand still for them.
-mags,mags/40cc59244b29.ogg,m08_storm_channels,The channels run straight to the west side. The Ward owns them. The Ward owns the water. Be quick.
-mags,mags/7ba476b3e4be.ogg,m08_storm_channels,"Helmets. First shot knocks it off, the second one counts."
-mags,mags/a0ab5a67742e.ogg,m08_storm_channels,Fresh orange. That's not mine. Somebody out there's marking you a route.
+mags,mags/7ba39f445dbe.ogg,m08_storm_channels,Helmets. First shot knocks it off. Second one counts.
 mags,mags/b10b2d3f61b8.ogg,m08_storm_channels,The big Hollow's armoured on the front. Get behind it.
 mags,mags/c9ccd6672ab7.ogg,m08_storm_channels,"Up. Don't trade with a squad. Move, then shoot."
+mags,mags/cd7215d59223.ogg,m08_storm_channels,"Fresh orange. That's not my mark. Somebody's out there marking you a route, Parker."
+mags,mags/d845924261cc.ogg,m08_storm_channels,Helmet's off. Finish it.
 mags,mags/de51a721d1bb.ogg,m08_storm_channels,That's it. Keep the speed through the banks.
+mags,mags/e4400679138c.ogg,m08_storm_channels,"Channels go straight to the west side. That's Ward land. Their water, too. Be quick."
+mags,mags/e9e5741b67f1.ogg,m08_storm_channels,These ones work in teams. They don't miss twice. Don't give them a still target.
 vell,vell/440c9fc2d1b4.ogg,m08_storm_channels,The courier is not to reach the tower. Whatever it costs.
 vell,vell/d2a855d3a372.ogg,m08_storm_channels,"Courier sighted. Squad two, close the sluice line."
-echo,echo/2518b0322319.ogg,m09_rail_bridge,"Left at the junction, courier. Left. The right line ends in the sky."
-echo,echo/ed8db634f6f7.ogg,m09_rail_bridge,...the trains stopped the week the Ward took the reservoir. They said it was the power. It was never the power.
+echo,echo/0879fd6d41a8.ogg,m09_rail_bridge,"Go left at the junction, courier. Left! The right track just ends."
+echo,echo/dee9e7326a18.ogg,m09_rail_bridge,...the trains stopped the same week the Ward took the reservoir. They said it was the power. It wasn't.
 host,host/212a253cf537.ogg,m09_rail_bridge,Who keeps doing that?
+host,host/2271e42bcb41.ogg,m09_rail_bridge,Oh no. Section nine's gone. Oh well.
 host,host/36816283e4ba.ogg,m09_rail_bridge,"Ooh, the sponsor felt that one."
-host,host/40139f7d17f1.ogg,m09_rail_bridge,"And I was paid to make it entertaining, Commander. I'm doing both."
+host,host/40821e2d319b.ogg,m09_rail_bridge,"And I'm paid to make it a good show, Commander. I can do both."
 host,host/68fe94bfa025.ogg,m09_rail_bridge,Off the rails! I've been waiting all night to say that.
-host,host/6ff1aa9210d1.ogg,m09_rail_bridge,"Mind the gap, Parker! No, really, mind it. I blew it up."
-host,host/90bce7e2f91f.ogg,m09_rail_bridge,"New rules tonight, Port Calder! I'll be changing the route live. Let's see how our courier likes improv."
-host,host/a886b2d6da4a.ogg,m09_rail_bridge,"Another one off the sponsor's payroll. Very cost-effective, Parker."
-host,host/a99cc1295ee6.ogg,m09_rail_bridge,Oh dear. Section nine. Gone. What a shame.
-host,host/aa3740c90eec.ogg,m09_rail_bridge,He's making my demolition look like a stunt course. I hate that.
+host,host/9523bc11c466.ogg,m09_rail_bridge,"Another one off the sponsor's payroll. They'll thank you, Parker. Saves 'em money."
+host,host/afacf4cc07d8.ogg,m09_rail_bridge,"Mind the gap, Parker! Seriously. I blew it up."
+host,host/bd7ee4bea1ac.ogg,m09_rail_bridge,I blow up a bridge and he turns it into a stunt show. I hate this.
+host,host/c918bde429d7.ogg,m09_rail_bridge,"New rule tonight, folks! I'm changing the route as we go. Let's see how he likes that."
 host,host/d422af77288a.ogg,m09_rail_bridge,Down on the tracks! Somebody check the timetable.
-mags,mags/2e7c342a1e4e.ogg,m09_rail_bridge,Drones with guns. They flash before they fire. One hit drops them.
-mags,mags/6293d4896888.ogg,m09_rail_bridge,"There's the tower. Go up it, kid."
+mags,mags/2ba5c2d51dbb.ogg,m09_rail_bridge,Drones. With guns. Watch for the flash before they fire. One hit and they drop.
+mags,mags/413bc20761ad.ogg,m09_rail_bridge,"There's the tower. Up you go, kid."
+mags,mags/9876d461e41a.ogg,m09_rail_bridge,Old train line. Last straight road to the tower.
 mags,mags/ad69580d4ccd.ogg,m09_rail_bridge,Up. Keep moving. Squads can't hit what won't stand still.
 mags,mags/c0b155892338.ogg,m09_rail_bridge,That's the line. Keep it.
-mags,mags/f713859edb65.ogg,m09_rail_bridge,The old train line. It's the last straight road to the tower.
 vell,vell/e2ebc330a2a8.ogg,m09_rail_bridge,"Host, you were paid to end this."
-echo,echo/44706a48d982.ogg,m10_the_climb,Cameras are mine now. Look at him go.
-echo,echo/5ef2ea130de5.ogg,m10_the_climb,"Got that one on camera, love. The whole city saw it."
-echo,echo/84754736e0e4.ogg,m10_the_climb,"Hi, Port Calder. This is Echo. He's lying to you. He's been lying to you for twenty years."
-echo,echo/dd5c938817cb.ogg,m10_the_climb,"...if you're hearing this, I hid it on the dish before he moved me upstairs. Keep the porch light on."
-echo,echo/e23ef93df7ef.ogg,m10_the_climb,Look at you. Half the city's on their roofs watching.
+echo,echo/08b03debbea1.ogg,m10_the_climb,"...if you're hearing this, I hid it on the dish before he moved me upstairs. Keep the porch light on, okay?"
+echo,echo/0cb66a187f2e.ogg,m10_the_climb,"Got that on camera, courier. Whole city saw it."
+echo,echo/158444b40f07.ogg,m10_the_climb,Hi. Port Calder? It's Echo. He's lying to you. He's been lying to you for twenty years.
+echo,echo/5a5a1baa38f4.ogg,m10_the_climb,I've got the cameras now. Look at him go.
+echo,echo/c2e0b941f786.ogg,m10_the_climb,Look at you. Half the city's up on the roofs watching.
+host,host/04b261c90b45.ogg,m10_the_climb,"Long way down, Parker! Well, medium. Try harder."
 host,host/1861ee301ba7.ogg,m10_the_climb,"Do you know what marksmen cost, Parker? Do you?"
-host,host/2e5919cf257b.ogg,m10_the_climb,Three minutes! Two! I'm not even counting properly anymore!
-host,host/7e53e9859211.ogg,m10_the_climb,"Ten minutes, Port Calder. Ten minutes until our courier runs out of tower, and his wife runs out of luck."
+host,host/577be3acbd81.ogg,m10_the_climb,Three minutes! Two! I don't even know anymore!
+host,host/5f33f13437f2.ogg,m10_the_climb,"Ten minutes, folks. That's how long he's got. After that, well. Ask his wife."
+host,host/7228916f6fe9.ogg,m10_the_climb,Fine. Fine! Come on in. Studio's open. Mind the step.
 host,host/839a40713562.ogg,m10_the_climb,Get her off my uplink! GET HER OFF!
-host,host/c626a2b60542.ogg,m10_the_climb,"And he's down! Stop the clock! No, keep the clock going, it's funnier."
+host,host/8a34ae3aacd5.ogg,m10_the_climb,"And he's down! Stop the clock! No, no, keep it running, it's funnier."
 host,host/c81ed45f3757.ogg,m10_the_climb,Gravity! My oldest and most loyal sponsor.
-host,host/f37eeaed285f.ogg,m10_the_climb,Fine. Come in. The studio's open. Mind the step.
-host,host/f48ccff16849.ogg,m10_the_climb,"Long way down, Parker! Well. Medium way. Try harder."
-mags,mags/16cc7749ad82.ogg,m10_the_climb,"The gun drones just went dark. She did that. Climb, Parker!"
-mags,mags/66688f980f3a.ogg,m10_the_climb,Back on the scaffold. Again.
-mags,mags/6a058a0139ba.ogg,m10_the_climb,Don't look down. Do look up. That's where they're shooting from.
+mags,mags/1c890a347936.ogg,m10_the_climb,Back on the scaffold. Go again.
 mags,mags/82569cf56b1a.ogg,m10_the_climb,Up. Keep climbing. They can't hold the whole tower.
+mags,mags/899d79feec44.ogg,m10_the_climb,"Don't look down. Look up, that's where they're shooting from."
 mags,mags/eac057fc6964.ogg,m10_the_climb,"That's it. Up, up, up."
+mags,mags/ef93dfc88df9.ogg,m10_the_climb,"Gun drones just went dark. That was her! Climb, Parker!"
 parker,parker/1919a410c0da.ogg,m10_the_climb,"I'm coming, Echo."
-echo,echo/4e3c23de7a74.ogg,m11_dead_air,"...he keeps the old tapes in the office safe. Twenty years of lies, all labelled. He's very tidy."
+echo,echo/3a34f5d88b19.ogg,m11_dead_air,"Parker, the vents. Behind the transmitter. I left 'em open."
 echo,echo/52ca824682d4.ogg,m11_dead_air,You're late.
 echo,echo/8a32654ab48d.ogg,m11_dead_air,"Parker! Parker, you're pinned. The whole floor's on fire."
-echo,echo/c5316fa4a5c7.ogg,m11_dead_air,"Parker, the vents. Behind the transmitter. I left them open for you."
+echo,echo/e6b5724c038b.ogg,m11_dead_air,"...he keeps the old tapes in the office safe. Twenty years of lies. All labelled, too."
 echo,echo/f3c215761d7e.ogg,m11_dead_air,Nice. Do that again.
 host,host/4e16f70ff2b3.ogg,m11_dead_air,"Tripped on my carpet! That's imported, Parker."
-host,host/61e15f390139.ogg,m11_dead_air,"Oh, I do love a reunion. Here's my favourite part."
+host,host/4e474739d985.ogg,m11_dead_air,"Oh, I love a reunion. Okay. This is my favourite bit."
 host,host/c547daa36520.ogg,m11_dead_air,Not in my studio. Not in my lovely studio.
-host,host/cf18b320032f.ogg,m11_dead_air,"Port Calder, I give you: the grand finale."
 host,host/d07933c34b6d.ogg,m11_dead_air,"And he's down! So close, folks. So, so close."
 host,host/de9c75419ba1.ogg,m11_dead_air,That was my floor manager. I'll need a new one.
 host,host/e4587397bc66.ogg,m11_dead_air,"Port Calder, this is it. The final segment. Please hold your applause until he's dead."
-mags,mags/546d2c7bc8b8.ogg,m11_dead_air,The studio's on the top floor. Everything he's got is between you and her.
+host,host/eaf4cd29bcf6.ogg,m11_dead_air,Port Calder... the grand finale.
+mags,mags/091bf021e2de.ogg,m11_dead_air,Studio's on the top floor. He's put everything he's got between you and her.
 mags,mags/6877222f4e94.ogg,m11_dead_air,The armoured ones are slow. Don't trade with them. Get past.
 mags,mags/9ca4443f619a.ogg,m11_dead_air,That's it. Almost there.
 mags,mags/c251295d00b1.ogg,m11_dead_air,Up. You're nearly at her. Get up.
@@ -242,36 +237,40 @@ parker,parker/38374530ec51.ogg,m11_dead_air,Draw him off me. Run. I'll talk you 
 parker,parker/4da3fc7a75d1.ogg,m11_dead_air,Traffic.
 parker,parker/bd9cb607c7ad.ogg,m11_dead_air,Echo.
 vell,vell/22df3d263b74.ogg,m11_dead_air,All units to the studio. This ends tonight.
-echo,echo/26f1c93a86c8.ogg,m12_signal_out,"That's the end of the show, Port Calder."
 echo,echo/2c49aa070bed.ogg,m12_signal_out,"Running. Talk to me, Parker."
-echo,echo/77f710181d7a.ogg,m12_signal_out,I'm here. Hold on. I'm coming back for you.
+echo,echo/316c8beb808b.ogg,m12_signal_out,"Port Calder, it's Echo. And Parker. The show's over."
 echo,echo/8fb060d0a5c0.ogg,m12_signal_out,He's still behind me. I can hear him laughing.
+echo,echo/c20e59ff0519.ogg,m12_signal_out,I'm here. Hang on. I'm coming back for you.
+echo,echo/ca3f46c3f9a5.ogg,m12_signal_out,"And that's the show, Port Calder."
+host,host/105e09d78aa2.ogg,m12_signal_out,"Show-off. God, you two deserve each other."
 host,host/2b1542db436d.ogg,m12_signal_out,"Ooh, tripped! I'm right behind you."
-host,host/31715a03bb3f.ogg,m12_signal_out,Caught! The audience loves a rerun.
-host,host/3938aa387489.ogg,m12_signal_out,Show-off. You two really are made for each other.
-host,host/485d0cf9d6ab.ogg,m12_signal_out,"I used to chase the ratings, darling. Now I'm chasing you. So much more fun."
 host,host/4a8b94ffb927.ogg,m12_signal_out,"Gotcha! Oh, don't cry, darling. We'll do another take."
 host,host/5038dc5c8f5e.ogg,m12_signal_out,"Not the Silt yet, sweetheart. I want you on air."
 host,host/7263bbb2ce1b.ogg,m12_signal_out,"Where are you taking me, Echo? That's... that's the Silt. What are those... Echo? ECHO!"
-host,host/782a179e9da8.ogg,m12_signal_out,"Slowing down? I can hear you breathing on my frequency, sweetheart."
-host,host/971871677cd3.ogg,m12_signal_out,"Change of programming, Port Calder! Our courier is pinned under my antenna, and his wife is making a break for it."
-parker,parker/38a0209df38e.ogg,m12_signal_out,Big drop. Crouch right before you land and roll out of it.
-parker,parker/42e6d804c8ad.ogg,m12_signal_out,Barriers. Jump into them and you'll go over without slowing.
-parker,parker/5f21e561939f.ogg,m12_signal_out,"Gap's too wide to jump. Wall on your right, run it."
+host,host/75524b97f685.ogg,m12_signal_out,"Change of plans, Port Calder! Our courier's stuck under my antenna, and the wife's making a run for it!"
+host,host/b5586b0e112e.ogg,m12_signal_out,"I used to chase ratings, darling. This is way more fun."
+host,host/c1e8ab8c4292.ogg,m12_signal_out,"Slowing down, sweetheart? I can hear you breathing."
+host,host/f213a987f4f4.ogg,m12_signal_out,Caught you! Folks love a rerun.
+juno,juno/10ec5191ae01.ogg,m12_signal_out,"Not bad, courier. Not bad."
+mags,mags/4f0ff997c5c6.ogg,m12_signal_out,Line camp to anyone out there. They made it. Both of them.
+parker,parker/1f7a09f7f0fb.ogg,m12_signal_out,Too wide to jump. Wall on your right. Run it.
+parker,parker/344576ff5e8f.ogg,m12_signal_out,"Barriers. Jump into 'em, you'll go over without slowing down."
+parker,parker/4c70b8100c85.ogg,m12_signal_out,"Keep moving, Echo! Don't let him close in!"
+parker,parker/7a8fb9523789.ogg,m12_signal_out,Echo. Run. Don't look back. I'll talk you down.
 parker,parker/7ef0bb0efb75.ogg,m12_signal_out,That's it. That's my girl.
+parker,parker/8597ccba91c4.ogg,m12_signal_out,Go outside. It's a nice day.
 parker,parker/8c0c8958984c.ogg,m12_signal_out,Echo?
-parker,parker/8ca91bce59f0.ogg,m12_signal_out,"Echo. Run. Don't look back, don't stop. I'll talk you down."
-parker,parker/97df5cfee164.ogg,m12_signal_out,"Echo, keep moving! Don't let him close the gap!"
 parker,parker/a9a55c37114a.ogg,m12_signal_out,Bar ahead. Slide under it.
 parker,parker/b81db1514778.ogg,m12_signal_out,"Up! Get up, he's coming!"
+parker,parker/c5b6c1e05d75.ogg,m12_signal_out,"Big drop. Crouch right before you land, then roll."
 parker,parker/f5f2b22bc987.ogg,m12_signal_out,Last gap. Kick off the pillar if you need the distance.
-raider,raider/3ddb1a4ed1f8.ogg,raider taunt,"SMILE, PARKER, YOU'RE ON AIR!"
-raider,raider/486c74d598d0.ogg,raider taunt,RATINGS GOLD!
-raider,raider/bde1fada59e7.ogg,raider taunt,THE BOSS LOVES A CLOSE ONE
-raider,raider/c3efce1e262d.ogg,raider taunt,HOLD STILL FOR THE BROADCAST
-raider,raider/d76682e0ffad.ogg,raider taunt,"ECHO'S LISTENING, COURIER"
-raider2,raider2/3ddb1a4ed1f8.ogg,raider taunt,"SMILE, PARKER, YOU'RE ON AIR!"
-raider2,raider2/486c74d598d0.ogg,raider taunt,RATINGS GOLD!
-raider2,raider2/bde1fada59e7.ogg,raider taunt,THE BOSS LOVES A CLOSE ONE
-raider2,raider2/c3efce1e262d.ogg,raider taunt,HOLD STILL FOR THE BROADCAST
-raider2,raider2/d76682e0ffad.ogg,raider taunt,"ECHO'S LISTENING, COURIER"
+raider,raider/256548278328.ogg,raider taunt,SAY HI TO ECHO!
+raider,raider/66bf4fcc3473.ogg,raider taunt,BOSS IS GONNA LOVE THIS!
+raider,raider/829c4bb9d009.ogg,raider taunt,"HOLD STILL, DAMN IT!"
+raider,raider/a26744191421.ogg,raider taunt,"OOH, THAT WAS CLOSE!"
+raider,raider/a9d15219329a.ogg,raider taunt,"SMILE, COURIER! YOU'RE ON THE RADIO!"
+raider2,raider2/256548278328.ogg,raider taunt,SAY HI TO ECHO!
+raider2,raider2/66bf4fcc3473.ogg,raider taunt,BOSS IS GONNA LOVE THIS!
+raider2,raider2/829c4bb9d009.ogg,raider taunt,"HOLD STILL, DAMN IT!"
+raider2,raider2/a26744191421.ogg,raider taunt,"OOH, THAT WAS CLOSE!"
+raider2,raider2/a9d15219329a.ogg,raider taunt,"SMILE, COURIER! YOU'RE ON THE RADIO!"
