@@ -49,6 +49,10 @@ func _ready() -> void:
 	body.runner = "host"
 	add_child(body)
 	body.pose_override = RunnerPoses.idle()
+	# His carbine is for the Head Office fight (enemies/host_boss.gd).
+	var gun: Node3D = body.model.find_child("Rifle", true, false) if body.model else null
+	if gun != null:
+		gun.visible = false
 
 
 func _process(delta: float) -> void:

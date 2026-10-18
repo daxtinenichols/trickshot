@@ -26,7 +26,7 @@ func _run() -> void:
 	root.size = Vector2i(1280, 720)
 	var campaign: Script = load("res://campaign/campaign.gd")
 	campaign.persist = false
-	if "lineup" in parts or "poses" in parts:
+	if "lineup" in parts or "poses" in parts or "boss" in parts:
 		var level: Node3D = load("res://levels/sandbox.tscn").instantiate()
 		root.add_child(level)
 		var player: Node = level.get_node("Player")
@@ -40,6 +40,8 @@ func _run() -> void:
 			await _lineup(level, spot)
 		if "poses" in parts:
 			await _pose_sheet(level, spot)
+		if "boss" in parts:
+			await _boss(level, player, spot)
 		level.queue_free()
 		await _frames(2)
 	if "chase" in parts or "clip" in parts:
@@ -120,6 +122,31 @@ func _pose_sheet(level: Node3D, spot: Vector3) -> void:
 	print("saved host_pose_sheet  (order: %s)" % ", ".join(POSES))
 	body.queue_free()
 	cam.queue_free()
+
+
+## The Head Office boss (enemies/host_boss.gd) aiming his carbine at you.
+func _boss(level: Node3D, player: Node3D, spot: Vector3) -> void:
+	player.set_physics_process(true)
+	var boss: Node3D = load("res://enemies/host_boss.gd").new()
+	boss.set("run_after", 99.0)
+	boss.set("flee_distance", 0.0)
+	level.add_child(boss)
+	boss.global_position = player.global_position + Vector3(0, 0, -9)
+	boss.call("activate", player)
+	var cam := _camera(level, player.global_position + Vector3(2.2, 1.7, -3.5), boss.global_position + Vector3(0, 1.2, 0), 45.0)
+	for i in 70:
+		await physics_frame
+		await process_frame
+		if int(boss.get("state")) == 2:  # AIM
+			break
+	await _frames(10)
+	_save("host_boss_aim")
+	cam.global_position = boss.global_position + Vector3(-2.6, 1.6, 2.4)
+	cam.look_at(boss.global_position + Vector3(0, 1.3, 0))
+	await _frames(4)
+	_save("host_boss_aim_side")
+	cam.queue_free()
+	boss.queue_free()
 
 
 ## Signal Out: Echo runs the first stretch (the route's own bot steps:

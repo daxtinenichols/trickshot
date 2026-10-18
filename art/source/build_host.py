@@ -25,6 +25,8 @@ sys.path.insert(0, HERE)
 _argv = sys.argv
 sys.argv = [sys.argv[0]]  # build_runner reads its runner from argv
 import build_runner as br  # noqa: E402
+sys.path.insert(0, os.path.normpath(os.path.join(HERE, "..", "..", "enemies", "source")))
+import build_enemies as be  # noqa: E402  (rigid-part helpers only)
 sys.argv = _argv
 
 import bpy  # noqa: E402
@@ -263,6 +265,28 @@ def build_coat():
     return out
 
 
+def build_gun():
+    """His gun for the Head Office fight (a separate "Rifle" part, like the
+    enemies' rifles, for enemies/host_boss.gd to hold): a gold-plated
+    lever-action carbine with a walnut stock. Along -Y (Godot +Z), grip at
+    the origin. The chase body hides it."""
+    gold = (0.86, 0.64, 0.24)
+    dark = (0.1, 0.09, 0.09)
+    wood = (0.36, 0.18, 0.1)
+    parts = [
+        (be.box("Receiver", (0.055, 0.22, 0.09), be.xf((0, -0.06, 0.035)), 0.01), gold),
+        (be.cyl("Barrel", 0.017, 0.017, 0.44, be.xf((0, -0.38, 0.06), (90, 0, 0)), 10), dark),
+        (be.cyl("Tube", 0.012, 0.012, 0.36, be.xf((0, -0.34, 0.03), (90, 0, 0)), 8), gold),
+        (be.box("Fore", (0.05, 0.2, 0.05), be.xf((0, -0.28, 0.03)), 0.01), wood),
+        (be.box("Lever", (0.012, 0.1, 0.05), be.xf((0, 0.0, -0.04), (14, 0, 0)), 0.004), gold),
+        (be.box("Grip", (0.04, 0.06, 0.1), be.xf((0, 0.04, -0.03), (20, 0, 0)), 0.008), wood),
+        (be.box("Stock", (0.045, 0.24, 0.08), be.xf((0, 0.2, 0.0), (6, 0, 0)), 0.012), wood),
+        (be.cyl("Sight", 0.008, 0.008, 0.03, be.xf((0, -0.58, 0.085)), 6), gold),
+    ]
+    obj = be.merge_colored("Rifle", parts)
+    return obj
+
+
 def main():
     br.reset_scene()
     arm = br.build_armature()
@@ -289,12 +313,16 @@ def main():
     body.vertex_groups["Hips"].add(hip_ids, 1.0, "REPLACE")
     body.data.attributes.remove(body.data.attributes["part"])
     br.build_material(body)
+    gun = build_gun()
+    gun.data.materials.clear()
+    gun.data.materials.append(body.data.materials[0])
 
     os.makedirs(os.path.dirname(OUT), exist_ok=True)
     for o in bpy.context.selected_objects:
         o.select_set(False)
     arm.select_set(True)
     body.select_set(True)
+    gun.select_set(True)
     bpy.ops.export_scene.gltf(
         filepath=OUT,
         export_format="GLB",
