@@ -282,12 +282,20 @@ static func _add(st: Dictionary, p: Dictionary) -> void:
 
 # ---------------------------------------------------------------- segments
 
+## "trick": "flip" | "front" | "spin" on a gap or wallrun: the bot does it
+## in the air after the jump it just took.
+static func _trick(st: Dictionary, seg: Dictionary) -> void:
+	if seg.has("trick"):
+		st.bot.append([float(st.bot[-1][0]) - 0.01, String(seg.trick), NAN])
+
+
 static func _segment(st: Dictionary, seg: Dictionary) -> void:
 	if seg.has("roof"):
 		_roof(st, seg)
 	elif seg.has("gap"):
 		# A running jump: take off "takeoff" m before the edge (1.2 by default).
 		st.bot.append([st.z + float(seg.get("takeoff", 1.2)), "jump", NAN])
+		_trick(st, seg)
 		if seg.get("roll", false):
 			st.bot.append([st.z, "roll", NAN])
 		_lane(st, st.z, st.z - float(seg.gap), WIDTH)
@@ -872,6 +880,7 @@ static func _wallrun_gap(st: Dictionary, seg: Dictionary) -> void:
 	st.bot.append([edge + 24.0, "", side * 3.3])
 	st.bot.append([edge + 10.0, "", side * 5.4])
 	st.bot.append([edge + 0.7, "jump", side * 7.0])
+	_trick(st, seg)
 	st.bot.append([edge - gap - 4.0, "", 0.0])
 	st.after_wallrun = true
 	_lane(st, edge, edge - gap, WIDTH)

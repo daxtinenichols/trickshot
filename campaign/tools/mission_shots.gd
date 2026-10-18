@@ -134,7 +134,7 @@ func _run() -> void:
 	_save("m02_first_person_radio")
 	# The results card.
 	level.mission_hud.show_results({"seconds": 52.4, "score": 18450, "best_combo": 6200, "par_seconds": 60.0,
-		"total_tapes": 1, "tapes": ["x"], "falls": 1, "catches": 0, "practice": false, "records": {"time": true}},
+		"total_tapes": 1, "tapes": ["x"], "restarts": 1, "practice": false, "records": {"time": true}},
 		"On Air", true)
 	await _frames(6)
 	_save("results")
