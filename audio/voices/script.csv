@@ -1,4 +1,6 @@
 who,file,where,line
+host,host/64618e95e6dc.ogg,brief: m06 Anchor Store,He's on the roof! And guess who's waiting for him over at the car park. Go on. Guess.
+mags,mags/1d1d3d07867f.ogg,brief: m06 Anchor Store,"Department store. There's a roof hatch, top floor, back corner. Up you go."
 host,host/0a691e14c4bb.ogg,m00_dawn_run,"Echo's up here with me, fixing my tower. Lovely hands. Parker, darling, come and get her. Everybody's listening."
 host,host/4251fff3f2c3.ogg,m00_dawn_run,"Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you."
 host,host/fcdbdbfa72b7.ogg,m00_dawn_run,"So, today's show. We've got a courier, comes home, and his camp's empty. Wife's gone. I know! Awful. I can't stop listening either."
@@ -116,9 +118,9 @@ host,host/bbc5297ca8e7.ogg,m05_atrium,"Folks, I hate to say it, but that was bea
 mags,mags/0fe0e9007fd4.ogg,m05_atrium,"Those ones jump. Watch the ledges up top, not the floor."
 mags,mags/22b70fb7b16f.ogg,m05_atrium,Careful. Every shot you fire brings more of them.
 mags,mags/33fa6cd110f3.ogg,m05_atrium,Good. Now keep moving.
+mags,mags/3707ecabadf8.ogg,m05_atrium,"Over the bridge. Walkway's caved in past the shops. Take the plank, or run the hoarding."
 mags,mags/73765d680685.ogg,m05_atrium,"He's shut the concourse. Escalator, your left. Then up on the walkways."
 mags,mags/9951e2d3a4e2.ogg,m05_atrium,"It's an arena, Parker. You don't have to fight. Just get through it."
-mags,mags/d24362fcde23.ogg,m05_atrium,"Over the bridge. Walkway's caved in past the shops. Drop through, or run the hoarding."
 mags,mags/d314b2c51eb2.ogg,m05_atrium,Up. Don't stand still in here.
 mags,mags/d388644583e4.ogg,m05_atrium,That's it. Give 'em a show.
 echo,echo/345909eec15a.ogg,m06_anchor_store,"Keep the porch light on, courier. I'm coming home."
@@ -126,13 +128,13 @@ echo,echo/b40fd9fa213c.ogg,m06_anchor_store,...Hargrove's sold radios to half th
 host,host/0eaa037ff4da.ogg,m06_anchor_store,"Mind the floor, it's freshly ruined."
 host,host/134f087e95f2.ogg,m06_anchor_store,"Oh, that's a returns-desk situation."
 host,host/155a1ba155d0.ogg,m06_anchor_store,"Technical difficulties, folks. Nobody touch anything."
-host,host/64618e95e6dc.ogg,m06_anchor_store,He's on the roof! And guess who's waiting for him over at the car park. Go on. Guess.
 host,host/76f5be22ddd8.ogg,m06_anchor_store,Clean-up in aisle four!
+host,host/a58b8c42020c.ogg,m06_anchor_store,He's on the skybridge! And guess who's waiting for him at the other end. Go on. Guess.
 host,host/acbd0aecdf1a.ogg,m06_anchor_store,"Is he shopping or showing off? Bit of both, I think."
 host,host/cb16264e78cf.ogg,m06_anchor_store,"Now, Parker, while you're browsing, a word from our... what is that? Who's on my frequency?"
 host,host/d2aa9b499d45.ogg,m06_anchor_store,And our courier's in the bargain bin!
-mags,mags/1d1d3d07867f.ogg,m06_anchor_store,"Department store. There's a roof hatch, top floor, back corner. Up you go."
 mags,mags/265d3b6553f5.ogg,m06_anchor_store,"Big lads with the shields. Get round 'em, or shoot what the shield doesn't cover."
+mags,mags/67adccc444c7.ogg,m06_anchor_store,"Department store. Skybridge to the car park's on the top floor, back corner. Up you go."
 mags,mags/77fcd01a3e44.ogg,m06_anchor_store,"Up. Get round them, don't stand in front of them."
 mags,mags/850f16288b3f.ogg,m06_anchor_store,"That was her. She's alive. She's in his wires, Parker. Go. Run."
 mags,mags/aa397f3f1475.ogg,m06_anchor_store,That drone's spotting you for the shooters. Knock it down if you can.
@@ -264,6 +266,7 @@ parker,parker/a9a55c37114a.ogg,m12_signal_out,Bar ahead. Slide under it.
 parker,parker/b81db1514778.ogg,m12_signal_out,"Up! Get up, he's coming!"
 parker,parker/c5b6c1e05d75.ogg,m12_signal_out,"Big drop. Crouch right before you land, then roll."
 parker,parker/f5f2b22bc987.ogg,m12_signal_out,Last gap. Kick off the pillar if you need the distance.
+mags,mags/d24362fcde23.ogg,pending: m05_atrium,"Over the bridge. Walkway's caved in past the shops. Drop through, or run the hoarding."
 raider,raider/256548278328.ogg,raider taunt,SAY HI TO ECHO!
 raider,raider/66bf4fcc3473.ogg,raider taunt,BOSS IS GONNA LOVE THIS!
 raider,raider/829c4bb9d009.ogg,raider taunt,"HOLD STILL, DAMN IT!"
