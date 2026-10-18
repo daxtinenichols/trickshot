@@ -81,7 +81,7 @@ static func expand(mission: Dictionary) -> Dictionary:
 		"rng": RandomNumberGenerator.new(), "lowest": INF, "roof_end": 6.0, "lanes": [], "clutter": mission.get("clutter", CLUTTER),
 		# Legs: the frame each stretch between corners is laid out in.
 		"legs": [{"o": origin.origin, "yaw": origin.yaw, "z0": 0.0, "start": 6.0}],
-		"leg": 0, "dx": 0.0, "fork": null, "forks": [],
+		"leg": 0, "dx": 0.0, "fork": null, "forks": [], "ledges": [],
 		"chalk": mission.get("chalk", false),
 		"roof_look": mission.get("roof_look", "FACADE"),
 		# The roof being laid out: its width and how high its ceiling is
@@ -300,6 +300,9 @@ static func _segment(st: Dictionary, seg: Dictionary) -> void:
 		if seg.get("roll", false):
 			st.bot.append([st.z, "roll", NAN])
 		_lane(st, st.z, st.z - float(seg.gap), WIDTH)
+		if seg.has("gate") and seg.get("lower", "ledge") != "fall":
+			# A speed gate's miss lands on its ledge, not in a pit.
+			st.ledges.append([st.leg, st.dx, st.z, st.z - float(seg.gap)])
 		st.z -= float(seg.gap)
 	elif seg.has("wallrun"):
 		_wallrun_gap(st, seg)
@@ -997,6 +1000,11 @@ static func _pits(st: Dictionary, mission: Dictionary) -> void:
 		var c := _world(st, leg, l[1], (float(l[2]) + float(l[3])) * 0.5, 0.0)
 		var r := {"at": [c.x, 0.0, c.z], "size": [float(l[4]) + City.STREET_MARGIN * 2.0, 6.0, absf(float(l[2]) - float(l[3])) + City.STREET_MARGIN * 2.0]}
 		_turn_region(r, st.legs[leg].yaw)
+		streets.append(r)
+	for l: Array in st.ledges:
+		var c := _world(st, l[0], l[1], (float(l[2]) + float(l[3])) * 0.5, 0.0)
+		var r := {"at": [c.x, 0.0, c.z], "size": [WIDTH, 6.0, absf(float(l[2]) - float(l[3]))]}
+		_turn_region(r, st.legs[l[0]].yaw)
 		streets.append(r)
 	if not high or fail > 0.0:
 		return
