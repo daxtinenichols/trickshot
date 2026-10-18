@@ -72,6 +72,9 @@ var _kills_at := 0
 var _headshots_at := 0
 var _multiplier_since := 0
 var _respawning := false
+## Pursuer gap under which "host_near" fires.
+const NEAR_GAP := 6.0
+var _host_near := false
 var _start_pos := Vector3.ZERO
 
 
@@ -105,6 +108,9 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 		pursuer.name = "Pursuer"
 		pursuer.configure(mission.pursuer)
 		add_child(pursuer)
+	for sp: Node3D in b.set_pieces:
+		sp.went.connect(func(kind: String) -> void:
+			event.emit("host_close" if kind == "host" else "set_piece:" + kind))
 	_start_pos = b.spawns[0].origin
 	event.connect(_save_choice)
 	_reset_run(0)
@@ -242,6 +248,15 @@ func _physics_process(_delta: float) -> void:
 			_back_to_checkpoint()
 			event.emit("caught")
 			return
+		# He's on your back: the radio can react (once until you pull away).
+		if not _host_near and pursuer.gap < NEAR_GAP:
+			_host_near = true
+			event.emit("host_near")
+		elif _host_near and pursuer.gap > NEAR_GAP + 4.0:
+			_host_near = false
+	if phase == Phase.RUNNING:
+		for sp: Node3D in builder.set_pieces:
+			sp.tick(pos, self)
 	_check_bonuses(pos)
 	_check_objective(pos)
 
@@ -457,6 +472,7 @@ func _back_to_checkpoint() -> void:
 	_respawning = false
 	if pursuer != null:
 		pursuer.reset(builder.spawns[checkpoint].origin)
+		_reset_set_pieces()
 
 
 func _on_respawned() -> void:
@@ -474,6 +490,7 @@ func _on_respawned() -> void:
 	if index == checkpoint and phase != Phase.READY:
 		if pursuer != null:
 			pursuer.reset(builder.spawns[checkpoint].origin)
+		_reset_set_pieces()
 		return
 	_reset_run(index)
 	if index > 0:
@@ -500,6 +517,7 @@ func _reset_run(index: int) -> void:
 	player.set_spawn(builder.spawns[index])
 	if pursuer != null:
 		pursuer.reset(_start_pos)
+	_reset_set_pieces()
 	for enc: Node3D in builder.encounters:
 		enc.reset()
 
@@ -548,4 +566,12 @@ func _on_player_down() -> void:
 	downs += 1
 	if pursuer != null:
 		pursuer.reset(builder.spawns[checkpoint].origin)
+		_reset_set_pieces()
 	event.emit("down")
+
+
+## Set pieces play again after going back to a checkpoint.
+func _reset_set_pieces() -> void:
+	_host_near = false
+	for sp: Node3D in builder.set_pieces:
+		sp.reset()

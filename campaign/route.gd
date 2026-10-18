@@ -37,10 +37,10 @@ const CLUTTER := ["ac_unit", "vent_stack", "satellite_dish", "generator", "barre
 	"crate_wood", "tire_stack", "crate_stack", "antenna_mast", "loudspeaker_pole"]
 ## Piece fields that hold a position.
 const POINT_KEYS := ["box", "building", "mark", "window", "ramp", "to", "from", "tape", "at", "fire", "spawn",
-	"bank", "quarter_pipe", "loop", "door", "doors", "target"]
+	"bank", "quarter_pipe", "loop", "door", "doors", "target", "trigger"]
 ## Pieces that turn with their leg (they take a yaw).
 const TURNING_KEYS := ["box", "building", "prop", "row", "mark", "window", "bank", "quarter_pipe", "loop", "door",
-	"doors", "figure"]
+	"doors", "figure", "set_piece"]
 ## Ways through a wall across the run. Glass to jump through: a pane from
 ## a sill at vault height to well over head height, so a jump at any point
 ## of its arc goes through standing up.
@@ -640,6 +640,8 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 		_add(st, piece)
 		var reach: float = f.get("length", 6.0)
 		return [d - 2.0, d + reach]
+	if f.has("set_piece"):
+		return _set_piece(st, f, d, z, z0, y)
 	if f.has("lane"):
 		# Where the bot should run from here (the player can go anywhere).
 		st.bot.append([z, "", float(f.lane)])
@@ -728,6 +730,30 @@ static func _hole(st: Dictionary, z: float, x: float, style: String) -> void:
 			# Rubble kicked through to the far side, out of the slide.
 			for k: Array in [[-1.7, -0.9], [1.9, -1.4], [-2.2, 0.8]]:
 				_add(st, {"box": [x + k[0], y + 0.15, z + k[1]], "size": [0.7, 0.3, 0.5], "kind": "NEUTRAL", "look": "BRICK", "yaw": k[0] * 20.0})
+
+
+## A chase set piece (campaign/set_piece.gd) at `at` m along the roof, `x`
+## across (`up` above it), fired when you reach `trigger` m along it: {"set_piece":
+## "debris", "as": "slide"}, "host" ("gap"), "blast" ("size") or "mast"
+## ("height", "fall_yaw"). A fallen beam is an obstacle, so the bot slides
+## under or jumps it.
+static func _set_piece(st: Dictionary, f: Dictionary, d: float, z: float, z0: float, y: float) -> Array:
+	var sp := {}
+	for k: String in f:
+		if k not in ["at", "trigger", "x", "up", "trigger_x"]:
+			sp[k] = f[k]
+	sp.at = [float(f.get("x", 0.0)), y + float(f.get("up", 0.0)), z]
+	sp.trigger = [float(f.get("trigger_x", 0.0)), y + 1.0, z0 - float(f.get("trigger", d - 26.0))]
+	_add(st, sp)
+	if f.set_piece == "debris":
+		if f.get("as", "hurdle") == "slide":
+			st.bot.append([z + 4.5, "crouch", NAN])
+			return [d - 6.0, d + 3.0]
+		st.bot.append([z + 1.6, "jump", NAN])
+		return [d - 4.0, d + 3.0]
+	if f.set_piece == "mast":
+		return [d - 3.0, d + 3.0]
+	return [d, d]
 
 
 ## Enemies on a roof: raiders behind sandbags, mutants on their patch, and

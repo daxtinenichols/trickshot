@@ -2,9 +2,9 @@
  "id": "m12_signal_out",
  "title": "Signal Out",
  "runner": "echo",
- "par_seconds": 120,
+ "par_seconds": 100,
  "start": {"at": [0, 58, 2]},
- "pursuer": {"name": "THE HOST", "speed": 7.6, "speed_gain": 0.03, "max_speed": 9.4, "delay": 2.5, "catch_distance": 1.6, "leash": 22, "catchup_speed": 12.5},
+ "pursuer": {"name": "THE HOST", "speed": 10.4, "speed_gain": 0.1, "max_speed": 11.4, "delay": 1.2, "catch_distance": 2.2, "lunge_range": 5.5, "lunge_boost": 3.5, "leash": 12, "catchup_speed": 15},
  "clutter": ["vent_stack", "ac_unit", "satellite_dish", "generator", "debris_pile", "barrel_rust", "antenna_mast"],
  "objectives": [
   {"type": "reach", "name": "the Silt stairwell", "text": "Outrun the Host. Lead him down to the Silt", "at": "end"}
@@ -18,40 +18,45 @@
    {"prop": "generator", "x": -4.6, "at": 6, "yaw": 90},
    {"radio": {"who": "parker", "line": "Barriers. Jump into 'em, you'll go over without slowing down."}, "at": 8, "radius": 5},
    {"hurdles": true, "at": 14},
-   {"piece": {"fire": [-5, 0, -18], "size": [1.6, 1.2, 1.6]}, "at": 0},
+   {"set_piece": "blast", "x": -5.4, "at": 26, "trigger": 12, "size": 1.4},
    {"radio": {"who": "parker", "line": "Bar ahead. Slide under it."}, "at": 24, "radius": 4},
-   {"slide": true, "at": 32}
+   {"slide": true, "at": 34}
   ]},
   {"ramp_down": 52, "length": 18},
   {"roof": 56, "y": 52, "do": [
    {"checkpoint": "Transmitter deck", "at": 4, "objective": 0},
    {"piece": {"fire": [5.2, 0, -10], "size": [1.4, 1.6, 2]}, "at": 0},
    {"prop": "satellite_dish", "x": -5, "at": 12, "yaw": 160},
-   {"encounter": "deck cameras", "at": 16, "length": 30, "enemies": [{"type": "camera_drone", "x": -3, "d": 12, "height": 4}, {"type": "camera_drone", "x": 3, "d": 24, "height": 4}]},
-   {"hurdles": true, "at": 36}
+   {"encounter": "deck cameras", "at": 10, "length": 26, "enemies": [{"type": "camera_drone", "x": -3, "d": 10, "height": 4}, {"type": "camera_drone", "x": 3, "d": 20, "height": 4}]},
+   {"radio": {"who": "parker", "line": "Ceiling's coming down! Slide!"}, "at": 20, "radius": 7},
+   {"set_piece": "debris", "as": "slide", "at": 46, "trigger": 20}
   ]},
   {"gap": 6},
   {"roof": 64, "y": 48, "do": [
-   {"prop": "loudspeaker_pole", "x": -5.2, "at": 20, "yaw": 40},
+   {"prop": "loudspeaker_pole", "x": -5.2, "at": 12, "yaw": 40},
+   {"set_piece": "host", "at": 22, "trigger": 22, "gap": 8},
    {"piece": {"fire": [-3, 0, -26], "size": [2, 1.4, 1.6]}, "at": 0},
    {"radio": {"who": "parker", "line": "Too wide to jump. Wall on your right. Run it."}, "at": 44, "radius": 7}
   ]},
   {"wallrun": 12, "side": 1},
   {"roof": 50, "do": [
    {"checkpoint": "Antenna yard", "at": 16, "objective": 0},
-   {"prop": "antenna_mast", "x": -4.4, "at": 24}
+   {"set_piece": "mast", "x": -5.0, "at": 34, "trigger": 18, "height": 30, "fall_yaw": 90},
+   {"radio": {"who": "echo", "line": "Parker, the mast's going! The whole tower's coming apart!"}, "at": 20, "radius": 7}
   ]},
   {"turn": "left", "angle": 45, "size": 22},
   {"roof": 56, "do": [
-   {"slide": true, "at": 26}
+   {"slide": true, "at": 26},
+   {"set_piece": "blast", "x": 5.4, "at": 42, "trigger": 24, "size": 1.6}
   ]},
   {"turn": "left", "angle": 45, "size": 22},
   {"ramp_down": 42, "length": 20},
   {"roof": 66, "y": 42, "do": [
    {"hurdles": true, "at": 14},
+   {"set_piece": "debris", "as": "hurdle", "at": 40, "trigger": 16},
    {"piece": {"fire": [4.8, 0, -24], "size": [1.6, 1.2, 1.6]}, "at": 0},
    {"prop": "vent_stack", "x": -5, "at": 30},
-   {"radio": {"who": "parker", "line": "Big drop. Crouch right before you land, then roll."}, "at": 52, "radius": 6}
+   {"radio": {"who": "parker", "line": "Big drop. Crouch right before you land, then roll."}, "at": 54, "radius": 6}
   ]},
   {"gap": 7},
   {"roof": 58, "y": 38, "do": [
@@ -62,18 +67,22 @@
    {"checkpoint": "Lower roofs", "at": 4, "objective": 0},
    {"prop": "water_tank", "x": -7.4, "at": 8},
    {"piece": {"bank": [3.2, 0, 0], "length": 14, "side": 1}, "at": 14, "length": 14},
-   {"encounter": "roof cameras", "at": 32, "length": 30, "enemies": [{"type": "camera_drone", "x": -3, "d": 12, "height": 4}, {"type": "camera_drone", "x": 3, "d": 24, "height": 4}]}
+   {"encounter": "roof cameras", "at": 30, "length": 26, "enemies": [{"type": "camera_drone", "x": -3, "d": 10, "height": 4}, {"type": "camera_drone", "x": 3, "d": 20, "height": 4}]},
+   {"set_piece": "host", "at": 48, "trigger": 48, "gap": 7.5}
   ]},
   {"ramp_down": 32, "length": 22},
   {"roof": 76, "y": 32, "do": [
    {"hole": 3.3, "style": "duct", "at": 20},
    {"piece": {"fire": [-7, 0, -40], "size": [2.5, 1.6, 2.5]}, "at": 0},
-   {"prop": "car_wreck", "x": -4.8, "at": 48, "yaw": 20},
-   {"hurdles": true, "at": 58}
+   {"radio": {"who": "parker", "line": "Another one's coming down. Get low!"}, "at": 30, "radius": 7},
+   {"set_piece": "debris", "as": "slide", "at": 50, "trigger": 30},
+   {"prop": "car_wreck", "x": -4.8, "at": 60, "yaw": 20},
+   {"hurdles": true, "at": 68}
   ]},
   {"gap": 6},
   {"roof": 54, "y": 28, "do": [
-   {"prop": "tire_stack", "x": -5, "at": 30}
+   {"set_piece": "blast", "x": -5.4, "at": 24, "trigger": 6, "size": 1.8},
+   {"prop": "tire_stack", "x": -5, "at": 36}
   ]},
   {"turn": "right", "angle": 45, "size": 22},
   {"roof": 44, "do": [
@@ -82,12 +91,14 @@
   {"turn": "left", "angle": 45, "size": 22},
   {"roof": 66, "do": [
    {"slide": true, "at": 24},
+   {"set_piece": "host", "at": 38, "trigger": 38, "gap": 7.5},
    {"radio": {"who": "parker", "line": "Last gap. Kick off the pillar if you need the distance."}, "at": 52, "radius": 8},
    {"piece": {"box": [0, -3.5, -4], "size": [1.2, 7.0, 1.2], "kind": "NEUTRAL"}, "at": 66}
   ]},
   {"gap": 8},
   {"roof": 60, "y": 24, "do": [
-   {"prop": "loudspeaker_pole", "x": -4.8, "at": 30, "yaw": 180},
+   {"set_piece": "mast", "x": -5.2, "at": 28, "trigger": 2, "height": 40, "fall_yaw": 90},
+   {"prop": "loudspeaker_pole", "x": -4.8, "at": 40, "yaw": 180},
    {"label": "THE SILT", "at": 50, "size": 1.4},
    {"mark": "#f57320", "at": 48}
   ]}
@@ -124,6 +135,16 @@
   "combo": [
    {"who": "host", "line": "Show-off. God, you two deserve each other."},
    {"who": "parker", "line": "That's it. That's my girl."}
+  ],
+  "host_close": [
+   {"who": "host", "line": "Shortcut! I know every stair in this tower, sweetheart."},
+   {"who": "parker", "line": "He came through the stairwell! He's right behind you!"},
+   {"who": "host", "line": "Did you miss me? Tell me you missed me."}
+  ],
+  "host_near": [
+   {"who": "host", "line": "I can hear your heart going, darling."},
+   {"who": "parker", "line": "Don't look back. Just go!"},
+   {"who": "host", "line": "Almost... almost got you..."}
   ]
  },
  "pieces": [

@@ -4,48 +4,75 @@ extends Node3D
 ## He follows your exact path: every tick your position is dropped as a
 ## breadcrumb, and he runs along the breadcrumbs at his own speed, which
 ## creeps up the longer the chase goes. Keep your speed up and the gap
-## grows; stop, fall or fumble a move and he closes it. When he gets within
-## `catch_distance` of you along the path, you're caught.
+## grows; stop, fall or fumble a move and he closes it.
+##
+## You can't play keep-away with him: when you're near him in a straight
+## line but far along your own path (circling, doubling back), he stops
+## following the crumbs and goes straight for you. Inside `lunge_range` he
+## lunges, and within `catch_distance` (path or straight line) you're caught.
+## Set pieces can bring him in close (`close_in`): he took a shortcut.
 ##
 ## Deterministic: driven by MissionRun's physics tick, no physics queries.
+## The body (the Host's model) only reads his state.
 
-## Running speed at the start of the chase, m/s (you run 7.5-11.5).
-## (Fields can be set per mission in its "pursuer" block.)
-var speed := 7.6
+const BODY_SCRIPT_PATH := "res://art/characters/host/host_body.gd"
+
+## Running speed at the start of the chase, m/s (you sprint at 11.5 and go
+## faster from slides, drops and rolls). Fields can be set per mission in
+## its "pursuer" block.
+var speed := 10.4
 ## How much faster he gets each second, up to max_speed.
-var speed_gain := 0.03
-var max_speed := 9.4
+var speed_gain := 0.1
+var max_speed := 11.4
 ## Seconds he waits before setting off after you start or respawn.
-var delay := 2.5
-var catch_distance := 1.6
+var delay := 1.2
+## Closer than this and he has you (along your path or in a straight line).
+var catch_distance := 2.2
+## Closer than this and he lunges: lunge_boost m/s faster.
+var lunge_range := 5.5
+var lunge_boost := 3.5
 ## He never drops further back than this along your path: past it he runs
-## at catchup_speed, so even a perfect run keeps him in your mirrors and
-## any mistake costs you most of the lead.
-var leash := 22.0
-var catchup_speed := 12.5
+## at catchup_speed, so even a perfect run keeps him close, and any mistake
+## puts him on your back.
+var leash := 12.0
+var catchup_speed := 15.0
+## Straight-line range in which he cuts across instead of following your
+## path, when your path is at least `shortcut_ratio` times longer.
+var shortcut_range := 12.0
+var shortcut_ratio := 1.3
 var display_name := "THE HOST"
 
 ## Your path so far, and the distance along it to each point.
 var crumbs := PackedVector3Array()
 var _lengths := PackedFloat32Array()
-## How far along the path he is.
+## How far along the path he is (his nearest point on it).
 var along := 0.0
 var _wait := 0.0
 var _chase_time := 0.0
-## Path distance between him and you, updated each tick.
+## Distance between him and you, updated each tick: the shorter of your
+## path and the straight line.
 var gap := INF
+## Straight-line distance to you.
+var direct := INF
+## His actual position (on your path unless he's cutting across).
+var pos := Vector3.ZERO
+## Velocity over the last tick, for the body.
+var velocity := Vector3.ZERO
+## True while he's lunging at you, or cutting straight across.
+var lunging := false
+var cutting := false
+## Ticks since a set piece brought him in (the body plays a drop-in).
+var since_close_in := 1 << 20
+var _crumb_i := 0
 
 var _body: Node3D
 
 
 func configure(d: Dictionary) -> void:
-	speed = d.get("speed", speed)
-	speed_gain = d.get("speed_gain", speed_gain)
-	max_speed = d.get("max_speed", max_speed)
-	delay = d.get("delay", delay)
-	catch_distance = d.get("catch_distance", catch_distance)
-	leash = d.get("leash", leash)
-	catchup_speed = d.get("catchup_speed", catchup_speed)
+	for k: String in ["speed", "speed_gain", "max_speed", "delay", "catch_distance", "lunge_range",
+			"lunge_boost", "leash", "catchup_speed", "shortcut_range", "shortcut_ratio"]:
+		if d.has(k):
+			set(k, float(d[k]))
 	display_name = d.get("name", display_name)
 
 
@@ -58,50 +85,118 @@ func reset(at: Vector3) -> void:
 	crumbs = PackedVector3Array([at])
 	_lengths = PackedFloat32Array([0.0])
 	along = 0.0
+	_crumb_i = 0
 	_wait = delay
 	_chase_time = 0.0
 	gap = INF
+	direct = INF
+	pos = at
+	velocity = Vector3.ZERO
+	lunging = false
+	cutting = false
+	since_close_in = 1 << 20
 	global_position = at
 	visible = false
 
 
+func waiting() -> bool:
+	return _wait > 0.0
+
+
 func current_speed() -> float:
-	if gap > leash and gap < INF:
-		return catchup_speed
-	return minf(speed + speed_gain * _chase_time, max_speed)
+	if waiting():
+		return 0.0
+	var base := minf(speed + speed_gain * _chase_time, max_speed)
+	if path_gap() > leash and path_gap() < INF:
+		base = maxf(base, catchup_speed)
+	if gap < lunge_range:
+		base += lunge_boost
+	return base
+
+
+func total() -> float:
+	return _lengths[_lengths.size() - 1]
+
+
+## How far you are ahead of him along your own path.
+func path_gap() -> float:
+	if crumbs.is_empty():
+		return INF
+	return total() - along
 
 
 func tick(target: Vector3, dt: float) -> void:
 	if crumbs.is_empty():
 		reset(target)
-	if target.distance_to(crumbs[crumbs.size() - 1]) > 0.4:
-		_lengths.append(_lengths[_lengths.size() - 1] + target.distance_to(crumbs[crumbs.size() - 1]))
+	var last := crumbs[crumbs.size() - 1]
+	if target.distance_to(last) > 0.4:
+		_lengths.append(total() + target.distance_to(last))
 		crumbs.append(target)
-	var total := _lengths[_lengths.size() - 1]
+	var before := pos
+	since_close_in += 1
 	if _wait > 0.0:
 		_wait -= dt
+		pos = point_at(along)
 	else:
 		_chase_time += dt
-		along = minf(along + current_speed() * dt, total)
 		visible = true
-	global_position = point_at(along)
-	gap = total - along + target.distance_to(crumbs[crumbs.size() - 1])
-	if gap > 0.5:
-		var ahead := point_at(minf(along + 1.0, total))
-		var flat := Vector3(ahead.x - global_position.x, 0, ahead.z - global_position.z)
-		if flat.length() > 0.05:
-			global_basis = Basis.looking_at(flat.normalized(), Vector3.UP)
+		var step := current_speed() * dt
+		var to_you := target - pos
+		cutting = to_you.length() < shortcut_range and absf(to_you.y) < 1.6 \
+				and path_gap() > to_you.length() * shortcut_ratio + 1.0
+		if cutting:
+			# Straight at you, and his place on your path catches up to
+			# wherever he's got to.
+			pos = pos.move_toward(target, step)
+			_rejoin()
+		else:
+			along = minf(along + step, total())
+			# Back onto your path smoothly after cutting across.
+			pos = pos.move_toward(point_at(along), step * 1.6 + 0.02)
+	global_position = pos
+	direct = pos.distance_to(target)
+	gap = minf(path_gap() + target.distance_to(crumbs[crumbs.size() - 1]), direct)
+	lunging = not waiting() and gap < lunge_range
+	velocity = (pos - before) / dt if dt > 0.0 else Vector3.ZERO
+	var face := Vector3(target.x - pos.x, 0, target.z - pos.z) if (cutting or lunging) else Vector3(velocity.x, 0, velocity.z)
+	if face.length() > 0.05:
+		global_basis = Basis.looking_at(face.normalized(), Vector3.UP)
 
 
 func has_caught() -> bool:
-	return _wait <= 0.0 and gap <= catch_distance
+	return not waiting() and gap <= catch_distance
 
 
-## Point `d` meters along the breadcrumb path.
-func point_at(d: float) -> Vector3:
-	if crumbs.size() == 1:
-		return crumbs[0]
-	# Binary search for the segment holding d.
+## A set piece: he took a shortcut and is suddenly `to_gap` m behind you
+## along your path (only ever closer, never further). Returns true if it
+## brought him in.
+func close_in(to_gap: float) -> bool:
+	if waiting() or crumbs.size() < 2 or path_gap() <= to_gap:
+		return false
+	along = maxf(total() - to_gap, along)
+	pos = point_at(along)
+	global_position = pos
+	_crumb_i = _index_at(along)
+	since_close_in = 0
+	return true
+
+
+## While cutting across: his place on your path is the furthest crumb
+## (from where he was) within reach of him.
+func _rejoin() -> void:
+	var best := _crumb_i
+	var i := _index_at(along)
+	var n := crumbs.size()
+	while i < n:
+		if crumbs[i].distance_to(pos) < 1.2:
+			best = i
+		i += 1
+	if best > _crumb_i or _lengths[best] > along:
+		_crumb_i = best
+		along = maxf(along, _lengths[best])
+
+
+func _index_at(d: float) -> int:
 	var lo := 0
 	var hi := _lengths.size() - 1
 	while hi - lo > 1:
@@ -110,41 +205,47 @@ func point_at(d: float) -> Vector3:
 			lo = mid
 		else:
 			hi = mid
+	return lo
+
+
+## Point `d` meters along the breadcrumb path.
+func point_at(d: float) -> Vector3:
+	if crumbs.size() == 1:
+		return crumbs[0]
+	var lo := _index_at(d)
+	var hi := mini(lo + 1, crumbs.size() - 1)
 	var seg := _lengths[hi] - _lengths[lo]
 	var t := 0.0 if seg <= 0.0 else clampf((d - _lengths[lo]) / seg, 0.0, 1.0)
 	return crumbs[lo].lerp(crumbs[hi], t)
 
 
-## A stand-in figure until the Host has a model: a dark coat, a red
-## headset light and a lamp you can see behind you.
+## The Host's model, running (art/characters/host, loaded by path), with a
+## red lamp you can see behind you. Falls back to a dark stand-in.
 func _build_body() -> void:
-	_body = Node3D.new()
-	add_child(_body)
-	var coat := StandardMaterial3D.new()
-	coat.albedo_color = Color(0.12, 0.1, 0.1)
-	var torso := MeshInstance3D.new()
-	var cm := CapsuleMesh.new()
-	cm.radius = 0.32
-	cm.height = 1.8
-	torso.mesh = cm
-	torso.position = Vector3(0, 0.9, 0)
-	torso.material_override = coat
-	_body.add_child(torso)
-	var glow := StandardMaterial3D.new()
-	glow.albedo_color = Color(1, 0.15, 0.1)
-	glow.emission_enabled = true
-	glow.emission = Color(1, 0.15, 0.1)
-	glow.emission_energy_multiplier = 4.0
-	var eye := MeshInstance3D.new()
-	var bm := BoxMesh.new()
-	bm.size = Vector3(0.36, 0.06, 0.08)
-	eye.mesh = bm
-	eye.position = Vector3(0, 1.62, -0.28)
-	eye.material_override = glow
-	_body.add_child(eye)
+	var script := load(BODY_SCRIPT_PATH) as Script if ResourceLoader.exists(BODY_SCRIPT_PATH) else null
+	if script != null and script.can_instantiate():
+		_body = script.new()
+		_body.name = "HostBody"
+		_body.set("pursuer", self)
+		add_child(_body)
+	else:
+		_body = Node3D.new()
+		_body.name = "StandIn"
+		add_child(_body)
+		var coat := StandardMaterial3D.new()
+		coat.albedo_color = Color(0.12, 0.1, 0.1)
+		var torso := MeshInstance3D.new()
+		var cm := CapsuleMesh.new()
+		cm.radius = 0.32
+		cm.height = 1.8
+		torso.mesh = cm
+		torso.position = Vector3(0, 0.9, 0)
+		torso.material_override = coat
+		_body.add_child(torso)
 	var light := OmniLight3D.new()
+	light.name = "Lamp"
 	light.light_color = Color(1, 0.2, 0.15)
-	light.omni_range = 6.0
-	light.light_energy = 1.5
-	light.position = Vector3(0, 1.8, 0)
-	_body.add_child(light)
+	light.omni_range = 7.0
+	light.light_energy = 1.8
+	light.position = Vector3(0, 2.1, 0)
+	add_child(light)
