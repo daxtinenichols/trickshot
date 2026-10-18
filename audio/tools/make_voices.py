@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Voices every radio line and raider taunt in the game.
+"""Voices every radio line and enemy taunt in the game.
 
 Reads the lines from campaign/missions/*.json (every {"who", "line"} pair,
-including the ones inside "route" features and "chatter") and the TAUNTS in
-enemies/raider.gd, speaks each with the voice audio/voices/cast.json gives
-its speaker, and writes
+including the ones inside "route" features and "chatter") and the enemy
+taunts in audio/voices/taunts.json, speaks each with the voice
+audio/voices/cast.json gives its speaker, and writes
 
     audio/voices/tts/<who>/<key>.ogg   one clip per line
     audio/voices/script.csv            the recording script (who, file, line)
@@ -84,13 +84,13 @@ def collect():
         with open(UPCOMING, encoding="utf-8") as f:
             for u in json.load(f):
                 found.setdefault((u["who"], u["line"]), u["where"])
-    with open(os.path.join(ROOT, "enemies", "raider.gd"), encoding="utf-8") as f:
-        src = f.read()
-    m = re.search(r"const TAUNTS := \[(.*?)\]", src, re.S)
-    if m:
-        for taunt in re.findall(r'"((?:[^"\\]|\\.)*)"', m.group(1)):
-            for who in ("raider", "raider2"):
-                found.setdefault((who, taunt), "raider taunt")
+    with open(os.path.join(VOICES, "taunts.json"), encoding="utf-8") as f:
+        for faction, t in json.load(f).items():
+            if faction.startswith("_"):
+                continue
+            for taunt in t["lines"]:
+                for who in t["voices"]:
+                    found.setdefault((who, taunt), faction + " taunt")
     return found
 
 

@@ -30,22 +30,51 @@
  ],
  "chatter": {
   "bail": [
+   {"who": "host", "line": "And he eats it! Folks, I didn't even have to do anything."},
+   {"who": "host", "line": "Rewind that. No, seriously, can somebody rewind that?"},
+   {"who": "host", "line": "Oof. Listeners, I felt that one in my teeth."},
    {"who": "host", "line": "Ooh! That one's going in the highlights."},
    {"who": "host", "line": "Ooh. Hear that, folks? Pretty sure that was his pride."},
    {"who": "host", "line": "Down he goes! Echo, you married this?"}
   ],
   "combo": [
+   {"who": "host", "line": "Okay, okay, he's... honestly he's pretty good. Don't tell him I said that."},
+   {"who": "host", "line": "Look at this guy! Somebody give him a jingle."},
+   {"who": "mags", "line": "Ignore him. Keep going, that's lovely."},
    {"who": "host", "line": "Look at him go! Echo, you watching this? Oh, right. You're tied up."},
    {"who": "host", "line": "Moves like that, I might have to start paying him."},
    {"who": "host", "line": "The phones are ringing off the hook! Okay, we don't have phones. But they would be."}
   ],
-  "fall": [{"who": "host", "line": "And he's down! Little dust bath for our boy."}, {"who": "mags", "line": "Back up you go. Don't give him the satisfaction."}],
-  "kill": [{"who": "host", "line": "Somebody tell payroll."}, {"who": "host", "line": "Good lookout, that one. Looked out for about a second."}],
+  "fall": [
+   {"who": "host", "line": "And he's in the dirt! Stay down there, it's quieter."},
+   {"who": "mags", "line": "Up. He's only got a show if you stay down."},
+   {"who": "host", "line": "And he's down! Little dust bath for our boy."},
+   {"who": "mags", "line": "Back up you go. Don't give him the satisfaction."}
+  ],
+  "kill": [
+   {"who": "host", "line": "Hey! He was on the clock!"},
+   {"who": "host", "line": "Well, that's one less mouth to feed. Silver linings, folks."},
+   {"who": "mags", "line": "Good. Keep going, don't give them time."},
+   {"who": "host", "line": "Ah, come on, I liked that one. Didn't know his name, but I liked him."},
+   {"who": "host", "line": "Somebody tell payroll."},
+   {"who": "host", "line": "Good lookout, that one. Looked out for about a second."}
+  ],
   "down": [
+   {"who": "host", "line": "Down goes the courier! Somebody check if he's breathing. Actually, don't."},
+   {"who": "mags", "line": "You're okay. Get up, keep moving this time."},
+   {"who": "host", "line": "Aw, he's having a lie-down. Bless him."},
+   {"who": "mags", "line": "Up. Don't stand where they can see you."},
    {"who": "host", "line": "And our courier's taking a nap! Somebody get the man a pillow."},
    {"who": "mags", "line": "Up. Don't stand there in their sights. Run, then shoot."}
   ],
-  "headshot": [{"who": "host", "line": "Right through the headset. Rude."}, {"who": "mags", "line": "Clean."}]
+  "headshot": [
+   {"who": "host", "line": "Ooh, right in the face. Listeners at home, look away."},
+   {"who": "mags", "line": "That's it."},
+   {"who": "host", "line": "Somebody's been practising."},
+   {"who": "host", "line": "Oh, that's gonna be a closed casket."},
+   {"who": "host", "line": "Right through the headset. Rude."},
+   {"who": "mags", "line": "Clean."}
+  ]
  },
  "route": [
   {

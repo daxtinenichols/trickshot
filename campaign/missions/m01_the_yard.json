@@ -30,13 +30,37 @@
  ],
  "chatter": {
   "bail": [
+   {"who": "mags", "line": "Up. Go again."},
+   {"who": "mags", "line": "You're thinking too much. Just run."},
+   {"who": "mags", "line": "Ouch. Right, again, and land it this time."},
    {"who": "mags", "line": "Again. Smoother."},
    {"who": "mags", "line": "Feet first, kid. Not face."},
    {"who": "mags", "line": "Sloppy. The Static won't wait for you to get up."}
   ],
-  "headshot": [{"who": "mags", "line": "Clean."}, {"who": "mags", "line": "Ha! Right between the eyes."}],
-  "kill": [{"who": "mags", "line": "Good. Keep moving while you shoot."}],
-  "combo": [{"who": "mags", "line": "Now that's a courier."}, {"who": "mags", "line": "Don't let it go to your head."}]
+  "headshot": [
+   {"who": "mags", "line": "There you go."},
+   {"who": "mags", "line": "Good. That's the one that counts."},
+   {"who": "mags", "line": "Oh, nice. Do that every time."},
+   {"who": "mags", "line": "Head. Good. Keep doing that."},
+   {"who": "mags", "line": "Clean."},
+   {"who": "mags", "line": "Ha! Right between the eyes."}
+  ],
+  "kill": [
+   {"who": "mags", "line": "Down. Next."},
+   {"who": "mags", "line": "Good, now don't stop to admire it."},
+   {"who": "mags", "line": "That's one. Keep your feet moving."},
+   {"who": "mags", "line": "Okay. Don't stand there, go."},
+   {"who": "mags", "line": "Got him. Move."},
+   {"who": "mags", "line": "Good. Keep moving while you shoot."}
+  ],
+  "combo": [
+   {"who": "mags", "line": "Yes! That. Do that."},
+   {"who": "mags", "line": "There it is. That's the run."},
+   {"who": "mags", "line": "Ha. Okay, kid, I see you."},
+   {"who": "mags", "line": "Good line. Hold onto it."},
+   {"who": "mags", "line": "Now that's a courier."},
+   {"who": "mags", "line": "Don't let it go to your head."}
+  ]
  },
  "pieces": [
   {"prop": "tarp_shelter", "at": [-12, 0, 56], "yaw": 180},

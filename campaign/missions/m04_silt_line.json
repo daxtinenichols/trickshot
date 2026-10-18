@@ -157,11 +157,39 @@
   {"on": "complete", "who": "host", "line": "Meridian Mall, folks! The arena! Parker, darling, you just walked into the main event."}
  ],
  "chatter": {
-  "bail": [{"who": "host", "line": "Face first in the Silt! That'll stain."}],
-  "combo": [{"who": "mags", "line": "That's how you outrun them. Don't stop."}, {"who": "host", "line": "Look at him dance down there! Come on, crawlers, keep up."}],
-  "kill": [{"who": "mags", "line": "Don't fight them all. Run."}],
-  "down": [{"who": "host", "line": "Dinner's served!"}, {"who": "mags", "line": "You stopped. Never stop down there."}],
-  "tape": [{"who": "echo", "line": "...the Silt's not empty. The Hollows used to be people. Whatever he says."}]
+  "bail": [
+   {"who": "host", "line": "Splat! Don't swallow any of that, Parker."},
+   {"who": "mags", "line": "Up! Up, they're coming."},
+   {"who": "host", "line": "Oh, he's in it now. Literally."},
+   {"who": "mags", "line": "Don't lie there. Move."},
+   {"who": "host", "line": "Face first in the Silt! That'll stain."}
+  ],
+  "combo": [
+   {"who": "mags", "line": "Good. Faster than them, that's all you need."},
+   {"who": "host", "line": "Oh, he's making them look slow. They're not slow!"},
+   {"who": "mags", "line": "That's it. Keep your feet out of the muck."},
+   {"who": "host", "line": "Folks, he's dancing with the Hollows. Don't try this at home. You don't have a home."},
+   {"who": "mags", "line": "That's how you outrun them. Don't stop."},
+   {"who": "host", "line": "Look at him dance down there! Come on, crawlers, keep up."}
+  ],
+  "kill": [
+   {"who": "mags", "line": "Okay, but don't stop for them."},
+   {"who": "host", "line": "Ooh, he's swatting crawlers! Plenty more where that came from."},
+   {"who": "mags", "line": "Leave the rest. Go."},
+   {"who": "host", "line": "One down! Out of... yeah, I don't know. Lots."},
+   {"who": "mags", "line": "Don't fight them all. Run."}
+  ],
+  "down": [
+   {"who": "host", "line": "Dinner's... oh, he's up again. Well, they'll keep."},
+   {"who": "mags", "line": "Up. They're slow, you're not. Act like it."},
+   {"who": "host", "line": "Down in the Silt! Folks, I'm not going down there to check."},
+   {"who": "host", "line": "Dinner's served!"},
+   {"who": "mags", "line": "You stopped. Never stop down there."}
+  ],
+  "tape": [
+   {"who": "echo", "line": "...don't stop on the low pipes. They come up through the drains. I watched them do it."},
+   {"who": "echo", "line": "...the Silt's not empty. The Hollows used to be people. Whatever he says."}
+  ]
  },
  "chalk": true
 }

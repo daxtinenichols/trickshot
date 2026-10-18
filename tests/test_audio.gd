@@ -227,6 +227,7 @@ func test_built_sounds_are_cached_for_next_launch() -> void:
 # ---------------------------------------------------------------- voices
 
 const Voices := preload("res://audio/voice_lines.gd")
+const Taunts := preload("res://audio/taunts.gd")
 
 
 static func _lines_in(node: Variant, out: Array) -> void:
@@ -261,8 +262,47 @@ func test_radio_lines_have_voices() -> void:
 	if not silent.is_empty():
 		print("    %d radio lines not voiced yet, e.g. %s" % [silent.size(), silent[0]])
 	check(Voices.stream_for("mags", "A line nobody has written.") == null, "unvoiced lines are just silent")
-	for t: String in Raider.TAUNTS:
-		check(Voices.stream_for("raider", t) != null and Voices.stream_for("raider2", t) != null, "taunt voiced: %s" % t)
+	var factions := Taunts.factions()
+	for f: String in factions:
+		for t: String in factions[f].lines:
+			for who: String in factions[f].voices:
+				check(Voices.stream_for(who, t) != null, "%s taunt voiced by %s: %s" % [f, who, t])
+
+
+func test_taunts_take_turns_and_keep_to_their_faction() -> void:
+	var factions := Taunts.factions()
+	check(factions.has("static") and factions.has("ward"), "Static and Ward taunts")
+	for f: String in factions:
+		var lines: Array = factions[f].lines
+		check(lines.size() >= 7, "%s has plenty of taunts (%d)" % [f, lines.size()])
+		var heard: Array = []
+		Taunts.reset()
+		for k in lines.size() * 3:
+			var t := Taunts.next(f, k)
+			check(t.who in factions[f].voices, "%s taunt in a %s voice" % [f, f])
+			check(heard.is_empty() or heard.back() != t.line, "%s: no line twice in a row" % f)
+			heard.append(t.line)
+		# Every line comes round once before any comes round again.
+		var first: Array = heard.slice(0, lines.size())
+		first.sort()
+		var all := lines.duplicate()
+		all.sort()
+		check(first == all, "%s deals every line before repeating" % f)
+	for t: String in factions.ward.lines:
+		check(not t in factions.static.lines, "the Ward never shouts a Static line: %s" % t)
+
+
+func test_each_enemy_shouts_its_own_factions_taunts() -> void:
+	var Encounter := preload("res://enemies/enemy_encounter.gd")
+	var sides := {"raider": "static", "hunter": "static", "bruiser": "static", "juno": "static",
+		"trooper": "ward", "shield": "ward", "marksman": "ward", "heavy": "ward"}
+	Enemy.use_models = false
+	for type: String in sides:
+		var e: Node = Encounter.script_for(type).new()
+		tree.root.add_child(e)
+		check(e.faction == sides[type], "%s shouts %s taunts (got %s)" % [type, sides[type], e.faction])
+		e.free()
+	Enemy.use_models = true
 
 
 func test_radio_feed_speaks_and_holds_the_line_until_said() -> void:

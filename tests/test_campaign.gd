@@ -261,9 +261,33 @@ func test_radio_plays_story_lines_and_chatter() -> void:
 	check(RadioFeed.duration("short") >= 2.0 and RadioFeed.duration("x".repeat(400)) <= 7.0, "durations clamp")
 
 
+func test_chatter_deals_every_line_before_repeating() -> void:
+	await _load(_index("m02_on_air"))
+	var radio: RadioFeed = level.radio
+	RadioFeed.reset_chatter()
+	var pool: Array = radio._chatter["bail"]
+	var heard: Array = []
+	for k in pool.size() * 3:
+		radio.queue.clear()
+		radio.current = {}
+		radio._chatter_ready_at = 0.0
+		radio.notify("bail")
+		check(radio.queue.size() == 1, "a bail reaction")
+		var line: String = radio.queue[0].line
+		check(heard.is_empty() or heard.back() != line, "never the same line twice in a row")
+		heard.append(line)
+		radio.advance(0.0)
+	var first: Array = heard.slice(0, pool.size())
+	var all: Array = pool.map(func(l: Dictionary) -> String: return l.line)
+	first.sort()
+	all.sort()
+	check(first == all, "every bail line once before any comes round again")
+
+
 func test_echo_chatter_waits_for_the_uplink() -> void:
 	await _load(_index("m10_the_climb"))
 	var radio: RadioFeed = level.radio
+	RadioFeed.reset_chatter()
 	var echo := func() -> bool: return radio.queue.any(func(l: Dictionary) -> bool: return l.who == "echo")
 	for k in 4:
 		radio.queue.clear()

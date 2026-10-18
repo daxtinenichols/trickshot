@@ -38,9 +38,27 @@
   {"on": "complete", "who": "mags", "line": "Parker. Parker, listen to me. You are not going alone. Yard first."}
  ],
  "chatter": {
-  "bail": [{"who": "mags", "line": "Up you get."}, {"who": "mags", "line": "Ooh. Walk it off. Run it off, I mean."}],
-  "fall": [{"who": "mags", "line": "That's the Silt, kid. Get back up and go again."}, {"who": "mags", "line": "Roofs, Parker. Stay on the roofs."}],
-  "combo": [{"who": "mags", "line": "Who're you showing off for? The pigeons?"}]
+  "bail": [
+   {"who": "mags", "line": "Eh. Happens. Shake it off."},
+   {"who": "mags", "line": "You alright? ...Yeah, you're alright. Go."},
+   {"who": "mags", "line": "Land on your feet next time, yeah? It's cheaper."},
+   {"who": "mags", "line": "That's gonna bruise. Keep going."},
+   {"who": "mags", "line": "Up you get."},
+   {"who": "mags", "line": "Ooh. Walk it off. Run it off, I mean."}
+  ],
+  "fall": [
+   {"who": "mags", "line": "Down you go. Find a way back up, kid."},
+   {"who": "mags", "line": "Nobody delivers anything from down there. Back up."},
+   {"who": "mags", "line": "That's the Silt, kid. Get back up and go again."},
+   {"who": "mags", "line": "Roofs, Parker. Stay on the roofs."}
+  ],
+  "combo": [
+   {"who": "mags", "line": "Okay. Okay, that was pretty good."},
+   {"who": "mags", "line": "Showing off already? It's barely light out."},
+   {"who": "mags", "line": "Huh. Didn't teach you that one."},
+   {"who": "mags", "line": "Nice. Don't get cocky."},
+   {"who": "mags", "line": "Who're you showing off for? The pigeons?"}
+  ]
  },
  "pieces": [
   {"prop": "water_tank", "at": [-4.4, 10, -6]},

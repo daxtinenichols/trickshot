@@ -128,24 +128,46 @@
  ],
  "chatter": {
   "headshot": [
+   {"who": "mags", "line": "Nice shot."},
+   {"who": "host", "line": "Ooh, through the visor. The sponsor's gonna send me an invoice."},
+   {"who": "mags", "line": "That's it. Go for the head, the rest is plated."},
+   {"who": "host", "line": "Oops! Sorry, Commander. That one's coming out of his pay."},
    {"who": "mags", "line": "Helmet's off. Finish it."},
    {"who": "mags", "line": "Clean."}
   ],
   "bail": [
+   {"who": "host", "line": "Ha! Wet concrete. Nobody's cleaned these channels in years."},
+   {"who": "mags", "line": "Up. Keep the speed."},
+   {"who": "host", "line": "Oh, he's in the gutter! Where he belongs, honestly."},
+   {"who": "mags", "line": "Shake it off. Get back on the bank."},
    {"who": "host", "line": "Careful! The sponsor charges for concrete."}
   ],
   "combo": [
+   {"who": "host", "line": "Look at him use the banks! The Ward built those for water, Parker. Not for you."},
+   {"who": "mags", "line": "Beautiful. Keep it up."},
+   {"who": "host", "line": "Commander, if you're listening, your boys are getting lapped."},
+   {"who": "mags", "line": "That's the line. Stay on it."},
    {"who": "host", "line": "Lovely line, Parker. The Ward hates that, by the way."},
    {"who": "mags", "line": "That's it. Keep the speed through the banks."}
   ],
   "kill": [
+   {"who": "host", "line": "Oh dear. That's a Ward helmet rolling down the channel."},
+   {"who": "mags", "line": "Down. Don't wait for his mates."},
+   {"who": "host", "line": "Another one for the sponsor's paperwork! I'll sign it, I'll sign it."},
+   {"who": "mags", "line": "Good. Keep moving, there'll be more."},
+   {"who": "host", "line": "Ooh. The Commander's not gonna like that. I sort of do."},
    {"who": "host", "line": "Oh, that's one of the sponsor's. Somebody start the paperwork."}
   ],
   "down": [
+   {"who": "mags", "line": "Up! Squads flank. Keep moving."},
+   {"who": "host", "line": "And he's down! The Ward thank you for your cooperation."},
+   {"who": "mags", "line": "Get up. Stay out of their crossfire."},
    {"who": "mags", "line": "Up. Don't trade with a squad. Move, then shoot."},
    {"who": "host", "line": "Down he goes! And... we'll be right back."}
   ],
   "tape": [
+   {"who": "echo", "line": "...the channels used to fill every spring. Now they're dry and the Ward's tanks are full. Funny, that."},
+   {"who": "echo", "line": "...the Ward pays him in water. Every week. That's what 'sponsor' means."},
    {"who": "echo", "line": "...the Ward closed the channels the year the rain stopped. Nobody ever asked why."}
   ]
  }
