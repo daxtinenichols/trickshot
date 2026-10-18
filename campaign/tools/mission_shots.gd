@@ -12,10 +12,22 @@ extends SceneTree
 
 const SHOTS := [
 	# [mission id, camera position, look at, name]
-	["m00_dawn_run", Vector3(-11, 17, 6), Vector3(0, 10, -30), "m00_start"],
-	["m00_dawn_run", Vector3(-130, 12, -922), Vector3(-116.7, 4, -945), "m00_camp"],
-	["m00_dawn_run", Vector3(-186, 12, -790), Vector3(-176, 5, -830), "m00_docks"],
-	["m01_the_yard", Vector3(-104, 5, -700), Vector3(-96.9, 1, -725), "m01_gate"],
+	# Stage 1, the Docks (atlas coordinates). A fifth field fires the
+	# level's set pieces that many ticks before the shot (the raid).
+	["l1_1_dawn_run", Vector3(3425, 15.5, 141), Vector3(3412, 13, 128), "dk_1_1_opening"],
+	["l1_1_dawn_run", Vector3(3452, 32, 168), Vector3(3400, 12, 118), "dk_1_1_camp"],
+	["l1_1_dawn_run", Vector3(3228, 40, 150), Vector3(3268, 10, 60), "dk_1_1_fish_market"],
+	["l1_1_dawn_run", Vector3(3246, 18, 8), Vector3(3262, 14, -40), "dk_1_1_container_yard"],
+	["l1_1_dawn_run", Vector3(3262, 17, -150), Vector3(3340, 9, -160), "dk_1_1_high_roof"],
+	["l1_1_dawn_run", Vector3(3452, 24, 40), Vector3(3436, 2, 100), "dk_1_1_raid", 300],
+	["l1_1_dawn_run", Vector3(3425, 13.7, 112), Vector3(3412, 12.5, 118), "dk_1_1_wreck", 2000],
+	["l1_1_dawn_run", Vector3(3428, 16, 124), Vector3(3000, 30, 230), "dk_1_1_skyline_west"],
+	["l1_1_dawn_run", Vector3(3424, 13.7, 136), Vector3(0, 120, 0), "dk_1_1_tower_ahead"],
+	["l1_2_the_yard", Vector3(3425, 13.7, 117), Vector3(3423, 13.2, 130), "dk_1_2_handoff"],
+	["l1_2_the_yard", Vector3(3448, 22, 156), Vector3(3420, 0, 240), "dk_1_2_yard"],
+	["l1_2_the_yard", Vector3(3402, 15, 296), Vector3(3300, 3, 330), "dk_1_2_terminal"],
+	["l1_2_the_yard", Vector3(2992, 1.7, 318), Vector3(2700, 30, 318), "dk_1_2_gate_west"],
+	["l1_2_the_yard", Vector3(2972, 1.7, 318), Vector3(0, 120, 0), "dk_1_2_skyline_west"],
 	["m02_on_air", Vector3(-14, 18, 6), Vector3(0, 8, -40), "m02_start"],
 	["m02_on_air", Vector3(-12, 16, -150), Vector3(0, 8, -190), "m02_lookouts"],
 	["m02_on_air", Vector3(320, 260, 60), Vector3(120, 0, -380), "m02_overview"],
@@ -142,10 +154,17 @@ func _shots(campaign: Script, only: String) -> void:
 				await _frames(2)
 			current = s[0]
 			level = await _load_mission(campaign, current)
+		if s.size() > 4:
+			# Play the set pieces out first.
+			for sp: Node in level.builder.set_pieces:
+				if sp.get("kind") == "camp" and sp.get("state") == "intact":
+					sp.call("_fire")
+					for t in int(s[4]):
+						sp.call("tick", s[1], null)
 		var cam := Camera3D.new()
 		cam.cull_mask &= ~4
 		cam.fov = 75.0
-		cam.far = 500.0
+		cam.far = 600.0 if s.size() > 4 or String(s[0]).begins_with("l1_") else 500.0
 		level.add_child(cam)
 		cam.look_at_from_position(s[1], s[2])
 		cam.make_current()

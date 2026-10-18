@@ -1,0 +1,65 @@
+{
+ "id": "l1_1_dawn_run",
+ "title": "Dawn Run",
+ "runner": "parker",
+ "atlas": true,
+ "atlas_pieces": ["line_camp"],
+ "tower_views": [[3420, 12, 136]],
+ "par_seconds": 150,
+ "start": {"at": [3420, 12, 136], "yaw": 90},
+ "route_origin": {"at": [3420, 12, 136], "yaw": 90},
+ "chalk": true,
+ "objectives": [
+  {"type": "reach", "name": "the drop", "text": "Deliver the parcel to the drop on the high roof", "at": "@High roof"},
+  {"type": "reach", "name": "camp", "text": "Get back to camp", "at": "end"}
+ ],
+ "radio": [
+  {"on": "start", "who": "echo", "line": "Don't drop this one. It's insulin, for the Okafor kid."},
+  {"on": "start", "who": "parker", "line": "When have I ever dropped one?"},
+  {"on": "start", "who": "echo", "line": "Tuesday."},
+  {"on": "start", "who": "mags", "line": "High roof past the fish market. And back for breakfast. I'm not keeping it warm."},
+  {"on": "go", "who": "echo", "line": "Hey. Porch light's on.", "keep": true},
+  {"on": "done:0", "who": "mags", "line": "Parcel's in. Good. Come on home, kid."},
+  {"on": "complete", "who": "host", "line": "Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you."},
+  {"on": "complete", "who": "host", "line": "So, today's show. We've got a courier, comes home, and his camp's empty. Wife's gone. I know! Awful. I can't stop listening either."},
+  {"on": "complete", "who": "host", "line": "Echo's up here with me, fixing my tower. Lovely hands. Parker, darling, come and get her. Everybody's listening."},
+  {"on": "complete", "who": "host", "line": "Oh, and is Mags there? Course she is. Tell her I said hi."},
+  {"on": "complete", "who": "mags", "line": "They went straight for her bunk. Didn't even look at the others."},
+  {"on": "complete", "who": "mags", "line": "Parker. Parker, listen to me. You are not going alone. Yard first."}
+ ],
+ "chatter": {
+  "bail": [{"who": "mags", "line": "Eh. Happens. Shake it off."}, {"who": "mags", "line": "You alright? ...Yeah, you're alright. Go."}, {"who": "mags", "line": "Land on your feet next time, yeah? It's cheaper."}, {"who": "mags", "line": "That's gonna bruise. Keep going."}, {"who": "mags", "line": "Up you get."}, {"who": "mags", "line": "Ooh. Walk it off. Run it off, I mean."}],
+  "fall": [{"who": "mags", "line": "Down you go. Find a way back up, kid."}, {"who": "mags", "line": "Nobody delivers anything from down there. Back up."}, {"who": "mags", "line": "That's the Silt, kid. Get back up and go again."}, {"who": "mags", "line": "Roofs, Parker. Stay on the roofs."}],
+  "combo": [{"who": "mags", "line": "Okay. Okay, that was pretty good."}, {"who": "mags", "line": "Showing off already? It's barely light out."}, {"who": "mags", "line": "Huh. Didn't teach you that one."}, {"who": "mags", "line": "Nice. Don't get cocky."}, {"who": "mags", "line": "Who're you showing off for? The pigeons?"}]
+ },
+ "pieces": [
+  {"set_piece": "camp", "state": "intact", "at": [3401, 12, 121], "trigger": [3425, 10, -54], "radius": 10}
+ ],
+ "route": [
+  {"roof": 56, "y": 12, "building": false, "bare": true},
+  {"gap": 5},
+  {"roof": 58, "y": 12, "look": "BRICK", "do": [{"radio": {"who": "mags", "line": "Rails coming up. Don't hop 'em, jump right into them. Vault keeps your speed."}, "at": 2, "radius": 6}, {"hurdles": true, "at": 14}, {"radio": {"who": "mags", "line": "Low bar. Get down and slide it."}, "at": 26, "radius": 6}, {"slide": true, "at": 40}]},
+  {"gap": 6},
+  {"roof": 30, "y": 9, "look": "BRICK", "do": [{"checkpoint": "Net lofts", "at": 4, "objective": 0}, {"prop": "crate_stack", "x": -4.6, "at": 16, "yaw": 90}]},
+  {"turn": "right", "size": 22},
+  {"fork": [{"roof": 36, "y": 12, "look": "RUST", "bare": true, "do": [{"piece": {"box": [-7.6, 0, 0], "size": [1.0, 24, 1.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 10, "length": 0}, {"piece": {"box": [7.6, 0, 0], "size": [1.0, 24, 1.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 10, "length": 0}, {"piece": {"box": [0, 12.2, 0], "size": [16.2, 2.0, 1.4], "kind": "NEUTRAL", "look": "RUST"}, "at": 10, "length": 0}, {"piece": {"box": [-7.6, 0, -9], "size": [1.0, 24, 1.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 10, "length": 0}, {"piece": {"box": [7.6, 0, -9], "size": [1.0, 24, 1.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 10, "length": 0}, {"piece": {"box": [0, 12.2, -9], "size": [16.2, 2.0, 1.4], "kind": "NEUTRAL", "look": "RUST"}, "at": 10, "length": 0}, {"piece": {"box": [3.5, 10.6, -4.5], "size": [3.0, 2.4, 3.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 10, "length": 0}]}, {"gap": 6}, {"roof": 24, "y": 12, "look": "RUST", "bare": true}, {"wallrun": 12, "side": 1}, {"roof": 30, "y": 12, "look": "RUST", "bare": true, "do": [{"tape": "l1_1_tape_crane", "x": 4.6, "at": 18}]}], "side": 1},
+  {"roof": 64, "y": 9, "interior": 5.5, "look": "BRICK", "do": [{"label": "FISH MARKET", "at": 2, "size": 1.2}, {"radio": {"who": "mags", "line": "That door's been stuck since the storm. Kick it in. Or use the window, if you're feeling polite."}, "at": 8, "radius": 7}, {"door": -2.6, "glass": 2.6, "at": 34}]},
+  {"roof": 18, "y": 12, "look": "BRICK"},
+  {"join": true},
+  {"roof": 40, "y": 12, "look": "RUST", "do": [{"checkpoint": "Container yard", "at": 4, "objective": 0}, {"radio": {"who": "mags", "line": "You won't jump that one. Run the wall."}, "at": 24, "radius": 7}, {"piece": {"box": [-7.6, 0, 0], "size": [1.0, 24, 1.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 14, "length": 0}, {"piece": {"box": [7.6, 0, 0], "size": [1.0, 24, 1.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 14, "length": 0}, {"piece": {"box": [0, 12.2, 0], "size": [16.2, 2.0, 1.4], "kind": "NEUTRAL", "look": "RUST"}, "at": 14, "length": 0}, {"piece": {"box": [-7.6, 0, -9], "size": [1.0, 24, 1.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 14, "length": 0}, {"piece": {"box": [7.6, 0, -9], "size": [1.0, 24, 1.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 14, "length": 0}, {"piece": {"box": [0, 12.2, -9], "size": [16.2, 2.0, 1.4], "kind": "NEUTRAL", "look": "RUST"}, "at": 14, "length": 0}, {"piece": {"box": [3.5, 10.6, -4.5], "size": [3.0, 2.4, 3.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 14, "length": 0}]},
+  {"wallrun": 12, "side": -1},
+  {"roof": 30, "y": 12, "look": "RUST", "do": [{"radio": {"who": "mags", "line": "High roof's up that wall. Go straight at it and jump."}, "at": 8, "radius": 7}]},
+  {"roof": 26, "y": 15, "do": [{"checkpoint": "High roof", "at": 10, "objective": 1}]},
+  {"turn": "right", "size": 22},
+  {"roof": 50, "y": 15, "do": [{"prop": "satellite_dish", "x": -4.4, "at": 10, "yaw": 200}, {"radio": {"who": "mags", "line": "Big drop here. Crouch right before you hit and roll it out."}, "at": 30, "radius": 6}]},
+  {"gap": 6},
+  {"roof": 87, "y": 9, "look": "RUST", "do": [{"hop": true, "side": -1, "at": 38}]},
+  {"turn": "right", "size": 22},
+  {"roof": 76, "y": 9, "look": "RUST", "do": [{"checkpoint": "Waterfront", "at": 4, "objective": 1}]},
+  {"gap": 5},
+  {"roof": 70, "y": 9, "look": "RUST", "do": [{"radio": {"who": "mags", "line": "Parker, there's a truck down on the... they're on the roof, they're...", "keep": true}, "at": 12, "radius": 8}, {"hole": 0, "style": "fence", "at": 46}]},
+  {"gap": 5},
+  {"roof": 83, "y": 9, "look": "RUST"},
+  {"roof": 28, "y": 12, "building": false, "bare": true}
+ ]
+}
