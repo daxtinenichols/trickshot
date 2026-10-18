@@ -42,6 +42,13 @@ static func lineups() -> Array:
 			[E + "juno.gd", {}],
 			[E + "juno.gd", {"state": 2, "aim_dir": Vector3(0, 0, -1)}],
 		]},
+		{"name": "juno", "views": [front, three, [Vector3(-4.5, 2.0, 6.0), Vector3(0, 0.9, 0), "back"]], "items": [
+			[R, {}],
+			[E + "hunter.gd", {}],
+			[E + "juno.gd", {}],
+			[E + "juno.gd", {"state": 2, "aim_dir": Vector3(0, 0, -1)}],
+			[E + "juno.gd", {"state": 1, "velocity": Vector3(0, 0, -6)}],
+		]},
 		{"name": "ward", "views": [front, three], "items": [
 			[E + "marksman.gd", {}],
 			[E + "marksman.gd", {"state": 2, "aim_dir": Vector3(0, 0, -1)}],

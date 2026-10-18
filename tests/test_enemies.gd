@@ -251,7 +251,7 @@ func test_headshot_flinch_cancels_the_shot() -> void:
 	check(r.shots_fired == 0, "the shot never went off")
 
 
-func test_only_two_raiders_aim_at_once() -> void:
+func test_only_a_few_raiders_aim_at_once() -> void:
 	await _setup()
 	var e := _encounter()
 	for i in 4:
@@ -266,7 +266,7 @@ func test_only_two_raiders_aim_at_once() -> void:
 			if (en as Raider).is_aiming():
 				n += 1
 		most = maxi(most, n)
-	check(most == 2, "at most two aiming together (saw %d)" % most)
+	check(most == e.max_aiming, "at most %d aiming together (saw %d)" % [e.max_aiming, most])
 
 
 # ------------------------------------------------------------------ mutants
@@ -433,6 +433,148 @@ func test_encounter_clears_and_restarts() -> void:
 	check(e.phase == EnemyEncounter.Phase.CLEARED, "cleared")
 	await w.step(65)
 	check(e.phase != EnemyEncounter.Phase.CLEARED and not r.is_dead, "restarted")
+
+
+func test_mission_encounters_keep_the_dead_dead() -> void:
+	await _setup(Vector3(0, 0.05, 10))
+	var e := _encounter(Vector3(40, 20, 40))
+	e.keep_dead = true
+	var r := Raider.new()
+	var m := Mutant.new()
+	e.add_enemy(r, Transform3D(Basis.IDENTITY, Vector3(-5, 0, -10)))
+	e.add_enemy(m, Transform3D(Basis.IDENTITY, Vector3(5, 0, -10)))
+	await w.step(90)
+	m.take_hit({"damage": 1000.0})
+	_health().take_damage(500.0, Vector3.ZERO)
+	check(e.phase == EnemyEncounter.Phase.WAITING, "fight reset")
+	check(m.is_dead and not m.visible, "the killed mutant stays dead")
+	check(not r.is_dead and r.global_position.distance_to(Vector3(-5, 0, -10)) < 0.2, "the raider went back to its spot")
+	w.player.global_position = Vector3(0, 0.05, 10)
+	await w.step(2)
+	check(e.phase == EnemyEncounter.Phase.ACTIVE, "back in the fight")
+	r.take_hit({"damage": 1000.0})
+	check(e.phase == EnemyEncounter.Phase.CLEARED, "cleared")
+	w.player.global_position = Vector3(0, 0.05, 40)
+	await w.step(int(60 * (e.leave_reset_time + 0.5)))
+	check(r.is_dead and m.is_dead and e.phase == EnemyEncounter.Phase.CLEARED, "leaving doesn't bring them back either")
+	e.reset(true)
+	check(not r.is_dead and not m.is_dead and r.visible, "a fresh run brings everyone back")
+
+
+# ------------------------------------------------------------------ kicks
+
+func _kick_at(target: Vector3) -> void:
+	_aim(target)
+	await w.press(InputFrame.make(Vector2.ZERO, false, false, true))
+
+
+func test_kick_hurts_and_knocks_a_raider_down() -> void:
+	await _setup()
+	var r := _raider(Vector3(0, 0, -1.4), false)
+	await w.step(2)
+	var standing_head := r.head_position().y
+	await _kick_at(r.global_position + Vector3(0, 1.0, 0))
+	check_near(r.health, r.max_health - r.kick_damage, 0.5, "kick damage")
+	check(r.is_knocked_down(), "knocked down")
+	r.health = 1000.0  # so the headshot below doesn't kill it
+	await w.step(20)
+	check(r.global_position.z < -1.8, "sent flying back (%.2f)" % r.global_position.z)
+	check(r.head_position().y < standing_head - 1.0, "lying down: the head zone is on the floor (%.2f)" % r.head_position().y)
+	# From the side (from its feet, the chest hides the head).
+	w.player.global_position = Vector3(3.0, 0.05, r.head_position().z)
+	await w.step(1)
+	await _shoot(r.head_position())
+	check(hits.size() == 1 and hits[0].zone == &"head", "headshot on the floor")
+	await w.step(int(60 * r.knockdown_time))
+	check(not r.is_knocked_down() and absf(r.head_position().y - standing_head) < 0.15, "back on its feet (%.2f vs %.2f)" % [r.head_position().y, standing_head])
+
+
+func test_kick_damage_scales_with_the_combo() -> void:
+	await _setup()
+	w.player.kick_damage_scale = func() -> float: return 2.5
+	var r := _raider(Vector3(0, 0, -1.4), false)
+	await w.step(2)
+	await _kick_at(r.global_position + Vector3(0, 1.0, 0))
+	check_near(r.health, r.max_health - r.kick_damage * 2.5, 0.5, "x2.5 kick")
+
+
+func test_kick_kill_is_a_trick() -> void:
+	await _setup()
+	var tricks: Array[StringName] = []
+	w.player.trick.connect(func(n: StringName, _i: Dictionary) -> void: tricks.append(n))
+	var r := _raider(Vector3(0.6, 0, -1.3), false)
+	await w.step(2)
+	r.health = 10.0
+	# Not quite looking at it: the kick still lands.
+	await _kick_at(r.global_position + Vector3(-0.7, 1.0, 0))
+	check(r.is_dead, "kicked to death")
+	check(&"kick" in tricks and &"kick_kill" in tricks, "kick and kick kill (%s)" % [tricks])
+
+
+func test_heavies_and_brutes_only_stagger() -> void:
+	await _setup()
+	var h: Enemy = load("res://enemies/heavy.gd").new()
+	h.position = Vector3(0, 0, -1.4)
+	w.add_child(h)
+	await w.step(2)
+	await _kick_at(h.global_position + Vector3(0, 1.0, 0))
+	check(h.health < h.max_health, "the kick hurts")
+	check(h.is_staggered() and not h.is_knocked_down(), "but it stays on its feet")
+
+
+# ------------------------------------------------------------------ hit zones follow the body
+
+func test_hit_zones_are_body_shaped() -> void:
+	await _setup()
+	var r := _raider(Vector3(0, 0, -10), false)
+	await w.step(2)
+	# Inside where the old box was, but past the thigh: a miss now.
+	(w.player.weapon as Pistol).aim_assist = 0.0
+	await _shoot(r.global_position + Vector3(0.27, 0.45, 0))
+	check(not hits.any(func(h: Dictionary) -> bool: return h.target == r), "a shot past the leg misses")
+	hits.clear()
+	await _shoot(r.global_position + Vector3(0.1, 0.45, 0))
+	check(hits.size() == 1 and hits[0].target == r and hits[0].zone == &"body", "the leg itself is hit")
+
+
+func test_hit_zones_duck_with_the_raider() -> void:
+	await _setup()
+	var r := _raider(Vector3(0, 0, -10), false)
+	await w.step(2)
+	var standing := r.head_position()
+	r.duck = 1.0
+	await w.step(1)
+	check(r.head_position().y < standing.y - 0.4, "ducked head zone (%.2f -> %.2f)" % [standing.y, r.head_position().y])
+	await _shoot(standing)
+	check(hits.is_empty() or hits[0].zone != &"head", "no headshot where its head was")
+
+
+func test_aiming_puts_the_arms_up() -> void:
+	await _setup()
+	var r := _raider(Vector3(0, 0, -10), false)
+	await w.step(2)
+	var hand_low: Vector3 = r.hit_rig.parts["RightLowerArm"].global_position
+	r.state = Raider.State.AIM
+	r.aim_dir = Vector3(0, 0, 1)
+	await w.step(1)
+	var hand_up: Vector3 = r.hit_rig.parts["RightLowerArm"].global_position
+	check(hand_up.y > hand_low.y + 0.15, "forearm raised to the rifle (%.2f -> %.2f)" % [hand_low.y, hand_up.y])
+
+
+# ------------------------------------------------------------------ difficulty
+
+func test_difficulty_makes_enemies_quicker() -> void:
+	await _setup()
+	var r := _raider(Vector3(0, 0, -12), false)
+	var windup := r.windup
+	var speed := r.move_speed
+	r.activate(w.player)
+	check(r.windup < windup and r.move_speed > speed, "quicker to aim and on its feet")
+	check(r.aim_lead >= 0.5, "leads a runner")
+	r.deactivate()
+	var again := r.windup
+	r.activate(w.player)
+	check(r.windup == again, "applied once")
 
 
 # ------------------------------------------------------------------ determinism

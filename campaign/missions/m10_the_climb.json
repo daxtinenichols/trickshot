@@ -42,7 +42,7 @@
   ]},
   {"turn": "left", "size": 20},
   {"roof": 40, "y": 22, "do": [
-   {"encounter": "scaffold crew", "at": 4, "length": 34, "raiders": [[-3.6, 14, 0], [3.6, 20, 0.6], [-3.6, 28, 1.2]], "enemies": [{"type": "hunter", "x": 3, "d": 26, "wake": 0.8}, {"type": "gun_drone", "x": 0, "d": 18, "height": 4}]}
+   {"encounter": "scaffold crew", "at": 4, "length": 34, "raiders": [[-3.6, 14, 0], [3.6, 20, 0.6], [-3.6, 28, 1.2]], "enemies": [{"type": "hunter", "x": 3, "d": 26, "wake": 0.8}, {"type": "spotter_drone", "x": 0, "d": 18, "height": 4}]}
   ]},
   {"gap": 5},
   {"roof": 35},
@@ -69,7 +69,7 @@
   {"turn": "left", "size": 20},
   {"roof": 46, "do": [
    {"checkpoint": "Antenna deck", "at": 4, "objective": 3},
-   {"encounter": "antenna deck", "at": 6, "length": 38, "raiders": [[-3.6, 14, 0], [3.6, 24, 0.8]], "enemies": [{"type": "marksman", "x": -3.8, "d": 32, "wake": 1.2}, {"type": "hunter", "x": 3, "d": 18, "wake": 0.4}, {"type": "hunter", "x": -3, "d": 30, "wake": 1.0}]}
+   {"encounter": "antenna deck", "at": 6, "length": 38, "raiders": [[-3.6, 14, 0], [3.6, 24, 0.8]], "enemies": [{"type": "raider", "x": -3.8, "d": 32, "wake": 1.2}, {"type": "hunter", "x": 3, "d": 18, "wake": 0.4}, {"type": "hunter", "x": -3, "d": 30, "wake": 1.0}]}
   ]},
   {"roof": 44, "y": 34, "do": [
    {"slide": true, "at": 22}
@@ -91,7 +91,7 @@
   {"turn": "left", "size": 20},
   {"roof": 30, "do": [
    {"checkpoint": "Top deck", "at": 4, "objective": 4},
-   {"encounter": "top deck", "at": 6, "length": 22, "raiders": [[-3.6, 10, 0], [3.6, 14, 0.4], [-3.6, 20, 0.8]], "enemies": [{"type": "marksman", "x": 3.8, "d": 20, "wake": 1.0}]}
+   {"encounter": "top deck", "at": 6, "length": 22, "troopers": [[-3.6, 10, 0], [3.6, 14, 0.4], [-3.6, 20, 0.8]], "enemies": [{"type": "marksman", "x": 3.8, "d": 20, "wake": 1.0}]}
   ]},
   {"roof": 30, "y": 43},
   {"turn": "left", "size": 20},

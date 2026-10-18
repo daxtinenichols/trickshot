@@ -19,6 +19,7 @@ const SHOT_NAMES := {
 	&"kill": "KILL",
 	&"combo_kill": "COMBO KILL",
 	&"feed_cut": "CUT THE FEED",
+	&"kick_kill": "KICK KILL",
 }
 
 var tracker: ComboTracker

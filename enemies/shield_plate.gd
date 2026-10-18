@@ -20,9 +20,10 @@ func on_hit(info: Dictionary) -> void:
 		bearer.on_shield_hit(info)
 
 
-func on_kicked(by: Node, dir := Vector3.ZERO) -> void:
+func on_kicked(by: Node, dir := Vector3.ZERO) -> bool:
 	if bearer and bearer.has_method("on_kicked"):
-		bearer.on_kicked(by, dir)
+		return bearer.on_kicked(by, dir)
+	return false
 
 
 func set_enabled(on: bool) -> void:

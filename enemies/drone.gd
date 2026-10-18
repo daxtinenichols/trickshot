@@ -74,6 +74,8 @@ func _ready() -> void:
 	turn_rate = 220.0
 	kick_shove = 9.0
 	kick_stagger = 0.9
+	# It tumbles through the air instead (and a kick usually breaks it).
+	knockdown_time = 0.0
 	headshot_flinch = 0.3
 	corpse_time = 2.5
 	super()

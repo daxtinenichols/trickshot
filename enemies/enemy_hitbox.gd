@@ -19,9 +19,11 @@ func _init(owner_enemy: Node = null, zone := &"body") -> void:
 	add_to_group("hitboxes")
 
 
-func on_kicked(by: Node, dir := Vector3.ZERO) -> void:
+## Returns true if the kick killed its enemy.
+func on_kicked(by: Node, dir := Vector3.ZERO) -> bool:
 	if enemy and enemy.has_method("on_kicked"):
-		enemy.on_kicked(by, dir)
+		return enemy.on_kicked(by, dir)
+	return false
 
 
 func set_enabled(on: bool) -> void:

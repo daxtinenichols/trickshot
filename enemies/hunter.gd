@@ -34,6 +34,10 @@ func _ready() -> void:
 	turn_rate = 540.0
 
 
+func _hit_profile() -> Dictionary:
+	return HitRig.RUNNER
+
+
 func _model_path() -> String:
 	return "res://enemies/models/hunter.glb"
 
