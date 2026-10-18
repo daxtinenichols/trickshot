@@ -198,7 +198,27 @@ has to do it to go on.
 | `clear` | `encounter` (its id) | that encounter is cleared: every enemy down, or out of the fight like a spared Juno |
 | `duel` | `encounter` (its id), `radius` (4 m) | its boss (Juno) is shot down, or you get within `radius` of her and she concedes; then you spare her or not |
 
-`text` is what the HUD shows; without it a default is written. A bonus with
+Reaching a later `reach` goal counts the `reach` goals before it (a high
+line or a shortcut that runs past one region never sends you back for it).
+
+`text` is what the HUD shows; without it a default is written. Keep it
+short (the tests hold the mall's to 56 characters) and name what the
+runner can see: a goal per stretch ("Up the escalator to the walkways",
+"Last bridge, on your right") reads better than one goal for the whole
+mission.
+
+### The way on
+
+`"guide": [[x, y, z], ...]` is the main line as points at foot height, one
+at each turn, door, ramp and bridge, ending at the goal. The HUD puts the
+orange route mark over the next point with its distance, or an arrow on
+the screen's edge when it's off screen (Settings can turn it off). You
+pass a point by getting near it or by running on along a later stretch,
+so the high line moves it on too; after a respawn it finds you on the
+line again. `xvfb-run -a godot --path . --fixed-fps 60 -s
+res://campaign/tools/walk_shots.gd -- <out_dir> <mission id> guide` runs
+the bot line and prints a guide to start from; without `guide` it renders
+what the runner sees before every turn, HUD and radio up. A bonus with
 `"until": "end"` stays open for the rest of the mission instead of closing
 with the next required objective (the Host hit bonus in Head Office).
 
@@ -211,7 +231,13 @@ Story lines play once, queued, without ever stopping the game:
 {"at": [4, 8, -62], "radius": 7, "who": "mags", "line": "Wall on the right, same as home."}
 ```
 
-`who`: `mags`, `host`, `echo`, `parker`, `juno`, `vell`. Triggers (`on`):
+`who`: `mags`, `host`, `echo`, `parker`, `juno`, `vell`. A line that tells
+you the way says `"cue": true`: it goes to the front of the queue, so it's
+heard while it still helps. A line about a place (an `at` line, or one on
+reaching a checkpoint) still waiting after `RadioFeed.STALE_AFTER` (12 s)
+is dropped, since you've run on; lines queued together (a conversation)
+wait for each other, and a story beat that must be heard says
+`"keep": true` (Echo's first message in m06). Triggers (`on`):
 `start` (mission loads), `go` (you leave the start), `objective:N` (objective
 N begins), `done:N`, `checkpoint:N`, `complete`, `time:SECONDS`, `fall`,
 `caught`, `down`, `tape`, `kill:TYPE` (the first kill of an enemy listed by
@@ -289,6 +315,8 @@ react to any of them.
 | `{"mark": [x, y, z], "size": [w, d], "color": "#f57320"}` | painted floor mark |
 | `{"tape": [x, y, z], "id": "m02_tape_container"}` | a lost broadcast tape (collectible); ids must be unique |
 | `{"fire": [x, y, z], "size": [w, h, d]}` | flames and light, no collision |
+| `{"chalk": [x, y, z], "point": "left", "size": 2.4, "yaw": 90, "text": "BRIDGE"}` | courier chalk painted big where the way turns: an orange arrow on a wall facing +Z before `yaw` (put it on the wall face the runner runs at), or `"on": "floor"` flat on the ground; `point` is `up`, `left`, `right` or `down` as you face it (on the floor `up` is straight on, -Z before `yaw`); `text` is scrawled over it. Glows a little, no collision |
+| `{"light": [x, y, z], "range": 12, "energy": 2, "color": "#ffb46b"}` | a warm light over the way on, no shadows |
 | `{"figure": "echo", "at": [x, y, z], "yaw": 0, "pose": "arms_crossed"}` | a runner standing in the level as a character (Echo in the Dead Air studio): faces +Z, watches the camera, blocks the player; poses `idle`, `arms_crossed` |
 | `{"encounter": "name", "area": {...}, "raiders": [...], "mutants": [...], "cover": [...]}` | enemies (below) |
 

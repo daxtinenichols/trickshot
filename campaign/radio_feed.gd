@@ -9,7 +9,15 @@ extends CanvasLayer
 ##                     "checkpoint:N" | "complete" | "time:SECONDS" | ...,
 ##               "who": "mags", "line": "..."}
 ##              or {"at": [x, y, z], "radius": 6, "who": ..., "line": ...}
-##              to play when you reach a spot.
+##              to play when you reach a spot. "cue": true marks a line
+##              that tells you the way ("Escalator, your left"): it goes
+##              to the front of the queue, so it's heard while it helps.
+##              A line for a place (an "at" line, or one on reaching a
+##              checkpoint) that waits in the queue longer than
+##              STALE_AFTER is dropped: you've run on, and a line about the
+##              food court on the far walkway only confuses. Lines queued
+##              together (a conversation) wait for each other, and a
+##              story beat that must be heard says "keep": true.
 ##   "chatter": reactions to how you play, by event ("bail", "combo",
 ##              "fall", "kill", "headshot", "caught", "tape"): lists of
 ##              {"who", "line"}, dealt out in a shuffled order (every line
@@ -35,6 +43,8 @@ const SPEAKERS := {
 const CHATTER_COOLDOWN := 7.0
 ## A queue this long drops chatter.
 const MAX_QUEUE := 4
+## Seconds a line for a place can wait in the queue before it's dropped.
+const STALE_AFTER := 12.0
 ## Chatter skips any of this many lines heard last, if it can.
 const RECENT_LINES := 6
 
@@ -64,6 +74,8 @@ var _seen := {}
 var _shown_for := 0.0
 var _show_time := 0.0
 var _last_msec := 0
+## Radio time (advance's dt summed), for how long lines have waited.
+var _clock := 0.0
 
 var _panel: PanelContainer
 var _who: Label
@@ -94,7 +106,7 @@ func notify(event_name: String) -> void:
 		var s: Dictionary = _story[i]
 		if s.get("on", "") == event_name and not _played.has(i) and _allowed(s):
 			_played[i] = true
-			say(s.get("who", "mags"), s.get("line", ""))
+			say(s.get("who", "mags"), s.get("line", ""), s.get("cue", false), event_name.begins_with("checkpoint:") and not s.get("keep", false))
 			story_found = true
 	if not story_found and _chatter.has(event_name):
 		_chat(event_name)
@@ -110,11 +122,27 @@ static func _allowed(s: Dictionary) -> bool:
 	return cond.size() == 2 and key.size() == 2 and Campaign.choice(key[0], key[1]) == cond[1]
 
 
-## Queues a line.
-func say(who: String, line: String) -> void:
+## Queues a line; a cue (the way on) goes ahead of the lines waiting. A
+## `local` line (about where you are) is dropped if it waits too long.
+func say(who: String, line: String, cue := false, local := false) -> void:
 	if line == "":
 		return
-	queue.append({"who": who, "line": line})
+	var l := {"who": who, "line": line, "queued_at": _clock}
+	if local:
+		l["stale_at"] = _clock + STALE_AFTER
+		# The next line of a conversation queued at the same moment can
+		# wait as long as the lines before it take.
+		if not queue.is_empty() and queue.back().get("queued_at", -1.0) == _clock and queue.back().has("stale_at"):
+			l["stale_at"] = float(queue.back().stale_at) + duration(queue.back().line) + 2.0
+	if cue:
+		# After any cue already waiting, ahead of everything else.
+		l["cue"] = true
+		var at := 0
+		while at < queue.size() and queue[at].get("cue", false):
+			at += 1
+		queue.insert(at, l)
+	else:
+		queue.append(l)
 
 
 func _chat(event_name: String) -> void:
@@ -199,14 +227,17 @@ func _process(_delta: float) -> void:
 
 ## Moves the radio on by `dt` real seconds (also used by tests).
 func advance(dt: float) -> void:
+	_clock += dt
 	if run != null and player != null:
 		_check_triggers()
 	if not current.is_empty():
 		_shown_for += dt
 		if _shown_for >= _show_time:
 			current = {}
-	if current.is_empty() and not queue.is_empty():
-		_show(queue.pop_front())
+	while current.is_empty() and not queue.is_empty():
+		var l: Dictionary = queue.pop_front()
+		if _clock <= float(l.get("stale_at", INF)):
+			_show(l)
 	_refresh()
 
 
@@ -220,10 +251,10 @@ func _check_triggers() -> void:
 		var on: String = s.get("on", "")
 		if on.begins_with("time:") and run.phase == MissionRun.Phase.RUNNING and t >= on.substr(5).to_float():
 			_played[i] = true
-			say(s.get("who", "mags"), s.get("line", ""))
+			say(s.get("who", "mags"), s.get("line", ""), s.get("cue", false))
 		elif s.has("at") and MissionRun.inside(s, pos):
 			_played[i] = true
-			say(s.get("who", "mags"), s.get("line", ""))
+			say(s.get("who", "mags"), s.get("line", ""), s.get("cue", false), not s.get("keep", false))
 
 
 func _show(l: Dictionary) -> void:

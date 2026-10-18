@@ -200,6 +200,26 @@ def top_deck():
     p(prop="chalk_arrow", at=[-6.0, TOP, CZ_S], yaw=90)
 
 
+def way_chalk():
+    """Courier chalk painted big where the way turns, on the wall a runner
+    runs at: out of the skybridge it's a left, then every corner of the
+    spiral is a right, and so is the way into the core (Juno) off the last
+    lap. Arrows clear the 1 m parapets and sit beside each lap's LEVEL
+    sign."""
+    inner = X_OUT - 0.05
+    # Out of the skybridge onto the top deck: left, on the core's wall.
+    p(chalk=[-4.0, TOP + 2.3, Z_SI + 0.45], point="left", size=2.2)
+    for lap in range(LAPS):
+        sw, nw, ne, se, sw2 = corners(lap)
+        p(chalk=[-inner, sw + 2.0, Z_SI + 1.4], yaw=90, point="right", size=1.8)
+        p(chalk=[-CX, nw + 2.3, Z_N + 0.05], point="right", size=2.2)
+        p(chalk=[inner, ne + 2.3, CZ_N], yaw=-90, point="right", size=2.2)
+        p(chalk=[CX, se + 2.3, Z_S - 0.05], yaw=180, point="right", size=2.2, text="JUNO" if lap == LAPS - 1 else "")
+    # The last lap: right through the core's door, where Juno waits.
+    p(chalk=[3.0, deck_y(LAPS - 1, "S", (X_IN - 3.0) / (2 * X_IN)) + 0.06, CZ_S], on="floor", point="right", yaw=90, size=2.4)
+    p(light=[0.0, 3.2, Z_SI - 3.0], range=10.0, energy=1.6)
+
+
 def columns():
     """Columns from the street to the top, at the lanes' edges."""
     top = TOP + 1.0
@@ -484,6 +504,7 @@ def main():
     columns()
     cars()
     lights()
+    way_chalk()
     skybridge()
     shell()
     street()

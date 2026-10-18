@@ -303,7 +303,7 @@ func _check_objective(pos: Vector3) -> void:
 	var done := false
 	match String(o.get("type", "reach")):
 		"reach":
-			done = inside(o, pos)
+			done = inside(o, pos) or _reached_later(pos)
 		"score":
 			done = _score() >= int(o.points)
 		"combo":
@@ -325,6 +325,18 @@ func _check_objective(pos: Vector3) -> void:
 			_complete()
 		else:
 			_begin_objective(objective + 1)
+
+
+## True when you're already in a later "reach" goal than the active one
+## (the high line, or a shortcut, ran past the active one's region): the
+## goals before it count as reached, so nobody is sent back for them.
+func _reached_later(pos: Vector3) -> bool:
+	var i := _next_required(objective + 1)
+	while i < objectives.size() and String(objectives[i].get("type", "reach")) == "reach":
+		if inside(objectives[i], pos):
+			return true
+		i = _next_required(i + 1)
+	return false
 
 
 func _next_required(i: int) -> int:

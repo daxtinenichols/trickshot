@@ -39,6 +39,8 @@ var gamepad_look_speed := 3.2
 var invert_y := false
 ## The third-person camera turns with flips and rolls (ChaseCamera reads it).
 var camera_follow_flips := false
+## Campaign missions show the orange route mark over the way on.
+var route_marker := true
 ## Aim help, 0 (off) to 1: shots bend onto nearby heads and bodies, and
 ## controller look slows over targets.
 var aim_assist := 0.5
@@ -90,6 +92,7 @@ func reset_values() -> void:
 	gamepad_look_speed = 3.2
 	invert_y = false
 	camera_follow_flips = false
+	route_marker = true
 	aim_assist = 0.5
 	fov = 85.0
 	volume = 0.8
@@ -315,6 +318,7 @@ func save_settings(path := "") -> void:
 	cfg.set_value("look", "gamepad_look_speed", gamepad_look_speed)
 	cfg.set_value("look", "invert_y", invert_y)
 	cfg.set_value("look", "camera_follow_flips", camera_follow_flips)
+	cfg.set_value("look", "route_marker", route_marker)
 	cfg.set_value("look", "aim_assist", aim_assist)
 	cfg.set_value("look", "fov", fov)
 	cfg.set_value("audio", "volume", volume)
@@ -335,6 +339,7 @@ func load_settings(path := "") -> void:
 	gamepad_look_speed = cfg.get_value("look", "gamepad_look_speed", gamepad_look_speed)
 	invert_y = cfg.get_value("look", "invert_y", invert_y)
 	camera_follow_flips = cfg.get_value("look", "camera_follow_flips", camera_follow_flips)
+	route_marker = cfg.get_value("look", "route_marker", route_marker)
 	aim_assist = cfg.get_value("look", "aim_assist", aim_assist)
 	fov = cfg.get_value("look", "fov", fov)
 	volume = cfg.get_value("audio", "volume", volume)

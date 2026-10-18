@@ -242,6 +242,12 @@ func _build_settings() -> Control:
 	follow.toggled.connect(func(on: bool) -> void: _set_value("camera_follow_flips", on))
 	box.add_child(follow)
 	_value_rows["camera_follow_flips"] = follow
+	var mark := CheckButton.new()
+	mark.text = "Show the route mark in missions"
+	mark.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
+	mark.toggled.connect(func(on: bool) -> void: _set_value("route_marker", on))
+	box.add_child(mark)
+	_value_rows["route_marker"] = mark
 	var reset := Button.new()
 	reset.text = "Reset settings"
 	reset.size_flags_horizontal = Control.SIZE_SHRINK_BEGIN
