@@ -37,15 +37,7 @@ uniform float crack_strength = 0.4;
 varying vec3 world_pos;
 varying vec3 world_normal;
 
-// Boxes grow by a few millimeters, smaller boxes more (set per instance by
-// ArtLook.layer_boxes), so two looks never sit in the same plane: a detail
-// laid flush on a wall or floor always draws on top instead of flickering.
-instance uniform float box_grow = 0.0;
-// Flat marks (planes, quads) lift off what they lie on the same way.
-instance uniform float face_lift = 0.0;
-
 void vertex() {
-	VERTEX += sign(VERTEX) * box_grow + NORMAL * face_lift;
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
 }

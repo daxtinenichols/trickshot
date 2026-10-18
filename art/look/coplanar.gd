@@ -22,13 +22,7 @@ static func collect(root: Node) -> Array:
 			continue
 		var xf := mi.global_transform
 		var faces := mi.mesh.get_faces()
-		# ArtLook grows boxes a little when drawn (see ArtLook.box_grow).
-		var grow: Variant = mi.get_meta("box_grow", 0.0) if mi.mesh is BoxMesh else 0.0
-		if grow is float and grow > 0.0:
-			for i in faces.size():
-				faces[i] += faces[i].sign() * grow
 		var mat := _material(mi)
-		var lift: float = mi.get_meta("face_lift", 0.0)
 		for i in range(0, faces.size(), 3):
 			var a: Vector3 = xf * faces[i]
 			var b: Vector3 = xf * faces[i + 1]
@@ -40,7 +34,7 @@ static func collect(root: Node) -> Array:
 			n = n.normalized()
 			if n.y < -0.9 and maxf(a.y, maxf(b.y, c.y)) < 0.05:
 				continue  # the underside of something standing on the ground
-			tris.append([a, b, c, n, n.dot(a) + lift, id, mat, mi])
+			tris.append([a, b, c, n, n.dot(a), id, mat, mi])
 		id += 1
 	return tris
 

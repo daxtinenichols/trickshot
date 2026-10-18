@@ -98,6 +98,7 @@ var _env_backup := {}
 var _attached: Array = []  # nodes this look added, removed when turned off
 var _hidden: Array = []  # graybox meshes a dress replaced, shown again when off
 var _marks := 0  # floor marks laid so far (layer_box)
+var _resized: Array = []  # [MeshInstance3D, original mesh, original position]
 ## Dress obstacles as the city (concrete, brick, crates, hoardings). Off
 ## keeps the color-coded blocks under the weathered look.
 var dress_obstacles := true
@@ -259,12 +260,16 @@ static func box_grow(size: Vector3, layer: float) -> float:
 
 
 func layer_box(g: MeshInstance3D) -> void:
+	if g.has_meta("box_grow") or g.has_meta("face_lift"):
+		return
 	if g.mesh is PlaneMesh or g.mesh is QuadMesh:
 		# Floor marks lie on the floor and on each other: each one lifts
 		# 0.5 mm more than the last, in a cycle of 8.
 		var lift := 0.0005 * (1 + _marks % 8)
 		_marks += 1
-		g.set_instance_shader_parameter("face_lift", lift)
+		_resized.append([g, g.mesh, g.position])
+		var up := Vector3.UP if g.mesh is PlaneMesh else Vector3.BACK
+		g.position += (g.basis * up).normalized() * lift
 		g.set_meta("face_lift", lift)
 	elif g.mesh is BoxMesh and g.material_override:
 		var layer: float = g.material_override.get_meta("layer", LAYERS.size() * 0.5)
@@ -273,9 +278,18 @@ func layer_box(g: MeshInstance3D) -> void:
 			# A dressed box stays under its dress pieces (2 mm and up) but
 			# apart from other dressed boxes it touches.
 			grow = 0.0005 + 0.0001 * layer
-		g.set_instance_shader_parameter("box_grow", grow)
-		# The dummy renderer (headless audits) doesn't keep instance uniforms.
-		g.set_meta("box_grow", grow)
+		_grow(g, grow)
+
+
+## Draws a box `grow` m bigger on every side: its own copy of the mesh, put
+## back when the look turns off.
+func _grow(g: MeshInstance3D, grow: float) -> void:
+	var bm := g.mesh as BoxMesh
+	var grown := bm.duplicate() as BoxMesh
+	grown.size = bm.size + Vector3.ONE * grow * 2.0
+	_resized.append([g, bm, g.position])
+	g.mesh = grown
+	g.set_meta("box_grow", grow)
 
 
 ## Dresses a gameplay obstacle (or a whole building) as part of the city.
@@ -301,8 +315,10 @@ func _layer_dress(dress: Node) -> void:
 	var i := 0
 	for mi: Node in dress.find_children("*", "MeshInstance3D", true, false):
 		if (mi as MeshInstance3D).mesh is BoxMesh:
+			# Dress pieces are the dress's own: grown in place, for good.
+			var bm := (mi as MeshInstance3D).mesh as BoxMesh
 			var grow := 0.002 + 0.00025 * (i % 16) + 0.000125 * (i / 16 % 2)
-			mi.set_instance_shader_parameter("box_grow", grow)
+			bm.size += Vector3.ONE * grow * 2.0
 			mi.set_meta("box_grow", grow)
 			i += 1
 
@@ -481,6 +497,13 @@ func _remove_all() -> void:
 		if is_instance_valid(g):
 			g.visible = true
 	_hidden.clear()
+	for r in _resized:
+		if is_instance_valid(r[0]):
+			r[0].mesh = r[1]
+			r[0].position = r[2]
+			r[0].remove_meta("box_grow")
+			r[0].remove_meta("face_lift")
+	_resized.clear()
 	# Iterate a copy of the keys: walking a Dictionary keyed by an object that
 	# has since been freed (a sun from an unloaded level) can loop forever.
 	for res: Variant in _env_backup.keys():
