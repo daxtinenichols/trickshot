@@ -16,9 +16,13 @@ extends CharacterBody3D
 signal damaged(info: Dictionary)
 signal killed(info: Dictionary)
 
-## Movement collision layer: enemies bump into the world and each other,
-## but the player runs through them (the player only collides with layer 1).
+## Movement collision layer: enemies bump into the world, each other and
+## the player (layer 2, whose mask includes this layer), so neither side
+## runs through the other. Knocked-down and dead enemies are walked over.
 const BODY_LAYER := 8
+const PLAYER_LAYER := 2
+## How long a heavy the player barged into lets them through (s).
+const BARGE_TIME := 0.4
 ## Kick knockdowns: how long the fall and the getting up take (s).
 const FALL_TIME := 0.18
 const GET_UP_TIME := 0.45
@@ -96,6 +100,9 @@ var _killed_by: Dictionary = {}
 var _difficulty_applied := false
 ## Seconds left lying down after a kick (0: on its feet).
 var _knocked := 0.0
+## Seconds the player can still push through after barging into this
+## enemy without knocking it over.
+var _barged := 0.0
 ## The knockdown as drawn (eases toward knockdown_amount). Looks only.
 var _knock_shown := 0.0
 
@@ -103,7 +110,7 @@ var _knock_shown := 0.0
 func _ready() -> void:
 	add_to_group("enemies")
 	collision_layer = BODY_LAYER
-	collision_mask = 1 | BODY_LAYER
+	collision_mask = 1 | PLAYER_LAYER | BODY_LAYER
 	floor_max_angle = deg_to_rad(46.0)
 	health = max_health
 	yaw = rotation.y
@@ -225,6 +232,7 @@ func reset_to_home() -> void:
 	duck = 0.0
 	_stagger = 0.0
 	_knocked = 0.0
+	_barged = 0.0
 	_dead_time = 0.0
 	_bar_show = 0.0
 	_rng.seed = seed_value
@@ -329,6 +337,33 @@ func on_kicked(by: Node, dir := Vector3.ZERO) -> bool:
 	return false
 
 
+## Run into by the player at `speed` (m/s) heading `dir`: knocked onto its
+## back like a kick, without the damage, and no longer solid so the player
+## carries on through. Too heavy to knock over: it staggers aside and lets
+## the player shoulder past (barge_time). Returns true unless it was
+## already down.
+func on_body_checked(by: Node, dir: Vector3, speed: float) -> bool:
+	if is_dead or _knocked > 0.0:
+		return false
+	var d := EnemyMath.horizontal(dir)
+	if d.length_squared() < 1e-6 and by is Node3D:
+		d = EnemyMath.horizontal(global_position - (by as Node3D).global_position)
+	d = d.normalized() if d.length_squared() > 1e-6 else -forward()
+	_stagger = maxf(_stagger, kick_stagger)
+	_flash = 1.0
+	_interrupt()
+	if knockdown_time <= 0.0:
+		velocity = d * kick_shove * 0.3
+		_barged = BARGE_TIME
+		_set_body_solid(false)
+		return true
+	velocity = d * minf(kick_shove * 0.5 + speed * 0.3, kick_shove * 1.5) + Vector3.UP * 2.5
+	_knocked = knockdown_time
+	_stagger = maxf(_stagger, knockdown_time)
+	_set_body_solid(false)
+	return true
+
+
 func is_knocked_down() -> bool:
 	return _knocked > 0.0
 
@@ -388,6 +423,7 @@ func tick(delta: float) -> void:
 		velocity.y -= _gravity() * delta
 	if _knocked > 0.0:
 		_knocked = maxf(_knocked - delta, 0.0)
+	_tick_solid(delta)
 	if _stagger > 0.0:
 		_stagger -= delta
 		telegraph = 0.0
@@ -440,10 +476,22 @@ func _die(info: Dictionary) -> void:
 
 
 func _set_alive_collision(on: bool) -> void:
-	collision_layer = BODY_LAYER if on else 0
-	collision_mask = (1 | BODY_LAYER) if on else 0
+	_set_body_solid(on)
 	for b in _hitboxes:
 		b.set_enabled(on)
+
+
+## Lying down or just barged past: not solid to the player or other enemies.
+func _tick_solid(delta: float) -> void:
+	_barged = maxf(_barged - delta, 0.0)
+	_set_body_solid(_knocked <= 0.0 and _barged <= 0.0)
+
+
+## Whether other bodies (the player, enemies) bump into this one. It still
+## stands on the floor either way.
+func _set_body_solid(on: bool) -> void:
+	collision_layer = BODY_LAYER if on else 0
+	collision_mask = (1 | PLAYER_LAYER | BODY_LAYER) if on else 1
 
 
 # ---------------------------------------------------------------- building helpers
