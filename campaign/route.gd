@@ -37,7 +37,8 @@ const CLUTTER := ["ac_unit", "vent_stack", "satellite_dish", "generator", "barre
 const POINT_KEYS := ["box", "building", "mark", "window", "ramp", "to", "from", "tape", "at", "fire", "spawn",
 	"bank", "quarter_pipe", "loop", "door", "target"]
 ## Pieces that turn with their leg (they take a yaw).
-const TURNING_KEYS := ["box", "building", "prop", "row", "mark", "window", "bank", "quarter_pipe", "loop", "door"]
+const TURNING_KEYS := ["box", "building", "prop", "row", "mark", "window", "bank", "quarter_pipe", "loop", "door",
+	"figure"]
 ## Enemy types that fight from behind cover: the route puts sandbags in
 ## front of them (any enemy can say "cover": true or false instead).
 const COVER_TYPES := ["raider", "trooper", "marksman"]

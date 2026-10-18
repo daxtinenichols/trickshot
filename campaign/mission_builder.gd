@@ -13,6 +13,8 @@ extends SandboxBuilder
 
 const PropKit := preload("res://art/props/prop_kit.gd")
 const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
+## A runner standing in the level as a character (Echo in the studio).
+const FIGURE_SCRIPT_PATH := "res://art/characters/runner/runner_figure.gd"
 # Enemies load by path, not class_name (a stale class cache has broken
 # scenes before).
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
@@ -176,11 +178,29 @@ func _piece(p: Dictionary) -> void:
 		_fire(vec(p.fire), vec(p.get("size", [2, 1.5, 2]), Vector3(2, 1.5, 2)))
 	elif p.has("encounter"):
 		_encounter(p)
+	elif p.has("figure"):
+		_figure(String(p.figure), Transform3D(basis, vec(p.get("at", [0, 0, 0]))), String(p.get("pose", "")))
 	else:
 		push_warning("MissionBuilder: unknown piece %s" % p)
 
 
 ## A prism from the street (y 0) up to `top` over a convex footprint.
+func _figure(runner: String, xf: Transform3D, pose: String) -> void:
+	if Engine.is_editor_hint():
+		return
+	var script := load(FIGURE_SCRIPT_PATH) as Script if ResourceLoader.exists(FIGURE_SCRIPT_PATH) else null
+	if script == null or not script.can_instantiate():
+		push_warning("MissionBuilder: couldn't load %s, skipping the %s figure" % [FIGURE_SCRIPT_PATH, runner])
+		return
+	var f: Node3D = script.new()
+	f.name = "Figure_" + runner
+	f.runner = runner
+	if pose != "":
+		f.pose_name = pose
+	f.transform = xf
+	_root.add_child(f)
+
+
 func _slab(corners: Array, top: float) -> StaticBody3D:
 	var ring: PackedVector2Array = []
 	for c: Array in corners:
