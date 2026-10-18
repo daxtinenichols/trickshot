@@ -46,8 +46,15 @@
    {"piece": {"box": [-6.15, 4.8, -72.0], "size": [0.3, 9.6, 16], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [6.15, 4.8, -72.0], "size": [0.3, 9.6, 16], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [0, 9.8, -72.0], "size": [12.6, 0.4, 16], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [0, -20.0, -65.333], "size": [12.0, 40.0, 2.667], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [0, -19.583, -68.0], "size": [12.0, 40.833, 2.667], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [0, -19.167, -70.667], "size": [12.0, 41.667, 2.667], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [0, -18.75, -73.333], "size": [12.0, 42.5, 2.667], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [0, -18.333, -76.0], "size": [12.0, 43.333, 2.667], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [0, -17.917, -78.667], "size": [12.0, 44.167, 2.667], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"ramp": [-4.25, 6.0, -80], "to": [-4.25, 1.0, -64], "width": 0.5, "kind": "NEUTRAL"}, "at": 0},
-   {"piece": {"ramp": [4.25, 6.0, -80], "to": [4.25, 1.0, -64], "width": 0.5, "kind": "NEUTRAL"}, "at": 0}
+   {"piece": {"ramp": [4.25, 6.0, -80], "to": [4.25, 1.0, -64], "width": 0.5, "kind": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, 4.8, 0.15], "size": [12.6, 9.6, 0.3], "kind": "NEUTRAL", "look": "FACADE"}, "at": 0}
   ]},
   {"ramp_up": 7, "length": 16, "width": 8},
   {"roof": 150, "y": 7, "width": 18, "indoors": 4.6, "bare": true, "do": [
@@ -265,7 +272,9 @@
    {"piece": {"box": [-12.15, 2.3, -172.65], "size": [0.3, 4.6, 2.7], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [-10.65, 2.3, -149.85], "size": [2.7, 4.6, 0.3], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [10.65, 2.3, -149.85], "size": [2.7, 4.6, 0.3], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
-   {"piece": {"box": [0, 4.8, -162.0], "size": [24.6, 0.4, 24], "kind": "NEUTRAL", "look": "TILE"}, "at": 0}
+   {"piece": {"box": [0, 4.8, -162.0], "size": [24.6, 0.4, 24], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [-7.5, 2.3, 0.15], "size": [3.3, 4.6, 0.3], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [7.5, 2.3, 0.15], "size": [3.3, 4.6, 0.3], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0}
   ]},
   {"turn": "left", "size": 24},
   {"roof": 140, "width": 18, "indoors": 4.6, "bare": true, "do": [
@@ -487,6 +496,8 @@
    {"prop": "planter_tub", "x": 5.6, "at": 26},
    {"piece": {"fire": [-6.4, 0, -32], "size": [1.4, 1.0, 1.4]}, "at": 0},
    {"piece": {"box": [0, 9.8, 0.15], "size": [16.6, 10.4, 0.3], "kind": "NEUTRAL", "look": "FACADE"}, "at": 0},
+   {"piece": {"box": [8.15, 5.0, -68.3], "size": [0.6, 10.0, 0.6], "kind": "NEUTRAL", "look": "FACADE"}, "at": 0},
+   {"piece": {"box": [13.85, 5.0, -68.3], "size": [0.6, 10.0, 0.6], "kind": "NEUTRAL", "look": "FACADE"}, "at": 0},
    {"piece": {"box": [-7.15, -0.5, -54.0], "size": [2.3, 1.0, 28], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [-8.15, 7.5, -54.0], "size": [0.3, 15.0, 28], "kind": "NEUTRAL", "look": "FACADE"}, "at": 0},
    {"piece": {"box": [26.15, 7.5, -54.0], "size": [0.3, 15.0, 28], "kind": "NEUTRAL", "look": "FACADE"}, "at": 0},
@@ -500,18 +511,21 @@
     {"label": "GANTRY", "at": 5, "size": 0.6},
     {"piece": {"box": [-6.15, 6, -18], "size": [0.3, 12, 36], "kind": "NEUTRAL", "look": "FACADE"}, "at": 0},
     {"piece": {"row": "railing", "from": [5.7, 0, -1], "to": [5.7, 0, -35], "count": 18, "yaw": 90}, "at": 0},
+    {"piece": {"box": [6.05, 2.25, -18.0], "size": [0.12, 4.5, 36.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 0},
     {"encounter": "gantry", "at": 2, "length": 22, "troopers": [[3.6, 12, 0.4]]}
    ]},
    {"wallrun": 12, "side": -1},
    {"roof": 30, "bare": true, "do": [
     {"piece": {"box": [-6.15, 6, -15], "size": [0.3, 12, 30], "kind": "NEUTRAL", "look": "FACADE"}, "at": 0},
     {"piece": {"row": "railing", "from": [5.7, 0, -1], "to": [5.7, 0, -29], "count": 15, "yaw": 90}, "at": 0},
+    {"piece": {"box": [6.05, 2.25, -15.0], "size": [0.12, 4.5, 30.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 0},
     {"tape": "m09b_tape_gantry", "x": 4.4, "at": 27},
     {"hop": true, "side": -1, "at": 4}
    ]},
    {"roof": 34, "y": 13, "indoors": 9, "bare": true, "do": [
     {"piece": {"box": [-6.15, 4.5, -17], "size": [0.3, 9, 34], "kind": "NEUTRAL", "look": "FACADE"}, "at": 0},
     {"piece": {"row": "railing", "from": [5.7, 0, -1], "to": [5.7, 0, -33], "count": 17, "yaw": 90}, "at": 0},
+    {"piece": {"box": [6.05, 4.5, -17.0], "size": [0.12, 9, 34.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 0},
     {"glass": 0, "at": 26}
    ]}
   ], "side": 1, "spread": 20.0},
@@ -659,7 +673,13 @@
    {"label": "STAIRS", "at": 6, "size": 0.6},
    {"piece": {"box": [-6.15, 4.55, -27.0], "size": [0.3, 9.1, 14], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [6.15, 4.55, -27.0], "size": [0.3, 9.1, 14], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
-   {"piece": {"box": [0, 9.3, -27.0], "size": [12.6, 0.4, 14], "kind": "NEUTRAL", "look": "TILE"}, "at": 0}
+   {"piece": {"box": [0, 9.3, -27.0], "size": [12.6, 0.4, 14], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [0, -20.0, -21.167], "size": [12.0, 40.0, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -19.625, -23.5], "size": [12.0, 40.75, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -19.25, -25.833], "size": [12.0, 41.5, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -18.875, -28.167], "size": [12.0, 42.25, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -18.5, -30.5], "size": [12.0, 43.0, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -18.125, -32.833], "size": [12.0, 43.75, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0}
   ]},
   {"ramp_up": 17.5, "length": 14, "width": 6},
   {"roof": 14, "y": 17.5, "indoors": 4.6, "bare": true, "do": [
@@ -668,7 +688,13 @@
    {"piece": {"box": [0, 4.8, -7.0], "size": [12.6, 0.4, 14.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [-6.15, 4.55, -21.0], "size": [0.3, 9.1, 14], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [6.15, 4.55, -21.0], "size": [0.3, 9.1, 14], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
-   {"piece": {"box": [0, 9.3, -21.0], "size": [12.6, 0.4, 14], "kind": "NEUTRAL", "look": "TILE"}, "at": 0}
+   {"piece": {"box": [0, 9.3, -21.0], "size": [12.6, 0.4, 14], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [0, -20.0, -15.167], "size": [12.0, 40.0, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -19.625, -17.5], "size": [12.0, 40.75, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -19.25, -19.833], "size": [12.0, 41.5, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -18.875, -22.167], "size": [12.0, 42.25, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -18.5, -24.5], "size": [12.0, 43.0, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [0, -18.125, -26.833], "size": [12.0, 43.75, 2.333], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0}
   ]},
   {"ramp_up": 22, "length": 14, "width": 6},
   {"roof": 160, "y": 22, "width": 18, "indoors": 4.6, "bare": true, "do": [
@@ -924,7 +950,9 @@
    {"piece": {"box": [12.15, 2.3, -181.15], "size": [0.3, 4.6, 5.7], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [-10.65, 2.3, -159.85], "size": [2.7, 4.6, 0.3], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [10.65, 2.3, -159.85], "size": [2.7, 4.6, 0.3], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
-   {"piece": {"box": [0, 4.8, -172.0], "size": [24.6, 0.4, 24], "kind": "NEUTRAL", "look": "TILE"}, "at": 0}
+   {"piece": {"box": [0, 4.8, -172.0], "size": [24.6, 0.4, 24], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [-7.5, 2.3, 0.15], "size": [3.3, 4.6, 0.3], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [7.5, 2.3, 0.15], "size": [3.3, 4.6, 0.3], "kind": "NEUTRAL", "look": "NEUTRAL"}, "at": 0}
   ]},
   {"turn": "right", "size": 24},
   {"roof": 96, "indoors": 4.6, "bare": true, "do": [
@@ -980,7 +1008,7 @@
    {"piece": {"label": "PRIVATE", "at": [4.85, 2.6, -95.9], "size": 0.3}, "at": 0},
    {"label": "THE HOST", "at": 30, "size": 0.7},
    {"door": 0, "at": 54, "look": "WOOD"},
-   {"radio": {"who": "host", "line": "Look at this. You've tracked mud all over my carpet."}, "at": 58, "radius": 6},
+   {"radio": {"who": "host", "line": "Look at this. You've tracked mud all over my carpet.", "keep": true}, "at": 58, "radius": 6},
    {"encounter": "office", "at": 56, "length": 38, "raiders": [[-3.6, 14, 0.2]], "enemies": [{"type": "host_boss", "x": -3.2, "d": 30, "appearance": 3, "flee": [8, 0, -6], "cover": false}]},
    {"piece": {"box": [-3.2, 0.4, -82], "size": [2.6, 0.8, 1.2], "kind": "NEUTRAL", "look": "WOOD"}, "at": 0},
    {"piece": {"box": [-5.5, 1.5, -76], "size": [0.9, 3.0, 8], "kind": "NEUTRAL", "look": "WOOD"}, "at": 0},
@@ -993,16 +1021,16 @@
  "radio": [
   {"on": "start", "who": "mags", "line": "That's Calder House. Radio people built it, back when radio was a job. He runs the show from in there."},
   {"on": "go", "who": "host", "line": "Big treat tonight, folks. I'm coming down to say hello. In person! Don't wait up."},
-  {"on": "host:seen:1", "who": "host", "line": "There he is! Huh. You're smaller in real life."},
-  {"on": "host:seen:1", "who": "mags", "line": "That's him. That's actually him. Don't chase him into anything stupid."},
-  {"on": "host:hit:1", "who": "host", "line": "Ow! Ow. Okay. That's coming out of your fee."},
-  {"on": "host:hit:2", "who": "host", "line": "Will somebody shoot him? I pay you people!"},
-  {"on": "host:run:1", "who": "host", "line": "Back in five, folks. Don't touch that dial."},
-  {"on": "checkpoint:2", "who": "vell", "line": "You were told to stay in the studio."},
-  {"on": "checkpoint:2", "who": "host", "line": "And you were told this'd be an easy contract, Commander. We've all been lied to."},
-  {"on": "checkpoint:3", "who": "mags", "line": "His office is on this floor. Corner one. It's always the corner one."},
-  {"on": "complete", "who": "host", "line": "Right. I'm leaving. Upstairs, everybody. And bring the wife."},
-  {"on": "complete", "who": "mags", "line": "He's going up. Echo's up there, Parker. She has to be."}
+  {"on": "host:seen:1", "who": "host", "line": "There he is! Huh. You're smaller in real life.", "keep": true},
+  {"on": "host:seen:1", "who": "mags", "line": "That's him. That's actually him. Don't chase him into anything stupid.", "keep": true},
+  {"on": "host:hit:1", "who": "host", "line": "Ow! Ow. Okay. That's coming out of your fee.", "keep": true},
+  {"on": "host:hit:2", "who": "host", "line": "Will somebody shoot him? I pay you people!", "keep": true},
+  {"on": "host:run:1", "who": "host", "line": "Back in five, folks. Don't touch that dial.", "keep": true},
+  {"on": "checkpoint:2", "who": "vell", "line": "You were told to stay in the studio.", "keep": true},
+  {"on": "checkpoint:2", "who": "host", "line": "And you were told this'd be an easy contract, Commander. We've all been lied to.", "keep": true},
+  {"on": "checkpoint:3", "who": "mags", "line": "His office is on this floor. Corner one. It's always the corner one.", "keep": true},
+  {"on": "complete", "who": "host", "line": "Right. I'm leaving. Upstairs, everybody. And bring the wife.", "keep": true},
+  {"on": "complete", "who": "mags", "line": "He's going up. Echo's up there, Parker. She has to be.", "keep": true}
  ],
  "chatter": {
   "headshot": [
