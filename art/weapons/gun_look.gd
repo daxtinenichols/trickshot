@@ -51,6 +51,7 @@ var _casings: Array = []  # [MeshInstance3D, velocity, spin axis, age, floor y, 
 var _holes: Array[Decal] = []
 var _rng := RandomNumberGenerator.new()
 var _toon: ShaderMaterial
+var _toon_view: ShaderMaterial  # the first-person gun's: drawn over walls
 var _tracer_mat: StandardMaterial3D
 var _brass: StandardMaterial3D
 var _hole_tex: ImageTexture
@@ -111,6 +112,8 @@ func _build_materials() -> void:
 	_toon.set_shader_parameter("base_color", Color.WHITE)
 	_toon.set_shader_parameter("use_vertex_color", true)
 	_toon.set_shader_parameter("rim_strength", 0.6)
+	_toon_view = _toon.duplicate()
+	_toon_view.set_shader_parameter("depth_scale", 0.05)
 	_tracer_mat = StandardMaterial3D.new()
 	_tracer_mat.shading_mode = BaseMaterial3D.SHADING_MODE_UNSHADED
 	_tracer_mat.blend_mode = BaseMaterial3D.BLEND_MODE_ADD
@@ -152,7 +155,7 @@ func _build_sounds() -> void:
 func _instance_gun(layer: int) -> Node3D:
 	var gun: Node3D = MODEL.instantiate()
 	for mi: MeshInstance3D in gun.find_children("*", "MeshInstance3D", true, false):
-		mi.material_override = _toon
+		mi.material_override = _toon_view if layer == Pistol.VIEW_LAYER else _toon
 		mi.layers = layer
 		mi.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF if layer == Pistol.VIEW_LAYER else GeometryInstance3D.SHADOW_CASTING_SETTING_ON
 		if mi.name.begins_with("Slide"):

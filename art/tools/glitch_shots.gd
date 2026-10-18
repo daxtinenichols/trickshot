@@ -4,7 +4,8 @@ extends SceneTree
 ##   xvfb-run -a -s "-screen 0 1280x720x24" godot --path . --fixed-fps 60 -s res://art/tools/glitch_shots.gd -- <out_dir> <shot> [<shot>...]
 ## A shot is name@level@x,y,z@yaw,pitch (degrees; yaw 0 looks down -Z), or
 ## name@level@start+<meters> for head height that far down the course from
-## the start. level is a mission id or a res:// scene.
+## the start, or name@level@fp@x,y,z@yaw for the player's own first-person
+## view (gun and all) standing there. level is a mission id or a res:// scene.
 
 const MISSION := "res://campaign/mission.tscn"
 
@@ -32,7 +33,13 @@ func _run() -> void:
 		cam.fov = 80.0
 		cam.cull_mask &= ~4
 		level.add_child(cam)
-		if parts[2].begins_with("start"):
+		if parts[2] == "fp":
+			var p := parts[3].split_floats(",")
+			player.global_position = Vector3(p[0], p[1], p[2])
+			player.rotation_degrees.y = float(parts[4])
+			cam.queue_free()
+			cam = player.get("camera")
+		elif parts[2].begins_with("start"):
 			var ahead := float(parts[2].trim_prefix("start+")) if parts[2].contains("+") else 0.0
 			var fwd := -player.global_basis.z
 			fwd.y = 0.0
