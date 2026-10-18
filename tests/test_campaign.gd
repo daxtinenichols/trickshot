@@ -7,7 +7,7 @@ extends TestCase
 
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
-const PIECE_KEYS := ["box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
+const PIECE_KEYS := ["box", "building", "prop", "row", "door", "doors", "window", "target", "ramp", "loop",
 	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure"]
 
 var level: Node3D
