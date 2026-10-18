@@ -182,12 +182,14 @@ Story lines play once, queued, without ever stopping the game:
 N begins), `done:N`, `checkpoint:N`, `complete`, `time:SECONDS`, `fall`,
 `caught`, `down`, `tape`, `kill:TYPE` (the first kill of an enemy listed by
 type, like `kill:camera_drone`). Or use `at` with `radius`/`size` to play when you reach a
-spot.
+spot. `"if": "m07_parking_spiral.fate=spared"` plays a line only when an
+earlier mission saved that story choice (a boss's `fate:` event saves its
+mission's `fate`).
 
 `chatter` holds reactions to how you play, by event: `bail`, `combo` (a
 banked combo of x4 or more), `fall`, `kill`, `headshot`, `down` (enemies
 took you down), `caught`, `tape`.
-Each is a list of `{"who", "line"}` used in turn, at most one every few
+Each is a list of `{"who", "line"}` used in turn (a line with `"after": "checkpoint:1"` waits until that event has happened), at most one every few
 seconds, and never over a story line.
 
 Every line is spoken. After adding or rewording lines, run

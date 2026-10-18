@@ -106,7 +106,15 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 		pursuer.configure(mission.pursuer)
 		add_child(pursuer)
 	_start_pos = b.spawns[0].origin
+	event.connect(_save_choice)
 	_reset_run(0)
+
+
+## A boss's fate ("fate:spared") is a story choice later missions remember
+## (not from a practice run).
+func _save_choice(e: String) -> void:
+	if e.begins_with("fate:") and not practice and mission_index >= 0:
+		Campaign.set_choice(mission_index, "fate", e.substr(5))
 
 
 ## Starts the mission: call after connecting to `event` (the radio).
