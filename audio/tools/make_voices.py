@@ -25,8 +25,18 @@ A recorded take beats the synthetic one: save it as
 audio/voices/recorded/<who>/<key>.ogg (the name is in script.csv) and the
 game plays it instead. Nothing here touches recorded/.
 
-Only new or changed lines are spoken; clips for lines that no longer exist
-are deleted. Re-run after editing missions or the cast:
+Lines are performed, not read flat: each sentence is spoken on its own and
+joined with a pause that fits its punctuation (longer after "...", short
+after a dash), exclamations and questions run a touch quicker, short beats
+("Run.") land slower, and every sentence drifts a few percent in pace the
+way a person's does. Each speaker's "speed" and "pause" in cast.json set
+their rhythm. The drift comes from the line's hash, so a line always
+renders the same.
+
+Only new or changed lines are spoken (audio/voices/tts_manifest.json keeps
+the settings each clip was made with, so changing a speaker's cast entry
+re-speaks just that speaker); clips for lines that no longer exist are
+deleted. Re-run after editing missions or the cast:
 
     python3 audio/tools/make_voices.py [--briefs MD] [--pending DIR ...] [--force WHO ...] [--models DIR]
 
@@ -50,6 +60,11 @@ import tempfile
 ROOT = os.path.abspath(os.path.join(os.path.dirname(__file__), "..", ".."))
 VOICES = os.path.join(ROOT, "audio", "voices")
 UPCOMING = os.path.join(VOICES, "upcoming.json")
+MANIFEST = os.path.join(VOICES, "tts_manifest.json")
+# Bump when the way lines are performed changes, to re-speak everything.
+RENDER_VERSION = 2
+# Seconds of silence after a sentence, by how it ends (scaled by "pause").
+GAPS = {"...": 0.55, "?": 0.34, "!": 0.24, ".": 0.30, "-": 0.14}
 TTS = os.path.join(VOICES, "tts")
 SAMPLE_RATE = 24000
 
@@ -124,18 +139,75 @@ def speakable(line):
     return line
 
 
+def sentences(line):
+    """[(text, ending)] where ending is one of GAPS' keys."""
+    out = []
+    # A sentence runs to . ! ? ... or a dash that is followed by a space.
+    for part in re.findall(r".+?(?:\.\.\.|\u2026|[.!?]+|\u2014|--|$)(?=\s|$)", line.strip()):
+        part = part.strip()
+        if not part.strip(".\u2026 "):
+            continue
+        if part.endswith(("...", "\u2026")):
+            end = "..."
+        elif part.endswith(("\u2014", "--")):
+            end, part = "-", part.rstrip("\u2014-").rstrip() + ","
+        else:
+            end = "?" if "?" in part[-2:] else "!" if "!" in part[-2:] else "."
+        out.append((part, end))
+    return out
+
+
+def trim(samples, threshold=10 ** (-45 / 20)):
+    loud = (abs(samples) > threshold).nonzero()[0]
+    return samples[loud[0] : loud[-1] + 1] if len(loud) else samples
+
+
+def perform(kokoro, c, line):
+    """The line spoken sentence by sentence with human pauses and pace."""
+    import numpy
+
+    lang = "en-us" if c["voice"][0] == "a" else "en-gb"
+    speed, pause = c.get("speed", 1.0), c.get("pause", 1.0)
+    drift = int(hashlib.md5(line.encode("utf-8")).hexdigest(), 16)
+    text = speakable(line)
+    out = []
+    if text.lstrip().startswith(("...", "\u2026")):
+        # Trailing in mid-thought: a beat of air first.
+        out.append(numpy.zeros(int(0.35 * pause * SAMPLE_RATE), numpy.float32))
+        text = text.lstrip(".\u2026 ")
+    parts = sentences(text) or [(text, ".")]
+    for i, (part, end) in enumerate(parts):
+        s = speed * (1 + ((drift >> (i * 4)) % 9 - 4) / 100.0)
+        if end == "!":
+            s *= 1.06
+        elif end == "?":
+            s *= 1.03
+        if len(part.split()) <= 3:
+            s *= 0.94
+        if len(parts) > 1 and i == len(parts) - 1:
+            s *= 0.97
+        samples, _ = kokoro.create(part, voice=c["voice"], speed=s, lang=lang)
+        out.append(trim(samples))
+        if i < len(parts) - 1:
+            out.append(numpy.zeros(int(GAPS[end] * pause * SAMPLE_RATE), numpy.float32))
+    return numpy.concatenate(out)
+
+
+def settings(c):
+    return json.dumps([RENDER_VERSION, c], sort_keys=True)
+
+
 def render(kokoro, cast, who, line, out_path):
     import soundfile as sf
 
-    c = cast[who]
-    samples, rate = kokoro.create(speakable(line), voice=c["voice"], speed=c.get("speed", 1.0), lang="en-us" if c["voice"][0] == "a" else "en-gb")
+    samples = perform(kokoro, cast[who], line)
     with tempfile.TemporaryDirectory() as tmp:
         wav = os.path.join(tmp, "line.wav")
-        sf.write(wav, samples, rate)
-        # Trim the silence, level every line the same, a breath of room at
-        # each end, then a small mono Ogg.
+        sf.write(wav, samples, SAMPLE_RATE)
+        # Level every line the same, a breath of room at each end, then a
+        # small mono Ogg. (Sentences are already trimmed; only the ends of
+        # the line are touched here, so the pauses survive.)
         filters = ",".join([
-            "silenceremove=start_periods=1:start_threshold=-45dB:stop_periods=-1:stop_threshold=-45dB:stop_duration=0.25",
             "loudnorm=I=-16:TP=-1.5:LRA=11",
             "adelay=60",
             "apad=pad_dur=0.12",
@@ -145,6 +217,13 @@ def render(kokoro, cast, who, line, out_path):
             ["ffmpeg", "-loglevel", "error", "-y", "-i", wav, "-af", filters, "-ar", str(SAMPLE_RATE), "-ac", "1", "-c:a", "libvorbis", "-q:a", "4", out_path],
             check=True,
         )
+
+
+def save_manifest(made, wanted, rel):
+    keep = {rel(p) for p in wanted}
+    with open(MANIFEST, "w", encoding="utf-8") as f:
+        json.dump({k: v for k, v in sorted(made.items()) if k in keep}, f, indent="\t")
+        f.write("\n")
 
 
 def main():
@@ -178,7 +257,13 @@ def main():
     for (who, line), where in lines.items():
         wanted[os.path.join(TTS, who, key(line) + ".ogg")] = (who, line, where)
 
-    todo = [p for p, (who, _, _) in wanted.items() if not os.path.exists(p) or force_all or who in args.force]
+    made = {}
+    if os.path.exists(MANIFEST):
+        with open(MANIFEST, encoding="utf-8") as f:
+            made = json.load(f)
+    rel = lambda p: os.path.relpath(p, TTS).replace(os.sep, "/")
+    todo = [p for p, (who, _, _) in wanted.items()
+            if not os.path.exists(p) or force_all or who in args.force or made.get(rel(p)) != settings(cast[who])]
     stale = []
     if os.path.isdir(TTS):
         for d, _, files in os.walk(TTS):
@@ -201,6 +286,10 @@ def main():
             who, line, _ = wanted[p]
             print("[%d/%d] %s: %s" % (i + 1, len(todo), who, line))
             render(kokoro, cast, who, line, p)
+            made[rel(p)] = settings(cast[who])
+            if i % 20 == 19:
+                save_manifest(made, wanted, rel)
+    save_manifest(made, wanted, rel)
 
     with open(os.path.join(VOICES, "script.csv"), "w", newline="", encoding="utf-8") as f:
         w = csv.writer(f)
