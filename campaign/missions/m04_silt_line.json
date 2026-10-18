@@ -15,7 +15,7 @@
    "roof": 80,
    "do": [
     {"label": "THE SILT", "at": 4, "size": 1.2},
-    {"radio": {"who": "mags", "line": "Parker! You're in the Silt. Whatever lives down there, don't let it catch you standing."}, "at": 8},
+    {"radio": {"who": "mags", "line": "Parker! You're in the Silt. Whatever's down there, don't let it catch you standing still."}, "at": 8},
     {"prop": "car_wreck", "x": -4.5, "at": 10, "yaw": 80},
     {"hurdles": true, "at": 24},
     {"slide": true, "at": 46},
@@ -27,7 +27,7 @@
    "roof": 84,
    "do": [
     {"checkpoint": "Hollows", "at": 4, "objective": 1},
-    {"radio": {"who": "mags", "line": "Crawlers. They're fast over short distances. Keep your speed and they can't keep up."}, "at": 6},
+    {"radio": {"who": "mags", "line": "Crawlers. Quick off the mark, but they tire. Keep your speed up and they can't hang."}, "at": 6},
     {
      "encounter": "crawlers",
      "at": 14,
@@ -102,7 +102,7 @@
    "y": 7,
    "do": [
     {"checkpoint": "Overpass", "at": 4, "objective": 2},
-    {"radio": {"who": "host", "line": "He climbed out! Folks, nobody climbs out of the Silt. I'm going to need a bigger bridge."}, "at": 5},
+    {"radio": {"who": "host", "line": "He climbed out! Nobody climbs out of the Silt, folks. Okay. Bigger bridge next time."}, "at": 5},
     {"hurdles": true, "at": 22}
    ]
   },
@@ -112,7 +112,7 @@
   {
    "roof": 70,
    "do": [
-    {"radio": {"who": "echo", "line": "...and the traffic on the overpass is one man, heading west, fast. Drive safe, darling."}, "at": 6},
+    {"radio": {"who": "echo", "line": "...traffic on the overpass: one guy, heading west, real fast. Drive safe, courier."}, "at": 6},
     {"hurdles": true, "at": 24},
     {"slide": true, "at": 46}
    ]
@@ -129,17 +129,17 @@
   }
  ],
  "radio": [
-  {"on": "start", "who": "host", "line": "Oops. Did that bridge fall down? Bridges are so old these days. Say hi to the Silt for me, Parker."},
-  {"on": "go", "who": "mags", "line": "You're alive. Good. Run. The dust down there isn't the dangerous part."},
-  {"on": "objective:2", "who": "mags", "line": "Up on the overpass. It runs straight to the mall. The mall is the only way across the center."},
-  {"on": "complete", "who": "host", "line": "Meridian Mall, folks! Our arena! Parker, darling, you've just walked into the main event."}
+  {"on": "start", "who": "host", "line": "Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker."},
+  {"on": "go", "who": "mags", "line": "You're alive. Okay. Okay, good. Run. It's not the dust you need to worry about."},
+  {"on": "objective:2", "who": "mags", "line": "Get up on the overpass. Runs straight to the mall, and the mall's the only way through the center."},
+  {"on": "complete", "who": "host", "line": "Meridian Mall, folks! The arena! Parker, darling, you just walked into the main event."}
  ],
  "chatter": {
   "bail": [{"who": "host", "line": "Face first in the Silt! That'll stain."}],
-  "combo": [{"who": "mags", "line": "That's how you outrun them. Don't stop."}, {"who": "host", "line": "He's dancing in the Silt! Somebody give the crawlers a lesson."}],
+  "combo": [{"who": "mags", "line": "That's how you outrun them. Don't stop."}, {"who": "host", "line": "Look at him dance down there! Come on, crawlers, keep up."}],
   "kill": [{"who": "mags", "line": "Don't fight them all. Run."}],
-  "down": [{"who": "host", "line": "Dinner is served!"}, {"who": "mags", "line": "You stopped. Never stop down there."}],
-  "tape": [{"who": "echo", "line": "...the Silt isn't empty. The Hollows were people once. Don't let him tell you otherwise."}]
+  "down": [{"who": "host", "line": "Dinner's served!"}, {"who": "mags", "line": "You stopped. Never stop down there."}],
+  "tape": [{"who": "echo", "line": "...the Silt's not empty. The Hollows used to be people. Whatever he says."}]
  },
  "chalk": true
 }

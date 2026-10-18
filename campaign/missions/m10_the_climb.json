@@ -24,7 +24,7 @@
    {"encounter": "tower gate", "at": 4, "length": 40, "troopers": [[-3.6, 16, 0], [3.6, 22, 0.6]], "enemies": [{"type": "gun_drone", "x": -2, "d": 12, "height": 4}, {"type": "gun_drone", "x": 2, "d": 28, "height": 4}]}
   ]},
   {"roof": 56, "y": 16, "do": [
-   {"radio": {"who": "mags", "line": "Don't look down. Do look up. That's where they're shooting from."}, "at": 6, "radius": 8},
+   {"radio": {"who": "mags", "line": "Don't look down. Look up, that's where they're shooting from."}, "at": 6, "radius": 8},
    {"hurdles": true, "at": 22}
   ]},
   {"turn": "left", "size": 20},
@@ -108,40 +108,40 @@
   {"label": "RADIO PORT CALDER", "at": [-74, 60, -100], "size": 3.0}
  ],
  "radio": [
-  {"on": "start", "who": "host", "line": "Ten minutes, Port Calder. Ten minutes until our courier runs out of tower, and his wife runs out of luck."},
+  {"on": "start", "who": "host", "line": "Ten minutes, folks. That's how long he's got. After that, well. Ask his wife."},
   {"on": "go", "who": "parker", "line": "I'm coming, Echo."},
-  {"on": "checkpoint:1", "who": "echo", "line": "Hi, Port Calder. This is Echo. He's lying to you. He's been lying to you for twenty years."},
-  {"on": "checkpoint:1", "who": "echo", "line": "Cameras are mine now. Look at him go."},
+  {"on": "checkpoint:1", "who": "echo", "line": "Hi. Port Calder? It's Echo. He's lying to you. He's been lying to you for twenty years."},
+  {"on": "checkpoint:1", "who": "echo", "line": "I've got the cameras now. Look at him go."},
   {"on": "checkpoint:1", "who": "host", "line": "Get her off my uplink! GET HER OFF!"},
-  {"on": "checkpoint:1", "who": "mags", "line": "The gun drones just went dark. She did that. Climb, Parker!"},
-  {"on": "checkpoint:3", "who": "host", "line": "Three minutes! Two! I'm not even counting properly anymore!"},
-  {"on": "complete", "who": "host", "line": "Fine. Come in. The studio's open. Mind the step."}
+  {"on": "checkpoint:1", "who": "mags", "line": "Gun drones just went dark. That was her! Climb, Parker!"},
+  {"on": "checkpoint:3", "who": "host", "line": "Three minutes! Two! I don't even know anymore!"},
+  {"on": "complete", "who": "host", "line": "Fine. Fine! Come on in. Studio's open. Mind the step."}
  ],
  "chatter": {
   "headshot": [
    {"who": "mags", "line": "Clean."},
-   {"who": "echo", "line": "Got that one on camera, love. The whole city saw it."}
+   {"who": "echo", "line": "Got that on camera, courier. Whole city saw it."}
   ],
   "bail": [
-   {"who": "host", "line": "Long way down, Parker! Well. Medium way. Try harder."}
+   {"who": "host", "line": "Long way down, Parker! Well, medium. Try harder."}
   ],
   "combo": [
-   {"who": "echo", "line": "Look at you. Half the city's on their roofs watching."},
+   {"who": "echo", "line": "Look at you. Half the city's up on the roofs watching."},
    {"who": "mags", "line": "That's it. Up, up, up."}
   ],
   "fall": [
    {"who": "host", "line": "Gravity! My oldest and most loyal sponsor."},
-   {"who": "mags", "line": "Back on the scaffold. Again."}
+   {"who": "mags", "line": "Back on the scaffold. Go again."}
   ],
   "kill": [
    {"who": "host", "line": "Do you know what marksmen cost, Parker? Do you?"}
   ],
   "down": [
    {"who": "mags", "line": "Up. Keep climbing. They can't hold the whole tower."},
-   {"who": "host", "line": "And he's down! Stop the clock! No, keep the clock going, it's funnier."}
+   {"who": "host", "line": "And he's down! Stop the clock! No, no, keep it running, it's funnier."}
   ],
   "tape": [
-   {"who": "echo", "line": "...if you're hearing this, I hid it on the dish before he moved me upstairs. Keep the porch light on."}
+   {"who": "echo", "line": "...if you're hearing this, I hid it on the dish before he moved me upstairs. Keep the porch light on, okay?"}
   ]
  }
 }

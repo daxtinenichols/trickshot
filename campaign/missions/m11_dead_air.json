@@ -129,15 +129,15 @@
   ]}
  ],
  "radio": [
-  {"on": "start", "who": "mags", "line": "The studio's on the top floor. Everything he's got is between you and her."},
+  {"on": "start", "who": "mags", "line": "Studio's on the top floor. He's put everything he's got between you and her."},
   {"on": "go", "who": "host", "line": "Port Calder, this is it. The final segment. Please hold your applause until he's dead."},
-  {"on": "checkpoint:1", "who": "echo", "line": "Parker, the vents. Behind the transmitter. I left them open for you."},
+  {"on": "checkpoint:1", "who": "echo", "line": "Parker, the vents. Behind the transmitter. I left 'em open."},
   {"on": "checkpoint:1", "who": "vell", "line": "All units to the studio. This ends tonight."},
   {"on": "checkpoint:2", "who": "parker", "line": "Echo."},
   {"on": "checkpoint:2", "who": "echo", "line": "You're late."},
   {"on": "checkpoint:2", "who": "parker", "line": "Traffic."},
-  {"on": "complete", "who": "host", "line": "Oh, I do love a reunion. Here's my favourite part."},
-  {"on": "complete", "who": "host", "line": "Port Calder, I give you: the grand finale."},
+  {"on": "complete", "who": "host", "line": "Oh, I love a reunion. Okay. This is my favourite bit."},
+  {"on": "complete", "who": "host", "line": "Port Calder... the grand finale."},
   {"on": "complete", "who": "echo", "line": "Parker! Parker, you're pinned. The whole floor's on fire."},
   {"on": "complete", "who": "parker", "line": "Draw him off me. Run. I'll talk you down."}
  ],
@@ -161,7 +161,7 @@
    {"who": "host", "line": "And he's down! So close, folks. So, so close."}
   ],
   "tape": [
-   {"who": "echo", "line": "...he keeps the old tapes in the office safe. Twenty years of lies, all labelled. He's very tidy."}
+   {"who": "echo", "line": "...he keeps the old tapes in the office safe. Twenty years of lies. All labelled, too."}
   ]
  }
 }

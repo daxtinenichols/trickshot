@@ -93,7 +93,7 @@ func _run() -> void:
 	p.set_physics_process(false)
 	p.global_position = Vector3(0, 8, -40)
 	p.set_view(0.15, -0.05)
-	level.radio.say("host", "Ladies, gentlemen and whatever's left of you: our courier has left the building!")
+	level.radio.say("host", "Ladies, gentlemen, and... whatever the rest of you are. Our courier has left the building!")
 	level.radio.advance(0.0)
 	_hide_ui(level, false)
 	await _frames(10)

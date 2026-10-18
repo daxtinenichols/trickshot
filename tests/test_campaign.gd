@@ -250,7 +250,7 @@ func test_radio_plays_story_lines_and_chatter() -> void:
 	radio.advance(30.0)
 	radio.advance(0.0)
 	var heard := radio.history.map(func(l: Dictionary) -> String: return l.line)
-	check(heard.any(func(l: String) -> bool: return l.begins_with("Jump into those rails")), "the hurdle tip plays at the hurdles")
+	check(heard.any(func(l: String) -> bool: return l.begins_with("Rails coming up")), "the hurdle tip plays at the hurdles")
 	# Chatter only when the radio is free, and not twice in a row.
 	radio.queue.clear()
 	radio.current = {}

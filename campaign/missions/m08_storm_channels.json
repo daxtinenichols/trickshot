@@ -28,7 +28,7 @@
    {"checkpoint": "Channel floor", "at": 6, "objective": 0},
    {"mark": "#ff8a1f", "at": 14},
    {"prop": "chalk_arrow", "x": 0, "at": 16},
-   {"radio": {"who": "mags", "line": "Fresh orange. That's not mine. Somebody out there's marking you a route."}, "at": 14, "radius": 8},
+   {"radio": {"who": "mags", "line": "Fresh orange. That's not my mark. Somebody's out there marking you a route, Parker."}, "at": 14, "radius": 8},
    {"encounter": "channel brutes", "at": 28, "length": 50, "enemies": [{"type": "crawler", "x": -4, "d": 12}, {"type": "crawler", "x": 4, "d": 16}, {"type": "brute", "x": 0, "d": 30}, {"type": "crawler", "x": -3.5, "d": 40}]},
    {"radio": {"who": "mags", "line": "The big Hollow's armoured on the front. Get behind it."}, "at": 30, "radius": 8},
    {"piece": {"bank": [3.2, 0, 0], "length": 30, "side": 1}, "at": 44, "length": 30},
@@ -115,24 +115,24 @@
   ]}
  ],
  "radio": [
-  {"on": "start", "who": "mags", "line": "The channels run straight to the west side. The Ward owns them. The Ward owns the water. Be quick."},
-  {"on": "go", "who": "host", "line": "Back on the air, Port Calder, with our generous sponsors watching. Parker, darling, please die quietly."},
+  {"on": "start", "who": "mags", "line": "Channels go straight to the west side. That's Ward land. Their water, too. Be quick."},
+  {"on": "go", "who": "host", "line": "And we're back, Port Calder. Our sponsors are watching tonight, so... Parker, darling, could you die quietly?"},
   {"on": "objective:1", "who": "vell", "line": "Courier sighted. Squad two, close the sluice line."},
-  {"on": "objective:1", "who": "mags", "line": "They work in teams and they don't miss twice. Don't stand still for them."},
-  {"on": "checkpoint:3", "who": "host", "line": "Folks, a reminder from our sponsor that water is a privilege. Parker is drinking it right now. Without paying."},
+  {"on": "objective:1", "who": "mags", "line": "These ones work in teams. They don't miss twice. Don't give them a still target."},
+  {"on": "checkpoint:3", "who": "host", "line": "Quick reminder from the sponsor, folks: water's a privilege. Parker's probably drinking some right now. For free."},
   {"on": "complete", "who": "vell", "line": "The courier is not to reach the tower. Whatever it costs."},
   {"on": "complete", "who": "host", "line": "You heard the man. Whatever it costs. I'll send him the bill."}
  ],
  "chatter": {
   "headshot": [
-   {"who": "mags", "line": "Helmets. First shot knocks it off, the second one counts."},
+   {"who": "mags", "line": "Helmets. First shot knocks it off. Second one counts."},
    {"who": "mags", "line": "Clean."}
   ],
   "bail": [
-   {"who": "host", "line": "Careful, Parker. The sponsor bills for damage to the concrete."}
+   {"who": "host", "line": "Careful! The sponsor charges for concrete."}
   ],
   "combo": [
-   {"who": "host", "line": "Lovely line, Parker. I'm told the Ward finds it very irritating."},
+   {"who": "host", "line": "Lovely line, Parker. The Ward hates that, by the way."},
    {"who": "mags", "line": "That's it. Keep the speed through the banks."}
   ],
   "kill": [
@@ -140,10 +140,10 @@
   ],
   "down": [
    {"who": "mags", "line": "Up. Don't trade with a squad. Move, then shoot."},
-   {"who": "host", "line": "Down he goes, on the Ward's dime. Commercial break!"}
+   {"who": "host", "line": "Down he goes! And... we'll be right back."}
   ],
   "tape": [
-   {"who": "echo", "line": "...the Ward closed the channels the year the rain stopped. Nobody asked who opened them."}
+   {"who": "echo", "line": "...the Ward closed the channels the year the rain stopped. Nobody ever asked why."}
   ]
  }
 }

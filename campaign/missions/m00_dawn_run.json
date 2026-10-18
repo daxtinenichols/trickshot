@@ -23,24 +23,24 @@
   {"type": "reach", "name": "camp", "text": "Get back to camp", "at": "end"}
  ],
  "radio": [
-  {"on": "start", "who": "mags", "line": "Morning, Parker. One parcel, the high roof past the fish market. Don't let breakfast get cold."},
+  {"on": "start", "who": "mags", "line": "Morning, Parker. Got one for you. High roof, past the fish market. Breakfast's on when you're back, so don't dawdle."},
   {"on": "go", "who": "parker", "line": "On my way."},
-  {"at": [0, 10, -11], "radius": 6, "who": "mags", "line": "Jump into those rails, don't just hop them. A vault keeps your speed."},
-  {"at": [0, 10, -27], "radius": 6, "who": "mags", "line": "Low bar. Crouch and slide under it."},
-  {"on": "checkpoint:0", "who": "mags", "line": "That door's been stuck since the storm. Kick it, or slide under the window like a civilised person."},
-  {"at": [4, 10, -66], "radius": 7, "who": "mags", "line": "Gap's too wide to jump. Run the wall."},
-  {"on": "checkpoint:1", "who": "mags", "line": "High roof's up that wall. Straight at it, and jump."},
-  {"on": "done:0", "who": "mags", "line": "Parcel's in. That's breakfast earned. Come home, kid."},
-  {"at": [0, 13, -119], "radius": 6, "who": "mags", "line": "Big drop. Crouch just before you land and roll out of it."},
-  {"on": "complete", "who": "host", "line": "Goooood morning, Port Calder! This is the Host, on the only frequency you've got left."},
-  {"on": "complete", "who": "host", "line": "Today's show: a courier comes home to an empty camp. His lovely wife? Gone. Tragic. Riveting."},
-  {"on": "complete", "who": "host", "line": "Echo's with me, fixing my tower. Parker, darling, come and get her. The whole city's listening."},
-  {"on": "complete", "who": "mags", "line": "Parker. Don't you dare go alone. Come to the yard first."}
+  {"at": [0, 10, -11], "radius": 6, "who": "mags", "line": "Rails coming up. Don't hop 'em, jump right into them. Vault keeps your speed."},
+  {"at": [0, 10, -27], "radius": 6, "who": "mags", "line": "Low bar. Get down and slide it."},
+  {"on": "checkpoint:0", "who": "mags", "line": "That door's been stuck since the storm. Kick it in. Or use the window, if you're feeling polite."},
+  {"at": [4, 10, -66], "radius": 7, "who": "mags", "line": "You won't jump that one. Run the wall."},
+  {"on": "checkpoint:1", "who": "mags", "line": "High roof's up that wall. Go straight at it and jump."},
+  {"on": "done:0", "who": "mags", "line": "Parcel's in. Good. Come on home, kid."},
+  {"at": [0, 13, -119], "radius": 6, "who": "mags", "line": "Big drop here. Crouch right before you hit and roll it out."},
+  {"on": "complete", "who": "host", "line": "Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you."},
+  {"on": "complete", "who": "host", "line": "So, today's show. We've got a courier, comes home, and his camp's empty. Wife's gone. I know! Awful. I can't stop listening either."},
+  {"on": "complete", "who": "host", "line": "Echo's up here with me, fixing my tower. Lovely hands. Parker, darling, come and get her. Everybody's listening."},
+  {"on": "complete", "who": "mags", "line": "Parker. Parker, listen to me. You are not going alone. Yard first."}
  ],
  "chatter": {
-  "bail": [{"who": "mags", "line": "Up you get."}, {"who": "mags", "line": "Ouch. Walk it off. Well, run it off."}],
-  "fall": [{"who": "mags", "line": "That's the Silt down there. Climb back up and try that again."}, {"who": "mags", "line": "Feet on the roofs, Parker. Roofs."}],
-  "combo": [{"who": "mags", "line": "Look at you, showing off for the pigeons."}]
+  "bail": [{"who": "mags", "line": "Up you get."}, {"who": "mags", "line": "Ooh. Walk it off. Run it off, I mean."}],
+  "fall": [{"who": "mags", "line": "That's the Silt, kid. Get back up and go again."}, {"who": "mags", "line": "Roofs, Parker. Stay on the roofs."}],
+  "combo": [{"who": "mags", "line": "Who're you showing off for? The pigeons?"}]
  },
  "pieces": [
   {"prop": "water_tank", "at": [-4.4, 10, -6]},
@@ -69,7 +69,7 @@
   {
    "roof": 30,
    "do": [
-    {"radio": {"who": "mags", "line": "Parker... the camp's gone quiet. Echo isn't answering."}, "at": 4, "radius": 9},
+    {"radio": {"who": "mags", "line": "Parker... camp's gone quiet. I can't raise Echo."}, "at": 4, "radius": 9},
     {"prop": "shipping_container", "x": -4.4, "at": 18, "yaw": 90}
    ]
   },

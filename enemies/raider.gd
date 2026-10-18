@@ -19,11 +19,11 @@ const Voices := preload("res://audio/voice_lines.gd")
 
 ## The dark-humour crew of the warlord on the radio: a line when they tag you.
 const TAUNTS := [
-	"SMILE, PARKER, YOU'RE ON AIR!",
-	"ECHO'S LISTENING, COURIER",
-	"THE BOSS LOVES A CLOSE ONE",
-	"RATINGS GOLD!",
-	"HOLD STILL FOR THE BROADCAST",
+	"SMILE, COURIER! YOU'RE ON THE RADIO!",
+	"SAY HI TO ECHO!",
+	"OOH, THAT WAS CLOSE!",
+	"BOSS IS GONNA LOVE THIS!",
+	"HOLD STILL, DAMN IT!",
 ]
 
 @export_group("Movement")
