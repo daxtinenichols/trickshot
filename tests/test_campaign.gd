@@ -762,7 +762,8 @@ func _steer(x: float, veer: bool) -> InputFrame:
 
 
 ## Same scripted runner as test_maps: [trigger_z, action, lane_x] steps in
-## the route's frame ("veer" heads across to a far lane). Returns true once
+## the route's frame ("veer" heads across to a far lane; "flip", "front" and "spin" turn
+## over in the air after the next take-off). Returns true once
 ## the mission is complete; false if it runs out of time or passes stop_z
 ## first.
 func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = []) -> bool:
@@ -772,6 +773,9 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 	var veer := false
 	var next := 0
 	var roll_armed := false
+	# "flip" (back), "front" or "spin": done in the air after the next take-off.
+	var trick := ""
+	var trick_left := 0
 	for i in max_frames:
 		var pos := player.global_position
 		if run.phase == MissionRun.Phase.COMPLETE:
@@ -804,7 +808,16 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 					roll_armed = true
 				"kick":
 					f.kick_pressed = true
+				"flip", "front", "spin":
+					trick = step[1]
+					trick_left = 24
 			next += 1
+		if trick != "" and player.state == Player.State.AIR:
+			var turn := TAU / 24.0
+			player._look(turn if trick == "spin" else 0.0, turn if trick == "flip" else (-turn if trick == "front" else 0.0))
+			trick_left -= 1
+			if trick_left <= 0:
+				trick = ""
 		if roll_armed and player.state == Player.State.AIR and player.velocity.y < 0.0:
 			var q := PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 1.2, 1)
 			q.exclude = [player.get_rid()]

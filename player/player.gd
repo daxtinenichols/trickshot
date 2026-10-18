@@ -20,6 +20,9 @@ const EYE_OFFSET := 0.14
 const WALL_PROBE := 0.35
 ## How far around the kick's landing spot an enemy still gets kicked (m).
 const KICK_REACH_RADIUS := 0.6
+## How far either side of the look ray a kick tries when the ray itself
+## slips through a gap (the seam of double doors).
+const KICK_SEAM := 0.1
 
 @export var tuning: MovementTuning
 ## Off for players driven by tests or replays.
@@ -33,6 +36,9 @@ var flow_source := Callable()
 ## repeat_scale_source(names: Array, n: int) -> float: what the last `n` of
 ## those tricks are worth after the combo's repeat decay (n with no decay).
 var repeat_scale_source := Callable()
+## combo_source() -> int: the live combo's multiplier (enemies' combo armor
+## reads it; 0 with no scoring).
+var combo_source := Callable()
 
 ## Set by tests or replays: the frame to use for the next tick.
 var scripted_input: InputFrame = null
@@ -478,6 +484,18 @@ func horizontal_speed() -> float:
 ## Extra ground cruise speed from the live combo's style (0 with no scoring).
 func flow() -> float:
 	return maxf(float(flow_source.call()), 0.0) if flow_source.is_valid() else 0.0
+
+
+## The live combo's multiplier (0 with no scoring or no combo).
+func combo_multiplier() -> int:
+	return int(combo_source.call()) if combo_source.is_valid() else 0
+
+
+## In the air and part way round a flip, spin or side flip (45 degrees or
+## more), so enemies find you harder to hit.
+func is_tricking_in_air() -> bool:
+	const TURNED := PI * 0.25
+	return state == State.AIR and (absf(_air_pitch) >= TURNED or absf(_air_yaw) >= TURNED or absf(_air_roll) >= TURNED)
 
 
 ## Ground speed running holds at full momentum without bleeding.
@@ -1185,9 +1203,13 @@ func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
 func _ground_kick() -> void:
 	var eye := global_position + Vector3.UP * (_height - EYE_OFFSET)
 	var look := look_direction()
-	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * (tuning.kick_range + 0.3), 1 | 4)
-	q.exclude = [get_rid()]
-	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	var hit := _kick_ray(eye, look)
+	if hit.is_empty():
+		# Straight down the seam of double doors: try just either side.
+		var side := look.cross(Vector3.UP).normalized() * KICK_SEAM
+		hit = _kick_ray(eye + side, look)
+		if hit.is_empty():
+			hit = _kick_ray(eye - side, look)
 	var collider: Object = hit.get("collider")
 	if collider == null or not collider.is_in_group("hitboxes"):
 		# An enemy just off the look ray still takes the kick.
@@ -1204,6 +1226,12 @@ func _ground_kick() -> void:
 	elif collider.has_method("on_kicked"):
 		collider.on_kicked(self, look)
 		_trick(&"door_kick" if collider.is_in_group("doors") else &"kick")
+
+
+func _kick_ray(eye: Vector3, look: Vector3) -> Dictionary:
+	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * (tuning.kick_range + 0.3), 1 | 4)
+	q.exclude = [get_rid()]
+	return get_world_3d().direct_space_state.intersect_ray(q)
 
 
 ## Kicks an enemy's hit zone: "kick", plus "kick_kill" if it finished it.
