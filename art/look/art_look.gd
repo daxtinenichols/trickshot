@@ -279,6 +279,11 @@ func layer_box(g: MeshInstance3D) -> void:
 			# apart from other dressed boxes it touches.
 			grow = 0.0005 + 0.0001 * layer
 		_grow(g, grow)
+		var s := (g.mesh as BoxMesh).size
+		if minf(s.x, minf(s.y, s.z)) < 0.6 and g.cast_shadow == GeometryInstance3D.SHADOW_CASTING_SETTING_ON:
+			# Thin walls and ceilings cast from both faces, so the sun
+			# doesn't leak through them at a low angle.
+			g.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_DOUBLE_SIDED
 
 
 ## Draws a box `grow` m bigger on every side: its own copy of the mesh, put
@@ -400,8 +405,22 @@ func _restyle_sun(sun: DirectionalLight3D) -> void:
 		return
 	_look_set(sun, "light_color", SUN)
 	_look_set(sun, "light_energy", 1.55)
-	_look_set(sun, "light_angular_distance", 1.2)
-	_look_set(sun, "shadow_blur", 1.5)
+	# Soft but clean edges: a wider sun and more blur made the edges grainy.
+	_look_set(sun, "light_angular_distance", 0.6)
+	_look_set(sun, "shadow_blur", 1.0)
+	# Less bias: shadows stayed off their walls' feet (peter-panning) and
+	# light crept through thin walls and ceilings; thin boxes also cast
+	# from both sides (layer_box).
+	_look_set(sun, "shadow_bias", 0.04)
+	_look_set(sun, "shadow_normal_bias", 0.6)
+	# Sharper near shadows, cascades that blend instead of popping, and far
+	# enough out that shadows don't appear just ahead at a full sprint.
+	_look_set(sun, "directional_shadow_split_1", 0.05)
+	_look_set(sun, "directional_shadow_split_2", 0.15)
+	_look_set(sun, "directional_shadow_split_3", 0.4)
+	_look_set(sun, "directional_shadow_blend_splits", true)
+	_look_set(sun, "directional_shadow_max_distance", 220.0)
+	_look_set(sun, "directional_shadow_fade_start", 0.9)
 
 
 ## Sets a property the look changes, remembering the original for F9.
