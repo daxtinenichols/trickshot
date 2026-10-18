@@ -48,7 +48,7 @@ func on_kicked(_by: Node, dir: Vector3) -> void:
 	_swing(_closed_basis.rotated(Vector3.UP, OPEN_ANGLE * sign_dir))
 	get_tree().create_timer(CLOSE_AFTER, false).timeout.connect(_close)
 	# Double doors: the other leaf (meta "mate") goes too.
-	var mate: Object = get_meta("mate", null)
+	var mate: Object = get_meta("mate") if has_meta("mate") else null
 	if is_instance_valid(mate) and mate.has_method("on_kicked"):
 		mate.on_kicked(_by, dir)
 

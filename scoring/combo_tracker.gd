@@ -14,6 +14,10 @@ extends Node
 ## - Bailing (crash, hard landing, slamming into a wall, falling out) loses it.
 ## - Damage scales with the combo: 1 + 0.2 per different trick, times the
 ##   speed bonus, capped at 3x.
+## - Flow: the live combo raises the player's ground cruise speed. Each trick
+##   adds flow_per_trick (flips and 360s count flow_flip_weight times), scaled
+##   by quality and by the same repeat decay as points. A clean bank lets it
+##   fade over flow_fade_time; a bail drops it at once.
 ##
 ## Pure game logic: reads the player, never changes it.
 
@@ -78,6 +82,8 @@ const HOLDING_STATES := [
 	Player.State.SURFACE,
 ]
 const REST_STATES := [Player.State.GROUND, Player.State.CROUCH]
+## Rotations, which count extra toward flow.
+const FLIP_TRICKS := [&"backflip", &"frontflip", &"sideflip", &"spin_360", &"spin_720", &"spin_1080"]
 
 @export var bank_after := 2.0
 ## Below this speed on the ground for `rest_time`, you've come to rest.
@@ -97,19 +103,26 @@ var last_quality := -1.0
 var score := 0
 var best_combo := 0
 ## Current combo: one entry per trick name, in order first done:
-## {name, points (float), count}.
+## {name, points (float), count, flow (m/s)}.
 var entries: Array[Dictionary] = []
 var combo_points := 0.0
 var time_left := 0.0
 
 var _rest := 0.0
 var _wallrun_entry := -1
+## Flow of the live combo (sum of the entries' flow), and what's left of the
+## last banked combo's flow as it fades out.
+var _flow := 0.0
+var _fade_flow := 0.0
+var _fade_from := 0.0
 
 
 func setup(p: Player, pistol: Pistol = null) -> void:
 	player = p
 	p.trick.connect(on_trick)
 	p.respawned.connect(func() -> void: bail(&"respawn"))
+	p.flow_source = flow
+	p.repeat_scale_source = repeat_scale
 	if pistol:
 		pistol.hit.connect(on_hit)
 		pistol.damage_scale = damage_multiplier
@@ -126,6 +139,27 @@ func multiplier() -> int:
 ## The points shown (rounded) times the multiplier, so the card's sum adds up.
 func combo_total() -> int:
 	return roundi(combo_points) * multiplier()
+
+
+## Extra ground cruise speed from style (m/s): the live combo's flow, or
+## the last clean combo's as it fades, whichever is more.
+func flow() -> float:
+	return maxf(_flow, _fade_flow)
+
+
+## What the last `n` of the tricks in `names` (already added to this combo)
+## are worth after repeat decay: 1 + 0.6 + ... for the first ones, less for
+## later repeats.
+func repeat_scale(names: Array, n: int) -> float:
+	var total := 0
+	for e in entries:
+		if e.name in names:
+			total += e.count
+	var earlier := maxi(total - n, 0)
+	var sum := 0.0
+	for i in n:
+		sum += pow(repeat_decay, earlier + i)
+	return sum
 
 
 ## 1x at run pace or slower, 2x at top speed and above.
@@ -195,18 +229,21 @@ func on_hit(info: Dictionary) -> void:
 
 ## Adds a trick to the combo (starting one if needed). Returns its entry index.
 func add(trick_name: StringName, base: float, speed: float, quality: float = -1.0) -> int:
-	var value := base * speed_bonus(speed)
-	if quality >= 0.0:
-		value *= lerpf(0.75, 1.25, clampf(quality, 0.0, 1.0))
+	var q_scale := lerpf(0.75, 1.25, clampf(quality, 0.0, 1.0)) if quality >= 0.0 else 1.0
+	var value := base * speed_bonus(speed) * q_scale
 	var idx := _find(trick_name)
 	if idx < 0:
-		entries.append({"name": trick_name, "points": 0.0, "count": 0})
+		entries.append({"name": trick_name, "points": 0.0, "count": 0, "flow": 0.0})
 		idx = entries.size() - 1
 	var e := entries[idx]
-	value *= pow(repeat_decay, e.count)
+	var decay := pow(repeat_decay, e.count)
+	value *= decay
 	e.count += 1
 	e.points += value
 	combo_points += value
+	var flow_add := _flow_per_trick(trick_name) * q_scale * decay
+	e.flow += flow_add
+	_flow += flow_add
 	time_left = bank_after
 	_rest = 0.0
 	last_quality = quality
@@ -224,12 +261,16 @@ func bank(reason := &"rest") -> void:
 	var summary := {"entries": entries.duplicate(true), "points": pts, "multiplier": mult, "total": total, "reason": reason}
 	score += total
 	best_combo = maxi(best_combo, total)
+	# A clean finish keeps its speed for a moment: flow eases out.
+	_fade_from = flow()
+	_fade_flow = _fade_from
 	_clear()
 	banked.emit(pts, mult, total)
 	finished.emit(summary)
 
 
 func bail(reason: StringName) -> void:
+	_fade_flow = 0.0
 	if not is_active():
 		return
 	var lost := combo_total()
@@ -243,7 +284,15 @@ func _clear() -> void:
 	time_left = 0.0
 	_rest = 0.0
 	_wallrun_entry = -1
+	_flow = 0.0
 	combo_changed.emit()
+
+
+func _flow_per_trick(trick_name: StringName) -> float:
+	if player == null:
+		return 0.0
+	var t := player.tuning
+	return t.flow_per_trick * (t.flow_flip_weight if trick_name in FLIP_TRICKS else 1.0)
 
 
 func _find(trick_name: StringName) -> int:
@@ -260,7 +309,12 @@ func _physics_process(delta: float) -> void:
 
 
 func tick(delta: float) -> void:
-	if player == null or not is_active():
+	if player == null:
+		return
+	if _fade_flow > 0.0:
+		var fade := player.tuning.flow_fade_time
+		_fade_flow = maxf(_fade_flow - _fade_from * delta / fade, 0.0) if fade > 0.0 else 0.0
+	if not is_active():
 		return
 	var state := player.state
 	if state == Player.State.WALLRUN and _wallrun_entry >= 0 and _wallrun_entry < entries.size():
