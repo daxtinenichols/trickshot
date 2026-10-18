@@ -115,8 +115,8 @@ func show_results(result: Dictionary, title: String, has_next: bool) -> void:
 		lines.append("Bonus goals  %d / %d   +%d" % [result.bonuses, result.total_bonuses, result.bonuses * MissionRun.BONUS_POINTS])
 	if result.total_tapes > 0:
 		lines.append("Tapes  %d / %d" % [result.tapes.size(), result.total_tapes])
-	if result.falls > 0 or result.catches > 0:
-		lines.append("Falls  %d%s" % [result.falls, ("    Caught  %d" % result.catches) if result.catches > 0 else ""])
+	if result.get("restarts", 0) > 0:
+		lines.append("Restarts  %d" % result.restarts)
 	if result.practice:
 		lines.append("Practice run: start from 1 to save a time")
 	for line: String in lines:

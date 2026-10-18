@@ -28,6 +28,8 @@ const MODEL := preload("res://art/characters/runner/runner.glb")
 const MODELS := {
 	"parker": "res://art/characters/runner/runner.glb",
 	"echo": "res://art/characters/runner/echo.glb",
+	# Not playable: Mags, the Line's dispatcher (art/characters/runner/runner_figure.gd).
+	"mags": "res://art/characters/runner/mags.glb",
 	# Not a runner: the Host in the chase (art/characters/host/host_body.gd).
 	"host": "res://art/characters/host/host.glb",
 }

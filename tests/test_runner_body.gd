@@ -125,6 +125,71 @@ func test_figure_stands_in_the_level() -> void:
 	check(fig.get_node_or_null("Blocker") != null, "figure blocks the player")
 
 
+## Mags (the Line's dispatcher, a figure in the camp) is her own model on
+## the shared skeleton, and loads straight from the file before an import.
+func test_mags_model_is_her_own_and_loads_unimported() -> void:
+	var body: Node3D = RunnerBody.new()
+	var parker: Node3D = RunnerBody.MODEL.instantiate()
+	var parker_skel: Skeleton3D = parker.find_children("*", "Skeleton3D", true, false)[0]
+	var parker_verts := _vertex_count(parker)
+	var raw: Node3D = body._load_gltf_file(RunnerBody.MODELS["mags"])
+	check(raw != null, "mags.glb loads straight from the file")
+	if raw != null:
+		var skel: Skeleton3D = raw.find_children("*", "Skeleton3D", true, false)[0]
+		check(skel.get_bone_count() == parker_skel.get_bone_count(), "Mags shares Parker's skeleton")
+		check(skel.find_bone("RightHand") >= 0 and skel.find_bone("Head") >= 0, "humanoid bone names")
+		check(_vertex_count(raw) > parker_verts * 1.4, "Mags has her own hair, glasses, headset and vest (%d vs %d verts)" % [_vertex_count(raw), parker_verts])
+		raw.free()
+	parker.free()
+	body.free()
+
+
+## Mags's camp poses: sitting puts her on the floor, holding_out puts her
+## right hand out in front at chest height with the pistol on it.
+func test_mags_figure_poses() -> void:
+	_w = TestWorld.new()
+	tree.root.add_child(_w)
+	var figure: Script = load("res://art/characters/runner/runner_figure.gd")
+	var figs := {}
+	var x := 0.0
+	for pose: String in ["idle", "arms_crossed", "sitting", "holding_out"]:
+		var fig: Node3D = figure.new()
+		fig.runner = "mags"
+		fig.pose_name = pose
+		_w.add_child(fig)
+		fig.global_position = Vector3(x, 0, 0)
+		figs[pose] = fig
+		x += 2.0
+	for i in 4:
+		await tree.process_frame
+	for pose: String in figs:
+		var body: Node3D = figs[pose].get_node("RunnerBody")
+		check(body.runner == "mags", "%s figure shows Mags" % pose)
+		var feet: float = body.bone_world_position("LeftFoot").y
+		check_between(feet, -0.05, 0.3, "%s: feet on the floor (%.2f)" % [pose, feet])
+	var stand: Node3D = figs["idle"].get_node("RunnerBody")
+	var sit: Node3D = figs["sitting"].get_node("RunnerBody")
+	var stand_hips: float = stand.bone_world_position("Hips").y
+	var sit_hips: float = sit.bone_world_position("Hips").y
+	check(sit_hips < stand_hips - 0.55, "sitting puts her hips near the floor (%.2f vs %.2f standing)" % [sit_hips, stand_hips])
+	check(sit_hips > 0.05, "but not through it (%.2f)" % sit_hips)
+	var hold: Node3D = figs["holding_out"]
+	var hold_body: Node3D = hold.get_node("RunnerBody")
+	var hand: Vector3 = hold.global_transform.affine_inverse() * hold_body.bone_world_position("RightHand")
+	check(hand.z > 0.3, "the hand is held out in front of her (%.2f m)" % hand.z)
+	check_between(hand.y, 1.0, 1.45, "at chest height (%.2f)" % hand.y)
+	check(hold.held_model != null, "holding_out shows the pistol")
+	if hold.held_model != null:
+		var gun: Vector3 = hold.held_model.global_position
+		check(gun.distance_to(hold_body.bone_world_position("RightHand")) < 0.2, "the pistol is on her hand")
+	check(figs["idle"].held_model == null, "idle holds nothing")
+	# The first-person camera skips the player's own body layer; figures
+	# are other people and must still show.
+	var fp_mask := 0xFFFFF & ~RunnerBody.LAYER
+	for mi: MeshInstance3D in hold.find_children("*", "MeshInstance3D", true, false):
+		check(mi.layers & fp_mask != 0, "%s shows in first person" % mi.name)
+
+
 func test_layers_and_cull_masks() -> void:
 	var p := _make()
 	var meshes := _rig.find_children("*", "MeshInstance3D", true, false)
