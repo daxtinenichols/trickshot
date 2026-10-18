@@ -412,7 +412,9 @@ func _remove_all() -> void:
 		if is_instance_valid(g):
 			g.visible = true
 	_hidden.clear()
-	for res in _env_backup:
+	# Iterate a copy of the keys: walking a Dictionary keyed by an object that
+	# has since been freed (a sun from an unloaded level) can loop forever.
+	for res: Variant in _env_backup.keys():
 		if is_instance_valid(res):
 			for prop: String in _env_backup[res]:
 				res.set(prop, _env_backup[res][prop])
