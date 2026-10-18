@@ -102,7 +102,11 @@
   {"on": "complete", "who": "host", "line": "Where are you taking me, Echo? That's... that's the Silt. What are those... Echo? ECHO!"},
   {"on": "complete", "who": "echo", "line": "And that's the show, Port Calder."},
   {"on": "complete", "who": "parker", "line": "Echo?"},
-  {"on": "complete", "who": "echo", "line": "I'm here. Hang on. I'm coming back for you."}
+  {"on": "complete", "who": "echo", "line": "I'm here. Hang on. I'm coming back for you."},
+  {"on": "complete", "who": "mags", "line": "Line camp to anyone out there. They made it. Both of them."},
+  {"on": "complete", "who": "echo", "line": "Port Calder, it's Echo. And Parker. The show's over."},
+  {"on": "complete", "who": "parker", "line": "Go outside. It's a nice day."},
+  {"on": "complete", "if": "m07_parking_spiral.fate=spared", "who": "juno", "line": "Not bad, courier. Not bad."}
  ],
  "chatter": {
   "caught": [

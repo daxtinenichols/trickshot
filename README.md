@@ -147,7 +147,7 @@ Pick a level in the **Esc** menu, or press **F11** to cycle through them: Sandbo
 - **2 On Air** (warehouse roofs, 540 m): the Host names you on air; wallruns, wall hops and three of the Static's raiders shooting back from behind sandbags.
 - **3 Glass District** (office roofs, 560 m): windows to slide through, a climb to the upper offices, toll spotters to take out, on to the Silt bridge.
 - **4 Silt Line** (the Silt, 530 m): the bridge is gone; run through the crawlers without stopping, climb onto the overpass and run it to Meridian Mall.
-- **12 Signal Out** (the burning tower): you play Echo and the Host chases you. He follows your exact path, never drops more than about 22 m behind, and catches you if you slow down; Parker coaches you on the radio. Beating it unlocks Echo as a runner for every mission.
+- **12 Signal Out** (the burning tower): you play Echo (her own runner model, on Parker's animations) and the Host chases you. He follows your exact path, never drops more than about 22 m behind, and catches you if you slow down; Parker coaches you on the radio. Beating it unlocks Echo as a runner for every mission.
 
 Mags, the Host, Echo and Parker talk over the radio while you run, in spoken voices through a radio filter with subtitles low in the middle (Echo's coded messages break up with static, and raiders shout their taunts when they tag you); nothing stops the game. The clock starts when you leave the start, the objective shows under it, falling sends you to the last checkpoint, and lost broadcast tapes hide on the harder routes. Number keys jump to checkpoints as practice runs. Missions are data files; how to write one is in [docs/missions.md](docs/missions.md).
 

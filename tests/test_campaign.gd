@@ -8,7 +8,7 @@ extends TestCase
 const MISSION := preload("res://campaign/mission.tscn")
 const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "window", "target", "ramp", "loop",
-	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab"]
+	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure"]
 
 var level: Node3D
 var player: Player
@@ -261,6 +261,48 @@ func test_radio_plays_story_lines_and_chatter() -> void:
 	check(RadioFeed.duration("short") >= 2.0 and RadioFeed.duration("x".repeat(400)) <= 7.0, "durations clamp")
 
 
+func test_echo_chatter_waits_for_the_uplink() -> void:
+	await _load(_index("m10_the_climb"))
+	var radio: RadioFeed = level.radio
+	var echo := func() -> bool: return radio.queue.any(func(l: Dictionary) -> bool: return l.who == "echo")
+	for k in 4:
+		radio.queue.clear()
+		radio.current = {}
+		radio._chatter_ready_at = 0.0
+		radio.notify("combo")
+	check(not echo.call(), "Echo stays off the air before she takes the uplink")
+	radio.notify("checkpoint:1")
+	var heard := false
+	for k in 4:
+		radio.queue.clear()
+		radio.current = {}
+		radio._chatter_ready_at = 0.0
+		radio.notify("combo")
+		heard = heard or echo.call()
+	check(heard, "and cheers him on after")
+
+
+func test_juno_fate_carries_to_the_ending() -> void:
+	# A boss's fate in a real (not practice) run is saved with its mission.
+	await _load(_index("m08_storm_channels"))
+	run.event.emit("fate:spared")
+	check(Campaign.choice("m08_storm_channels", "fate") == "spared", "a fate event is saved")
+	level.queue_free()
+	await tree.process_frame
+	for spared: bool in [false, true]:
+		Campaign.reset_progress()
+		if spared:
+			Campaign.save().set_value("m07_parking_spiral", "fate", "spared")
+		await _load(_index("m12_signal_out"))
+		var radio: RadioFeed = level.radio
+		radio.notify("complete")
+		var juno := radio.queue.any(func(l: Dictionary) -> bool: return l.who == "juno")
+		check(juno == spared, "Juno's ending line plays only if she was spared (spared %s, heard %s)" % [spared, juno])
+		check(radio.queue.any(func(l: Dictionary) -> bool: return l.line == "Go outside. It's a nice day."), "the ending plays")
+		level.queue_free()
+		await tree.process_frame
+
+
 # ---------------------------------------------------------------- the chase
 
 func test_pursuer_follows_your_path() -> void:
@@ -311,6 +353,24 @@ func test_beating_the_finale_unlocks_echo() -> void:
 	Campaign.set_runner("echo")
 	check(Campaign.runner_for(_index("m02_on_air")) == "echo", "and playable in other missions")
 	check(Campaign.runner_for(_index("m00_dawn_run")) == "parker", "except where the story says otherwise")
+
+
+func test_echo_waits_in_the_studio_and_runs_the_finale() -> void:
+	await _load(_index("m11_dead_air"))
+	var echo: Node3D = level.find_child("Figure_echo", true, false)
+	check(echo != null, "Echo stands in the Dead Air studio")
+	if echo != null:
+		var goal: Dictionary = run.mission.objectives[-1]
+		var end := MissionBuilder.vec(goal.at)
+		var d := Vector2(echo.global_position.x - end.x, echo.global_position.z - end.z).length()
+		check(d < 10.0, "next to the 'Get to Echo' goal (%.1f m)" % d)
+		check(absf(echo.global_position.y - (end.y - 2.0)) < 0.5, "standing on the studio floor")
+	level.queue_free()
+	await tree.process_frame
+	await _load(_index("m12_signal_out"))
+	ArtLook.attach_to_player(player)
+	var body: Node = player.get_node("RunnerBody")
+	check(body.runner == "echo", "Signal Out shows Echo's model")
 
 
 # ---------------------------------------------------------------- full runs
@@ -519,24 +579,59 @@ func test_on_air_lookouts_are_raiders() -> void:
 	player.global_position = Vector3(c.x, 8.05, c.z)
 	await _step(5)
 	check(enc.phase == EnemyEncounter.Phase.ACTIVE, "the encounter starts on the roof")
-	check(run.objective == 1, "practice from the lookout roof starts at the shooting")
+	check(run.objective == 2, "practice from the lookout roof: the lookouts are a bonus, the mast is the goal")
+	check(run.bonuses.has(1) and run.bonus_text().contains("(0 / 3)"), "the lookout bonus is open (%s)" % run.bonus_text())
 	# One kill, then go down: the raiders come back and the count starts over.
 	enc.enemies[0].take_hit({"damage": 500.0, "zone": &"body", "position": enc.enemies[0].global_position})
-	check(run.objective_text().contains("(1 / 3)"), "one down (%s)" % run.objective_text())
+	check(run.bonus_text().contains("(1 / 3)"), "one down (%s)" % run.bonus_text())
 	var health: PlayerHealth = PlayerHealth.of(player)
 	health.take_damage(500.0, Vector3.ZERO)
 	await _step(2)
 	check(run.downs == 1, "went down once")
 	check(player.global_position.distance_to(b.spawns[2].origin) < 1.0, "back at the checkpoint (%s)" % player.global_position)
 	check(enc.alive_count() == n, "raiders reset")
-	check(run.objective_text().contains("(0 / 3)"), "count starts over (%s)" % run.objective_text())
+	check(run.bonus_text().contains("(0 / 3)"), "count starts over (%s)" % run.bonus_text())
+	var score: int = level.combo.score
 	for e: Node in enc.enemies:
 		e.take_hit({"damage": 500.0, "zone": &"head", "position": e.global_position})
 	await _step(2)
-	check(run.objective == 2, "the lookouts are down")
+	check(run.bonuses[1].done and run.bonuses_done() == 1, "the lookouts are down: bonus done")
+	check(level.combo.score >= score + MissionRun.BONUS_POINTS, "and it pays (%d -> %d)" % [score, level.combo.score])
+	check(run.objective == 2, "still heading for the mast")
 	check(run.headshots == n, "headshots counted (%d)" % run.headshots)
 	await _step(400)
 	check(enc.alive_count() == 0, "a cleared encounter stays cleared")
+
+
+## Kill goals are bonuses: in Storm Channels you can run past both Ward
+## squads and still win at the end, and a bonus you ran past is closed,
+## not something to go back for.
+func test_kill_goals_are_bonuses() -> void:
+	await _load(_index("m08_storm_channels"))
+	var objs: Array = run.objectives
+	check(MissionRun.is_bonus(objs[1]) and MissionRun.is_bonus(objs[3]), "the squad fights are bonus goals")
+	check(not MissionRun.is_bonus(objs[0]) and not MissionRun.is_bonus(objs[4]), "the run itself isn't")
+	await _step(10, _forward())
+	for i in [0, 2, 4]:
+		check(run.objective == i, "on objective %d (%d)" % [i, run.objective])
+		player.global_position = MissionBuilder.vec(objs[i].at) + Vector3(0, 0.1, 0)
+		await _step(2)
+	check(run.phase == MissionRun.Phase.COMPLETE, "reaching the end wins without a kill")
+	check(run.kills == 0 and run.result.bonuses == 0 and run.result.total_bonuses == 2, "no bonuses (%s)" % run.result)
+	check(run.bonuses[1].closed and run.bonuses[3].closed, "the skipped bonuses closed")
+	# Every campaign kill goal is a bonus; only The Yard's lessons are required.
+	for m: Dictionary in Campaign.missions():
+		if m.get("file", "") == "":
+			continue
+		for o: Dictionary in Campaign.load_mission_file(m.file).get("objectives", []):
+			if String(o.get("type", "")) == "shoot" and not MissionRun.is_bonus(o):
+				check(m.id == "m01_the_yard", "%s: kill goal '%s' is required" % [m.id, o.get("text", "")])
+
+
+func _forward() -> InputFrame:
+	var f := InputFrame.new()
+	f.move = Vector2(0, -1)
+	return f
 
 
 func test_signal_out_can_be_escaped() -> void:
@@ -552,8 +647,9 @@ func test_signal_out_can_be_escaped() -> void:
 
 
 ## Every mission built from a route: a bot runs the route it generates
-## from start to finish (enemies can't take it down, and any shooting
-## objective is done for it), without falling; where the route forks, a
+## from start to finish (enemies can't take it down, and it kills nobody:
+## kill goals are bonuses, so only a `clear` like Juno's is done for it),
+## without falling; where the route forks, a
 ## second run takes the other line of every fork.
 func test_route_missions_can_be_finished() -> void:
 	var all := Campaign.missions()
@@ -581,7 +677,7 @@ func _bot_run(label: String, alt := false) -> void:
 	var health := PlayerHealth.ensure(player)
 	health.can_die = false
 	run.event.connect(func(e: String) -> void:
-		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear"]:
+		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear", "duel"]:
 			for enc: Node3D in level.builder.encounters:
 				for en: Node in enc.enemies:
 					if not en.is_dead:
@@ -734,7 +830,7 @@ func test_hand_made_missions_can_be_finished() -> void:
 
 func _auto_shoot_objectives() -> void:
 	run.event.connect(func(e: String) -> void:
-		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear"]:
+		if e.begins_with("objective:") and run.current_objective().get("type", "") in ["shoot", "clear", "duel"]:
 			for enc: Node3D in level.builder.encounters:
 				for en: Node in enc.enemies:
 					if not en.is_dead:
@@ -845,6 +941,32 @@ func test_juno_fate_picks_the_line() -> void:
 		level.queue_free()
 		level = null
 		await tree.process_frame
+
+
+## m07: fighting is never required. Running up to Juno ends the duel without
+## a shot fired, and she's left kneeling for the spare-or-not choice.
+func test_reaching_juno_ends_the_duel() -> void:
+	await _load(_index_of("m07_parking_spiral"))
+	var duel := -1
+	for k in run.objectives.size():
+		if run.objectives[k].get("type", "") == "duel":
+			duel = k
+	check(duel >= 0, "m07 has a duel objective")
+	var juno: Node3D = run.duel_boss("Juno")
+	check(juno != null, "the duel's boss is Juno")
+	if duel < 0 or juno == null:
+		return
+	run._begin_objective(duel)
+	await _step(5)
+	check(run.objective == duel, "the duel isn't over from far away")
+	player.global_position = juno.global_position + Vector3(0, 0, 2.5)
+	await _step(3)
+	check(run.objective == duel + 1, "reaching Juno ends the duel (objective %d)" % run.objective)
+	check(juno.is_beaten and juno.fate == "" and not juno.is_dead, "she kneels and it's your call")
+	check(run.kills == 0, "without a shot fired")
+	level.queue_free()
+	level = null
+	await tree.process_frame
 
 
 ## m05: the arena's shots wake its sleeping Hollows.

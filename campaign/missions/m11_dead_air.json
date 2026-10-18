@@ -125,7 +125,8 @@
    {"prop": "radio_set", "x": 3.5, "at": 48, "yaw": 200},
    {"piece": {"fire": [-4.6, 0, -24], "size": [1.6, 1.6, 2]}, "at": 0},
    {"piece": {"fire": [4.6, 0, -30], "size": [1.6, 1.6, 2]}, "at": 0},
-   {"mark": "#f57320", "at": 42}
+   {"mark": "#f57320", "at": 42},
+   {"piece": {"figure": "echo", "at": [0, 0, -56], "pose": "arms_crossed"}, "at": 0}
   ]}
  ],
  "radio": [

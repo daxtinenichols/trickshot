@@ -119,13 +119,14 @@
   {"on": "go", "who": "host", "line": "And we're back, Port Calder. Our sponsors are watching tonight, so... Parker, darling, could you die quietly?"},
   {"on": "objective:1", "who": "vell", "line": "Courier sighted. Squad two, close the sluice line."},
   {"on": "objective:1", "who": "mags", "line": "These ones work in teams. They don't miss twice. Don't give them a still target."},
+  {"on": "objective:1", "who": "mags", "line": "Helmets. First shot knocks it off. Second one counts."},
   {"on": "checkpoint:3", "who": "host", "line": "Quick reminder from the sponsor, folks: water's a privilege. Parker's probably drinking some right now. For free."},
   {"on": "complete", "who": "vell", "line": "The courier is not to reach the tower. Whatever it costs."},
   {"on": "complete", "who": "host", "line": "You heard the man. Whatever it costs. I'll send him the bill."}
  ],
  "chatter": {
   "headshot": [
-   {"who": "mags", "line": "Helmets. First shot knocks it off. Second one counts."},
+   {"who": "mags", "line": "Helmet's off. Finish it."},
    {"who": "mags", "line": "Clean."}
   ],
   "bail": [

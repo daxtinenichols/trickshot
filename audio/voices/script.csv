@@ -1,9 +1,4 @@
 who,file,where,line
-echo,echo/316c8beb808b.ogg,brief: Ending (after m12),"Port Calder, it's Echo. And Parker. The show's over."
-juno,juno/10ec5191ae01.ogg,brief: Ending (after m12),"Not bad, courier. Not bad."
-mags,mags/4f0ff997c5c6.ogg,brief: Ending (after m12),Line camp to anyone out there. They made it. Both of them.
-parker,parker/8597ccba91c4.ogg,brief: Ending (after m12),Go outside. It's a nice day.
-mags,mags/d845924261cc.ogg,brief: m08 Storm Channels,Helmet's off. Finish it.
 host,host/0a691e14c4bb.ogg,m00_dawn_run,"Echo's up here with me, fixing my tower. Lovely hands. Parker, darling, come and get her. Everybody's listening."
 host,host/4251fff3f2c3.ogg,m00_dawn_run,"Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you."
 host,host/fcdbdbfa72b7.ogg,m00_dawn_run,"So, today's show. We've got a courier, comes home, and his camp's empty. Wife's gone. I know! Awful. I can't stop listening either."
@@ -179,6 +174,7 @@ mags,mags/7ba39f445dbe.ogg,m08_storm_channels,Helmets. First shot knocks it off.
 mags,mags/b10b2d3f61b8.ogg,m08_storm_channels,The big Hollow's armoured on the front. Get behind it.
 mags,mags/c9ccd6672ab7.ogg,m08_storm_channels,"Up. Don't trade with a squad. Move, then shoot."
 mags,mags/cd7215d59223.ogg,m08_storm_channels,"Fresh orange. That's not my mark. Somebody's out there marking you a route, Parker."
+mags,mags/d845924261cc.ogg,m08_storm_channels,Helmet's off. Finish it.
 mags,mags/de51a721d1bb.ogg,m08_storm_channels,That's it. Keep the speed through the banks.
 mags,mags/e4400679138c.ogg,m08_storm_channels,"Channels go straight to the west side. That's Ward land. Their water, too. Be quick."
 mags,mags/e9e5741b67f1.ogg,m08_storm_channels,These ones work in teams. They don't miss twice. Don't give them a still target.
@@ -242,6 +238,7 @@ parker,parker/4da3fc7a75d1.ogg,m11_dead_air,Traffic.
 parker,parker/bd9cb607c7ad.ogg,m11_dead_air,Echo.
 vell,vell/22df3d263b74.ogg,m11_dead_air,All units to the studio. This ends tonight.
 echo,echo/2c49aa070bed.ogg,m12_signal_out,"Running. Talk to me, Parker."
+echo,echo/316c8beb808b.ogg,m12_signal_out,"Port Calder, it's Echo. And Parker. The show's over."
 echo,echo/8fb060d0a5c0.ogg,m12_signal_out,He's still behind me. I can hear him laughing.
 echo,echo/c20e59ff0519.ogg,m12_signal_out,I'm here. Hang on. I'm coming back for you.
 echo,echo/ca3f46c3f9a5.ogg,m12_signal_out,"And that's the show, Port Calder."
@@ -254,11 +251,14 @@ host,host/75524b97f685.ogg,m12_signal_out,"Change of plans, Port Calder! Our cou
 host,host/b5586b0e112e.ogg,m12_signal_out,"I used to chase ratings, darling. This is way more fun."
 host,host/c1e8ab8c4292.ogg,m12_signal_out,"Slowing down, sweetheart? I can hear you breathing."
 host,host/f213a987f4f4.ogg,m12_signal_out,Caught you! Folks love a rerun.
+juno,juno/10ec5191ae01.ogg,m12_signal_out,"Not bad, courier. Not bad."
+mags,mags/4f0ff997c5c6.ogg,m12_signal_out,Line camp to anyone out there. They made it. Both of them.
 parker,parker/1f7a09f7f0fb.ogg,m12_signal_out,Too wide to jump. Wall on your right. Run it.
 parker,parker/344576ff5e8f.ogg,m12_signal_out,"Barriers. Jump into 'em, you'll go over without slowing down."
 parker,parker/4c70b8100c85.ogg,m12_signal_out,"Keep moving, Echo! Don't let him close in!"
 parker,parker/7a8fb9523789.ogg,m12_signal_out,Echo. Run. Don't look back. I'll talk you down.
 parker,parker/7ef0bb0efb75.ogg,m12_signal_out,That's it. That's my girl.
+parker,parker/8597ccba91c4.ogg,m12_signal_out,Go outside. It's a nice day.
 parker,parker/8c0c8958984c.ogg,m12_signal_out,Echo?
 parker,parker/a9a55c37114a.ogg,m12_signal_out,Bar ahead. Slide under it.
 parker,parker/b81db1514778.ogg,m12_signal_out,"Up! Get up, he's coming!"
