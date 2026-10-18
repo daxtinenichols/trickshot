@@ -309,7 +309,7 @@ func _set_alive_collision(on: bool) -> void:
 func _fire() -> void:
 	shots_fired += 1
 	var b := EnemyProjectile.new()
-	b.velocity = aim_dir * bullet_speed
+	b.velocity = ComboArmor.shot_dir(aim_dir, gun_position(), player, _rng) * bullet_speed
 	b.damage = bullet_damage
 	b.player = player
 	b.player_health = player_health

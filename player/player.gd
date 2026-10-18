@@ -33,6 +33,9 @@ var flow_source := Callable()
 ## repeat_scale_source(names: Array, n: int) -> float: what the last `n` of
 ## those tricks are worth after the combo's repeat decay (n with no decay).
 var repeat_scale_source := Callable()
+## combo_source() -> int: the live combo's multiplier (enemies' combo armor
+## reads it; 0 with no scoring).
+var combo_source := Callable()
 
 ## Set by tests or replays: the frame to use for the next tick.
 var scripted_input: InputFrame = null
@@ -478,6 +481,18 @@ func horizontal_speed() -> float:
 ## Extra ground cruise speed from the live combo's style (0 with no scoring).
 func flow() -> float:
 	return maxf(float(flow_source.call()), 0.0) if flow_source.is_valid() else 0.0
+
+
+## The live combo's multiplier (0 with no scoring or no combo).
+func combo_multiplier() -> int:
+	return int(combo_source.call()) if combo_source.is_valid() else 0
+
+
+## In the air and part way round a flip, spin or side flip (45 degrees or
+## more), so enemies find you harder to hit.
+func is_tricking_in_air() -> bool:
+	const TURNED := PI * 0.25
+	return state == State.AIR and (absf(_air_pitch) >= TURNED or absf(_air_yaw) >= TURNED or absf(_air_roll) >= TURNED)
 
 
 ## Ground speed running holds at full momentum without bleeding.

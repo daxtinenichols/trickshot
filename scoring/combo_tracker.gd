@@ -124,6 +124,7 @@ func setup(p: Player, pistol: Pistol = null) -> void:
 	p.respawned.connect(func() -> void: bail(&"respawn"))
 	p.flow_source = flow
 	p.repeat_scale_source = repeat_scale
+	p.combo_source = multiplier
 	if pistol:
 		pistol.hit.connect(on_hit)
 		pistol.damage_scale = damage_multiplier

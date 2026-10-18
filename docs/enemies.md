@@ -34,7 +34,22 @@ little off your look ray.
 25% faster on their feet, windups and pauses 28% shorter, the locked dodge
 window 20% shorter, aim that tracks 60% faster and leads a runner, faster
 bullets, 20% more damage. `Difficulty.level` (1 = this, 0 = the old
-numbers) scales all of it. Up to three gunners aim at once.
+numbers) scales all of it. Up to three gunners aim at once. Gunners lead a
+runner fully: at the lock they aim where you'll be if you hold your line,
+so changing line after the lock is what dodges. Hits do double damage (a
+raider kills in three). A raider moving to cover stops to take a ready
+shot rather than letting you run past.
+
+## Combo armor
+
+Every gunshot rolls against your exposure when it's fired
+(`enemies/combo_armor.gd`): 1.5 at a walk, 0.7 at top speed, 0.4 at 15 m/s
+and up, x0.6 while sliding, wallrunning or part way round a flip or spin,
+x0.85 with a 2x+ combo. Hit chance = exposure squared (capped at 1): a
+standing target is always hit, a plain line at top speed about half the
+time, a fast line full of tricks about 1 in 10. A miss cracks past 0.9-1.6 m
+away, never along the way you're running. A faint pulsing red edge shows
+while someone is aiming at you and you're easy to hit.
 
 ## Respawning
 

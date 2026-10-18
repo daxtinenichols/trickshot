@@ -24,6 +24,8 @@ const FALL_TIME := 0.18
 const GET_UP_TIME := 0.45
 const GRAVITY := 22.0
 const HEALTH_BAR_SHADER := preload("res://enemies/health_bar.gdshader")
+## Enemy shots roll against how exposed you are (combo_armor.gd).
+const ComboArmor := preload("res://enemies/combo_armor.gd")
 # By path, not class name (see the project rule on stale class caches).
 const BODY_SCRIPT := preload("res://enemies/enemy_body.gd")
 const Poses := preload("res://enemies/enemy_poses.gd")
