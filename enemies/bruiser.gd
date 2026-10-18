@@ -12,6 +12,8 @@ extends "res://enemies/shield.gd"
 
 func _ready() -> void:
 	super()
+	# A Static raider, though it fights like the Ward's shield bearers.
+	faction = "static"
 	max_health = 150.0
 	health = max_health
 	has_helmet = false

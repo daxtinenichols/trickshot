@@ -292,6 +292,19 @@ func test_taunts_take_turns_and_keep_to_their_faction() -> void:
 		check(not t in factions.static.lines, "the Ward never shouts a Static line: %s" % t)
 
 
+func test_each_enemy_shouts_its_own_factions_taunts() -> void:
+	var Encounter := preload("res://enemies/enemy_encounter.gd")
+	var sides := {"raider": "static", "hunter": "static", "bruiser": "static", "juno": "static",
+		"trooper": "ward", "shield": "ward", "marksman": "ward", "heavy": "ward"}
+	Enemy.use_models = false
+	for type: String in sides:
+		var e: Node = Encounter.script_for(type).new()
+		tree.root.add_child(e)
+		check(e.faction == sides[type], "%s shouts %s taunts (got %s)" % [type, sides[type], e.faction])
+		e.free()
+	Enemy.use_models = true
+
+
 func test_radio_feed_speaks_and_holds_the_line_until_said() -> void:
 	var line := ""
 	var m: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/missions/m00_dawn_run.json"))
