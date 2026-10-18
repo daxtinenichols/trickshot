@@ -19,11 +19,16 @@ signal killed(info: Dictionary)
 ## Movement collision layer: enemies bump into the world and each other,
 ## but the player runs through them (the player only collides with layer 1).
 const BODY_LAYER := 8
+## Kick knockdowns: how long the fall and the getting up take (s).
+const FALL_TIME := 0.18
+const GET_UP_TIME := 0.45
 const GRAVITY := 22.0
 const HEALTH_BAR_SHADER := preload("res://enemies/health_bar.gdshader")
 # By path, not class name (see the project rule on stale class caches).
 const BODY_SCRIPT := preload("res://enemies/enemy_body.gd")
 const Poses := preload("res://enemies/enemy_poses.gd")
+const Difficulty := preload("res://enemies/difficulty.gd")
+const HitRig := preload("res://enemies/hit_rig.gd")
 
 ## Off: every enemy uses the placeholder look (tools, comparisons).
 static var use_models := true
@@ -34,6 +39,11 @@ static var use_models := true
 ## How long a kick knocks it off balance (s), and how hard it shoves.
 @export var kick_stagger := 0.6
 @export var kick_shove := 6.0
+## A kick's damage before the combo multiplier (the same one shots use).
+@export var kick_damage := 35.0
+## A kick knocks it flat on its back for this long (s), getting up at the
+## end (the last GET_UP_TIME). 0: too heavy to knock over, it only staggers.
+@export var knockdown_time := 1.5
 ## A headshot that doesn't kill makes it flinch for this long (s),
 ## interrupting whatever it was doing.
 @export var headshot_flinch := 0.45
@@ -73,6 +83,9 @@ var _visual: Node3D
 var _pose: Node3D
 ## The posed model (EnemyBody), or null when the placeholder is shown.
 var body: Node3D
+## Body-shaped hit zones posed from the state (HitRig), or null for enemies
+## that keep simple boxes (drones).
+var hit_rig: RefCounted
 var _materials: Array[StandardMaterial3D] = []
 var _bar: MeshInstance3D
 var _bar_mat: ShaderMaterial
@@ -80,6 +93,11 @@ var _bar_show := 0.0
 var _flash := 0.0
 var _prev_xform := Transform3D.IDENTITY
 var _killed_by: Dictionary = {}
+var _difficulty_applied := false
+## Seconds left lying down after a kick (0: on its feet).
+var _knocked := 0.0
+## The knockdown as drawn (eases toward knockdown_amount). Looks only.
+var _knock_shown := 0.0
 
 
 func _ready() -> void:
@@ -180,6 +198,9 @@ func _interrupt() -> void:
 # ---------------------------------------------------------------- public
 
 func activate(p: Player) -> void:
+	if not _difficulty_applied:
+		_difficulty_applied = true
+		Difficulty.apply(self)
 	player = p
 	player_health = PlayerHealth.of(p)
 	active = true
@@ -203,6 +224,7 @@ func reset_to_home() -> void:
 	telegraph = 0.0
 	duck = 0.0
 	_stagger = 0.0
+	_knocked = 0.0
 	_dead_time = 0.0
 	_bar_show = 0.0
 	_rng.seed = seed_value
@@ -212,6 +234,9 @@ func reset_to_home() -> void:
 		_pose.transform = Transform3D.IDENTITY
 	_prev_xform = global_transform
 	_on_reset()
+	if _hit_root:
+		_hit_root.transform = Transform3D.IDENTITY
+	pose_hitboxes(0.0)
 
 
 func set_home(t: Transform3D) -> void:
@@ -227,6 +252,8 @@ func eye_position() -> Vector3:
 
 
 func head_position() -> Vector3:
+	if hit_rig and _hit_root:
+		return _hit_root.global_transform * hit_rig.head_local
 	return _hit_root.global_position + Vector3.UP * _head_height() if _hit_root else global_position + Vector3.UP * _head_height()
 
 
@@ -273,17 +300,48 @@ func take_hit(info: Dictionary) -> bool:
 	return false
 
 
-func on_kicked(_by: Node, dir := Vector3.ZERO) -> void:
+## Kicked (by the player, or anything with a `kick_damage_scale` Callable):
+## takes kick damage scaled like shots, and goes flying onto its back (or
+## staggers, if it's too heavy to knock over). Returns true if it killed.
+func on_kicked(by: Node, dir := Vector3.ZERO) -> bool:
 	if is_dead:
-		return
+		return false
 	var d := EnemyMath.horizontal(dir)
-	if d.length_squared() < 0.01 and player:
-		d = EnemyMath.horizontal(global_position - player.global_position)
-	d = d.normalized()
+	if d.length_squared() < 0.01 and by is Node3D:
+		d = EnemyMath.horizontal(global_position - (by as Node3D).global_position)
+	d = d.normalized() if d.length_squared() > 1e-6 else -forward()
+	if kick_damage > 0.0:
+		var scale_fn: Variant = by.get("kick_damage_scale") if by else null
+		var k := float((scale_fn as Callable).call()) if scale_fn is Callable and (scale_fn as Callable).is_valid() else 1.0
+		var info := {"damage": kick_damage * k, "damage_scale": k, "zone": &"body", "kick": true,
+			"position": global_position + Vector3.UP * 1.1, "direction": d, "tags": [&"kick"]}
+		if take_hit(info):
+			# Killed: the body still flies with the kick.
+			velocity = d * kick_shove * 0.6 + Vector3.UP * 2.0
+			return true
 	velocity = d * kick_shove + Vector3.UP * 3.0
 	_stagger = maxf(_stagger, kick_stagger)
+	if knockdown_time > 0.0:
+		_knocked = maxf(_knocked, knockdown_time)
+		_stagger = maxf(_stagger, knockdown_time)
 	_flash = 1.0
 	_interrupt()
+	return false
+
+
+func is_knocked_down() -> bool:
+	return _knocked > 0.0
+
+
+## How flat it lies (0 standing .. 1 on its back): falls fast, lies there,
+## gets up over the last GET_UP_TIME. From the knockdown timer only.
+func knockdown_amount() -> float:
+	if _knocked <= 0.0:
+		return 0.0
+	var since := knockdown_time - _knocked
+	var fall := clampf(since / FALL_TIME, 0.0, 1.0)
+	var rise := clampf(_knocked / GET_UP_TIME, 0.0, 1.0)
+	return minf(fall, rise)
 
 
 # ---------------------------------------------------------------- tick
@@ -291,6 +349,33 @@ func on_kicked(_by: Node, dir := Vector3.ZERO) -> void:
 func _physics_process(delta: float) -> void:
 	_prev_xform = global_transform
 	tick(delta)
+	pose_hitboxes(delta)
+
+
+## Moves the hit zones to the pose the state calls for (physics tick only).
+func pose_hitboxes(delta: float) -> void:
+	if hit_rig == null or is_dead or _hit_root == null:
+		return
+	var pose := _hit_pose(delta)
+	if is_staggered() and not is_knocked_down():
+		pose["lean"] = float(pose.get("lean", 0.0)) - 0.15
+	hit_rig.update(pose)
+	# Knocked down: the whole body lies back, like the drawn one.
+	var kd := knockdown_amount() if _falls_over() else 0.0
+	_hit_root.transform = Transform3D(Basis(Vector3.RIGHT, -PI * 0.5 * kd), Vector3(0, 0.25 * kd, 0))
+
+
+## The pose for the hit zones (see HitRig.update). Default: standing, legs
+## stepping with the speed.
+func _hit_pose(delta: float) -> Dictionary:
+	var speed := EnemyMath.horizontal(velocity).length()
+	return {"speed": speed, "delta": delta, "run": speed / 4.0}
+
+
+## Body-shaped hit zones from a HitRig profile (call from _build).
+func _build_hit_rig(profile: Dictionary, scale := 1.0) -> void:
+	hit_rig = HitRig.new()
+	hit_rig.build(self, profile, scale)
 
 
 func tick(delta: float) -> void:
@@ -301,6 +386,8 @@ func tick(delta: float) -> void:
 		return
 	if not is_on_floor():
 		velocity.y -= _gravity() * delta
+	if _knocked > 0.0:
+		_knocked = maxf(_knocked - delta, 0.0)
 	if _stagger > 0.0:
 		_stagger -= delta
 		telegraph = 0.0
@@ -468,8 +555,14 @@ func _process(delta: float) -> void:
 		_bar_mat.set_shader_parameter("alpha", clampf(_bar_show, 0.0, 1.0))
 		_bar.position.y = _bar_height() * (1.0 - 0.3 * duck)
 	_animate(delta)
+	var knocked := not is_dead and _falls_over()
+	_knock_shown = lerpf(_knock_shown, knockdown_amount() if knocked else 0.0, 1.0 - exp(-24.0 * delta))
 	if body:
-		if not is_dead:
+		if not is_dead and _knock_shown > 0.4:
+			# Flat on its back after a kick.
+			body.grounded = false
+			body.show_pose(Poses.dead(), delta, 14.0)
+		elif not is_dead:
 			body.grounded = true
 			_animate_body(delta)
 		elif body.has_bones():
@@ -478,6 +571,9 @@ func _process(delta: float) -> void:
 	if is_dead and _falls_over():
 		_pose.rotation.x = lerpf(_pose.rotation.x, -PI * 0.5, 1.0 - exp(-10.0 * delta))
 		_pose.position.y = lerpf(_pose.position.y, 0.25, 1.0 - exp(-10.0 * delta))
+	elif knocked and (_knock_shown > 0.001 or _knocked > 0.0):
+		_pose.rotation.x = -PI * 0.5 * _knock_shown
+		_pose.position.y = 0.25 * _knock_shown
 
 
 func _telegraph_color() -> Color:

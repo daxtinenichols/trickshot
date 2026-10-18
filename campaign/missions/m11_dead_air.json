@@ -25,7 +25,7 @@
    {"piece": {"box": [0, 4.6, -44.0], "size": [12.6, 0.4, 88.0], "kind": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [-6.15, 2.3, -44.0], "size": [0.3, 4.6, 88.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [6.15, 2.3, -44.0], "size": [0.3, 4.6, 88.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
-   {"encounter": "lobby", "at": 6, "length": 60, "raiders": [[-3.6, 14, 0], [3.6, 30, 0.8]], "enemies": [{"type": "heavy", "x": 3, "d": 20, "wake": 0.4}, {"type": "heavy", "x": -3, "d": 40, "wake": 1.2}, {"type": "hunter", "x": 3, "d": 48, "wake": 1.0}]},
+   {"encounter": "lobby", "at": 6, "length": 60, "raiders": [[-3.6, 14, 0], [3.6, 30, 0.8]], "enemies": [{"type": "bruiser", "x": 3, "d": 20, "wake": 0.4}, {"type": "bruiser", "x": -3, "d": 40, "wake": 1.2}, {"type": "hunter", "x": 3, "d": 48, "wake": 1.0}]},
    {"radio": {"who": "mags", "line": "The armoured ones are slow. Don't trade with them. Get past."}, "at": 8, "radius": 8},
    {"slide": true, "at": 76}
   ]},
@@ -67,7 +67,7 @@
    {"piece": {"box": [0, 4.6, -39.0], "size": [12.6, 0.4, 78.0], "kind": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [-6.15, 2.3, -39.0], "size": [0.3, 4.6, 78.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [6.15, 2.3, -39.0], "size": [0.3, 4.6, 78.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
-   {"encounter": "server floor", "at": 4, "length": 60, "raiders": [[-3.6, 14, 0], [3.6, 34, 1.0]], "enemies": [{"type": "heavy", "x": 3, "d": 20, "wake": 0.5}, {"type": "heavy", "x": -3, "d": 46, "wake": 1.4}]},
+   {"encounter": "server floor", "at": 4, "length": 60, "troopers": [[-3.6, 14, 0], [3.6, 34, 1.0]], "enemies": [{"type": "heavy", "x": 3, "d": 20, "wake": 0.5}, {"type": "heavy", "x": -3, "d": 46, "wake": 1.4}]},
    {"hurdles": true, "at": 70}
   ]},
   {"join": true},
@@ -78,7 +78,7 @@
    {"piece": {"box": [6.15, 2.3, -39.0], "size": [0.3, 4.6, 78.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"checkpoint": "Transmitter room", "at": 4, "objective": 2},
    {"label": "TRANSMITTER", "at": 6},
-   {"encounter": "transmitter", "at": 8, "length": 56, "raiders": [[-3.6, 14, 0], [3.6, 24, 0.6]], "enemies": [{"type": "heavy", "x": -3, "d": 32, "wake": 0.8}, {"type": "heavy", "x": 3, "d": 44, "wake": 1.4}, {"type": "marksman", "x": -3.8, "d": 50, "wake": 1.0}]},
+   {"encounter": "transmitter", "at": 8, "length": 56, "troopers": [[-3.6, 14, 0], [3.6, 24, 0.6]], "enemies": [{"type": "heavy", "x": -3, "d": 32, "wake": 0.8}, {"type": "heavy", "x": 3, "d": 44, "wake": 1.4}, {"type": "marksman", "x": -3.8, "d": 50, "wake": 1.0}]},
    {"piece": {"fire": [4.8, 0, -66], "size": [1.4, 1.4, 1.6]}, "at": 0}
   ]},
   {"roof": 40, "do": [
@@ -94,7 +94,7 @@
   ]},
   {"turn": "left", "size": 20},
   {"roof": 70, "do": [
-   {"encounter": "elite", "at": 4, "length": 40, "raiders": [[-3.6, 10, 0], [3.6, 16, 0.4], [-3.6, 26, 0.8]], "enemies": [{"type": "hunter", "x": 3, "d": 22, "wake": 0.6}, {"type": "hunter", "x": -3, "d": 34, "wake": 1.0}, {"type": "marksman", "x": 3.8, "d": 36, "wake": 1.2}]},
+   {"encounter": "elite", "at": 4, "length": 40, "raiders": [[-3.6, 10, 0], [3.6, 16, 0.4], [-3.6, 26, 0.8]], "enemies": [{"type": "hunter", "x": 3, "d": 22, "wake": 0.6}, {"type": "hunter", "x": -3, "d": 34, "wake": 1.0}, {"type": "raider", "x": 3.8, "d": 36, "wake": 1.2}]},
    {"hop": true, "side": -1, "at": 46}
   ]},
   {"roof": 40, "y": 58, "do": [
@@ -108,7 +108,7 @@
    {"piece": {"box": [-6.15, 2.3, -24.0], "size": [0.3, 4.6, 48.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [6.15, 2.3, -24.0], "size": [0.3, 4.6, 48.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"checkpoint": "Studio", "at": 4, "objective": 3},
-   {"encounter": "studio guard", "at": 8, "length": 36, "raiders": [[-3.6, 12, 0], [3.6, 20, 0.6]], "enemies": [{"type": "heavy", "x": 0, "d": 30, "wake": 0.8, "cover": false}]}
+   {"encounter": "studio guard", "at": 8, "length": 36, "raiders": [[-3.6, 12, 0], [3.6, 20, 0.6]], "enemies": [{"type": "bruiser", "x": 0, "d": 30, "wake": 0.8, "cover": false}]}
   ]},
   {"roof": 40, "do": [
    {"piece": {"box": [0, 4.6, -19.0], "size": [12.6, 0.4, 38.0], "kind": "NEUTRAL"}, "at": 0},

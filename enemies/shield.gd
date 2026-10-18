@@ -87,11 +87,12 @@ func on_shield_hit(_info: Dictionary) -> void:
 	EnemySfx.play_at(self, &"clank", -2.0)
 
 
-func on_kicked(by: Node, dir := Vector3.ZERO) -> void:
-	super(by, dir)
+func on_kicked(by: Node, dir := Vector3.ZERO) -> bool:
+	var killed := super(by, dir)
 	if not is_dead:
 		guard_down = 1.0
 		plate.set_enabled(false)
+	return killed
 
 
 func tick(delta: float) -> void:

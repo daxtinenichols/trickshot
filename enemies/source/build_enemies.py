@@ -14,7 +14,8 @@ Output: enemies/models/<name>.glb
            ("Shield") and a scoped rifle ("LongRifle"); each type shows
            the parts it uses.
   hunter   a Static hunter: lean, hooded, built to run.
-  juno     Juno, the Static's star hunter (boss): goggles up, braid, scarf.
+  juno     Juno, the Static's star hunter (boss): long bone-white coat, red
+           visor and scarf, platinum ponytail; nothing else looks like her.
   heavy    the paramilitary heavy: bulky armor, full helmet, a light
            machine gun ("Rifle").
   mutant   a Hollow: hunched, long arms, claws, bone spines, glowing eyes.
@@ -594,36 +595,20 @@ HUNTER_PALETTE.update({
 })
 
 
-def build_hunter(juno=False):
-    """Lean, light gear for running: a hood and mask (hunter), or for Juno
-    goggles up, a braid and a long scarf, the Line courier she was."""
+def build_hunter():
+    """Lean, light gear for running: a hood and mask."""
     reset_scene()
     p = HUNTER_PALETTE
     rig = dict(HUMAN_RIG)
-    rig["head_shape"] = human_head("Juno" if juno else "Hunter", jaw=0.6 if juno else 1.0)
+    rig["head_shape"] = human_head("Hunter")
     thick = {k: (v[0] * 0.92, v[1] * 0.92) for k, v in HUMAN_THICK.items()}
-    if juno:
-        thick["pelvis"] = (0.155, 0.11)
-        thick["chest"] = (0.165, 0.11)
-        thick["waist"] = (0.12, 0.085)
     gear = []
     glow = []
-    if juno:
-        gear.append((ball("Hair", (0.1, 0.114, 0.104), xf((0, 0.008, 1.668)), cut_below=-0.1, segments=18), "hair", "Head"))
-        for i in range(4):
-            gear.append((ball("Braid", (0.03, 0.03, 0.04), xf((0, 0.12 + 0.01 * i, 1.6 - 0.07 * i)), segments=8, rings=6), "hair", "Head"))
-        gear.append((ring("GoggleStrap", 0.1, 0.114, 0.01, xf((0, -0.004, 1.71), (-14, 0, 0))), "strap", "Head"))
-        for s_ in (-1, 1):
-            glow.append((cyl("Lens", 0.024, 0.022, 0.024, xf((0.036 * s_, -0.11, 1.735), (70, 0, 0))), "lens", "Head"))
-        gear.append((ring("Scarf", 0.075, 0.072, 0.032, xf((0, -0.004, 1.49), (8, 0, 0))), "scarf", "UpperChest"))
-        gear.append((box("ScarfTail", (0.08, 0.02, 0.36), xf((0.06, 0.1, 1.3), (-12, 0, 6)), 0.01), "scarf", "UpperChest"))
-        gear.append((box("Stripe", (0.02, 0.01, 0.3), xf((-0.09, -0.12, 1.28)), 0.003), "teal", "Chest"))
-    else:
-        gear.append((ball("Hood", (0.118, 0.13, 0.13), xf((0, 0.02, 1.66)), cut_below=-0.35, segments=18), "hood", "Head"))
-        gear.append((ball("Mask", (0.082, 0.05, 0.05), xf((0, -0.09, 1.6)), segments=12), "dark", "Head"))
-        for s_ in (-1, 1):
-            glow.append((cyl("Lens", 0.02, 0.02, 0.008, xf((0.034 * s_, -0.11, 1.66), (90, 0, 0))), "lens", "Head"))
-        gear.append((ring("Scarf", 0.075, 0.072, 0.03, xf((0, -0.004, 1.49), (8, 0, 0))), "hood", "UpperChest"))
+    gear.append((ball("Hood", (0.118, 0.13, 0.13), xf((0, 0.02, 1.66)), cut_below=-0.35, segments=18), "hood", "Head"))
+    gear.append((ball("Mask", (0.082, 0.05, 0.05), xf((0, -0.09, 1.6)), segments=12), "dark", "Head"))
+    for s_ in (-1, 1):
+        glow.append((cyl("Lens", 0.02, 0.02, 0.008, xf((0.034 * s_, -0.11, 1.66), (90, 0, 0))), "lens", "Head"))
+    gear.append((ring("Scarf", 0.075, 0.072, 0.03, xf((0, -0.004, 1.49), (8, 0, 0))), "hood", "UpperChest"))
     # Light harness, wrapped hands, knee pads for landings.
     gear.append((box("Harness", (0.05, 0.03, 0.46), xf((0.0, -0.12, 1.24), (0, 36, 0)), 0.006), "strap", "Chest"))
     gear.append((box("Pack", (0.18, 0.08, 0.2), xf((0, 0.15, 1.26)), 0.02), "strap", "Chest"))
@@ -634,9 +619,109 @@ def build_hunter(juno=False):
         for i in range(2):
             gear.append((ring("Wrap", 0.04, 0.038, 0.009, xf((0.6 * s_ + 0.04 * i * s_, 0, 1.44), (0, 90, 0))), "wrap", side + "LowerArm"))
     extras = [(build_scrap_rifle(p), None)]
-    name = "Juno" if juno else "Hunter"
+    name = "Hunter"
     arm, objs = build_humanoid(name, rig, thick, raider_region, p, gear, glow, extras)
     export(name.lower(), [arm] + objs)
+
+
+# ---------------------------------------------------------------- Juno
+
+JUNO_PALETTE = dict(HUNTER_PALETTE)
+JUNO_PALETTE.update({
+    # Nothing else in the Static dresses like her: a long bone-white
+    # courier's coat, a blood-red scarf and visor, platinum hair.
+    "jacket": (0.86, 0.82, 0.72),
+    "jacket_dark": (0.66, 0.62, 0.54),
+    "coat": (0.86, 0.82, 0.72),
+    "coat_dark": (0.6, 0.56, 0.48),
+    "pants": (0.14, 0.13, 0.13),
+    "boot": (0.08, 0.07, 0.07),
+    "red": (0.82, 0.08, 0.06),
+    "red_dark": (0.5, 0.05, 0.04),
+    "hair": (0.93, 0.9, 0.82),
+    "lens": (1.0, 0.12, 0.06),
+    "teal": (0.16, 0.55, 0.55),
+})
+
+
+def juno_region(co, bone):
+    x, y, z = co
+    if bone in ("Head", "Neck"):
+        return "skin"
+    if bone.endswith("Hand"):
+        return "glove"
+    if bone.endswith("LowerArm"):
+        # Long coat sleeves with red cuffs.
+        return "red" if abs(x) > 0.62 else "coat"
+    if bone.endswith("Foot") or bone.endswith("Toes"):
+        return "boot"
+    if bone.endswith("LowerLeg"):
+        return "boot" if z < 0.34 else "pants"
+    if bone.endswith("UpperLeg"):
+        return "pants"
+    if bone == "Hips":
+        return "coat_dark" if z > 0.9 else "pants"
+    if bone.endswith("UpperArm"):
+        return "coat"
+    return "coat" if z > 1.08 else "coat_dark"
+
+
+def build_juno():
+    """Juno, the Static's star hunter: built to be spotted from across the
+    car park. Long open coat that flares behind her, platinum ponytail
+    standing up off the head, one wide red visor, a red scarf with long
+    tails, a white pauldron with the Static's red slash."""
+    reset_scene()
+    p = JUNO_PALETTE
+    rig = dict(HUMAN_RIG)
+    rig["head_shape"] = human_head("Juno", jaw=0.6)
+    thick = {k: (v[0] * 0.92, v[1] * 0.92) for k, v in HUMAN_THICK.items()}
+    thick["pelvis"] = (0.155, 0.11)
+    thick["chest"] = (0.17, 0.112)
+    thick["waist"] = (0.12, 0.085)
+    gear = []
+    glow = []
+    # Hair: a cap, then a tall ponytail up and back, then falling.
+    gear.append((ball("Hair", (0.102, 0.116, 0.106), xf((0, 0.008, 1.668)), cut_below=-0.12, segments=18), "hair", "Head"))
+    tail = [(0.07, 1.79, 0.05), (0.1, 1.82, 0.05), (0.14, 1.835, 0.048), (0.18, 1.82, 0.046),
+            (0.215, 1.79, 0.043), (0.24, 1.74, 0.04), (0.255, 1.68, 0.036), (0.262, 1.62, 0.031),
+            (0.265, 1.56, 0.026), (0.265, 1.51, 0.02)]
+    for ty, tz, r in tail:
+        gear.append((ball("Ponytail", (r * 0.9, r, r * 1.25), xf((0, ty, tz)), segments=10, rings=8), "hair", "Head"))
+    gear.append((ring("HairTie", 0.045, 0.045, 0.012, xf((0, 0.08, 1.795), (-35, 0, 0))), "red", "Head"))
+    # One wide visor across the eyes, glowing red.
+    gear.append((ring("VisorStrap", 0.1, 0.114, 0.011, xf((0, -0.004, 1.672), (-6, 0, 0))), "dark", "Head"))
+    gear.append((box("VisorFrame", (0.17, 0.03, 0.05), xf((0, -0.105, 1.672)), 0.01), "dark", "Head"))
+    glow.append((box("Visor", (0.15, 0.012, 0.03), xf((0, -0.122, 1.672)), 0.006), "lens", "Head"))
+    # Tall coat collar and a red scarf with two long tails behind.
+    gear.append((ring("Collar", 0.09, 0.085, 0.045, xf((0, 0.005, 1.47), (6, 0, 0))), "coat", "UpperChest"))
+    gear.append((ring("Scarf", 0.078, 0.074, 0.034, xf((0, -0.004, 1.5), (8, 0, 0))), "red", "UpperChest"))
+    gear.append((box("ScarfTail", (0.075, 0.02, 0.5), xf((0.05, 0.13, 1.24), (14, 0, 5)), 0.01), "red", "UpperChest"))
+    gear.append((box("ScarfTail", (0.065, 0.02, 0.42), xf((-0.06, 0.135, 1.27), (16, 0, -7)), 0.01), "red_dark", "UpperChest"))
+    # The coat: open lapels down the front, and tails from the waist to the
+    # knees, flared behind (front open, so the legs run free).
+    for s_ in (-1, 1):
+        gear.append((box("Lapel", (0.06, 0.03, 0.34), xf((0.075 * s_, -0.115, 1.27), (0, 0, -8 * s_)), 0.01), "coat_dark", "Chest"))
+        gear.append((box("CoatSide", (0.03, 0.2, 0.62), xf((0.19 * s_, 0.03, 0.66), (8, 0, 6 * s_)), 0.01), "coat", "Hips"))
+    for s_ in (-1, 1):
+        # Two back panels split up the middle, flaring out and back.
+        gear.append((box("CoatBack", (0.19, 0.03, 0.6), xf((0.095 * s_, 0.16, 0.68), (-16, 0, -5 * s_)), 0.012), "coat", "Hips"))
+        gear.append((box("CoatHem", (0.2, 0.035, 0.05), xf((0.12 * s_, 0.245, 0.4), (-16, 0, -5 * s_)), 0.01), "red_dark", "Hips"))
+    gear.append((ring("Belt", 0.158, 0.112, 0.024, xf((0, 0.005, 0.99))), "red", "Hips"))
+    # Right shoulder: a white pauldron with the Static's red slash.
+    pad = ball("Pauldron", (0.105, 0.1, 0.07), mirror_m(xf((0.2, 0, 1.47), (0, 18, 0))), cut_below=-0.15)
+    gear.append((pad, "coat", "RightUpperArm"))
+    gear.append((box("Slash", (0.02, 0.012, 0.13), mirror_m(xf((0.215, -0.07, 1.5), (0, 30, 20))), 0.003), "red", "RightUpperArm"))
+    # A courier's teal stripe on the left sleeve (the Line she came from).
+    gear.append((ring("Armband", 0.052, 0.05, 0.016, xf((0.33, 0, 1.44), (0, 90, 0))), "teal", "LeftUpperArm"))
+    # Bandolier and knee pads.
+    gear.append((box("Bandolier", (0.05, 0.03, 0.48), xf((0.0, -0.13, 1.22), (0, 38, 0)), 0.006), "strap", "Chest"))
+    for s_ in (-1, 1):
+        side = "Left" if s_ > 0 else "Right"
+        gear.append((box("KneePad", (0.085, 0.04, 0.1), xf((0.11 * s_, -0.058, 0.52)), 0.015), "dark", side + "LowerLeg"))
+    extras = [(build_scrap_rifle(p), None)]
+    arm, objs = build_humanoid("Juno", rig, thick, juno_region, p, gear, glow, extras)
+    export("juno", [arm] + objs)
 
 
 # ---------------------------------------------------------------- soldier
@@ -972,7 +1057,7 @@ def build_drone():
     export("drone", [frame_obj, lens, gun] + rotors)
 
 
-BUILDERS = {"raider": build_raider, "hunter": build_hunter, "juno": lambda: build_hunter(True), "soldier": build_soldier, "heavy": build_heavy, "mutant": build_mutant, "drone": build_drone}
+BUILDERS = {"raider": build_raider, "hunter": build_hunter, "juno": build_juno, "soldier": build_soldier, "heavy": build_heavy, "mutant": build_mutant, "drone": build_drone}
 
 
 def main():

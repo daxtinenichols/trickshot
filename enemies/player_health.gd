@@ -3,8 +3,8 @@ extends Node
 ## The player's health, for enemies to hurt. Lives as a child of the player
 ## (added at runtime by whoever brings enemies, so player.gd stays untouched).
 ##
-## Forgiving by design: a few hits to go down, and health comes back fast
-## once you stop getting hit, so moving well keeps you alive. Going down
+## A few hits to go down, and health comes back once you stop getting
+## hit for a while, so moving well keeps you alive. Going down
 ## respawns you (which also bails the combo, like any respawn).
 ##
 ## Pure game logic ticked in physics; HurtOverlay only reads it.
@@ -18,9 +18,9 @@ const NODE_NAME := "PlayerHealth"
 
 @export var max_health := 100.0
 ## Seconds without damage before health starts coming back...
-@export var regen_delay := 3.5
+@export var regen_delay := 4.5
 ## ...at this many points per second.
-@export var regen_rate := 35.0
+@export var regen_rate := 28.0
 ## Off: damage still shows but never takes you down (testing).
 @export var can_die := true
 

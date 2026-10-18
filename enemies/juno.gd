@@ -27,6 +27,11 @@ var fate := ""
 var enraged := false
 
 var _beaten_time := 0.0
+var _nameplate: Label3D
+
+const ENRAGE_SPEED := 1.2
+const ENRAGE_WINDUP := 0.77
+const ENRAGE_REPOSITION := 0.75
 
 
 func _ready() -> void:
@@ -42,6 +47,31 @@ func _ready() -> void:
 	shots_per_reload = 5
 	reposition = 2.0
 	kick_stagger = 0.5
+	knockdown_time = 1.0
+	_build_nameplate()
+
+
+## Her name over her head while the duel is on, so you know who you're
+## fighting from across the car park.
+func _build_nameplate() -> void:
+	_nameplate = Label3D.new()
+	_nameplate.text = "JUNO"
+	_nameplate.font_size = 64
+	_nameplate.outline_size = 16
+	_nameplate.modulate = Color(1.0, 0.25, 0.15)
+	_nameplate.outline_modulate = Color(0.08, 0.02, 0.02)
+	_nameplate.billboard = BaseMaterial3D.BILLBOARD_ENABLED
+	_nameplate.fixed_size = true
+	_nameplate.pixel_size = 0.0012
+	_nameplate.position = Vector3(0, 2.25, 0)
+	_nameplate.visible = false
+	_visual.add_child(_nameplate)
+
+
+func _animate(delta: float) -> void:
+	super(delta)
+	if _nameplate:
+		_nameplate.visible = active and not is_dead and not is_beaten
 
 
 func _model_path() -> String:
@@ -52,7 +82,8 @@ func _on_reset() -> void:
 	super()
 	is_beaten = false
 	fate = ""
-	enraged = false
+	if enraged:
+		_enrage(false)
 	_beaten_time = 0.0
 	if body:
 		body.visible = true
@@ -79,11 +110,17 @@ func take_hit(info: Dictionary) -> bool:
 		return false
 	var killed := super(info)
 	if not enraged and health <= max_health * enrage_at:
-		enraged = true
-		move_speed = 9.5
-		windup = 0.5
-		reposition = 1.5
+		_enrage(true)
 	return killed
+
+
+## Hurt: faster on her feet and on the trigger (undone when the duel resets).
+func _enrage(on: bool) -> void:
+	enraged = on
+	var k := 1.0 if on else -1.0
+	move_speed *= pow(ENRAGE_SPEED, k)
+	windup *= pow(ENRAGE_WINDUP, k)
+	reposition *= pow(ENRAGE_REPOSITION, k)
 
 
 func _beat() -> void:

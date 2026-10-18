@@ -92,7 +92,7 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 	for enc: Node3D in b.encounters:
 		enc.setup(p)
 		enc.started.connect(_on_encounter_started)
-		enc.reset_done.connect(_on_encounter_reset)
+		enc.reset_done.connect(_on_encounter_reset.bind(enc))
 		for e: Node in enc.enemies:
 			e.killed.connect(_on_target_killed.bind(String(e.get_meta("enemy_type", ""))))
 			if e.has_signal("fate_decided"):
@@ -500,8 +500,9 @@ func _reset_run(index: int) -> void:
 	player.set_spawn(builder.spawns[index])
 	if pursuer != null:
 		pursuer.reset(_start_pos)
+	# A fresh run: everyone is back, even the ones killed last time.
 	for enc: Node3D in builder.encounters:
-		enc.reset()
+		enc.reset(true)
 
 
 func _on_banked(_points: int, multiplier: int, total: int) -> void:
@@ -534,7 +535,10 @@ func _on_encounter_started() -> void:
 
 ## An encounter's enemies came back: a shoot objective (or an open kill
 ## bonus) counts again from here, so kills from before don't count twice.
-func _on_encounter_reset() -> void:
+## Killed enemies that stayed dead keep counting.
+func _on_encounter_reset(enc: Node3D) -> void:
+	if not enc.revived:
+		return
 	if current_objective().get("type", "") == "shoot":
 		_kills_at = kills
 		_headshots_at = headshots

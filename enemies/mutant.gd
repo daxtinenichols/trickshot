@@ -110,13 +110,35 @@ func _bar_height() -> float:
 
 
 func head_position() -> Vector3:
+	if hit_rig:
+		return super()
 	return global_position + Basis(Vector3.UP, yaw) * (Vector3(0, HEAD_HEIGHT, HEAD_FORWARD) * size_scale)
 
 
 func _build() -> void:
-	var k := size_scale
-	_hitbox(&"body", box_shape(BODY_SIZE * k), Vector3(0, BODY_SIZE.y * 0.5 + 0.2, 0.05) * k)
-	_hitbox(&"head", sphere_shape(HEAD_RADIUS * k), Vector3(0, HEAD_HEIGHT, HEAD_FORWARD) * k)
+	_build_hit_rig(HitRig.MUTANT, size_scale)
+
+
+## The hit zones crouch and lean with the leap and swipe, like the body.
+func _hit_pose(delta: float) -> Dictionary:
+	var speed := EnemyMath.horizontal(velocity).length()
+	var crouch := 0.0
+	var lean := 0.0
+	match state:
+		State.LEAP_WINDUP:
+			crouch = telegraph * 0.55
+			lean = telegraph * 0.3
+		State.LEAP:
+			lean = -0.35
+		State.LAND:
+			crouch = 0.22
+			lean = 0.3
+		State.SWIPE_WINDUP:
+			lean = -telegraph * 0.3
+		State.SWIPE_RECOVER:
+			lean = 0.25
+	return {"speed": speed, "delta": delta, "run": speed / maxf(run_speed, 0.1), "stride": 1.8,
+		"crouch": crouch, "lean": lean}
 
 
 func _build_placeholder() -> void:

@@ -30,6 +30,10 @@ func _ready() -> void:
 	reload_time = 2.2
 
 
+func _hit_profile() -> Dictionary:
+	return HitRig.BULKY
+
+
 func _model_path() -> String:
 	return "res://enemies/models/raider.glb"
 
