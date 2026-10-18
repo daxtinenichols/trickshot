@@ -183,6 +183,11 @@ func _piece(p: Dictionary) -> void:
 		_floor_mark(vec(p.mark), Vector2(s[0], s[1]), Color(p.get("color", "#4de673")))
 		if yaw != 0.0:
 			_root.get_child(-1).rotation.y = yaw
+	elif p.has("chalk"):
+		_chalk(Transform3D(basis, vec(p.chalk)), String(p.get("point", "up")), float(p.get("size", 2.4)),
+				String(p.get("on", "wall")) == "floor", String(p.get("text", "")))
+	elif p.has("light"):
+		_light(vec(p.light), Color(p.get("color", "#ffb46b")), float(p.get("range", 12.0)), float(p.get("energy", 2.0)))
 	elif p.has("tape"):
 		_tape(String(p.get("id", "tape_%d" % tapes.size())), vec(p.tape))
 	elif p.has("fire"):
@@ -195,6 +200,78 @@ func _piece(p: Dictionary) -> void:
 		_figure(String(p.figure), Transform3D(basis, vec(p.get("at", [0, 0, 0]))), String(p.get("pose", "")))
 	else:
 		push_warning("MissionBuilder: unknown piece %s" % p)
+
+
+## Courier chalk painted big where the way turns: an orange arrow on a wall
+## (facing +Z before `yaw` turns it, so a runner heading -Z reads it) or
+## flat on the floor (pointing -Z before `yaw`). `point` is the way it
+## points as you face it: "up", "left", "right" or "down" (on the floor,
+## "up" is straight on). `text` is scrawled over it ("SKYBRIDGE").
+## No collision, glows a little so it reads in the dark.
+func _chalk(xf: Transform3D, point: String, size: float, on_floor: bool, text: String) -> void:
+	var node := Node3D.new()
+	node.name = "Chalk"
+	node.add_to_group("chalk")
+	if on_floor:
+		# Lie the wall's frame down: its up becomes -Z, its face +Y.
+		node.transform = xf * Transform3D(Basis(Vector3.RIGHT, -PI * 0.5), Vector3(0, 0.02, 0))
+	else:
+		node.transform = xf.translated_local(Vector3(0, 0, 0.04))
+	var turn: float = {"up": 0.0, "left": PI * 0.5, "right": -PI * 0.5, "down": PI}.get(point, 0.0)
+	var shape: Array[PackedVector2Array] = [
+		# Shaft, then head, pointing +Y.
+		PackedVector2Array([Vector2(-0.11, -0.5), Vector2(0.11, -0.5), Vector2(0.11, 0.12), Vector2(-0.11, 0.12)]),
+		PackedVector2Array([Vector2(-0.36, 0.08), Vector2(0.36, 0.08), Vector2(0.0, 0.5)]),
+	]
+	var st := SurfaceTool.new()
+	st.begin(Mesh.PRIMITIVE_TRIANGLES)
+	for poly in shape:
+		var pts: Array[Vector3] = []
+		for v in poly:
+			var r := v.rotated(turn) * size
+			pts.append(Vector3(r.x, r.y, 0.0))
+		for i in range(1, pts.size() - 1):
+			st.set_normal(Vector3.BACK)
+			st.add_vertex(pts[0])
+			st.add_vertex(pts[i])
+			st.add_vertex(pts[i + 1])
+	var mesh := MeshInstance3D.new()
+	mesh.mesh = st.commit()
+	mesh.cast_shadow = GeometryInstance3D.SHADOW_CASTING_SETTING_OFF
+	var mat := StandardMaterial3D.new()
+	mat.albedo_color = Color(0.98, 0.5, 0.14, 0.92)
+	mat.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+	mat.emission_enabled = true
+	mat.emission = Color(0.98, 0.42, 0.1)
+	mat.emission_energy_multiplier = 0.6
+	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+	mesh.material_override = mat
+	node.add_child(mesh)
+	if text != "":
+		var l := Label3D.new()
+		l.text = text
+		l.font_size = 96
+		l.pixel_size = size * 0.0028
+		l.modulate = Color(0.98, 0.5, 0.14)
+		l.outline_size = 0
+		l.double_sided = true
+		l.shaded = false
+		l.position = Vector3(0, size * 0.5 + size * 0.2, 0.01)
+		node.add_child(l)
+	_root.add_child(node)
+
+
+## A warm light over the way on (a lamp the Line left burning), no shadows.
+func _light(pos: Vector3, color: Color, light_range: float, energy: float) -> void:
+	var l := OmniLight3D.new()
+	l.name = "WayLight"
+	l.add_to_group("way_light")
+	l.position = pos
+	l.light_color = color
+	l.omni_range = light_range
+	l.light_energy = energy
+	l.shadow_enabled = false
+	_root.add_child(l)
 
 
 func _double_doors(xf: Transform3D) -> void:

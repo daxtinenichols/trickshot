@@ -2,14 +2,16 @@ class_name MissionHud
 extends CanvasLayer
 ## Mission readouts: the clock, the active objective and any open bonus
 ## goals at the top, the gap
-## to the Host in a chase, and the results card at the end with Next,
-## Retry and Campaign buttons.
+## to the Host in a chase, the route mark over the way on (missions with a
+## "guide"), and the results card at the end with Next, Retry and Campaign
+## buttons.
 
 signal next_pressed
 signal retry_pressed
 signal menu_pressed
 
 const ORANGE := Color(0.96, 0.45, 0.12)
+const RouteMarker := preload("res://campaign/route_marker.gd")
 
 var run: MissionRun
 
@@ -20,15 +22,20 @@ var _chase: Label
 var _results: PanelContainer
 var _results_body: VBoxContainer
 var _next_button: Button
+var marker: RouteMarker
 
 
 func setup(r: MissionRun) -> void:
 	run = r
+	marker.setup(r.mission.get("guide", []), r.player)
 
 
 func _ready() -> void:
 	layer = 5
 	process_mode = Node.PROCESS_MODE_ALWAYS
+	marker = RouteMarker.new()
+	marker.name = "RouteMarker"
+	add_child(marker)
 	var top := VBoxContainer.new()
 	top.set_anchors_preset(Control.PRESET_CENTER_TOP)
 	top.position = Vector2(-400, 18)
@@ -63,6 +70,9 @@ func _process(_delta: float) -> void:
 	if run == null:
 		return
 	_clock.get_parent().visible = not _results.visible
+	var settings := get_node_or_null(^"/root/Settings")
+	marker.enabled = not _results.visible and run.phase != MissionRun.Phase.COMPLETE \
+			and (settings == null or bool(settings.get("route_marker")))
 	var t := CourseTimer.format_time(run.seconds())
 	if run.practice:
 		t += "   practice"
