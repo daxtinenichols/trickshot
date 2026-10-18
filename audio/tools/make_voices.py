@@ -45,6 +45,17 @@ files (kokoro-v1.0.onnx, voices-v1.0.bin from
 https://github.com/thewh1teagle/kokoro-onnx/releases/tag/model-files-v1.0)
 in --models (default ~/.cache/kokoro). Kokoro-82M is Apache-2.0, so the
 clips can ship in the public repo and a commercial game.
+
+A speaker can use Chatterbox instead (MIT; more natural, with feeling):
+give their cast.json entry "engine": "chatterbox" and "ref", a clip of the
+voice to clone (audio/voices/refs/<who>.flac, made from our own Kokoro
+takes so nothing third-party is cloned), plus optional "exaggeration"
+(0.25 flat to 1.0 wild, default 0.5), "cfg" (lower runs looser and
+quicker, default 0.5) and "speed" (stretches the take). Needs
+`pip install chatterbox-tts` (pulls torch; the model downloads from
+huggingface.co on first use). About 20 s a line on a 4-core CPU. With
+`pip install faster-whisper` each take is listened back and re-taken (up
+to TAKES times) when it doesn't say the line.
 """
 
 import argparse
@@ -67,6 +78,8 @@ RENDER_VERSION = 2
 GAPS = {"...": 0.55, "?": 0.34, "!": 0.24, ".": 0.30, "-": 0.14}
 TTS = os.path.join(VOICES, "tts")
 SAMPLE_RATE = 24000
+# Chatterbox takes tried per line before keeping the clearest.
+TAKES = 4
 
 
 def key(line):
@@ -162,11 +175,78 @@ def trim(samples, threshold=10 ** (-45 / 20)):
     return samples[loud[0] : loud[-1] + 1] if len(loud) else samples
 
 
-def perform(kokoro, c, line):
+class Voices:
+    """Speaks a sentence in a speaker's voice, with the engine cast.json
+    names for them: Kokoro (a stock voice id) or Chatterbox (a clone of a
+    reference clip, with "exaggeration" for how much feeling, "cfg" for how
+    closely it sticks to the reference's pace). Each engine loads on first
+    use."""
+
+    def __init__(self, models):
+        self.models = models
+        self._kokoro = None
+        self._chatterbox = None
+        self._conds = {}
+        self._listener = None
+
+    def speak(self, who, c, text, speed, take=0):
+        if c.get("engine") == "chatterbox":
+            return self.chatterbox(who, c, text, take)
+        if self._kokoro is None:
+            from kokoro_onnx import Kokoro
+
+            self._kokoro = Kokoro(os.path.join(self.models, "kokoro-v1.0.onnx"), os.path.join(self.models, "voices-v1.0.bin"))
+        lang = "en-us" if c["voice"][0] == "a" else "en-gb"
+        samples, _ = self._kokoro.create(text, voice=c["voice"], speed=speed, lang=lang)
+        return samples
+
+    def listener(self):
+        """Whisper, to check Chatterbox takes, if faster-whisper is installed."""
+        if self._listener is None:
+            try:
+                from faster_whisper import WhisperModel
+
+                self._listener = WhisperModel("base.en", device="cpu", compute_type="int8")
+            except ImportError:
+                print("pip install faster-whisper to check Chatterbox takes")
+                self._listener = False
+        return self._listener
+
+    def heard(self, samples, line):
+        """0..1: how closely what Whisper hears matches the line."""
+        import difflib
+
+        import librosa
+
+        segments, _ = self._listener.transcribe(librosa.resample(samples, orig_sr=SAMPLE_RATE, target_sr=16000), language="en")
+        words = lambda t: re.sub(r"[^a-z' ]", " ", t.lower()).split()
+        return difflib.SequenceMatcher(None, words(speakable(line)), words(" ".join(s.text for s in segments))).ratio()
+
+    def chatterbox(self, who, c, text, take):
+        import torch
+
+        if self._chatterbox is None:
+            from chatterbox.tts import ChatterboxTTS
+
+            torch.set_num_threads(os.cpu_count() or 1)
+            self._chatterbox = ChatterboxTTS.from_pretrained(device="cuda" if torch.cuda.is_available() else "cpu")
+            assert self._chatterbox.sr == SAMPLE_RATE
+        feeling = c.get("exaggeration", 0.5)
+        if (who, feeling) not in self._conds:
+            self._chatterbox.prepare_conditionals(os.path.join(ROOT, c["ref"]), exaggeration=feeling)
+            self._conds[(who, feeling)] = self._chatterbox.conds
+        self._chatterbox.conds = self._conds[(who, feeling)]
+        # Seeded from the text so a line always renders the same.
+        torch.manual_seed(int(hashlib.md5((who + text).encode("utf-8")).hexdigest()[:8], 16) + take)
+        with torch.inference_mode():
+            wav = self._chatterbox.generate(text, exaggeration=feeling, cfg_weight=c.get("cfg", 0.5), temperature=c.get("temperature", 0.8))
+        return wav.squeeze(0).cpu().numpy()
+
+
+def perform(voices, who, c, line, take=0):
     """The line spoken sentence by sentence with human pauses and pace."""
     import numpy
 
-    lang = "en-us" if c["voice"][0] == "a" else "en-gb"
     speed, pause = c.get("speed", 1.0), c.get("pause", 1.0)
     drift = int(hashlib.md5(line.encode("utf-8")).hexdigest(), 16)
     text = speakable(line)
@@ -176,6 +256,20 @@ def perform(kokoro, c, line):
         out.append(numpy.zeros(int(0.35 * pause * SAMPLE_RATE), numpy.float32))
         text = text.lstrip(".\u2026 ")
     parts = sentences(text) or [(text, ".")]
+    if c.get("engine") == "chatterbox":
+        # Chatterbox garbles a lone word or two ("Go on. Guess."), so short
+        # beats are spoken together with a neighbour; it pauses on the
+        # punctuation itself.
+        merged = []
+        for part, end in parts:
+            if merged and len(merged[-1][0].split()) < 5:
+                merged[-1] = (merged[-1][0] + " " + part, end)
+            else:
+                merged.append((part, end))
+        if len(merged) > 1 and len(merged[-1][0].split()) < 5:
+            last = merged.pop()
+            merged[-1] = (merged[-1][0] + " " + last[0], last[1])
+        parts = merged
     for i, (part, end) in enumerate(parts):
         s = speed * (1 + ((drift >> (i * 4)) % 9 - 4) / 100.0)
         if end == "!":
@@ -186,8 +280,7 @@ def perform(kokoro, c, line):
             s *= 0.94
         if len(parts) > 1 and i == len(parts) - 1:
             s *= 0.97
-        samples, _ = kokoro.create(part, voice=c["voice"], speed=s, lang=lang)
-        out.append(trim(samples))
+        out.append(trim(voices.speak(who, c, part, s, take)))
         if i < len(parts) - 1:
             out.append(numpy.zeros(int(GAPS[end] * pause * SAMPLE_RATE), numpy.float32))
     return numpy.concatenate(out)
@@ -197,10 +290,22 @@ def settings(c):
     return json.dumps([RENDER_VERSION, c], sort_keys=True)
 
 
-def render(kokoro, cast, who, line, out_path):
+def render(voices, cast, who, line, out_path):
     import soundfile as sf
 
-    samples = perform(kokoro, cast[who], line)
+    c = cast[who]
+    samples = perform(voices, who, c, line)
+    if c.get("engine") == "chatterbox" and voices.listener():
+        # Chatterbox now and then mumbles, laughs or adds words. Listen back
+        # and try other takes until one says the line.
+        best = (voices.heard(samples, line), samples)
+        for take in range(1, TAKES):
+            if best[0] >= 0.85:
+                break
+            print("  take %d (heard %.2f)" % (take + 1, best[0]))
+            samples = perform(voices, who, c, line, take)
+            best = max(best, (voices.heard(samples, line), samples), key=lambda b: b[0])
+        samples = best[1]
     with tempfile.TemporaryDirectory() as tmp:
         wav = os.path.join(tmp, "line.wav")
         sf.write(wav, samples, SAMPLE_RATE)
@@ -209,6 +314,10 @@ def render(kokoro, cast, who, line, out_path):
         # the line are touched here, so the pauses survive.)
         filters = ",".join([
             "loudnorm=I=-16:TP=-1.5:LRA=11",
+        ] + (
+            # Chatterbox has no pace control; "speed" stretches the take.
+            ["atempo=%g" % c["speed"]] if c.get("engine") == "chatterbox" and c.get("speed", 1.0) != 1.0 else []
+        ) + [
             "adelay=60",
             "apad=pad_dur=0.12",
         ])
@@ -279,13 +388,11 @@ def main():
     for p in stale:
         os.remove(p)
     if todo:
-        from kokoro_onnx import Kokoro
-
-        kokoro = Kokoro(os.path.join(args.models, "kokoro-v1.0.onnx"), os.path.join(args.models, "voices-v1.0.bin"))
+        voices = Voices(args.models)
         for i, p in enumerate(sorted(todo)):
             who, line, _ = wanted[p]
             print("[%d/%d] %s: %s" % (i + 1, len(todo), who, line))
-            render(kokoro, cast, who, line, p)
+            render(voices, cast, who, line, p)
             made[rel(p)] = settings(cast[who])
             if i % 20 == 19:
                 save_manifest(made, wanted, rel)
