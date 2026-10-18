@@ -286,8 +286,8 @@ static func _segment(st: Dictionary, seg: Dictionary) -> void:
 	if seg.has("roof"):
 		_roof(st, seg)
 	elif seg.has("gap"):
-		# A running jump: take off just before the edge.
-		st.bot.append([st.z + 1.2, "jump", NAN])
+		# A running jump: take off "takeoff" m before the edge (1.2 by default).
+		st.bot.append([st.z + float(seg.get("takeoff", 1.2)), "jump", NAN])
 		if seg.get("roll", false):
 			st.bot.append([st.z, "roll", NAN])
 		_lane(st, st.z, st.z - float(seg.gap), WIDTH)
