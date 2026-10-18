@@ -37,24 +37,43 @@
  ],
  "chatter": {
   "kill": [
+   {"who": "juno", "line": "Wow. Okay. You're gonna owe me a crew."},
+   {"who": "host", "line": "Juno, sweetheart, these are your people! Do something!"},
+   {"who": "juno", "line": "Huh. Didn't like him anyway."},
+   {"who": "mags", "line": "Good. Watch the ramps, they come round fast."},
    {"who": "host", "line": "Another hunter down! I'm docking their pay. Posthumously."},
    {"who": "juno", "line": "That one owed me money. Thanks, I guess."}
   ],
   "headshot": [
+   {"who": "juno", "line": "Hm. Lucky."},
+   {"who": "host", "line": "Ooh, right between the eyes! In my car park!"},
+   {"who": "mags", "line": "Good. Keep moving."},
+   {"who": "juno", "line": "Okay, that one was actually nice."},
    {"who": "juno", "line": "Clean. Mags teach you that?"}
   ],
   "down": [
+   {"who": "juno", "line": "That's it? Get up, you're embarrassing both of us."},
+   {"who": "host", "line": "Courier down on level... what level is this? Somebody count."},
+   {"who": "mags", "line": "Up. Keep going round, don't let them pin you."},
    {"who": "juno", "line": "Up you get, courier. I'm not done with you."},
    {"who": "mags", "line": "Up. She wants you to stop. Don't."}
   ],
   "bail": [
+   {"who": "juno", "line": "Ha! Oh, that was beautiful."},
+   {"who": "host", "line": "Ooh, tyre marks! On his face."},
+   {"who": "mags", "line": "Up, kid."},
+   {"who": "juno", "line": "You used to be better at this."},
    {"who": "host", "line": "Oh, he's eaten the concrete! Somebody park on him."}
   ],
   "combo": [
+   {"who": "host", "line": "Laps! He's doing laps! In my car park!"},
+   {"who": "juno", "line": "Fine. That was good. Don't make it weird."},
+   {"who": "mags", "line": "Lovely. Keep spinning up."},
    {"who": "juno", "line": "Show-off. You haven't changed."},
    {"who": "host", "line": "Look at those lines! Somebody stop him, he's making me look bad."}
   ],
   "tape": [
+   {"who": "echo", "line": "...Juno never took his money till her block's taps ran dry. Somebody shut them off. Remember that before you judge her."},
    {"who": "echo", "line": "...Juno ran a parcel through a fire for us once. Ask her about it sometime."}
   ]
  },

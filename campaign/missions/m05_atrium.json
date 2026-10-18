@@ -31,20 +31,38 @@
  ],
  "chatter": {
   "kill": [
+   {"who": "host", "line": "Down goes another! Folks, I'm starting to feel sorry for them. No, I'm not."},
+   {"who": "mags", "line": "Good. Don't wait for the next one, go."},
+   {"who": "host", "line": "Splat! Right by the fountain, too. Nobody's drinking that."},
+   {"who": "mags", "line": "That's one. Keep your head up, they jump."},
    {"who": "host", "line": "And down goes another one! The crowd goes mild."},
    {"who": "mags", "line": "Good. Now keep moving."}
   ],
   "headshot": [
+   {"who": "host", "line": "Oh! Right in the... well, I think that was the head."},
+   {"who": "mags", "line": "Good shot."},
+   {"who": "host", "line": "Pop! Hear that? That's the sound of ratings."},
+   {"who": "mags", "line": "Nice. Watch the railings, they come over."},
    {"who": "host", "line": "Right between the eyes! Run that back!"}
   ],
   "down": [
+   {"who": "host", "line": "And he's lunch! Oh, no, wait, he's back. Never mind."},
+   {"who": "mags", "line": "Up. Keep moving, they'll swarm you if you stop."},
+   {"who": "host", "line": "Courier down in the Atrium! Mind your step, it's very... chewy in there."},
    {"who": "host", "line": "Ooh! That one's going in the highlights."},
    {"who": "mags", "line": "Up. Don't stand still in here."}
   ],
   "bail": [
+   {"who": "host", "line": "Oops! Slippery floors, folks. We'd sue, but, you know."},
+   {"who": "host", "line": "And down he goes in front of everyone. Mortifying."},
+   {"who": "mags", "line": "Up, quick."},
+   {"who": "host", "line": "He fell! Somebody find a wet floor sign. Does anybody still have a wet floor sign?"},
    {"who": "host", "line": "He's down! No, he's up. Disappointing."}
   ],
   "combo": [
+   {"who": "host", "line": "Folks, this is better than the fountain show. There used to be a fountain show."},
+   {"who": "mags", "line": "Lovely. Keep it."},
+   {"who": "host", "line": "Ugh. Fine. That was good. Happy?"},
    {"who": "host", "line": "Folks, I hate to say it, but that was beautiful."},
    {"who": "mags", "line": "That's it. Give 'em a show."}
   ],

@@ -121,13 +121,53 @@
   {"on": "complete", "who": "mags", "line": "Parker, hang on. Something's off with that bridge."}
  ],
  "chatter": {
-  "bail": [{"who": "host", "line": "Through the window and right into my heart, folks."}, {"who": "host", "line": "Glass everywhere. Somebody sweep that up."}],
-  "combo": [{"who": "host", "line": "The man's a walking highlight reel. A bleeding one, but still."}, {"who": "mags", "line": "That's it. Keep it going."}],
-  "fall": [{"who": "host", "line": "Street level! Mind the Silt, darling."}, {"who": "mags", "line": "Back up. Same line, faster."}],
-  "kill": [{"who": "host", "line": "That spotter had a family, you know. Well. A rat. He called it Biscuit."}],
-  "headshot": [{"who": "mags", "line": "Clean."}],
-  "down": [{"who": "mags", "line": "Don't stand there trading shots. Run, then shoot."}],
-  "tape": [{"who": "echo", "line": "...if anyone finds this, go west. Keep going west. He keeps the keys on his belt."}]
+  "bail": [
+   {"who": "host", "line": "Ooh, careful, that's a real... well, it was a window."},
+   {"who": "host", "line": "Down he goes! Folks, we're gonna need more glass."},
+   {"who": "mags", "line": "Up. Don't think about it."},
+   {"who": "host", "line": "Through the window and right into my heart, folks."},
+   {"who": "host", "line": "Glass everywhere. Somebody sweep that up."}
+  ],
+  "combo": [
+   {"who": "host", "line": "Listen to that glass go! That's music, that is."},
+   {"who": "mags", "line": "Lovely. Stay on it."},
+   {"who": "host", "line": "He's good. I hate that he's good."},
+   {"who": "mags", "line": "That's it, kid, keep flowing."},
+   {"who": "host", "line": "The man's a walking highlight reel. A bleeding one, but still."},
+   {"who": "mags", "line": "That's it. Keep it going."}
+  ],
+  "fall": [
+   {"who": "host", "line": "And he's back on the street, where he belongs!"},
+   {"who": "mags", "line": "Find a way up. You know how."},
+   {"who": "host", "line": "Street level! Mind the Silt, darling."},
+   {"who": "mags", "line": "Back up. Same line, faster."}
+  ],
+  "kill": [
+   {"who": "host", "line": "Oh, come on. Do you know how hard it is to find people who can climb?"},
+   {"who": "mags", "line": "Nice. Go."},
+   {"who": "host", "line": "Another one! Folks, I'm running out of lookouts."},
+   {"who": "mags", "line": "Good. Keep moving."},
+   {"who": "host", "line": "And the lookout's... not looking out. Not anymore."},
+   {"who": "host", "line": "That spotter had a family, you know. Well. A rat. He called it Biscuit."}
+  ],
+  "headshot": [
+   {"who": "mags", "line": "Good shot."},
+   {"who": "host", "line": "Ooh. Right in the earpiece. Feedback, everybody."},
+   {"who": "host", "line": "Yeesh. Somebody clean that up, the windows are bad enough."},
+   {"who": "mags", "line": "Yes. That's how you do it."},
+   {"who": "mags", "line": "Clean."}
+  ],
+  "down": [
+   {"who": "host", "line": "Courier down! On the glass, too. That's gotta sting."},
+   {"who": "mags", "line": "Get up. Keep the glass between you and them."},
+   {"who": "host", "line": "Aaand he's down. Don't touch that dial, folks."},
+   {"who": "mags", "line": "Up. Run first, then shoot."},
+   {"who": "mags", "line": "Don't stand there trading shots. Run, then shoot."}
+  ],
+  "tape": [
+   {"who": "echo", "line": "...he's got lookouts on every roof with glass. They watch the reflections. Stay low, stay quick."},
+   {"who": "echo", "line": "...if anyone finds this, go west. Keep going west. He keeps the keys on his belt."}
+  ]
  },
  "chalk": true
 }

@@ -144,24 +144,46 @@
  ],
  "chatter": {
   "headshot": [
+   {"who": "host", "line": "Ah! On air! You can't do that on air!"},
+   {"who": "mags", "line": "Nice. Keep going."},
+   {"who": "echo", "line": "Ha! Yes!"},
+   {"who": "host", "line": "That was my best sound guy. Well. My only sound guy."},
    {"who": "mags", "line": "Clean."},
    {"who": "echo", "line": "Nice. Do that again."}
   ],
   "bail": [
+   {"who": "host", "line": "Ooh, he's tangled in the mic cables! Classic rookie."},
+   {"who": "mags", "line": "Up. You're so close."},
+   {"who": "echo", "line": "Get up, get up, get up."},
+   {"who": "host", "line": "Down he goes! And that is why we don't run in the studio."},
    {"who": "host", "line": "Tripped on my carpet! That's imported, Parker."}
   ],
   "combo": [
+   {"who": "host", "line": "Folks, he's doing this in front of the whole city. In my building."},
+   {"who": "echo", "line": "Look at you. You never could walk anywhere like a normal person."},
+   {"who": "mags", "line": "Lovely. Keep pushing."},
+   {"who": "host", "line": "Stop! Stop it! That's... no, actually, that's great radio. Keep going."},
    {"who": "host", "line": "Not in my studio. Not in my lovely studio."},
    {"who": "mags", "line": "That's it. Almost there."}
   ],
   "kill": [
+   {"who": "host", "line": "That was security! I need those!"},
+   {"who": "mags", "line": "Good. Don't stop."},
+   {"who": "host", "line": "That's coming out of your fee, Parker. Oh, you don't get a fee? Well, now you owe me."},
+   {"who": "echo", "line": "One less. Keep coming, I'm right here."},
+   {"who": "host", "line": "Somebody, anybody, please stop letting him do that."},
    {"who": "host", "line": "That was my floor manager. I'll need a new one."}
   ],
   "down": [
+   {"who": "echo", "line": "No. No, no. Get up. Parker, get up."},
+   {"who": "host", "line": "He's down! Oh, Echo, the look on your face. I wish radio had pictures."},
+   {"who": "mags", "line": "Up, kid. Last stretch."},
    {"who": "mags", "line": "Up. You're nearly at her. Get up."},
    {"who": "host", "line": "And he's down! So close, folks. So, so close."}
   ],
   "tape": [
+   {"who": "echo", "line": "...the safe code's his birthday. Of course it is. He made me sing at it."},
+   {"who": "echo", "line": "...he does the callers himself, you know. The voices. Half the people who ring in are him."},
    {"who": "echo", "line": "...he keeps the old tapes in the office safe. Twenty years of lies. All labelled, too."}
   ]
  }

@@ -30,23 +30,43 @@
  ],
  "chatter": {
   "kill": [
+   {"who": "host", "line": "Oh, he was employee of the month! Well. Of a month."},
+   {"who": "mags", "line": "Good. Don't let the big ones corner you."},
+   {"who": "host", "line": "Another one off the shop floor! No refunds."},
+   {"who": "mags", "line": "Down. Move."},
    {"who": "host", "line": "Clean-up in aisle four!"},
    {"who": "mags", "line": "Good. Up, up, up."}
   ],
   "headshot": [
+   {"who": "host", "line": "Ooh! Everything must go, apparently."},
+   {"who": "mags", "line": "Good shot."},
+   {"who": "host", "line": "Somebody call security. Oh, wait. That was security."},
+   {"who": "mags", "line": "Yes. Keep doing that."},
    {"who": "host", "line": "Oh, that's a returns-desk situation."}
   ],
   "down": [
+   {"who": "host", "line": "Courier down! Lie there a while, everything's half off."},
+   {"who": "mags", "line": "Up. Don't fight the big ones head on."},
+   {"who": "host", "line": "And he's down! Folks, I think that one broke something. Not him, the shelf."},
    {"who": "host", "line": "And our courier's in the bargain bin!"},
    {"who": "mags", "line": "Up. Get round them, don't stand in front of them."}
   ],
   "bail": [
+   {"who": "host", "line": "Whoa! You break it, you bought it, Parker."},
+   {"who": "host", "line": "Ha! Mind the mannequins, they're rubbish at catching."},
+   {"who": "mags", "line": "Up. Keep going."},
+   {"who": "host", "line": "Oops. Listeners, he's tripped over his own feet. In a shop. Embarrassing."},
    {"who": "host", "line": "Mind the floor, it's freshly ruined."}
   ],
   "combo": [
+   {"who": "host", "line": "Look at him! It's like watching someone shop with a grudge."},
+   {"who": "mags", "line": "That's it. Through the store, keep going."},
+   {"who": "host", "line": "Folks, I've never seen anyone move through a sale like that. And I've seen sales."},
+   {"who": "mags", "line": "Good. Don't slow down for the drones."},
    {"who": "host", "line": "Is he shopping or showing off? Bit of both, I think."}
   ],
   "tape": [
+   {"who": "echo", "line": "...somebody's water trucks park behind this place every week. Clean ones. Not his. Count the barrels, I did."},
    {"who": "echo", "line": "...Hargrove's sold radios to half this city. They all still work. You just have to know how to listen."}
   ]
  },

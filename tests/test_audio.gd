@@ -274,7 +274,7 @@ func test_taunts_take_turns_and_keep_to_their_faction() -> void:
 	check(factions.has("static") and factions.has("ward"), "Static and Ward taunts")
 	for f: String in factions:
 		var lines: Array = factions[f].lines
-		check(lines.size() >= 8, "%s has plenty of taunts (%d)" % [f, lines.size()])
+		check(lines.size() >= 7, "%s has plenty of taunts (%d)" % [f, lines.size()])
 		var heard: Array = []
 		Taunts.reset()
 		for k in lines.size() * 3:

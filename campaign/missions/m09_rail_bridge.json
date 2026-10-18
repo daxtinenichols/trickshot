@@ -117,27 +117,51 @@
  ],
  "chatter": {
   "headshot": [
+   {"who": "host", "line": "Ooh, right off the bridge! That's a long way down for a helmet."},
+   {"who": "mags", "line": "Good. Now the next one."},
+   {"who": "host", "line": "Yikes. Commander, I'd stop sending the tall ones."},
+   {"who": "mags", "line": "Lovely shot."},
    {"who": "mags", "line": "Clean."},
    {"who": "host", "line": "Ooh, the sponsor felt that one."}
   ],
   "bail": [
+   {"who": "host", "line": "Ooh, tripped on the tracks! Classic."},
+   {"who": "mags", "line": "Up. Watch your feet on the sleepers."},
+   {"who": "host", "line": "Down he goes! Shall I hold the train? There's no train."},
+   {"who": "mags", "line": "Get up, you're fine."},
    {"who": "host", "line": "Mind the gap, Parker! Seriously. I blew it up."}
   ],
   "combo": [
+   {"who": "host", "line": "He's using my wreckage! That's my wreckage, Parker!"},
+   {"who": "mags", "line": "Good. Keep it going across."},
+   {"who": "host", "line": "Okay, who's paying for this guy? Because it isn't me."},
+   {"who": "mags", "line": "That's it. That's the run."},
    {"who": "host", "line": "I blow up a bridge and he turns it into a stunt show. I hate this."},
    {"who": "mags", "line": "That's the line. Keep it."}
   ],
   "fall": [
+   {"who": "host", "line": "And he's off the bridge! I did warn him. Well, I blew it up, which is sort of a warning."},
+   {"who": "mags", "line": "Off the bridge. Back up, go again."},
+   {"who": "host", "line": "Splash! No, wait, there's no water. Thud!"},
    {"who": "host", "line": "Off the rails! I've been waiting all night to say that."}
   ],
   "kill": [
+   {"who": "host", "line": "Ooh. That's another one of Vell's. He keeps count, you know."},
+   {"who": "mags", "line": "Good. Keep moving, the marksmen can't track you if you move."},
+   {"who": "host", "line": "Somebody tell the Ward they're down another one. Actually, don't, they'll blame me."},
+   {"who": "mags", "line": "Down. Next."},
+   {"who": "host", "line": "And a drone goes down! Those aren't cheap, Parker. I've seen the invoice."},
    {"who": "host", "line": "Another one off the sponsor's payroll. They'll thank you, Parker. Saves 'em money."}
   ],
   "down": [
+   {"who": "mags", "line": "Up. Stay off the open deck."},
+   {"who": "host", "line": "Courier down on the line! Delays expected, folks."},
+   {"who": "mags", "line": "Get up. Keep the drones behind you."},
    {"who": "mags", "line": "Up. Keep moving. Squads can't hit what won't stand still."},
    {"who": "host", "line": "Down on the tracks! Somebody check the timetable."}
   ],
   "tape": [
+   {"who": "echo", "line": "...there's a pipe under this bridge, runs all the way to the reservoir. That's what the Ward's really guarding."},
    {"who": "echo", "line": "...the trains stopped the same week the Ward took the reservoir. They said it was the power. It wasn't."}
   ]
  }

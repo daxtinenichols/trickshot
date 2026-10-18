@@ -110,18 +110,29 @@
  ],
  "chatter": {
   "caught": [
+   {"who": "host", "line": "Got you! Oh, let's do that bit again."},
+   {"who": "parker", "line": "Okay. Okay, breathe. Go again, and don't stop."},
+   {"who": "host", "line": "Ooh, caught! Don't worry, I'll let you go. For the cameras."},
    {"who": "host", "line": "Gotcha! Oh, don't cry, darling. We'll do another take."},
    {"who": "host", "line": "Caught you! Folks love a rerun."},
    {"who": "parker", "line": "Keep moving, Echo! Don't let him close in!"}
   ],
   "bail": [
+   {"who": "host", "line": "Oops! I'm getting closer, sweetheart."},
+   {"who": "parker", "line": "You're okay. Get up, keep going!"},
+   {"who": "host", "line": "Ha! Down she goes. Oh, I'm enjoying this."},
    {"who": "host", "line": "Ooh, tripped! I'm right behind you."},
    {"who": "parker", "line": "Up! Get up, he's coming!"}
   ],
   "fall": [
+   {"who": "parker", "line": "Back up! Find a way up, go!"},
+   {"who": "host", "line": "Down there? Oh, sweetheart, I'll find you down there too."},
    {"who": "host", "line": "Not the Silt yet, sweetheart. I want you on air."}
   ],
   "combo": [
+   {"who": "parker", "line": "Yes! Keep that going!"},
+   {"who": "host", "line": "Stop that! Stop being good at things!"},
+   {"who": "parker", "line": "Ha! You've been watching me."},
    {"who": "host", "line": "Show-off. God, you two deserve each other."},
    {"who": "parker", "line": "That's it. That's my girl."}
   ]
