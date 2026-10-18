@@ -8,5 +8,7 @@
 	"juno":   {"voice": "af_kore",     "speed": 1.0},
 	"vell":   {"voice": "bm_george",   "speed": 0.92},
 	"raider": {"voice": "am_puck",     "speed": 1.1},
-	"raider2": {"voice": "bm_lewis",   "speed": 1.1}
+	"raider2": {"voice": "bm_lewis",   "speed": 1.1},
+	"ward":   {"voice": "am_onyx",     "speed": 1.0},
+	"ward2":  {"voice": "bm_daniel",   "speed": 1.0}
 }

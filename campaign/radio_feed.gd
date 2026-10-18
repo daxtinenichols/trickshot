@@ -12,8 +12,10 @@ extends CanvasLayer
 ##              to play when you reach a spot.
 ##   "chatter": reactions to how you play, by event ("bail", "combo",
 ##              "fall", "kill", "headshot", "caught", "tape"): lists of
-##              {"who", "line"}, used in turn, never more than one every few
-##              seconds and never over a story line.
+##              {"who", "line"}, dealt out in a shuffled order (every line
+##              once before any comes round again, kept across retries, and
+##              never one of the last few lines heard), never more than one
+##              every few seconds and never over a story line.
 ##
 ## Lines queue and never stop the game. Each line is spoken over the radio
 ## when it has a voice clip (audio/voice_lines.gd) and stays up until it
@@ -33,6 +35,17 @@ const SPEAKERS := {
 const CHATTER_COOLDOWN := 7.0
 ## A queue this long drops chatter.
 const MAX_QUEUE := 4
+## Chatter skips any of this many lines heard last, if it can.
+const RECENT_LINES := 6
+
+## Chatter not dealt yet this round, by "<mission id>/<event>": indices into
+## the pool. Static so a retry carries on where the last attempt left off
+## instead of starting the same lines over.
+static var _bags := {}
+## The last lines heard (story and chatter), newest last.
+static var _recent: Array[String] = []
+## Presentation only: its own random numbers, nothing from the sim.
+static var _rng := RandomNumberGenerator.new()
 
 var run: MissionRun
 var player: Node3D
@@ -45,7 +58,6 @@ var current := {}
 var _story: Array = []
 var _played := {}
 var _chatter := {}
-var _chatter_next := {}
 var _chatter_ready_at := 0.0
 ## Mission events seen so far (chatter with "after" waits for its event).
 var _seen := {}
@@ -111,20 +123,61 @@ func _chat(event_name: String) -> void:
 	var pool: Array = _chatter[event_name]
 	if pool.is_empty():
 		return
-	# The next line in turn whose "after" event (if any) has happened, e.g.
-	# Echo only once she's on open air.
-	var start: int = _chatter_next.get(event_name, 0)
-	var c := {}
-	for k in pool.size():
-		var i := (start + k) % pool.size()
-		if not pool[i].has("after") or _seen.has(String(pool[i].after)):
-			c = pool[i]
-			_chatter_next[event_name] = (i + 1) % pool.size()
-			break
+	var c := _deal(event_name, pool)
 	if c.is_empty():
 		return
 	_chatter_ready_at = _now() + CHATTER_COOLDOWN
 	say(c.get("who", "host"), c.get("line", ""))
+
+
+## The next chatter line for `event_name`: the first line left in this
+## round's shuffled bag whose "after" event (if any) has happened, e.g. Echo
+## only once she's on open air, preferring one not heard lately. Lines still
+## waiting on their event stay in the bag for later.
+func _deal(event_name: String, pool: Array) -> Dictionary:
+	var key := "%s/%s" % [run.mission.get("id", "") if run != null else "", event_name]
+	var bag: Array = (_bags.get(key, []) as Array).filter(func(i: int) -> bool: return i < pool.size())
+	for attempt in 2:
+		var pick := -1
+		# Not heard lately if possible, else at least not the last line.
+		for strict in [2, 1, 0]:
+			for j in bag.size():
+				var l: Dictionary = pool[bag[j]]
+				if l.has("after") and not _seen.has(String(l.after)):
+					continue
+				var said := String(l.get("line", ""))
+				if strict == 2 and said in _recent:
+					continue
+				if strict == 1 and not _recent.is_empty() and said == _recent.back():
+					continue
+				pick = j
+				break
+			if pick >= 0:
+				break
+		if pick >= 0:
+			var c: Dictionary = pool[bag[pick]]
+			bag.remove_at(pick)
+			_bags[key] = bag
+			return c
+		# Nothing playable left this round: deal the pool again, keeping
+		# the lines still waiting on their event where they are.
+		var order := range(pool.size())
+		for i in range(order.size() - 1, 0, -1):
+			var j := _rng.randi_range(0, i)
+			var t: int = order[i]
+			order[i] = order[j]
+			order[j] = t
+		for i: int in order:
+			if not i in bag:
+				bag.append(i)
+	_bags[key] = bag
+	return {}
+
+
+## Forgets what chatter has been dealt and heard (tests).
+static func reset_chatter() -> void:
+	_bags.clear()
+	_recent.clear()
 
 
 func _now() -> float:
@@ -176,6 +229,9 @@ func _check_triggers() -> void:
 func _show(l: Dictionary) -> void:
 	current = l
 	history.append(l)
+	_recent.append(String(l.line))
+	if _recent.size() > RECENT_LINES:
+		_recent.pop_front()
 	_shown_for = 0.0
 	_show_time = duration(l.line)
 	var voice := Voices.stream_for(l.who, l.line)

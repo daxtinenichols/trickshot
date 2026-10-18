@@ -1,0 +1,17 @@
+{
+	"_about": "What an enemy shouts when one of its shots hits you, by faction. Each enemy speaks with one of its faction's voices (cast.json). audio/taunts.gd deals them out without repeats; audio/tools/make_voices.py voices them.",
+	"static": {
+		"voices": ["raider", "raider2"],
+		"lines": [
+			"SMILE, COURIER! YOU'RE ON THE RADIO!",
+			"SAY HI TO ECHO!",
+			"OOH, THAT WAS CLOSE!",
+			"BOSS IS GONNA LOVE THIS!",
+			"HOLD STILL, DAMN IT!"
+		]
+	},
+	"ward": {
+		"voices": ["ward", "ward2"],
+		"lines": []
+	}
+}

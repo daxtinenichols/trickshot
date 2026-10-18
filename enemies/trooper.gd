@@ -34,6 +34,7 @@ var _burst_dir := Vector3.FORWARD
 
 func _ready() -> void:
 	super()
+	faction = "ward"
 	max_health = 70.0
 	health = max_health
 	move_speed = 5.0
