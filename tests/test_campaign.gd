@@ -744,6 +744,43 @@ func test_kill_goals_are_bonuses() -> void:
 				check(m.id == "m01_the_yard", "%s: kill goal '%s' is required" % [m.id, o.get("text", "")])
 
 
+## Head Office: the Host turns up three times, every hit on him is a story
+## event the radio answers in order, the hit bonus stays open the whole
+## mission, and reaching his office wins whether or not you hit him.
+func test_head_office_host_hits_are_a_bonus() -> void:
+	await _load(_index("m09b_head_office"))
+	var hosts: Array[Node] = []
+	for enc: Node3D in level.builder.encounters:
+		for e: Node in enc.enemies:
+			if e.has_signal("story_event"):
+				hosts.append(e)
+	check(hosts.size() == 3, "the Host turns up three times (%d)" % hosts.size())
+	var heard: Array[String] = []
+	run.event.connect(func(e: String) -> void: heard.append(e))
+	await _step(40, _forward())
+	check(run.phase == MissionRun.Phase.RUNNING, "the run is on")
+	check(run.bonuses.has(0) and run.bonus_text().contains("Hit the Host"), "the hit bonus is open (%s)" % run.bonus_text())
+	if hosts.size() == 3:
+		hosts[0].story_event.emit("host:hit")
+		hosts[1].story_event.emit("host:hit")
+	await _step(2)
+	check(heard.has("host:hit:1") and heard.has("host:hit:2"), "hits are numbered across his turns (%s)" % [heard])
+	check(run.bonuses[0].done, "a hit finishes the bonus")
+	var objs: Array = run.objectives
+	for i in range(1, objs.size()):
+		player.global_position = MissionBuilder.vec(objs[i].at) + Vector3(0, 0.1, 0)
+		await _step(2)
+	check(run.phase == MissionRun.Phase.COMPLETE, "reaching his office wins")
+	check(run.result.bonuses == 1, "with the bonus (%s)" % run.result)
+	# Every Head Office and Skybridge radio line has a trigger the mission can fire.
+	for id: String in ["m09b_head_office", "m09c_skybridge"]:
+		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
+		for r: Dictionary in m.radio:
+			var on: String = r.get("on", "")
+			check(r.has("at") or on in ["start", "go", "complete"] or on.begins_with("checkpoint:") or on.begins_with("host:"),
+				"%s: line '%s' has a known trigger" % [id, r.line])
+
+
 func _forward() -> InputFrame:
 	var f := InputFrame.new()
 	f.move = Vector2(0, -1)

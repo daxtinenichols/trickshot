@@ -1,6 +1,6 @@
 {
  "id": "m10_the_climb",
- "city_open": [[-164, -164, -6, -6]],
+ "city_open": [[-164, -164, -6, -6], [-30, -10, 30, 110]],
  "title": "The Climb",
  "runner": "",
  "par_seconds": 150,
