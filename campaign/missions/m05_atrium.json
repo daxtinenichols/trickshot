@@ -7,14 +7,15 @@
  "par_seconds": 75,
  "objectives": [
   {"type": "reach", "name": "the food court", "text": "Run the Host's arena to the food court", "at": [0, 4, -82], "size": [60, 12, 10]},
-  {"type": "reach", "name": "the walkways", "text": "The concourse is shuttered. Up the escalator, onto the walkways", "at": [0, 7.5, -140], "size": [48, 4, 6]},
-  {"type": "reach", "name": "the anchor store", "text": "Get to the anchor store", "at": [0, 4, -344], "size": [48, 10, 4]}
+  {"type": "reach", "name": "the walkways", "text": "The concourse floor's the Host's pit. Up the escalator, onto the walkways", "at": [0, 7.5, -140], "size": [48, 4, 6]},
+  {"type": "reach", "name": "the anchor store", "text": "Walkways are shut past every bridge. Cross over each time, on to Hargrove & Sons", "at": [0, 7.5, -344], "size": [48, 4, 4]}
  ],
  "checkpoints": [
   {"name": "Atrium", "at": [0, 4, -6], "size": [60, 12, 4], "spawn": [0, 0, -4], "objective": 0},
   {"name": "Food court", "at": [0, 4, -80], "size": [60, 12, 6], "spawn": [-3, 0, -77], "objective": 1},
   {"name": "Walkways", "at": [0, 7.5, -142], "size": [48, 4, 4], "spawn": [-10.5, 6, -140], "objective": 2},
-  {"name": "Concourse", "at": [0, 5, -238], "size": [48, 12, 4], "spawn": [0, 0, -236], "objective": 2}
+  {"name": "Concourse", "at": [0, 7.5, -240], "size": [48, 4, 4], "spawn": [-10.5, 6, -240], "objective": 2},
+  {"name": "Last bridge", "at": [0, 7.5, -320], "size": [48, 4, 4], "spawn": [10.5, 6, -320], "objective": 2}
  ],
  "radio": [
   {"on": "start", "who": "host", "line": "Welcome to the Meridian Mall, folks! Tonight's main event: one courier versus a whole lot of hungry neighbours."},
@@ -24,7 +25,7 @@
   {"at": [0, 3, -36], "size": [60, 12, 6], "who": "mags", "line": "Those ones jump. Watch the ledges up top, not the floor."},
   {"on": "checkpoint:1", "who": "host", "line": "And he's into the food court! Sorry, folks, food court's closed. Has been for twenty years."},
   {"at": [0, 3, -104], "size": [48, 8, 6], "who": "mags", "line": "He's shut the concourse. Escalator, your left. Then up on the walkways."},
-  {"at": [0, 7.5, -146], "size": [48, 4, 4], "who": "mags", "line": "Over the bridge. Walkway's caved in past the shops. Drop through, or run the hoarding."},
+  {"at": [0, 7.5, -146], "size": [48, 4, 4], "who": "mags", "line": "Over the bridge. Walkway's caved in past the shops. Take the plank, or run the hoarding."},
   {"at": [0, 5, -180], "size": [48, 12, 6], "who": "host", "line": "This segment is brought to you by the Ward. Clean water, for people who know their place."},
   {"on": "complete", "who": "host", "line": "He made it to the anchor store! Folks, I'm entertained, and I'm furious about it."}
  ],
@@ -58,7 +59,6 @@
   {"prop": "barrel_rust", "at": [5.2, 0, 18]},
   {"prop": "chalk_arrow", "at": [0, 0, 20]},
   {"prop": "chalk_arrow", "at": [0, 0, 4]},
-
   {"box": [-15.5, 2.75, -10.6], "size": [9, 5.5, 0.4], "look": "RUST"},
   {"box": [15.5, 2.75, -10.6], "size": [9, 5.5, 0.4], "look": "RUST"},
   {"prop": "barricade_scrap", "at": [-15, 0, -9.6], "yaw": 0},
@@ -71,48 +71,15 @@
   {"prop": "barrel_rust", "at": [9.4, 0, -27]},
   {"prop": "chalk_arrow", "at": [-5, 0, -32]},
   {"prop": "chalk_arrow", "at": [0, 0, -60]},
-
   {"prop": "sandbag_wall", "at": [-17, 6, -62], "yaw": 90},
   {"prop": "sandbag_wall", "at": [18, 6, -26], "yaw": 90},
   {"prop": "sandbag_wall", "at": [-14, 6, -70.9], "yaw": 0},
   {"prop": "sandbag_wall", "at": [14, 6, -9.4], "yaw": 0},
-
   {"mark": [6, 6, -14], "size": [2.4, 0.3], "color": "#b98a62"},
   {"mark": [16, 6, -34], "size": [6, 0.3], "color": "#b98a62"},
   {"mark": [0, 6, -76], "size": [5, 0.3], "color": "#b98a62"},
   {"tape": [19.0, 6.6, -42], "id": "m05_tape_collapse"},
-
-  {"encounter": "arena", "area": {"at": [0, 6, -40], "size": [60, 14, 62]}, "hear_shots": true,
-   "mutants": [
-    {"at": [6, 0, -20], "leash_radius": 14, "aggro_radius": 10},
-    {"at": [-8, 0, -24], "leash_radius": 14, "aggro_radius": 10, "wake": 1.0},
-    {"at": [7, 0, -46], "leash_radius": 14, "aggro_radius": 10, "wake": 1.5},
-    {"at": [-6, 0, -60], "leash_radius": 14, "aggro_radius": 10, "wake": 2.0},
-    {"at": [5, 0, -68], "leash_radius": 14, "aggro_radius": 10, "wake": 2.5}
-   ],
-   "enemies": [
-    {"type": "leaper", "at": [-16, 6, -42], "yaw": 180},
-    {"type": "leaper", "at": [16, 6, -56], "yaw": 180, "wake": 1.0},
-    {"type": "leaper", "at": [0, 6, -50], "yaw": 180, "wake": 2.0},
-    {"type": "crawler", "at": [-11.5, 0, -30], "yaw": 90, "sleeper": true},
-    {"type": "mutant", "at": [11.5, 0, -40], "yaw": -90, "sleeper": true},
-    {"type": "crawler", "at": [-11.5, 0, -56], "yaw": 90, "sleeper": true},
-    {"type": "mutant", "at": [11.5, 0, -64], "yaw": -90, "sleeper": true},
-    {"type": "leaper", "at": [-18, 6, -30], "yaw": 90, "sleeper": true}
-   ],
-   "raiders": [
-    {"at": [-20, 6, -62], "yaw": -90},
-    {"at": [21, 6, -26], "yaw": 90, "wake": 1.0},
-    {"at": [-14, 6, -72.3], "yaw": 180, "wake": 1.5},
-    {"at": [14, 6, -7.8], "yaw": 0, "wake": 0.5}
-   ],
-   "cover": [
-    {"at": [-17, 6, -62], "length": 2.0, "yaw": 90},
-    {"at": [18, 6, -26], "length": 2.0, "yaw": 90},
-    {"at": [-14, 6, -70.9], "length": 2.0, "yaw": 0},
-    {"at": [14, 6, -9.4], "length": 2.0, "yaw": 0}
-   ]},
-
+  {"encounter": "arena", "area": {"at": [0, 6, -40], "size": [60, 14, 62]}, "hear_shots": true, "mutants": [{"at": [6, 0, -20], "leash_radius": 14, "aggro_radius": 10}, {"at": [-8, 0, -24], "leash_radius": 14, "aggro_radius": 10, "wake": 1.0}, {"at": [7, 0, -46], "leash_radius": 14, "aggro_radius": 10, "wake": 1.5}, {"at": [-6, 0, -60], "leash_radius": 14, "aggro_radius": 10, "wake": 2.0}, {"at": [5, 0, -68], "leash_radius": 14, "aggro_radius": 10, "wake": 2.5}], "enemies": [{"type": "leaper", "at": [-16, 6, -42], "yaw": 180}, {"type": "leaper", "at": [16, 6, -56], "yaw": 180, "wake": 1.0}, {"type": "leaper", "at": [0, 6, -50], "yaw": 180, "wake": 2.0}, {"type": "crawler", "at": [-11.5, 0, -30], "yaw": 90, "sleeper": true}, {"type": "mutant", "at": [11.5, 0, -40], "yaw": -90, "sleeper": true}, {"type": "crawler", "at": [-11.5, 0, -56], "yaw": 90, "sleeper": true}, {"type": "mutant", "at": [11.5, 0, -64], "yaw": -90, "sleeper": true}, {"type": "leaper", "at": [-18, 6, -30], "yaw": 90, "sleeper": true}], "raiders": [{"at": [-20, 6, -62], "yaw": -90}, {"at": [21, 6, -26], "yaw": 90, "wake": 1.0}, {"at": [-14, 6, -72.3], "yaw": 180, "wake": 1.5}, {"at": [14, 6, -7.8], "yaw": 0, "wake": 0.5}], "cover": [{"at": [-17, 6, -62], "length": 2.0, "yaw": 90}, {"at": [18, 6, -26], "length": 2.0, "yaw": 90}, {"at": [-14, 6, -70.9], "length": 2.0, "yaw": 0}, {"at": [14, 6, -9.4], "length": 2.0, "yaw": 0}]},
   {"box": [0, 2.75, -132], "size": [48, 5.5, 0.4], "look": "RUST"},
   {"label": "CLOSED FOR THE SHOW", "at": [0, 4.2, -131.6], "size": 1.0},
   {"prop": "barricade_scrap", "at": [-9, 0, -130.6], "yaw": 0},
@@ -123,34 +90,86 @@
   {"prop": "chalk_arrow", "at": [-10.5, 6, -132]},
   {"prop": "chalk_arrow", "at": [10.5, 6, -160]},
   {"prop": "loudspeaker_pole", "at": [-5.6, 0, -178], "yaw": 180},
-  {"prop": "sandbag_wall", "at": [-19, 6, -155.5], "yaw": 0},
+  {"prop": "sandbag_wall", "at": [-19, 6, -259.5], "yaw": 0},
   {"prop": "sandbag_wall", "at": [16.5, 6, -140], "yaw": 90},
-  {"encounter": "concourse", "area": {"at": [0, 6, -117], "size": [60, 14, 86]}, "hear_shots": true,
-   "mutants": [
-    {"at": [-20, 0, -80], "leash_radius": 12, "aggro_radius": 10},
-    {"at": [10, 0, -80], "leash_radius": 12, "aggro_radius": 10, "wake": 1.0},
-    {"at": [2, 0, -120], "leash_radius": 12, "aggro_radius": 10},
-    {"at": [8, 0, -126], "leash_radius": 12, "aggro_radius": 10, "wake": 1.0}
-   ],
-   "enemies": [
-    {"type": "leaper", "at": [0, 6, -152], "yaw": 180, "wake": 1.5},
-    {"type": "crawler", "at": [-12, 0, -96], "yaw": 90, "sleeper": true},
-    {"type": "crawler", "at": [12, 0, -112], "yaw": -90, "sleeper": true}
-   ],
-   "raiders": [
-    {"at": [-19, 6, -158], "yaw": 180},
-    {"at": [19, 6, -140], "yaw": 90, "wake": 1.0}
-   ],
-   "cover": [
-    {"at": [-19, 6, -155.5], "length": 2.0, "yaw": 0},
-    {"at": [16.5, 6, -140], "length": 2.0, "yaw": 90}
-   ]},
-  {"prop": "chalk_arrow", "at": [0, 0, -300]},
-  {"label": "HARGROVE & SONS: SHOW CONTINUES INSIDE", "at": [0, 4.4, -338.6], "size": 0.9}
+  {"encounter": "concourse", "area": {"at": [0, 6, -190], "size": [60, 14, 232]}, "hear_shots": true, "mutants": [{"at": [-20, 0, -80], "leash_radius": 12, "aggro_radius": 10}, {"at": [10, 0, -80], "leash_radius": 12, "aggro_radius": 10, "wake": 1.0}, {"at": [2, 0, -120], "leash_radius": 12, "aggro_radius": 10}, {"at": [8, 0, -126], "leash_radius": 12, "aggro_radius": 10, "wake": 1.0}], "enemies": [{"type": "leaper", "at": [0, 6, -152], "yaw": 180, "wake": 1.5}, {"type": "crawler", "at": [-12, 0, -96], "yaw": 90, "sleeper": true}, {"type": "crawler", "at": [12, 0, -112], "yaw": -90, "sleeper": true}], "raiders": [{"at": [-19, 6, -262], "yaw": 180}, {"at": [19, 6, -140], "yaw": 90, "wake": 1.0}], "cover": [{"at": [-19, 6, -259.5], "length": 2.0, "yaw": 0}, {"at": [16.5, 6, -140], "length": 2.0, "yaw": 90}]},
+  {"label": "HARGROVE & SONS: SHOW CONTINUES INSIDE", "at": [0, 4.4, -338.6], "size": 0.9},
+  {"box": [-15.5, 9.25, -157.0], "size": [17, 6.5, 0.4], "look": "RUST"},
+  {"prop": "barricade_scrap", "at": [-10.5, 6, -156.0], "yaw": 0},
+  {"label": "CLOSED FOR THE SHOW", "at": [-10.5, 9.0, -156.6], "size": 0.8},
+  {"box": [15.5, 9.25, -237.0], "size": [17, 6.5, 0.4], "look": "RUST"},
+  {"prop": "barricade_scrap", "at": [10.5, 6, -236.0], "yaw": 0},
+  {"label": "CLOSED FOR THE SHOW", "at": [10.5, 9.0, -236.6], "size": 0.8},
+  {"box": [-15.5, 9.25, -317.0], "size": [17, 6.5, 0.4], "look": "RUST"},
+  {"prop": "barricade_scrap", "at": [-10.5, 6, -316.0], "yaw": 0},
+  {"label": "CLOSED FOR THE SHOW", "at": [-10.5, 9.0, -316.6], "size": 0.8},
+  {"box": [10.5, 5.85, -211], "size": [2.0, 0.3, 14.4], "kind": "FLOOR", "look": "WOOD"},
+  {"prop": "chalk_arrow", "at": [0, 6, -152], "yaw": -90},
+  {"prop": "chalk_arrow", "at": [10.5, 6, -200]},
+  {"prop": "chalk_arrow", "at": [0, 6, -232], "yaw": 90},
+  {"prop": "chalk_arrow", "at": [-10.5, 6, -270]},
+  {"prop": "chalk_arrow", "at": [0, 6, -312], "yaw": -90},
+  {"prop": "chalk_arrow", "at": [10.5, 6, -330]},
+  {"fire": [-2.5, 0.2, -145], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [-2.5, 0, -145]},
+  {"fire": [2.5, 0.2, -157], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [2.5, 0, -157]},
+  {"fire": [-2.5, 0.2, -169], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [-2.5, 0, -169]},
+  {"fire": [2.5, 0.2, -181], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [2.5, 0, -181]},
+  {"fire": [-2.5, 0.2, -193], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [-2.5, 0, -193]},
+  {"fire": [2.5, 0.2, -205], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [2.5, 0, -205]},
+  {"fire": [-2.5, 0.2, -217], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [-2.5, 0, -217]},
+  {"fire": [2.5, 0.2, -229], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [2.5, 0, -229]},
+  {"fire": [-2.5, 0.2, -241], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [-2.5, 0, -241]},
+  {"fire": [2.5, 0.2, -253], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [2.5, 0, -253]},
+  {"fire": [-2.5, 0.2, -265], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [-2.5, 0, -265]},
+  {"fire": [2.5, 0.2, -277], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [2.5, 0, -277]},
+  {"fire": [-2.5, 0.2, -289], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [-2.5, 0, -289]},
+  {"fire": [2.5, 0.2, -301], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [2.5, 0, -301]},
+  {"fire": [-2.5, 0.2, -313], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [-2.5, 0, -313]},
+  {"fire": [2.5, 0.2, -325], "size": [1, 1.2, 1]},
+  {"prop": "barrel_rust", "at": [2.5, 0, -325]}
  ],
  "bot_path": [
-  [0, 20], [0, -28], [-5, -33], [-5, -44], [0, -48], [0, -66], [-3, -76], [-3, -86],
-  [-4.5, -97.6, "jump"], [-4.5, -124], [-6.5, -126.2], [-10.5, -127], [-10.5, -149], [-6, -152], [6, -152], [10.5, -154],
-  [10.5, -203, "roll"], [10.5, -214], [1, -226], [0.6, -250], [0, -345]
- ]
+  [0, 20],
+  [0, -28],
+  [-5, -33],
+  [-5, -44],
+  [0, -48],
+  [0, -66],
+  [-3, -76],
+  [-3, -86],
+  [-4.5, -97.6, "jump"],
+  [-4.5, -124],
+  [-6.5, -126.2],
+  [-10.5, -127],
+  [-10.5, -149],
+  [-6, -152],
+  [6, -152],
+  [10.5, -154],
+  [10.5, -229],
+  [6, -232],
+  [-6, -232],
+  [-10.5, -235],
+  [-10.5, -309],
+  [-6, -312],
+  [6, -312],
+  [10.5, -315],
+  [11, -336],
+  [12, -348]
+ ],
+ "pits": {"y": 3.0, "streets": [{"at": [0, 0, -35.5], "size": [124, 8, 191]}]}
 }

@@ -853,6 +853,9 @@ func test_hand_made_missions_can_be_finished() -> void:
 		var path: String = all[i].get("file", "")
 		if path == "" or not Campaign.load_mission_file(path).has("bot_path"):
 			continue
+		# MISSION_ONLY=m07 runs just the matching missions.
+		if OS.has_environment("MISSION_ONLY") and not String(all[i].id).contains(OS.get_environment("MISSION_ONLY")):
+			continue
 		for key: String in ["bot_path", "bot_path_alt"]:
 			if not Campaign.load_mission_file(path).has(key):
 				continue
