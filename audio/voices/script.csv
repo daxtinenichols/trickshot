@@ -560,6 +560,46 @@ parker,parker/de41dead0d1b.ogg,m12_signal_out,He came through the stairwell! He'
 parker,parker/e0feb9567948.ogg,m12_signal_out,Don't look back. Just go!
 parker,parker/f5f2b22bc987.ogg,m12_signal_out,Last gap. Kick off the pillar if you need the distance.
 parker,parker/f978ff8b56ec.ogg,m12_signal_out,Another one's coming down. Get low!
+host,host/6682e2091365.ogg,pending: m09b Head Office chatter (bail),Slipped on a memo! Happens to the best of us.
+host,host/dad76ffb1fe8.ogg,pending: m09b Head Office chatter (bail),"Ooh, the desk got him! Desk one, courier nil."
+mags,mags/069a7eb877de.ogg,pending: m09b Head Office chatter (bail),"Get up, kid."
+mags,mags/6ee744b0d1ac.ogg,pending: m09b Head Office chatter (bail),Up. He's watching from the balconies.
+host,host/a15788d9a0fb.ogg,pending: m09b Head Office chatter (combo),"Folks, he's doing parkour through middle management. I've wanted to do that for years."
+host,host/e5d95cfc5cff.ogg,pending: m09b Head Office chatter (combo),Stop vaulting my furniture!
+mags,mags/6f51f331f67a.ogg,pending: m09b Head Office chatter (combo),Lovely. Keep him running.
+host,host/4ab63ae005a5.ogg,pending: m09b Head Office chatter (down),Courier down in the office! Somebody fetch a stapler. For the wound.
+host,host/52bfb1f3101f.ogg,pending: m09b Head Office chatter (down),He's down! I could shoot him from up here. I won't. Probably.
+mags,mags/b9d3020c4426.ogg,pending: m09b Head Office chatter (down),Up. Keep off the open floor.
+host,host/0f872d66a611.ogg,pending: m09b Head Office chatter (headshot),Oi! That was my receptionist!
+host,host/b06f80114c1e.ogg,pending: m09b Head Office chatter (headshot),Right in the face. In my own building. Unbelievable.
+mags,mags/e1b35288af00.ogg,pending: m09b Head Office chatter (headshot),"That's it. Keep your head down, he's above you."
+host,host/1a4bcc70b8dc.ogg,pending: m09b Head Office chatter (kill),That's a Ward lad. Somebody tell the Commander. Quietly.
+host,host/881f3d65d08e.ogg,pending: m09b Head Office chatter (kill),"Who's gonna file all this now? You, Parker?"
+host,host/e9188a9f3a88.ogg,pending: m09b Head Office chatter (kill),There goes payroll. Again.
+mags,mags/14c9d8ddfe41.ogg,pending: m09b Head Office chatter (kill),Good. Don't stop for the rest.
+mags,mags/2226f5782f71.ogg,pending: m09b Head Office chatter (kill),Down. Keep moving.
+echo,echo/b51999cc7939.ogg,pending: m09b Head Office chatter (tape),"...he rehearses in the mirror on the fourth floor. Out loud. Every line, even the 'spontaneous' ones."
+echo,echo/bba67783d361.ogg,pending: m09b Head Office chatter (tape),...the Ward's man comes up the back stairs on Fridays. Never the lift. Doesn't trust the lift.
+host,host/10f4135a974b.ogg,pending: m09c Skybridge chatter (bail),Careful! That shelf's older than you.
+host,host/ddbe436fd89e.ogg,pending: m09c Skybridge chatter (bail),"Ha! Down he goes, among the classics."
+mags,mags/0bdd7e926b88.ogg,pending: m09c Skybridge chatter (bail),Get up. Go.
+mags,mags/77a5dfbc7dbf.ogg,pending: m09c Skybridge chatter (bail),Up. She's close.
+host,host/394d2f60be67.ogg,pending: m09c Skybridge chatter (combo),He's running across my whole back catalogue! Do you know how long that took me?
+host,host/d3cc88ededde.ogg,pending: m09c Skybridge chatter (combo),"Ugh. Fine. Somebody record that, I'll use it later."
+mags,mags/8ac53672fec6.ogg,pending: m09c Skybridge chatter (combo),Beautiful. Keep going.
+host,host/d52d2d091f04.ogg,pending: m09c Skybridge chatter (down),He's down in the archive! Filed under 'gone'.
+host,host/ed77d81f1835.ogg,pending: m09c Skybridge chatter (down),"Ooh, down he goes. Echo, sweetheart, you might want to look away."
+mags,mags/9ffec1915cc6.ogg,pending: m09c Skybridge chatter (down),Up. Don't let them pin you in the stacks.
+host,host/89110a071208.ogg,pending: m09c Skybridge chatter (fall),"Over the edge! Oh, that's going in the archive."
+mags,mags/094953800c8c.ogg,pending: m09c Skybridge chatter (fall),"Fell. Back up, she's right there."
+host,host/28384b338ae1.ogg,pending: m09c Skybridge chatter (headshot),Not near the tapes! Not near the tapes!
+host,host/93bf3682480d.ogg,pending: m09c Skybridge chatter (headshot),Ah! Right in front of the archive. Show some respect.
+mags,mags/e4e96bff458c.ogg,pending: m09c Skybridge chatter (headshot),That's it. Keep going up.
+host,host/9f36a18dd48f.ogg,pending: m09c Skybridge chatter (kill),"Another one gone. I'm running out of staff, Parker. Honestly."
+host,host/b15581e8df23.ogg,pending: m09c Skybridge chatter (kill),That one alphabetised the tapes! Do you know how rare that is?
+mags,mags/4458a33d4ba5.ogg,pending: m09c Skybridge chatter (kill),Good. Up.
+echo,echo/615979163bb5.ogg,pending: m09c Skybridge chatter (tape),...the first show he ever did is on a shelf in here somewhere. He sounded scared. I've heard it.
+echo,echo/a169cd61aef7.ogg,pending: m09c Skybridge chatter (tape),"...there's a bridge off the roof, straight into the tower. If I'm not here when you get here, that's where they've taken me."
 raider,raider/256548278328.ogg,static taunt,SAY HI TO ECHO!
 raider,raider/463d153ed062.ogg,static taunt,WAVE TO THE LISTENERS!
 raider,raider/539dbc23efa9.ogg,static taunt,"STAY DOWN, YOU LITTLE..."
