@@ -19,6 +19,8 @@ extends RefCounted
 ##
 ## Loaded by path (no class_name).
 
+const City := preload("res://campaign/city.gd")
+
 ## Roof width; the running lane is its middle.
 const WIDTH := 12.0
 ## Wallrun panels stand just outside the roof edge.
@@ -56,7 +58,7 @@ static func expand(mission: Dictionary) -> Dictionary:
 		"z": 6.0,
 		"y": float(mission.get("start", {}).get("at", [0, origin.origin.y, 0])[1]),
 		"out": [], "checkpoints": [], "radio": [], "bot": [],
-		"rng": RandomNumberGenerator.new(), "lowest": INF, "roof_end": 6.0, "heights": [], "clutter": mission.get("clutter", CLUTTER),
+		"rng": RandomNumberGenerator.new(), "lowest": INF, "roof_end": 6.0, "lanes": [], "clutter": mission.get("clutter", CLUTTER),
 		# Legs: the frame each stretch between corners is laid out in.
 		"legs": [{"o": origin.origin, "yaw": origin.yaw, "z0": 0.0, "start": 6.0}],
 		"leg": 0, "dx": 0.0, "fork": null, "forks": [],
@@ -113,13 +115,16 @@ static func expand(mission: Dictionary) -> Dictionary:
 	var bounds := _bounds(pieces, st)
 	# A street under the whole route (just under the base map's ground,
 	# when there is one, so the two never flicker), and the city around it.
+	var ground := bounds.grow(70.0)
 	if not mission.has("no_floor"):
-		var r := bounds.grow(70.0)
 		var top := -0.02 if mission.has("base") else 0.0
-		pieces.push_front({"box": [r.get_center().x, top - 0.5, r.get_center().y], "size": [r.size.x, 1, r.size.y], "kind": "FLOOR"})
-	_skyline(st, mission)
+		pieces.push_front({"box": [ground.get_center().x, top - 0.5, ground.get_center().y], "size": [ground.size.x, 1, ground.size.y], "kind": "FLOOR"})
+	if mission.get("skyline", true) != false:
+		City.build(mission, _lane_areas(st), ground, String(mission.get("id", "route")))
 	if not mission.has("fail_y"):
 		mission.fail_y = st.lowest - 5.5 if st.lowest > 6.0 else -20.0
+	if mission.get("skyline", true) != false:
+		_pits(st, mission)
 	# "at": "end" or "@Checkpoint name" in objectives and radio lines.
 	for list: Array in [mission.get("objectives", []), mission.radio]:
 		for o: Dictionary in list:
@@ -255,6 +260,7 @@ static func _segment(st: Dictionary, seg: Dictionary) -> void:
 		st.bot.append([st.z + 1.2, "jump", NAN])
 		if seg.get("roll", false):
 			st.bot.append([st.z, "roll", NAN])
+		_lane(st, st.z, st.z - float(seg.gap), WIDTH)
 		st.z -= float(seg.gap)
 	elif seg.has("wallrun"):
 		_wallrun_gap(st, seg)
@@ -270,6 +276,7 @@ static func _segment(st: Dictionary, seg: Dictionary) -> void:
 		var length: float = seg.street
 		st.y = 0.0
 		_set_low(st, 0.0)
+		_lane(st, st.z, st.z - length, WIDTH)
 		st.z -= length
 	elif seg.has("turn"):
 		_turn(st, seg)
@@ -303,7 +310,7 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	elif st.y > 0.5:
 		_add(st, {"building": [0, st.y, z0 - length * 0.5], "size": [w, length], "look": seg.get("look", st.roof_look)})
 	# (At street level, y 0, the street itself is the floor.)
-	_height(st, z0, z0 - length)
+	_lane(st, z0, z0 - length, w)
 	_set_low(st, st.y)
 	if seg.has("interior"):
 		_interior(st, z0, length, w, float(seg.interior))
@@ -362,8 +369,10 @@ static func _interior(st: Dictionary, z0: float, length: float, w: float, height
 		d += 10.0
 
 
-static func _height(st: Dictionary, from_z: float, to_z: float) -> void:
-	st.heights.append([from_z, to_z, st.y, st.leg])
+## Records a stretch of the course (z from, to; width w; x across) on the
+## current leg and line at the current height, for the city to keep clear.
+static func _lane(st: Dictionary, from_z: float, to_z: float, w: float, x := 0.0, dx: float = NAN, low: float = NAN) -> void:
+	st.lanes.append([st.leg, (st.dx if is_nan(dx) else dx) + x, from_z, to_z, w, st.y, st.y if is_nan(low) else low])
 
 
 static func _set_low(st: Dictionary, y: float) -> void:
@@ -398,7 +407,7 @@ static func _turn(st: Dictionary, seg: Dictionary) -> void:
 			var far_r := b * Vector3(h, 0, 0)
 			_add(st, {"slab": [[-h, z0], [h, z0], [far_c.x + far_r.x, far_c.z + far_r.z], [far_c.x - far_r.x, far_c.z - far_r.z]],
 				"top": st.y, "look": seg.get("look", st.roof_look)})
-	_height(st, z0, z0 - size)
+	_lane(st, z0, z0 - size, maxf(WIDTH, size))
 	_set_low(st, st.y)
 	# The bot heads for the middle of the corner; it turns there.
 	st.bot.append([z0 + 6.0, "", 0.0])
@@ -479,7 +488,7 @@ static func _join(st: Dictionary, seg: Dictionary) -> void:
 static func _filler(st: Dictionary, from: float, to: float, dx: float) -> void:
 	if st.y > 0.5:
 		st.out.append([{"building": [0, st.y, (from + to) * 0.5], "size": [WIDTH, from - to], "look": st.roof_look}, st.leg, dx])
-	_height(st, from, to)
+	_lane(st, from, to, WIDTH, 0.0, dx)
 
 
 ## A roof wide enough for both lines of a fork.
@@ -487,7 +496,7 @@ static func _plaza(st: Dictionary, off: float, length: float) -> void:
 	var z0: float = st.z
 	if st.y > 0.5:
 		_add(st, {"building": [off * 0.5, st.y, z0 - length * 0.5], "size": [absf(off) + WIDTH, length], "look": st.roof_look})
-	_height(st, z0, z0 - length)
+	_lane(st, z0, z0 - length, absf(off) + WIDTH, off * 0.5)
 	_set_low(st, st.y)
 	st.z = z0 - length
 	st.roof_end = st.z
@@ -668,6 +677,7 @@ static func _wallrun_gap(st: Dictionary, seg: Dictionary) -> void:
 	st.bot.append([edge + 0.7, "jump", side * 7.0])
 	st.bot.append([edge - gap - 4.0, "", 0.0])
 	st.after_wallrun = true
+	_lane(st, edge, edge - gap, WIDTH)
 	st.z = edge - gap
 
 
@@ -683,6 +693,8 @@ static func _ramp(st: Dictionary, seg: Dictionary) -> void:
 	var bottom_z: float = st.z - length if down else st.z
 	_add(st, {"ramp": [0, top_y, top_z], "to": [0, bottom_y, bottom_z], "width": seg.get("width", 6.0),
 		"kind": "SLIDE" if down else "SURFACE"})
+	st.y = maxf(top_y, bottom_y)
+	_lane(st, st.z, st.z - length, WIDTH, 0.0, NAN, minf(top_y, bottom_y))
 	st.y = to_y
 	_set_low(st, minf(top_y, bottom_y))
 	st.z -= length
@@ -745,53 +757,48 @@ static func _bounds(pieces: Array, st: Dictionary) -> Rect2:
 		for z: float in [l.start, l.get("end", st.z)]:
 			var w := _world(st, i, 0.0, z, 0.0)
 			r = r.expand(Vector2(w.x, w.z))
-	st.footprints = _footprints(pieces)
 	return r
 
 
-## The city around the route: buildings along both sides of every leg,
-## kept clear of the route itself (corners and forks included).
-static func _skyline(st: Dictionary, mission: Dictionary) -> void:
-	if mission.get("skyline", true) == false:
-		return
-	var rng: RandomNumberGenerator = st.rng
-	var taken: Array[Rect2] = []
-	for f: Rect2 in st.footprints:
-		taken.append(f.grow(3.0))
-	for leg in st.legs.size():
-		var l: Dictionary = st.legs[leg]
-		var from: float = l.start + (4.0 if leg == 0 and not mission.has("base") else 0.0)
-		var to: float = l.end - (20.0 if leg == st.legs.size() - 1 else 0.0)
-		for side: float in [-1.0, 1.0]:
-			var z := from
-			while z > to:
-				var depth := rng.randf_range(12.0, 22.0)
-				var wid := rng.randf_range(10.0, 16.0)
-				var x := side * (16.0 + wid * 0.5 + rng.randf_range(0.0, 10.0))
-				var h := maxf(4.0, _height_at(st, leg, z - depth * 0.5) + rng.randf_range(-6.0, 18.0))
-				var c := _world(st, leg, x, z - depth * 0.5, h)
-				var s: Array = _turn_size([wid, 0, depth], l.yaw)
-				var rect := Rect2(c.x - s[0] * 0.5, c.z - s[2] * 0.5, s[0], s[2])
-				var clear := true
-				for t: Rect2 in taken:
-					if t.intersects(rect):
-						clear = false
-						break
-				if clear:
-					taken.append(rect)
-					mission.pieces.append({"building": [c.x, h, c.z], "size": [wid, depth], "yaw": rad_to_deg(l.yaw)})
-					if rng.randf() < 0.15:
-						mission.pieces.append({"prop": "billboard" if rng.randf() < 0.5 else "antenna_mast", "at": [c.x, h, c.z], "yaw": -90.0 * side + rad_to_deg(l.yaw)})
-				z -= depth + rng.randf_range(2.0, 14.0)
-
-
-static func _height_at(st: Dictionary, leg: int, z: float) -> float:
-	var y: float = st.y
-	for r: Array in st.heights:
-		if r[3] != leg:
+## With streets on the route, falls only count below the street, so a fall
+## off a high roof into the slot beside it would leave you stuck down
+## there: "pits" makes anywhere below `y` (1.2 m, or under the lowest
+## roof) off the streets (and the base
+## map's ground) count as a fall too. MissionRun reads it.
+static func _pits(st: Dictionary, mission: Dictionary) -> void:
+	var fail: float = mission.get("fail_y", -50.0)
+	var streets: Array = []
+	var high := false
+	# Below every roof: a floor at 1 m (inside a warehouse) is no pit.
+	var pit_y := 1.2
+	for l: Array in st.lanes:
+		if float(l[6]) > City.STREET_TOP:
+			high = true
+			pit_y = minf(pit_y, float(l[6]) - 0.4)
 			continue
-		if z <= r[0] + 20.0:
-			y = r[2]
-		if z >= r[1] - 20.0 and z <= r[0] + 20.0:
-			return r[2]
-	return y
+		var leg: int = l[0]
+		var c := _world(st, leg, l[1], (float(l[2]) + float(l[3])) * 0.5, 0.0)
+		var r := {"at": [c.x, 0.0, c.z], "size": [float(l[4]) + City.STREET_MARGIN * 2.0, 6.0, absf(float(l[2]) - float(l[3])) + City.STREET_MARGIN * 2.0]}
+		_turn_region(r, st.legs[leg].yaw)
+		streets.append(r)
+	if not high or fail > 0.0:
+		return
+	if mission.has("base"):
+		var script: Script = load(mission.base)
+		var f: Variant = script.get_script_constant_map().get("FOOTPRINT", null) if script != null else null
+		if f is Rect2:
+			var rect: Rect2 = f
+			streets.append({"at": [rect.get_center().x, 0.0, rect.get_center().y], "size": [rect.size.x, 6.0, rect.size.y]})
+	mission.pits = {"y": pit_y, "streets": streets}
+
+
+## The course's stretches as areas in the world, for the city.
+static func _lane_areas(st: Dictionary) -> Array:
+	var out: Array = []
+	for l: Array in st.lanes:
+		var leg: int = l[0]
+		var c := _world(st, leg, l[1], (float(l[2]) + float(l[3])) * 0.5, 0.0)
+		var top: float = l[5]
+		out.append(City.area(Vector2(c.x, c.z), Vector2(float(l[4]) * 0.5, absf(float(l[2]) - float(l[3])) * 0.5),
+			st.legs[leg].yaw, top, City.STREET_MARGIN if top <= City.STREET_TOP else City.ROOF_MARGIN))
+	return out

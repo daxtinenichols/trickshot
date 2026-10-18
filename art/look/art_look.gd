@@ -190,10 +190,16 @@ func _apply(node: Node) -> void:
 		return
 	if node is GeometryInstance3D:
 		_restyle_geometry(node)
-	elif node is WorldEnvironment:
-		_restyle_environment(node)
-	elif node is DirectionalLight3D:
-		_restyle_sun(node)
+	elif node is WorldEnvironment or node is DirectionalLight3D:
+		# Headless runs (tests) leave the light and sky alone: putting them
+		# back when the look turned off hung about one run in two there
+		# (the dummy renderer), and nothing draws them anyway.
+		if DisplayServer.get_name() == "headless":
+			return
+		if node is WorldEnvironment:
+			_restyle_environment(node)
+		else:
+			_restyle_sun(node)
 	elif node is Player:
 		attach_to_player(node)
 	elif node is Node3D and node.is_in_group("targets") and dress_obstacles:

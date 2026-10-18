@@ -3,7 +3,9 @@ extends SceneTree
 ## each built mission, a first-person shot with the radio and objective up,
 ## and a results card.
 ##   xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/mission_shots.gd -- <out_dir>
-## Add a second argument to render only shots whose name contains it.
+## Add a second argument to render only shots whose name contains it, or
+## "course:<mission id>" for shots down the course itself: from the start
+## and each checkpoint toward the next, at head height and from above.
 ## Scripts run with -s load before the autoloads, so nothing here is typed
 ## with classes that need them.
 
@@ -76,6 +78,10 @@ func _run() -> void:
 	var campaign: Script = load("res://campaign/campaign.gd")
 	campaign.persist = false
 
+	if only.begins_with("course:"):
+		await _course(campaign, only.trim_prefix("course:"))
+		quit()
+		return
 	if only != "":
 		await _shots(campaign, only)
 		quit()
@@ -138,6 +144,40 @@ func _shots(campaign: Script, only: String) -> void:
 	if level != null:
 		level.queue_free()
 		await _frames(2)
+
+
+## Down the course: from the start and each checkpoint toward the next one
+## (the end after the last), at head height and from 8 m up behind.
+func _course(campaign: Script, id: String) -> void:
+	var level: Node = await _load_mission(campaign, id)
+	var m: Dictionary = level.builder.mission
+	var points: Array[Vector3] = [(level.get_node("Player") as Node3D).global_position]
+	for c: Dictionary in m.get("checkpoints", []):
+		var a: Array = c.get("spawn", c.at)
+		var down := 0.0 if c.has("spawn") else float(c.get("size", [0, 4, 0])[1]) * 0.5
+		points.append(Vector3(a[0], a[1] - down, a[2]))
+	if m.has("route_end"):
+		var e: Array = m.route_end
+		points.append(Vector3(e[0], e[1], e[2]))
+	_hide_ui(level, true)
+	for i in points.size() - 1:
+		var from := points[i]
+		var to := points[i + 1]
+		var flat := Vector3(to.x - from.x, 0, to.z - from.z).normalized()
+		for v: Array in [["eye", Vector3(0, 1.7, 0), 0.0], ["high", Vector3(0, 8.0, 0), 10.0]]:
+			var cam := Camera3D.new()
+			cam.cull_mask &= ~4
+			cam.fov = 75.0
+			cam.far = 600.0
+			level.add_child(cam)
+			var at: Vector3 = from + v[1] - flat * float(v[2])
+			cam.look_at_from_position(at, from + flat * 30.0 + Vector3(0, 1.0, 0))
+			cam.make_current()
+			await _frames(8)
+			_save("%s_course_%02d_%s" % [id, i, v[0]])
+			cam.queue_free()
+	level.queue_free()
+	await _frames(2)
 
 
 ## A mission by id, or any mission data file by its res:// path.

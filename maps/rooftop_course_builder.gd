@@ -91,6 +91,8 @@ const EXIT := Transform3D(Basis.IDENTITY, Vector3(LEG3_X, 4, -772))
 ## The street below, closed all round by tall buildings.
 const STREET_CENTER := Vector3(-105, 0, -395)
 const STREET_SIZE := Vector2(290, 830)
+## The ground inside the ring of buildings (x, z): a campaign city keeps off it.
+const FOOTPRINT := Rect2(STREET_CENTER.x - STREET_SIZE.x * 0.5, STREET_CENTER.z - STREET_SIZE.y * 0.5, STREET_SIZE.x, STREET_SIZE.y)
 
 ## Leave the far (-Z) edge open so a mission can carry on past it. Set
 ## before the builder enters the tree.
