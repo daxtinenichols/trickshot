@@ -76,11 +76,13 @@ const POINTS := {
 const KICK_OFF_TARGET_POINTS := 250
 const WALLRUN_PER_SECOND := 100.0
 const BAIL_TRICKS := [&"crash", &"hard_landing", &"wall_impact"]
-## States where a long move is under way, so the bank clock holds.
+## States where a long move is under way, so the bank clock holds. (STUN
+## too: a hard landing's bail comes a moment after touchdown, once a late
+## roll is ruled out, and mustn't be beaten by a bank.)
 const HOLDING_STATES := [
 	Player.State.SLIDE, Player.State.WALLRUN, Player.State.WALLCLIMB,
 	Player.State.VAULT, Player.State.MANTLE, Player.State.ROLL,
-	Player.State.SURFACE,
+	Player.State.SURFACE, Player.State.STUN,
 ]
 const REST_STATES := [Player.State.GROUND, Player.State.CROUCH]
 ## Rotations, which count extra toward flow.
