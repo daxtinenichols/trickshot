@@ -61,6 +61,13 @@ const DOORS_TOP := 2.2
 const KICK_AT := 1.9
 ## A wall across an open roof is this tall; indoors it meets the ceiling.
 const OUTDOOR_WALL := 3.5
+## The finish of a route that ends up high: a run-out this long past the
+## line, walls this tall either side of it and a building across its end
+## with a door in it, so nobody runs off the edge once the level is won.
+const FINISH_RUNOUT := 16.0
+const FINISH_WALL := 8.0
+## The finish walls start this far before the line (the end goal's depth).
+const FINISH_BEFORE := 8.0
 ## Enemy types that fight from behind cover: the route puts sandbags in
 ## front of them (any enemy can say "cover": true or false instead).
 const COVER_TYPES := ["raider", "trooper", "marksman"]
@@ -87,6 +94,8 @@ static func expand(mission: Dictionary) -> Dictionary:
 		# The roof being laid out: its width and how high its ceiling is
 		# (0 outdoors).
 		"roof_w": WIDTH, "inside": 0.0,
+		# The last roof laid out: {w, inside, bridge, look}.
+		"last": {},
 	}
 	if mission.has("route_origin") or mission.get("route_from", "") == "base_exit":
 		st.y = origin.origin.y
@@ -96,7 +105,10 @@ static func expand(mission: Dictionary) -> Dictionary:
 	if st.fork != null:
 		push_error("Route: a fork never joins (add {\"join\": true})")
 		_join(st, {})
-	st.legs[-1].end = st.z
+	var finish := _finish(st, mission)
+	if finish >= 0.0:
+		mission.route_finish = finish
+	st.legs[-1].end = st.z - maxf(finish, 0.0)
 	# Everything to world space.
 	var pieces: Array = mission.get("pieces", [])
 	for e: Array in st.out:
@@ -195,10 +207,13 @@ static func _resolve(o: Dictionary, mission: Dictionary, st: Dictionary) -> void
 	var ref: String = o.at
 	if ref == "end":
 		var last: int = st.legs.size() - 1
-		var e := _world(st, last, 0.0, st.z + 4.0, st.y + 2.0)
+		# With a finish run-out the goal reaches on over it, so a jump
+		# across the line still counts the moment you're over it.
+		var deep: float = 8.0 + float(st.get("runout", 0.0)) * 0.5
+		var e := _world(st, last, 0.0, st.z + 8.0 - deep * 0.5, st.y + 2.0)
 		o.at = [e.x, e.y, e.z]
 		if not o.has("size") and not o.has("radius"):
-			o.size = [WIDTH + 2.0, 8.0, 8.0]
+			o.size = [WIDTH + 2.0, 8.0, deep]
 			_turn_region(o, st.legs[last].yaw)
 		return
 	for c: Dictionary in mission.checkpoints:
@@ -380,10 +395,60 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 		busy.append(_feature(st, f, z0))
 	if not seg.get("bare", false) and not seg.get("bridge", false):
 		_clutter(st, z0, length, busy)
+	st.last = {"w": w, "inside": st.inside, "bridge": seg.get("bridge", false), "look": seg.get("look", st.roof_look)}
 	st.inside = 0.0
 	st.roof_w = WIDTH
 	st.z = z0 - length
 	st.roof_end = st.z
+
+
+## The finish line at the end of the route (the cursor). On a roof (not
+## a street, a bridge running on, or a mission with "finish": false; atlas
+## levels only with "finish": true, as the next level carries on from
+## their end) the roof runs on FINISH_RUNOUT m past the line between
+## walls, to a building across the end with a door in it: whatever speed
+## you arrive at, you stop on solid ground, not over the edge. Indoors
+## (the last roof has a ceiling) it's just the room's end wall. Returns
+## the run-out's length.
+static func _finish(st: Dictionary, mission: Dictionary) -> float:
+	var want: Variant = mission.get("finish", not mission.get("atlas", false))
+	var last: Dictionary = st.last
+	if want == false or last.is_empty() or last.bridge or st.y <= City.STREET_TOP or not is_equal_approx(st.z, st.roof_end):
+		return -1.0
+	var y: float = st.y
+	var w: float = last.w
+	var half := w * 0.5
+	var z: float = st.z
+	# The line itself.
+	_add(st, {"mark": [0, y + 0.004, z], "size": [w, 0.5], "color": "#e8e2d4"})
+	var inside: float = last.inside
+	if inside > 0.0:
+		# The room ends in a wall (up to its ceiling) with a door in it.
+		_add(st, {"box": [0, y + inside * 0.5, z - 0.25], "size": [w + 1.0, inside, 0.5], "kind": "NEUTRAL", "look": "FACADE"})
+		_finish_door(st, y, z - 0.0)
+		return 0.0
+	var runout := FINISH_RUNOUT
+	st.runout = runout
+	var end := z - runout
+	_add(st, {"building": [0, y, z - runout * 0.5], "size": [w, runout], "look": last.look})
+	_lane(st, z, end, w)
+	# Walls either side from the goal's start to the end building, too
+	# tall to climb or vault, and the building across the end.
+	var from := z + FINISH_BEFORE
+	for side: float in [-1.0, 1.0]:
+		_add(st, {"box": [side * (half + 0.25), y + FINISH_WALL * 0.5, (from + end) * 0.5], "size": [0.5, FINISH_WALL, from - end], "kind": "NEUTRAL", "look": "FACADE"})
+	_add(st, {"box": [0, y + (FINISH_WALL + 2.0) * 0.5, end - 2.0], "size": [w + 1.0, FINISH_WALL + 2.0, 4.0], "kind": "NEUTRAL", "look": "FACADE", "footprint": true})
+	_finish_door(st, y, end)
+	return runout
+
+
+## A shut steel door in its frame on the wall facing the run at z, with a
+## lamp over it: the way on, for the next level.
+static func _finish_door(st: Dictionary, y: float, z: float) -> void:
+	_add(st, {"box": [0, y + 1.35, z + 0.06], "size": [2.0, 2.7, 0.12], "kind": "NEUTRAL", "look": "RUST"})
+	_add(st, {"box": [0, y + 2.85, z + 0.1], "size": [2.6, 0.3, 0.2], "kind": "NEUTRAL", "look": "NEUTRAL"})
+	for side: float in [-1.0, 1.0]:
+		_add(st, {"box": [side * 1.15, y + 1.4, z + 0.1], "size": [0.3, 2.8, 0.2], "kind": "NEUTRAL", "look": "NEUTRAL"})
 
 
 ## A bridge deck instead of a building: a concrete slab on piers with
