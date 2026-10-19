@@ -21,20 +21,6 @@ extends Resource
 @export_range(1, 100, 1) var magazine := 15
 @export_range(0.1, 5.0, 0.05) var reload_time := 1.25
 
-@export_group("Accuracy (degrees)")
-## The first shot always goes exactly where the crosshair is.
-@export_range(0.0, 5.0, 0.01) var hip_spread := 0.35
-@export_range(0.0, 5.0, 0.01) var aim_spread := 0.0
-## Spread added per shot fired in quick succession, and its cap.
-@export_range(0.0, 3.0, 0.01) var bloom_per_shot := 0.45
-@export_range(0.0, 10.0, 0.1) var max_bloom := 3.0
-## Bloom recovered per second, once you haven't fired for recovery_delay.
-## Full auto fires faster than the delay, so held fire keeps blooming.
-@export_range(0.0, 30.0, 0.5) var bloom_recovery := 7.0
-@export_range(0.0, 1.0, 0.01) var bloom_recovery_delay := 0.12
-## Extra spread at top movement speed (kept small: moving shots should land).
-@export_range(0.0, 5.0, 0.01) var move_spread := 0.25
-
 @export_group("Aim help (degrees, at full strength)")
 ## A shot that would miss bends onto a target whose hitbox centre is within
 ## this angle of it (heads first).

@@ -2426,6 +2426,12 @@ func view_kick() -> Vector2:
 	return Vector2(_kick_pitch, _kick_yaw)
 
 
+## Where a shot goes: the first-person head ray without the recoil kick
+## (the kick is camera feel only), so held fire never drifts off target.
+func shot_direction() -> Vector3:
+	return (head.global_basis.orthonormalized() * Basis(Vector3.RIGHT, -_kick_pitch) * Vector3.FORWARD).normalized()
+
+
 ## What the player is doing right now, for style bonuses on shots
 ## (airborne headshot, mid-flip, while wallrunning...).
 func shot_tags() -> Array[StringName]:

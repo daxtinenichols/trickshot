@@ -220,17 +220,22 @@ func test_first_shot_is_exact_at_full_sprint() -> void:
 		check(&"fast" in hits[0].tags, "fast shot is tagged")
 
 
-func test_spam_blooms_and_recovers() -> void:
+func test_full_auto_has_no_bloom() -> void:
 	await _setup()
 	var gun := _gun()
-	var s0 := gun.current_spread()
+	gun.aim_assist = 0.0
+	var t := _target(Vector3(0, 0, -30))
+	t.max_health = 1.0e9
+	t.health = t.max_health
+	await w.step(2)
+	_aim(_head(t))
 	gun.full_auto = true
 	gun.trigger_held = true
-	await w.step(30)
+	await w.step(60)
 	gun.trigger_held = false
-	check(gun.current_spread() > s0 + 1.0, "holding the trigger blooms the spread")
-	await w.step(40)
-	check_near(gun.current_spread(), s0, 0.01, "spread recovers once you stop")
+	check(hits.size() >= 8, "held full auto for a second (%d hits)" % hits.size())
+	var heads := hits.filter(func(h: Dictionary) -> bool: return h.zone == &"head").size()
+	check(heads == hits.size(), "every shot lands on the head at 30 m: no spread, no bloom (%d of %d)" % [heads, hits.size()])
 
 
 func test_recoil_kicks_view_without_moving_aim() -> void:
