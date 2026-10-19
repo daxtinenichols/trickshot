@@ -1150,6 +1150,60 @@ func test_head_office_host_hits_are_a_bonus() -> void:
 				"%s: line '%s' has a known trigger" % [id, r.line])
 
 
+## His office's PRIVATE door isn't painted on: when he runs he opens it,
+## goes through and up the stairs behind it, and the stairwell is shut in
+## (a dead end for you, with a floor and walls all round).
+func test_head_office_host_leaves_through_his_private_door() -> void:
+	await _load(_index("m09b_head_office"))
+	var host: Node3D = null
+	for enc: Node3D in level.builder.encounters:
+		for e: Node in enc.enemies:
+			if e.get("appearance") == 3:
+				host = e
+	check(host != null, "the Host is in his office")
+	if host == null:
+		return
+	var home: Vector3 = host.global_position
+	var door: Node3D = null
+	for d: Node3D in tree.get_nodes_in_group("doors"):
+		if EnemyMath.horizontal(d.global_position - home).length() < 16.0 and (door == null
+				or d.global_position.distance_to(home) > door.global_position.distance_to(home)):
+			door = d
+	check(door != null, "his private door is behind him (host at %s, %d doors)" % [home, tree.get_nodes_in_group("doors").size()])
+	if door == null:
+		return
+	var normal: Vector3 = door.global_transform.basis.z
+	var side := signf(normal.dot(home - door.global_position))
+	# You come in down the office; he takes one hit and runs.
+	player.global_position = home + side * normal * 9.0 + Vector3(0, 0.1, 0)
+	host.encounter.start()
+	host.activate(player)
+	await _step(5)
+	host.take_hit({"damage": 1.0, "zone": &"body", "position": host.global_position + Vector3.UP})
+	var past := -INF
+	var rose := 0.0
+	for i in 360:
+		await _step(1)
+		if not is_instance_valid(host) or host.gone:
+			break
+		past = maxf(past, -side * normal.dot(host.global_position - door.global_position))
+		rose = maxf(rose, host.global_position.y - home.y)
+	check(door.is_open, "he opened his door")
+	check(past > 3.0, "and ran through it (%.1f m past the door)" % past)
+	check(rose > 1.5, "up his stairs (%.1f m)" % rose)
+	check(is_instance_valid(host) and host.gone, "then he's gone")
+	if not is_instance_valid(host):
+		return
+	# Behind the door: a floor under him and walls all round, no way out.
+	var space := player.get_world_3d().direct_space_state
+	var inside: Vector3 = door.global_transform * Vector3(0.55, 1.2, 0) - side * normal * 2.0
+	var floor_hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(inside, inside + Vector3.DOWN * 3.0))
+	check(not floor_hit.is_empty() and inside.y - floor_hit.position.y < 1.5, "a floor behind his door")
+	for dir: Vector3 in [Vector3.LEFT, Vector3.RIGHT, Vector3.FORWARD, Vector3.BACK, Vector3.UP]:
+		var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(inside, inside + dir * 12.0))
+		check(not hit.is_empty() or dir.dot(normal) * side > 0.5, "the stairwell is shut in (%s)" % dir)
+
+
 ## Skybridge ends at the Ward's glass gate: you can't get past it, they
 ## walk Echo off, the bridge blows, and only then is the mission won.
 func test_skybridge_ends_after_the_bridge_falls() -> void:
