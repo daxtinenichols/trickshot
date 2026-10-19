@@ -138,6 +138,11 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 				event.emit("host_close")
 			else:
 				_on_story_event("set_piece:" + kind))
+	# Set pieces that wait for a mission event ("on") rather than a place.
+	event.connect(func(e: String) -> void:
+		for sp: Node3D in builder.set_pieces:
+			if sp.has_method("on_event"):
+				sp.on_event(e, self))
 	_start_pos = b.spawns[0].origin
 	event.connect(_save_choice)
 	_reset_run(0)
@@ -261,7 +266,13 @@ func total_tapes() -> int:
 
 
 func _physics_process(_delta: float) -> void:
-	if player == null or phase == Phase.COMPLETE or phase == Phase.LOST:
+	if player != null and phase == Phase.COMPLETE:
+		# An ending set piece (the bridge going) plays out after the win.
+		for sp: Node3D in builder.set_pieces:
+			if sp.has_method("busy") and sp.busy():
+				sp.tick(player.global_position, self)
+		return
+	if player == null or phase == Phase.LOST:
 		return
 	var pos := player.global_position
 	if phase == Phase.READY:

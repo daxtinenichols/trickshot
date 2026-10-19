@@ -25,8 +25,25 @@ extends Node3D
 ##             "skybridge") at the gate, "skybridge_blast" when it blows and
 ##             "skybridge_down" once it has fallen (the mission's last
 ##             objective waits for that). The gate never opens.
+##   "bridge_collapse" (Glass District) a bridge the route built with
+##             "breaks" (local z, behind to ahead along -Z: route.gd turns
+##             its m-along-the-roof into these) blows and falls `drop` m
+##             into the river bed. It takes whatever stands on the deck
+##             between the first and last break when it goes (deck pieces,
+##             girders, railings, wrecks, marks), blows the piers inside,
+##             and drops each span: the first hinges on its near pier and
+##             the last on its far pier, so they end up as ramps down into
+##             the bed; the ones between fall flat ("hinges": "both",
+##             "near", "far" or "none" says which ends hinge). Anyone on it
+##             falls with it. "on": "complete" fires it on that mission event instead of
+##             the trigger; the charge goes when the radio has finished the
+##             "cue" line (MissionLevel tells it what's on air), or
+##             "blast_after" s after it fired, whichever is first. Emits
+##             went("bridge_collapse") when it fires, "bridge_collapse_blast"
+##             when it blows and "bridge_collapse_down" once it has landed.
 ## Fields: "trigger" [x, y, z], "radius", "yaw" (the run's heading, from the
-## route), and the kind's own.
+## route), "on" (a mission event that fires it instead of the trigger), and
+## the kind's own.
 
 const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
 ## Ticks a falling beam takes to land (60 Hz).
@@ -45,6 +62,14 @@ const SKY_DOOR_SHUT := 1060
 const SKY_BLAST := 1140
 const SKY_FALL_TICKS := 150
 const SKY_DOWN := 1320
+## A collapsing bridge: ticks from the blast for the spans to come down,
+## the angle the middle spans tip by as they fall (radians), and the most
+## a span sinks into the river bed when it lands.
+const BRIDGE_FALL_TICKS := 84
+const BRIDGE_TIP := 0.12
+const BRIDGE_SINK := 0.6
+## Ticks after the cue line ends before the charge goes.
+const BRIDGE_CUE_DELAY := 12
 const TROOPER_MODEL := "res://enemies/models/soldier.glb"
 const ENEMY_BODY_PATH := "res://enemies/enemy_body.gd"
 const ENEMY_POSES_PATH := "res://enemies/enemy_poses.gd"
@@ -79,6 +104,14 @@ var _doorway: Node3D
 var _echo: Node3D
 var _guards: Array[Node3D] = []
 var _poses: Script
+## The bridge: ticks since it fired when the charge goes (-1 until set),
+## whether the cue line has been on air, the spans [{nodes: [[node,
+## local transform]], hinge: Vector3, len, mode}] and the blown piers.
+var _blast_tick := -1
+var _cue_on := false
+var _spans: Array = []
+var _blown: Array[Node3D] = []
+var _bridge_down := false
 
 
 func setup(p: Dictionary) -> void:
@@ -122,6 +155,7 @@ func reset() -> void:
 		for i in _guards.size():
 			_guards[i].visible = false
 			_guards[i].transform = _guard_start(i)
+	_reset_bridge()
 	if _fx != null:
 		_fx.queue_free()
 		_fx = null
@@ -133,7 +167,7 @@ func reset() -> void:
 ## `run` is the MissionRun (for the pursuer).
 func tick(player_pos: Vector3, run: Node) -> void:
 	if not fired:
-		if player_pos.distance_to(trigger) <= radius:
+		if not spec.has("on") and player_pos.distance_to(trigger) <= radius:
 			_fire(run)
 		return
 	ticks += 1
@@ -162,13 +196,39 @@ func tick(player_pos: Vector3, run: Node) -> void:
 				_sound("door_bang", to_local(tip), 6.0)
 		"skybridge":
 			_skybridge_tick()
+		"bridge_collapse":
+			_bridge_tick()
+
+
+## A mission event happened (MissionRun): fires it if it waits for that one.
+func on_event(event_name: String, run: Node) -> void:
+	if not fired and String(spec.get("on", "")) == event_name:
+		_fire(run)
+
+
+## True from firing until it has finished playing out (the results card
+## waits for it).
+func busy() -> bool:
+	return fired and kind == "bridge_collapse" and not _bridge_down
+
+
+## What the radio has on air now ("" for nothing). A bridge's charge goes
+## once its cue line has been and gone. Timing only: what falls and when is
+## still counted in physics ticks.
+func hear(line: String) -> void:
+	if not fired or _blast_tick >= 0 or not spec.has("cue"):
+		return
+	if line == String(spec.cue):
+		_cue_on = true
+	elif _cue_on:
+		_blast_tick = ticks + BRIDGE_CUE_DELAY
 
 
 func _fire(run: Node) -> void:
 	fired = true
 	ticks = 0
 	match kind:
-		"skybridge":
+		"skybridge", "bridge_collapse":
 			pass
 		"debris":
 			_beam.visible = true
@@ -474,6 +534,166 @@ func _skybridge_tick() -> void:
 		_span.visible = ticks < SKY_BLAST + SKY_FALL_TICKS
 	if ticks == SKY_DOWN:
 		went.emit("skybridge_down")
+
+
+# ---------------------------------------------------------------- bridge
+
+func _bridge_tick() -> void:
+	var latest := int(float(spec.get("blast_after", 6.0)) * 60.0)
+	if _blast_tick < 0 and ticks >= latest:
+		_blast_tick = ticks
+	if _blast_tick < 0 or ticks < _blast_tick:
+		return
+	var since := ticks - _blast_tick
+	if since == 0:
+		_bridge_blast()
+	if _bridge_down:
+		return
+	var k := clampf(float(since) / BRIDGE_FALL_TICKS, 0.0, 1.0)
+	var drop := float(spec.get("drop", 8.0))
+	for span: Dictionary in _spans:
+		var xf := _span_xf(span, k, drop)
+		for pair: Array in span.nodes:
+			var n: Node3D = pair[0]
+			if is_instance_valid(n):
+				n.global_transform = global_transform * xf * pair[1]
+	if since == BRIDGE_FALL_TICKS:
+		_bridge_down = true
+		for span: Dictionary in _spans:
+			# Where it hits the bed: the free end, or the middle of a flat one.
+			var reach := float(span.len) * (0.5 if span.mode == "drop" else 1.0)
+			var land: Vector3 = span.hinge + Vector3(0, -drop + 1.0, -reach * float(span.dir))
+			_burst_at(land, 2.4)
+			_sound("debris", land, 9.0)
+		went.emit("bridge_collapse_down")
+
+
+## Where a span is `k` (0..1) of the way down, as a transform of its nodes
+## from where they stood (local to the set piece).
+func _span_xf(span: Dictionary, k: float, drop: float) -> Transform3D:
+	var hinge: Vector3 = span.hinge
+	var length: float = span.len
+	# Falling under gravity: slow, then fast.
+	var g := k * k
+	var fall := drop - 1.0
+	if span.mode == "drop":
+		# Both ends gone: it drops, tipping a little toward its far end.
+		var tip := BRIDGE_TIP * g * float(span.dir)
+		var down := (fall + BRIDGE_SINK) * g
+		var center := hinge + Vector3(0, -0.5, -length * 0.5 * float(span.dir))
+		var rot := Transform3D(Basis(Vector3.RIGHT, -tip), Vector3.ZERO)
+		return Transform3D(Basis.IDENTITY, center + Vector3(0, -down, 0)) * rot * Transform3D(Basis.IDENTITY, -center)
+	# Hinged at one end: the free end swings down onto the bed. `dir` is
+	# +1 when the span runs on ahead of its hinge (-Z), -1 when it lies
+	# behind it.
+	var angle := asin(clampf((fall + BRIDGE_SINK) / length, 0.0, 1.0)) * g
+	var pivot := hinge + Vector3(0, -1.0, 0)
+	var basis := Basis(Vector3.RIGHT, -angle * float(span.dir))
+	return Transform3D(Basis.IDENTITY, pivot) * Transform3D(basis, Vector3.ZERO) * Transform3D(Basis.IDENTITY, -pivot)
+
+
+## The charge goes: picks up what stands on the deck, blows the piers
+## between the end piers and sets each span falling.
+func _bridge_blast() -> void:
+	_spans.clear()
+	_blown.clear()
+	var breaks: Array = spec.get("breaks", [])
+	if breaks.size() < 2:
+		push_warning("SetPiece: a bridge_collapse needs two or more breaks")
+		_bridge_down = true
+		return
+	var cuts: Array[float] = []
+	for b: Variant in breaks:
+		cuts.append(float(b))
+	cuts.sort()
+	cuts.reverse()  # behind first, then on ahead (local -Z)
+	var drop := float(spec.get("drop", 8.0))
+	var half := float(spec.get("width", 12.0)) * 0.5 + 1.0
+	var count := cuts.size() - 1
+	var hinges := String(spec.get("hinges", "both"))
+	for i in count:
+		var mode := "drop"
+		var dir := 1.0
+		var hinge := Vector3(0, 0, cuts[i])
+		if i == 0 and hinges in ["both", "near"]:
+			mode = "hinge"
+		elif i == count - 1 and hinges in ["both", "far"]:
+			mode = "hinge"
+			dir = -1.0
+			hinge = Vector3(0, 0, cuts[i + 1])
+		_spans.append({"nodes": [], "hinge": hinge, "len": cuts[i] - cuts[i + 1], "mode": mode, "dir": dir})
+	var parent := get_parent()
+	if parent != null:
+		for c: Node in parent.get_children():
+			var n := c as Node3D
+			if n == null or n == self or n is CharacterBody3D or n is RigidBody3D or n.name.begins_with("SetPiece"):
+				continue
+			var at := to_local(n.global_position)
+			if absf(at.x) > half or at.y < -drop + 0.4 or at.y > 4.0:
+				continue
+			if at.z >= cuts[0] - 0.05 or at.z <= cuts[-1] + 0.05:
+				continue
+			if at.y < -2.5:
+				# A pier: the ones between the end piers go.
+				if at.z < cuts[0] - 1.5 and at.z > cuts[-1] + 1.5:
+					_blown.append(n)
+				continue
+			for i in count:
+				if at.z < cuts[i] and at.z >= cuts[i + 1]:
+					_spans[i].nodes.append([n, global_transform.affine_inverse() * n.global_transform])
+					break
+	for n in _blown:
+		n.visible = false
+		_solid(n, false)
+	# Charges at every break between the ends; the biggest under the middle.
+	for i in range(1, cuts.size() - 1):
+		_burst_at(Vector3(0, -1.0, cuts[i]), 2.6 if i == 1 else 1.8, i == 1)
+		_sound("door_bang", Vector3(0, -1.0, cuts[i]), 10.0)
+		_sound("debris", Vector3(0, -1.0, cuts[i]), 8.0)
+	went.emit("bridge_collapse_blast")
+
+
+func _reset_bridge() -> void:
+	for span: Dictionary in _spans:
+		for pair: Array in span.nodes:
+			var n: Node3D = pair[0]
+			if is_instance_valid(n):
+				n.global_transform = global_transform * pair[1]
+	for n in _blown:
+		if is_instance_valid(n):
+			n.visible = true
+			_solid(n, true)
+	_spans.clear()
+	_blown.clear()
+	_blast_tick = -1
+	_cue_on = false
+	_bridge_down = false
+	for c in get_children():
+		if c.has_meta("bridge_fx"):
+			c.queue_free()
+
+
+func _solid(n: Node, on: bool) -> void:
+	for c in n.get_children():
+		if c is CollisionShape3D:
+			(c as CollisionShape3D).set_deferred("disabled", not on)
+
+
+## A burst that stays with the others (a bridge has several going at once).
+func _burst_at(at: Vector3, size: float, fireball := false) -> void:
+	var keep := _fx
+	var keep_time := _fx_time
+	_fx = null
+	_burst(at, size, fireball)
+	var mine := _fx
+	if mine != null:
+		mine.set_meta("bridge_fx", true)
+	if keep != null or not fireball:
+		_fx = keep
+		_fx_time = keep_time
+	elif mine != null:
+		# Keep the fireball's flash and swell going.
+		_fx = mine
 
 
 ## A second, smaller burst right at the gate: the charge on this side.
