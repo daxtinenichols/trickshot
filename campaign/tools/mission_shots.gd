@@ -6,7 +6,8 @@ extends SceneTree
 ## Add a second argument to render only shots whose name contains it, or
 ## "course:<mission id>" for shots down the course itself: from the start
 ## and each checkpoint toward the next, at head height and from above, or
-## "angled:<mission id>" for shots along its diagonal legs (city edges).
+## "angled:<mission id>" for shots along its diagonal legs (city edges), or
+## "legs:<mission id>" down every leg from just past each corner.
 ## Scripts run with -s load before the autoloads, so nothing here is typed
 ## with classes that need them.
 
@@ -101,6 +102,10 @@ func _run() -> void:
 
 	if only.begins_with("course:"):
 		await _course(campaign, only.trim_prefix("course:"))
+		quit()
+		return
+	if only.begins_with("legs:"):
+		await _legs(campaign, only.trim_prefix("legs:"))
 		quit()
 		return
 	if only.begins_with("angled:"):
@@ -247,6 +252,59 @@ func _angled(campaign: Script, id: String) -> void:
 			cam.queue_free()
 		n += 1
 	print("diagonal legs: ", n)
+	level.queue_free()
+	await _frames(2)
+
+
+## Down every leg of a route with corners: from just past each corner (and
+## the start) along the leg at head height, and from above and behind, with
+## the player hidden. With "+fire" after the id ("legs:<id>+fire") every
+## set piece is fired first and run on a few seconds.
+func _legs(campaign: Script, id: String) -> void:
+	var fire := id.ends_with("+fire")
+	id = id.trim_suffix("+fire")
+	var level: Node = await _load_mission(campaign, id)
+	var m: Dictionary = level.builder.mission
+	var legs: Array = m.get("route_legs", [])
+	var space := (level as Node3D).get_world_3d().direct_space_state
+	(level.get_node("Player") as Node3D).visible = false
+	_hide_ui(level, true)
+	if fire:
+		for sp: Node3D in level.builder.set_pieces:
+			sp.tick(sp.trigger, null)
+			for k in 200:
+				sp.tick(sp.trigger + Vector3(0, 0, -float(k) * 0.2).rotated(Vector3.UP, sp.rotation.y), null)
+	for i in legs.size():
+		var yaw: float = legs[i][2]
+		var o := Vector3(legs[i][0], 0, legs[i][1])
+		var fwd := Vector3(-sin(yaw), 0, -cos(yaw))
+		var at := o + fwd * (8.0 if i > 0 else 6.0)
+		if i == 0 and m.has("start"):
+			var s: Array = m.start.at
+			at = Vector3(s[0], 0, s[2]) + fwd * 2.0
+		var q := PhysicsRayQueryParameters3D.create(at + Vector3(0, 60, 0), at - Vector3(0, 10, 0))
+		var floor_y := -INF
+		# The lowest floor under a ceiling: walk down the hits.
+		var from := at + Vector3(0, 60, 0)
+		for k in 8:
+			q = PhysicsRayQueryParameters3D.create(from, at - Vector3(0, 10, 0))
+			var hit := space.intersect_ray(q)
+			if hit.is_empty():
+				break
+			floor_y = (hit.position as Vector3).y
+			from = (hit.position as Vector3) - Vector3(0, 0.6, 0)
+		at.y = floor_y if floor_y > -INF else 0.0
+		for v: Array in [["eye", Vector3(0, 1.7, 0), 0.0], ["high", Vector3(0, 4.5, 0), 6.0]]:
+			var cam := Camera3D.new()
+			cam.cull_mask &= ~4
+			cam.fov = 75.0
+			cam.far = 600.0
+			level.add_child(cam)
+			cam.look_at_from_position(at + v[1] - fwd * float(v[2]), at + fwd * 30.0 + Vector3(0, 1.0, 0))
+			cam.make_current()
+			await _frames(8)
+			_save("%s_leg%02d_%s" % [id, i, v[0]])
+			cam.queue_free()
 	level.queue_free()
 	await _frames(2)
 
