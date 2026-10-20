@@ -36,11 +36,11 @@
   {"at": [0, 3, -348], "size": [24, 6, 4], "who": "mags", "line": "Big lads with the shields. Get round 'em, or shoot what the shield doesn't cover."},
   {"at": [0, 3, -356], "size": [12, 6, 4], "who": "mags", "line": "That drone's spotting you for the shooters. Knock it down if you can."},
   {"at": [0, 7.5, -380.5], "size": [48, 3, 7], "who": "mags", "line": "East side's shuttered. Go round. Through electronics.", "cue": true},
-  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "host", "line": "Now, Parker, while you're browsing, a word from our... what is that? Who's on my frequency?", "keep": true},
-  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "echo", "line": "Keep the porch light on, courier. I'm coming home.", "keep": true},
-  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "host", "line": "Technical difficulties, folks. Nobody touch anything.", "keep": true},
-  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "parker", "line": "That was her.", "keep": true},
-  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "mags", "line": "That was her. She's alive. She's in his wires, Parker. Go. Run.", "keep": true},
+  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "host", "line": "Now, Parker, while you're browsing, a word from our... what is that? Who's on my frequency?", "must": true},
+  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "echo", "line": "Keep the porch light on, courier. I'm coming home.", "must": true},
+  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "host", "line": "Technical difficulties, folks. Nobody touch anything.", "must": true},
+  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "parker", "line": "That was her.", "must": true},
+  {"at": [-15, 7.5, -366], "size": [18, 3, 4], "who": "mags", "line": "That was her. She's alive. She's in his wires, Parker. Go. Run.", "must": true},
   {"on": "complete", "who": "host", "line": "He's on the skybridge! And guess who's waiting for him at the other end. Go on. Guess."}
  ],
  "chatter": {

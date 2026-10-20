@@ -495,6 +495,17 @@ func test_kick_hurts_and_knocks_a_raider_down() -> void:
 	check(not r.is_knocked_down() and absf(r.head_position().y - standing_head) < 0.15, "back on its feet (%.2f vs %.2f)" % [r.head_position().y, standing_head])
 
 
+## Carrying instead of the gun (Dawn Run's parcel): kicks work the same.
+func test_kicks_work_while_carrying() -> void:
+	await _setup()
+	(w.player.weapon as Pistol).held = "parcel"
+	var r := _raider(Vector3(0, 0, -1.4), false)
+	await w.step(2)
+	await _kick_at(r.global_position + Vector3(0, 1.0, 0))
+	check_near(r.health, r.max_health - r.kick_damage, 0.5, "kick damage with the parcel in hand")
+	check(r.is_knocked_down(), "knocked down")
+
+
 func test_kick_damage_scales_with_the_combo() -> void:
 	await _setup()
 	w.player.kick_damage_scale = func() -> float: return 2.5

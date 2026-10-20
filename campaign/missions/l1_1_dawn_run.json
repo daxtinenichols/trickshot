@@ -9,23 +9,24 @@
  "start": {"at": [3420, 12, 136], "yaw": 90},
  "route_origin": {"at": [3420, 12, 136], "yaw": 90},
  "chalk": true,
+ "carry": {"object": "parcel", "then": "hands"},
  "objectives": [
-  {"type": "reach", "name": "the drop", "text": "Deliver the parcel to the drop on the high roof", "at": "@High roof"},
+  {"type": "deliver", "name": "the drop", "text": "Deliver the parcel to the drop on the high roof", "at": "@High roof", "drop_at": [3265, 15, -133]},
   {"type": "reach", "name": "camp", "text": "Get back to camp", "at": "end"}
  ],
  "radio": [
-  {"on": "start", "who": "echo", "line": "Don't drop this one. It's insulin, for the Okafor kid."},
-  {"on": "start", "who": "parker", "line": "When have I ever dropped one?"},
-  {"on": "start", "who": "echo", "line": "Tuesday."},
-  {"on": "start", "who": "mags", "line": "High roof past the fish market. And back for breakfast. I'm not keeping it warm."},
-  {"on": "go", "who": "echo", "line": "Hey. Porch light's on.", "keep": true},
+  {"on": "start", "who": "echo", "line": "Don't drop this one.", "must": true},
+  {"on": "start", "who": "parker", "line": "When have I ever?", "must": true},
+  {"on": "start", "who": "echo", "line": "Tuesday.", "must": true},
+  {"on": "start", "who": "mags", "line": "Fish market, high roof. Back for breakfast.", "must": true},
+  {"on": "go", "who": "echo", "line": "Hey. Porch light's on.", "must": true},
   {"on": "done:0", "who": "mags", "line": "Parcel's in. Good. Come on home, kid."},
-  {"on": "complete", "who": "host", "line": "Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you."},
-  {"on": "complete", "who": "host", "line": "So, today's show. We've got a courier, comes home, and his camp's empty. Wife's gone. I know! Awful. I can't stop listening either."},
-  {"on": "complete", "who": "host", "line": "Echo's up here with me, fixing my tower. Lovely hands. Parker, darling, come and get her. Everybody's listening."},
-  {"on": "complete", "who": "host", "line": "Oh, and is Mags there? Course she is. Tell her I said hi."},
-  {"on": "complete", "who": "mags", "line": "They went straight for her bunk. Didn't even look at the others."},
-  {"on": "complete", "who": "mags", "line": "Parker. Parker, listen to me. You are not going alone. Yard first."}
+  {"on": "complete", "who": "host", "line": "Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you.", "must": true},
+  {"on": "complete", "who": "host", "line": "So, today's show. We've got a courier, comes home, and his camp's empty. Wife's gone. I know! Awful. I can't stop listening either.", "must": true},
+  {"on": "complete", "who": "host", "line": "Echo's up here with me, fixing my tower. Lovely hands. Parker, darling, come and get her. Everybody's listening.", "must": true},
+  {"on": "complete", "who": "host", "line": "Oh, and is Mags there? Course she is. Tell her I said hi.", "must": true},
+  {"on": "complete", "who": "mags", "line": "They went straight for her bunk. Didn't even look at the others.", "must": true},
+  {"on": "complete", "who": "mags", "line": "Parker. Parker, listen to me. You are not going alone. Yard first.", "must": true}
  ],
  "chatter": {
   "bail": [{"who": "mags", "line": "Eh. Happens. Shake it off."}, {"who": "mags", "line": "You alright? ...Yeah, you're alright. Go."}, {"who": "mags", "line": "Land on your feet next time, yeah? It's cheaper."}, {"who": "mags", "line": "That's gonna bruise. Keep going."}, {"who": "mags", "line": "Up you get."}, {"who": "mags", "line": "Ooh. Walk it off. Run it off, I mean."}],
@@ -57,7 +58,7 @@
   {"turn": "right", "size": 22},
   {"roof": 76, "y": 9, "look": "RUST", "do": [{"checkpoint": "Waterfront", "at": 4, "objective": 1}]},
   {"gap": 5},
-  {"roof": 70, "y": 9, "look": "RUST", "do": [{"radio": {"who": "mags", "line": "Parker, there's a truck down on the... they're on the roof, they're...", "keep": true}, "at": 12, "radius": 8}, {"hole": 0, "style": "fence", "at": 46}]},
+  {"roof": 70, "y": 9, "look": "RUST", "do": [{"radio": {"who": "mags", "line": "Parker, there's a truck down on the... they're on the roof, they're...", "must": true}, "at": 12, "radius": 8}, {"hole": 0, "style": "fence", "at": 46}]},
   {"gap": 5},
   {"roof": 83, "y": 9, "look": "RUST"},
   {"roof": 28, "y": 12, "building": false, "bare": true}

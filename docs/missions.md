@@ -109,6 +109,8 @@ Features on a roof, `at` meters from its start:
 | `{"lane": x}` | where the test bot runs from here |
 | `{"set_piece": "debris", "as": "slide", "at": 46, "trigger": 20}` | a chase set piece (see The chase) |
 
+**Finish.** A route that ends up high (not on a street or a bridge) ends in a finish you can't run off: a white line, then the roof runs on 16 m between 8 m walls to a building across the end with a shut door in it, all in the last roof's look. If the last roof is indoors (`interior`/`indoors`) it's just the room's end wall with a door. The `"at": "end"` goal reaches over the run-out, so you win the moment you cross the line. `"finish": false` leaves it out (a set piece ending); atlas levels leave it out unless `"finish": true`, as the next level carries on from their end.
+
 Everything after a corner is laid out turned with the run (checkpoints
 face along it). Two 45° corners make a 90° turn with a diagonal stretch
 between; on a diagonal leg roofs are turned boxes and checkpoints turned
@@ -203,9 +205,23 @@ has to do it to go on.
 | `event` | `event` (an enemy's story event, like `host:hit`, or a set piece's, like `set_piece:skybridge_down`), `count` | as a bonus goal (`"optional": true`): it happened that many times since the goal opened; as a required goal: that many times this run (Skybridge ends on its bridge falling) |
 | `clear` | `encounter` (its id) | that encounter is cleared: every enemy down, or out of the fight like a spared Juno |
 | `duel` | `encounter` (its id), `radius` (4 m) | its boss (Juno) is shot down, or you get within `radius` of her and she concedes; then you spare her or not |
+| `deliver` | like `reach`, plus `drop` (`"crate"` or `"hatch"`), `drop_at` [x, y, z] for the receptacle (default the region's centre), `drop_yaw` (degrees the floor chalk faces; 0 reads heading -Z) | you run through the region: the carried object is tossed in on the move (no stop, speed kept), +500 DELIVERED into the combo, radio `delivered`. Only going through counts: a later `reach` goal never credits it |
 
 Reaching a later `reach` goal counts the `reach` goals before it (a high
 line or a shortcut that runs past one region never sends you back for it).
+
+### Carrying instead of the gun
+
+`"carry": "parcel"` (or `{"object": "parcel", "until": "<event>", "then":
+"hands"}`) puts an object in the runner's hand instead of the pistol: no
+fire, aim or reload; kicks and every move work as normal and enemies still
+fight. Objects (weapons/carry_models.gd): `parcel`, `jerry_can`, `relay`,
+`tape`; `"hands"` is nothing at all. A `deliver` objective takes the object
+and leaves the hands holding `then` (default `"hands"`; `"gun"` hands the
+pistol back); `until` swaps to `then` on a radio event instead (like
+`set_piece:handoff`). A bail or a hard landing never drops it, and a loss
+restarts the level holding it again. Every carry level needs a `deliver`
+on its route (Dax 2026-10-20).
 
 `text` is what the HUD shows; without it a default is written. Keep it
 short (the tests hold the mall's to 56 characters) and name what the
@@ -237,13 +253,29 @@ Story lines play once, queued, without ever stopping the game:
 {"at": [4, 8, -62], "radius": 7, "who": "mags", "line": "Wall on the right, same as home."}
 ```
 
-`who`: `mags`, `host`, `echo`, `parker`, `juno`, `vell`. A line that tells
-you the way says `"cue": true`: it goes to the front of the queue, so it's
-heard while it still helps. A line about a place (an `at` line, or one on
-reaching a checkpoint) still waiting after `RadioFeed.STALE_AFTER` (12 s)
-is dropped, since you've run on; lines queued together (a conversation)
-wait for each other, and a story beat that must be heard says
-`"keep": true` (Echo's first message in m06). Triggers (`on`):
+`who`: `mags`, `host`, `echo`, `parker`, `juno`, `vell`. Lines are never
+cut off. A line the story needs (the Story director's "Must play" list for
+the level) says `"must": true` (old name `"keep"`): it is never dropped and
+goes ahead of every other line waiting. A line that tells you the way says
+`"cue": true`: it goes ahead of the rest, so it's heard while it still
+helps. Any other line still waiting after `RadioFeed.STALE_AFTER` (12 s) is
+dropped, since you've run on; lines queued together (a conversation) wait
+for each other. The `start` lines are never dropped: the first time you
+play a level it holds you at the start (ON AIR, free look) until they've
+been said, and after a restart or on a level finished before they're
+skipped. The `complete` lines aren't dropped either: the results card waits
+for them.
+
+Lines for a place start early so they've been said as you get there: an
+`at` line (and a `checkpoint:N` line, from checkpoint N's spot) starts when
+your time to the spot, along the route on a route level, at your speed
+(at least `RadioFeed.LEAD_MIN_SPEED`), is down to its clip length plus
+`RadioFeed.LEAD`; lines sharing a spot (a conversation) count all their
+clips. So put a long beat where the run gives it room, and prefer place
+triggers to `time:` ones. The route bot test checks each route level keeps
+pace: no story line starts more than 4 s after its trigger or behind more
+than 2 lines from earlier moments (`PACING=1` prints every timeline).
+Triggers (`on`):
 `start` (mission loads), `go` (you leave the start), `objective:N` (objective
 N begins), `done:N`, `checkpoint:N`, `complete`, `time:SECONDS`, `fall`,
 `caught`, `down`, `tape`, `kill:TYPE` (the first kill of an enemy listed by

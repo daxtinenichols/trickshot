@@ -73,6 +73,12 @@ var _climb_start_speed := 0.0
 var _climb_entry_speed := 0.0
 var _climb_quality := 0.0
 var _ground_time := 0.0
+## After a rough or hard landing: how long ago you touched down, the speed
+## you came in with and how hard you hit, so a late crouch still rolls.
+## -1 when there's no landing to roll out of.
+var _late_roll_age := -1.0
+var _late_roll_h := Vector3.ZERO
+var _late_roll_fall := 0.0
 ## Highest horizontal speed in the last moment (RECENT_SPEED_TIME), so a
 ## vault or mantle caught a tick after brushing the wall keeps your run.
 var _recent_speed := 0.0
@@ -419,6 +425,7 @@ func simulate(f: InputFrame, delta: float) -> void:
 		pitch = 0.0
 		_start_roll(1.0, &"ground_roll", deg_to_rad(-89.0), MovementMath.horizontal(velocity), 0.0)
 	_ground_flick = maxf(_ground_flick - tuning.ground_roll_flick_decay * delta, 0.0)
+	_tick_late_roll(f, delta)
 	if _crouch_double and state in [State.GROUND, State.CROUCH, State.SLIDE] and horizontal_speed() > 2.0:
 		# Double-tap crouch while running: a forward roll.
 		_since_crouch_press = 999.0
@@ -968,7 +975,9 @@ func _land(f: InputFrame) -> void:
 ## Lands and picks how: a roll, a slide, a crash... Returns how clean the
 ## landing was (0..1), or -1 for a crash or a hard landing.
 func _land_on(f: InputFrame) -> float:
-	var fall := -_pre_move_velocity.y
+	# How hard you hit: your speed into the ground. On flat ground that's the
+	# fall speed; on a ramp running away from you it's much less.
+	var fall := maxf(-_pre_move_velocity.dot(get_floor_normal()), 0.0)
 	_touch_ground()
 	_ground_time = 0.0
 	_land_press_age = _jump_buffer if _jump_buffer <= tuning.jump_buffer else -1.0
@@ -999,12 +1008,26 @@ func _land_on(f: InputFrame) -> float:
 		_start_roll(q, &"flip_roll", p, MovementMath.horizontal(_pre_move_velocity), fall)
 		return q
 	if fall >= tuning.hard_landing_speed:
+		var h_in := MovementMath.horizontal(_pre_move_velocity)
 		if crouch_age <= tuning.roll_window:
 			var roll_q := timing_quality(crouch_age, 0.05, tuning.roll_window)
-			_start_roll(roll_q, &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
+			_start_roll(roll_q, &"landing_roll", 0.0, h_in, fall)
 			return roll_q
-		_start_stun()
-		return -1.0
+		if f.crouch_held:
+			# Still holding crouch from a slide (it isn't a tuck): roll anyway.
+			_start_roll(0.5, &"landing_roll", 0.0, h_in, fall)
+			return 0.5
+		_late_roll_age = 0.0
+		_late_roll_h = h_in
+		_late_roll_fall = fall
+		if fall >= tuning.stun_landing_speed:
+			# The bail waits for the late-roll window (_tick_late_roll).
+			_start_stun(false)
+			return -1.0
+		# A rough landing: no stun, a little speed lost (more the harder).
+		var t := inverse_lerp(tuning.hard_landing_speed, tuning.stun_landing_speed, fall)
+		var h := MovementMath.horizontal(velocity) * lerpf(1.0, tuning.rough_landing_keep, t)
+		velocity = Vector3(h.x, velocity.y, h.z)
 	if f.crouch_held and crouch_age <= tuning.slide_land_window and fall > 3.0:
 		# Slide landing: a well-timed crouch turns some fall speed into speed.
 		var q := timing_quality(crouch_age, 0.05, tuning.slide_land_window)
@@ -1180,12 +1203,35 @@ func _tick_roll(f: InputFrame, wish: Vector3, delta: float) -> void:
 			_change_state(State.CROUCH)  # rolled under something low
 
 
-func _start_stun() -> void:
+## `announce` false leaves the hard_landing trick (a bail) to the caller.
+func _start_stun(announce := true) -> void:
 	var h := MovementMath.horizontal(velocity) * tuning.hard_landing_keep
 	velocity = Vector3(h.x, 0.0, h.z)
 	momentum = maxf(momentum - 0.5, 0.0)
 	_change_state(State.STUN)
-	trick.emit(&"hard_landing", {"fall_speed": -_pre_move_velocity.y})
+	if announce:
+		trick.emit(&"hard_landing", {"fall_speed": -_pre_move_velocity.y})
+
+
+## Crouch just after a rough or hard landing (within roll_late_window) still
+## rolls you out with the speed you came in with. A missed stun becomes a
+## hard landing (a bail) once the window has passed.
+func _tick_late_roll(f: InputFrame, delta: float) -> void:
+	if _late_roll_age < 0.0:
+		return
+	var bail := _late_roll_fall >= tuning.stun_landing_speed
+	var can_roll := state in [State.GROUND, State.CROUCH, State.STUN]
+	if f.crouch_pressed and can_roll and _late_roll_age <= tuning.roll_late_window:
+		var q := lerpf(0.6, 0.3, _late_roll_age / maxf(tuning.roll_late_window, 0.001))
+		_late_roll_age = -1.0
+		_since_crouch_press = 999.0
+		_start_roll(q, &"landing_roll", 0.0, _late_roll_h, _late_roll_fall)
+		return
+	_late_roll_age += delta
+	if _late_roll_age > tuning.roll_late_window or not can_roll:
+		_late_roll_age = -1.0
+		if bail:
+			trick.emit(&"hard_landing", {"fall_speed": _late_roll_fall})
 
 
 func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:

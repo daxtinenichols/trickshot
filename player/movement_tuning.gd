@@ -169,7 +169,8 @@ extends Resource
 @export_range(0.0, 20.0, 0.1) var wall_climb_kick_up := 6.0
 
 @export_group("Landing")
-## Fall speed above which a landing is hard unless you roll.
+## Speed into the ground (along its normal, so a ramp running away from you
+## lands softer) above which an unrolled landing costs speed.
 @export_range(0.0, 40.0, 0.5) var hard_landing_speed := 13.0
 ## Press crouch within this many seconds before touching down to roll.
 @export_range(0.0, 1.0, 0.01) var roll_window := 0.3
@@ -179,6 +180,14 @@ extends Resource
 @export_range(0.0, 1.0, 0.05) var roll_jump_cancel := 0.5
 ## Speed added along your heading by a clean roll.
 @export_range(0.0, 10.0, 0.1) var roll_boost := 1.0
+## Crouch pressed this many seconds after touching down still rolls you out
+## of a hard landing (a little less cleanly).
+@export_range(0.0, 0.5, 0.01) var roll_late_window := 0.12
+## Unrolled landings between hard_landing_speed and this are rough, not
+## hard: no stun, and you keep from all your speed down to
+## rough_landing_keep of it. Above this a landing stuns you.
+@export_range(0.0, 60.0, 0.5) var stun_landing_speed := 17.0
+@export_range(0.0, 1.0, 0.01) var rough_landing_keep := 0.75
 ## Fraction of horizontal speed kept after a hard landing.
 @export_range(0.0, 1.0, 0.01) var hard_landing_keep := 0.35
 @export_range(0.0, 2.0, 0.01) var hard_landing_stun := 0.35
