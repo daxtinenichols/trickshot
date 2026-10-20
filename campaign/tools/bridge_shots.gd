@@ -1,7 +1,7 @@
 extends SceneTree
 ## Renders The Toll's (2-3) Silt bridge going down, frame by frame, from the
 ## side and over Parker's shoulder (first person), for review:
-##   xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/bridge_shots.gd -- <out_dir> [mission id]
+##   xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/bridge_shots.gd -- <out_dir> [mission id] [side|fp] [camera x,y,z]
 ## Writes side_NNNN.png and fp_NNNN.png (every third tick); join them with
 ##   ffmpeg -framerate 20 -i side_%04d.png -pix_fmt yuv420p side.mp4
 ## Scripts run with -s load before the autoloads, so nothing here is typed
@@ -9,6 +9,11 @@ extends SceneTree
 
 var out := "user://bridge_shots"
 var mission := "l2_3_the_toll"
+## The chase camera (behind and above Parker: the city walls the
+## bridge in, so a true side view sees only buildings), local to the bridge's collapse (the end mark; -Z on
+## across the bridge), and what it looks at.
+var side_at := Vector3(3, 7, 16)
+var side_look := Vector3(0, -4, -34)
 ## Ticks to keep filming after the level is won.
 const AFTER := 480
 
@@ -27,7 +32,11 @@ func _run() -> void:
 	root.size = Vector2i(1280, 720)
 	var campaign: Script = load("res://campaign/campaign.gd")
 	campaign.persist = false
-	for view: String in ["side", "fp"]:
+	if args.size() > 3:
+		var v := args[3].split_floats(",")
+		side_at = Vector3(v[0], v[1], v[2])
+	var views: Array = [args[2]] if args.size() > 2 else ["side", "fp"]
+	for view: String in views:
 		await _film(campaign, view)
 	quit()
 
@@ -67,7 +76,7 @@ func _film(campaign: Script, view: String) -> void:
 		cam.fov = 70.0
 		cam.far = 600.0
 		level.add_child(cam)
-		cam.look_at_from_position(bridge.to_global(Vector3(-47, -1, -21)), bridge.to_global(Vector3(0, -3, -40)))
+		cam.look_at_from_position(bridge.to_global(side_at), bridge.to_global(side_look))
 		cam.make_current()
 	for c in level.find_children("*", "CanvasLayer", true, false):
 		(c as CanvasLayer).visible = view == "fp" and (c == level.radio or c == level.mission_hud)

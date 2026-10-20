@@ -11,7 +11,7 @@ const MOVES := [
 	["Slide", "Press {crouch} while sprinting.", "Faster entries slide further. Works on any slope or ramp: down speeds you up, up trades speed for height."],
 	["Slide landing", "Press {crouch} just before you land from a jump or fall.", "Turns part of your fall into forward speed."],
 	["Roll", "Double-tap {crouch} while running, or flick the view down past your feet.", "A quick forward roll. Keeps your speed."],
-	["Landing roll", "Hold {crouch} in the air, from any angle (even mid-flip), or land looking down.", "You curl into a ball and roll out of big drops without losing speed instead of stumbling."],
+	["Landing roll", "Press {crouch} just before (or a split second after) you land, hold it in the air from any angle (even mid-flip), or land looking down.", "You curl into a ball and roll out of big drops without losing speed. Ramps count by how hard you hit them, so a slope running away from you lands soft. Miss the roll on a smaller drop and you stumble, losing a little speed; only a really big drop stuns you."],
 	["Wallrun", "Jump into a sheet-metal wall or billboard at an angle, holding a direction.", "You keep the angle you hit the wall at, and gravity slowly bends your path down. A shallow angle and more speed give a longer run. Lean ({lean_left} / {lean_right}) to roll your path round on the wall: toward the wall turns it up, away turns it down. Look and aim anywhere while you run."],
 	["Wall hop", "Press {jump} while wallrunning or next to a wall in the air.", "You kick off in the direction you're heading. The steeper you're running up the wall, the harder you kick off. Chain wall to wall."],
 	["Wall climb", "Jump at a wall head-on.", "Straighter and faster gets you higher. Press {jump} mid-climb to kick back off."],

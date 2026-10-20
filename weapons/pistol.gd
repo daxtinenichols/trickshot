@@ -16,13 +16,36 @@ signal hit(info: Dictionary)
 signal reload_started
 signal reloaded
 signal mode_changed(full_auto: bool)
+## What the hands hold changed: "gun", "hands" or a carried object.
+signal held_changed(held: String)
 
 const HITBOX_MASK := 1 | 4
+## Carried object models, loaded by path (no class_name: first-loaded).
+const CARRY_MODELS := "res://weapons/carry_models.gd"
 ## Render layer bit for the first-person gun model (layer 3), so other
 ## cameras (the third-person chase cam) can leave it out.
 const VIEW_LAYER := 4
 
 @export var stats: WeaponStats
+## What the hands hold. "gun": the pistol. Anything else takes its place
+## and the pistol can't fire, aim or reload: "hands" (nothing, like Dawn
+## Run after the drop) or a carried object ("parcel", "jerry_can",
+## "relay", "tape"; models in weapons/carry_models.gd). Kicks and every
+## move are the player's and don't change. Set by a mission's "carry"
+## (MissionRun), so it's sim state: ticks read it, looks follow it.
+var held := "gun":
+	set(v):
+		if v == "":
+			v = "gun"
+		if v == held:
+			return
+		held = v
+		trigger_held = false
+		_await_release = true
+		if view_model:
+			view_model.visible = v == "gun"
+		_show_carry()
+		held_changed.emit(v)
 ## The test pistol's own box model, flash light, tracer, impact marks and
 ## shot sound. Turn off when a real gun model and effects take over (they
 ## parent under view_model and listen to `shot`).
@@ -104,6 +127,11 @@ func is_reloading() -> bool:
 	return _reload_left > 0.0
 
 
+## True while the pistol is in hand (not carrying something instead).
+func is_armed() -> bool:
+	return held == "gun"
+
+
 func _physics_process(delta: float) -> void:
 	# Follow the player's input source, so tests and tools can script both.
 	if player:
@@ -132,6 +160,14 @@ func _physics_process(delta: float) -> void:
 
 func tick(delta: float) -> void:
 	_cooldown = maxf(_cooldown - delta, 0.0)
+	if not is_armed():
+		# Hands full: no fire, aim, reload or mode switch. A reload under
+		# way is dropped (the gun comes back with the magazine it had).
+		_reload_left = 0.0
+		aim_blend = move_toward(aim_blend, 0.0, delta / stats.aim_time)
+		if player:
+			player.aim_zoom = aim_blend
+		return
 	aim_blend = move_toward(aim_blend, 1.0 if aim_held and not is_reloading() else 0.0, delta / stats.aim_time)
 	if player:
 		player.aim_zoom = aim_blend
@@ -263,7 +299,7 @@ func assist_candidates(from: Vector3, dir: Vector3, cone_deg: float) -> Array[No
 
 ## Controller look speed share: slower while the crosshair is near a target.
 func look_slowdown() -> float:
-	if aim_assist <= 0.0 or camera == null:
+	if aim_assist <= 0.0 or camera == null or not is_armed():
 		return 1.0
 	var from := camera.global_position
 	var dir := -camera.global_basis.z
@@ -311,6 +347,7 @@ func _resolve_hit(result: Dictionary, from: Vector3, dir: Vector3) -> void:
 
 func _build_model() -> void:
 	view_model = Node3D.new()
+	view_model.visible = held == "gun"
 	add_child(view_model)
 	# The test pistol's own boxes and flash (hidden when builtin_visuals is off).
 	_builtin = Node3D.new()
@@ -333,6 +370,30 @@ func _build_model() -> void:
 	_flash.light_energy = 0.0
 	_flash.position = Vector3(0, 0.04, -0.2)
 	_builtin.add_child(_flash)
+	_show_carry()
+
+
+## The carried object in first person, low in the right hand where the gun
+## would be, on the gun's view layer. Rebuilt when `held` changes.
+var carry_model: Node3D
+
+func _show_carry() -> void:
+	if not is_inside_tree():
+		return
+	if carry_model:
+		carry_model.queue_free()
+		carry_model = null
+	if held == "gun" or held == "hands":
+		return
+	carry_model = (load(CARRY_MODELS) as Script).call("build", held, VIEW_LAYER)
+	if carry_model == null:
+		return
+	carry_model.name = "Carried"
+	# Low in the right of the view, clear of the crosshair and the way on.
+	carry_model.position = Vector3(0.3, -0.34, -0.6)
+	carry_model.rotation_degrees = Vector3(12, -24, 4)
+	carry_model.scale = Vector3.ONE * 0.8
+	add_child(carry_model)
 
 
 func _part(size: Vector3, pos: Vector3, mat: Material) -> void:

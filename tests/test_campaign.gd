@@ -225,6 +225,7 @@ func test_zone_key_starts_a_practice_run() -> void:
 	await _step(3)
 	check(run.practice and run.checkpoint == 3, "practice from the third checkpoint")
 	check(run.objective == 1, "on that checkpoint's objective (%d)" % run.objective)
+	check((player.weapon as Pistol).held == "hands", "past the drop: the parcel's delivered")
 	player.global_position = _camp()
 	await _step(3)
 	check(run.phase == MissionRun.Phase.COMPLETE, "can finish")
@@ -962,6 +963,57 @@ func test_dawn_run_raid_is_seen() -> void:
 	check(drone.visible and drone.global_position.y > camp.global_position.y + 5.0, "the drone lifts off the roof")
 
 
+## Dawn Run: Parker carries the parcel, not the gun, delivers it on the
+## run at the high roof's crate, and goes home empty-handed (Dax 2026-10-20).
+func test_dawn_run_carries_and_delivers_the_parcel() -> void:
+	await _load(_index("l1_1_dawn_run"))
+	var gun := player.weapon as Pistol
+	check(gun.held == "parcel" and not gun.is_armed(), "the parcel's in hand, not the gun")
+	var drop: Node3D = run.drop_offs.get(0)
+	check(drop != null, "a drop-off at the high roof")
+	await _step(2)
+	check(drop.find_children("*", "OmniLight3D", true, false).size() == 1, "lit")
+	check(level.builder.find_children("Chalk", "", true, false).any(func(c: Node) -> bool:
+		return c.find_children("*", "Label3D", true, false).any(func(l: Node) -> bool: return (l as Label3D).text == "DROP")), "chalked DROP")
+	player.global_position = MissionBuilder.vec(run.mission.start.at) + Vector3(-8, 0.05, 0)
+	await _step(3)
+	# Running home first doesn't count the drop you skipped.
+	player.global_position = _camp()
+	await _step(3)
+	check(run.objective == 0 and run.phase == MissionRun.Phase.RUNNING, "camp without delivering doesn't count")
+	var events: Array[String] = []
+	run.event.connect(func(e: String) -> void: events.append(e))
+	player.global_position = MissionBuilder.vec(run.mission.objectives[0].at) + Vector3(0, 0.05, 0)
+	player.velocity = Vector3(0, 0, -9.0)
+	await _step(1)
+	check("delivered" in events and run.objective == 1, "delivered on the run")
+	check(gun.held == "hands" and not gun.is_armed(), "home empty-handed")
+	check(player.velocity.length() > 8.0, "no stop to hand it over (%.1f)" % player.velocity.length())
+	check(level.combo.entries.any(func(e: Dictionary) -> bool: return e.name == &"delivered"), "DELIVERED in the combo")
+	await _step(30)
+	check(drop.delivered and drop.get("_inside") != null, "the parcel sits in the crate")
+	player.global_position = _camp()
+	await _step(3)
+	check(run.phase == MissionRun.Phase.COMPLETE, "back at camp ends it")
+	check(run.objective_text() == "Level complete", "the goal line says so")
+	await _step(2)
+	check(level.mission_hud.get("_banner").visible, "a COMPLETE banner while the radio finishes")
+
+
+## A loss restarts Dawn Run holding the parcel again.
+func test_dawn_run_restart_gives_the_parcel_back() -> void:
+	await _load(_index("l1_1_dawn_run"))
+	player.global_position = MissionBuilder.vec(run.mission.start.at) + Vector3(-8, 0.05, 0)
+	await _step(3)
+	player.global_position = MissionBuilder.vec(run.mission.objectives[0].at) + Vector3(0, 0.05, 0)
+	await _step(2)
+	check((player.weapon as Pistol).held == "hands", "delivered")
+	player.global_position = Vector3(player.global_position.x, run.fail_y() - 1.0, player.global_position.z)
+	await _step(2)
+	check(await _await_restart(), "the level restarts")
+	check((player.weapon as Pistol).held == "parcel", "with the parcel back in hand")
+
+
 ## The Yard opens in the wrecked camp: Mags holds the pistol out by the way
 ## down, and running past her takes it.
 func test_yard_pistol_handoff() -> void:
@@ -1224,6 +1276,8 @@ func test_glass_district_bridge_falls_into_the_silt() -> void:
 	bridge.hear("")
 	await _step(bridge.BRIDGE_CUE_DELAY + 2)
 	check(heard.has("set_piece:bridge_collapse_blast"), "it blows after the line (%s)" % [heard])
+	var lines: Array = level.radio.queue.map(func(l: Dictionary) -> String: return l.line) + [level.radio.current.get("line", "")]
+	check(lines.any(func(l: String) -> bool: return l.begins_with("Whoops. Did the bridge")), "the Host's \"Whoops\" goes with it (%s)" % [lines])
 	check(level._set_piece_busy(), "the results wait while it falls")
 	await _step(bridge.BRIDGE_FALL_TICKS + 2)
 	check(heard.has("set_piece:bridge_collapse_down"), "the spans come down")
@@ -1288,6 +1342,43 @@ func test_route_missions_can_be_finished() -> void:
 			await _bot_run(all[i].id + (" (other lines)" if alt else ""), alt)
 			ran += 1
 	check(ran >= 1, "route missions were run (%d)" % ran)
+
+
+## Every route that ends up high ends in a finish you can't run off:
+## across the line at well over top speed, straight on or veering either
+## way, holding forward or letting go, you stay on the finish's floor.
+func test_route_finishes_keep_you_on_the_roof() -> void:
+	var all := Campaign.missions()
+	var ran := 0
+	for i in all.size():
+		var path: String = all[i].get("file", "")
+		if path == "" or not Campaign.load_mission_file(path).has("route_finish"):
+			continue
+		await _load(i)
+		PlayerHealth.ensure(player).can_die = false
+		var e: Array = run.mission.route_end
+		var end := Vector3(e[0], e[1], e[2])
+		var yaw := deg_to_rad(float(run.mission.route_end_yaw))
+		for veer: float in [0.0, 20.0, -20.0]:
+			for hold: bool in [true, false]:
+				var look := yaw + deg_to_rad(veer)
+				var fwd := Vector3(-sin(look), 0, -cos(look))
+				player.global_position = end - fwd * 6.0 + Vector3(0, 0.05, 0)
+				player.basis = Basis(Vector3.UP, look)
+				player.velocity = fwd * 22.0
+				var f := InputFrame.new()
+				f.move = Vector2(0, 1) if hold else Vector2.ZERO
+				var low := INF
+				for k in 240:
+					await _step(1, f)
+					low = minf(low, player.global_position.y)
+				check(low > end.y - 0.6 and run.phase != MissionRun.Phase.LOST,
+					"%s: %s at 22 m/s, veering %d, stays on the finish (lowest %.1f, line %.1f)" % [all[i].id, "holding forward" if hold else "letting go", int(veer), low, end.y])
+		ran += 1
+		level.queue_free()
+		level = null
+		await tree.physics_frame
+	check(ran >= 6, "route finishes were tried (%d)" % ran)
 
 
 ## Runs the loaded mission's route bot (or its fork lines) to the end.

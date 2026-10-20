@@ -19,6 +19,9 @@ var _clock: Label
 var _objective: Label
 var _bonus: Label
 var _chase: Label
+## Across the middle the moment the level's won, so the end reads at once
+## while the last radio lines play out before the results card.
+var _banner: Label
 var _results: PanelContainer
 var _results_body: VBoxContainer
 var _next_button: Button
@@ -53,6 +56,13 @@ func _ready() -> void:
 	_chase = _label(26)
 	_chase.add_theme_color_override("font_color", Color(1.0, 0.35, 0.3))
 	top.add_child(_chase)
+	_banner = _label(56)
+	_banner.add_theme_color_override("font_color", ORANGE)
+	_banner.set_anchors_preset(Control.PRESET_CENTER)
+	_banner.position = Vector2(-400, -150)
+	_banner.custom_minimum_size = Vector2(800, 0)
+	_banner.visible = false
+	add_child(_banner)
 	_build_results()
 
 
@@ -85,6 +95,9 @@ func _process(_delta: float) -> void:
 		obj += "      tapes %d / %d" % [run.tapes_found.size(), run.total_tapes()]
 	_objective.text = obj
 	_bonus.text = run.bonus_text()
+	_banner.visible = run.phase == MissionRun.Phase.COMPLETE and not _results.visible
+	if _banner.visible:
+		_banner.text = String(run.mission.get("title", "Level")).to_upper() + " COMPLETE"
 	var p := run.pursuer
 	if p != null and p.visible and p.gap < INF:
 		_chase.text = "%s  %d m" % [p.display_name, roundi(p.gap)]

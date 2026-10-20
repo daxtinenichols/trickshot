@@ -75,7 +75,7 @@
    "line": "Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker.",
    "must": true,
    "keep": true,
-   "on": "set_piece:bridge_collapse_down"
+   "on": "set_piece:bridge_collapse_blast"
   }
  ],
  "chatter": {
@@ -646,7 +646,7 @@
      ],
      "hinges": "far",
      "cue": "Parker, hang on. Something's off with that bridge.",
-     "blast_after": 2
+     "blast_after": 6
     }
    ]
   }
