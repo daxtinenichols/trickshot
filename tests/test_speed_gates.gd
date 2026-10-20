@@ -302,7 +302,8 @@ func test_plain_runner_levels_opt_in() -> void:
 		var path: String = entry.get("file", "")
 		if path == "" or not Campaign.load_mission_file(path).get("plain_runner", false):
 			continue
-		if OS.has_environment("PLAIN_ONLY") and not path.get_file().begins_with(OS.get_environment("PLAIN_ONLY")):
+		# ROUTE_ONLY=l5_1 checks just the matching levels (while tuning one).
+		if OS.has_environment("ROUTE_ONLY") and not String(entry.id).contains(OS.get_environment("ROUTE_ONLY")):
 			continue
 		await _check_plain_runner(path)
 		ran += 1

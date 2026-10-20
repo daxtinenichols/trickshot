@@ -16,9 +16,8 @@ const EDGE_MARK := 0.35
 ## Where bots take off for a gate: right at the edge (a gate is sized for
 ## that; route.gd's usual 1.2 m early jump would come up short).
 const GATE_TAKEOFF := 0.1
-## How far across a leg its ground reaches (forks, wide corners).
-const LEG_REACH := 40.0
-const CORNER_HALF := 13.0
+## Pieces further than this across the route are on a fork's other line.
+const OFF_LINE := 9.0
 
 
 ## Moves the bot's jump for each gate to the edge, in place. (Until
@@ -61,34 +60,34 @@ static func make_plain(player: Player) -> void:
 ## A world point as distance along the route (legs as in route_legs:
 ## [origin x, origin z, yaw, z0]).
 static func along(pos: Vector3, legs: Array) -> float:
-	if legs.is_empty():
-		return pos.z
-	var i := _leg_of(pos, legs)
-	return _in_leg(pos, legs[i]).z + float(legs[i][3])
+	return _local(pos, legs).y
 
 
 ## A world point's offset across the route (right +).
 static func across(pos: Vector3, legs: Array) -> float:
+	return _local(pos, legs).x
+
+
+## (across, along) in the frame of the leg the point is on: of the legs
+## whose stretch of the route it lies beside, the nearest across. (A route
+## can double back, so the latest leg in reach isn't always the one.)
+static func _local(pos: Vector3, legs: Array) -> Vector2:
 	if legs.is_empty():
-		return pos.x
-	return _in_leg(pos, legs[_leg_of(pos, legs)]).x
-
-
-## The leg a point is on: the last one it's past the start of and near.
-## Past the start alone isn't enough: every point of the leg before a
-## square corner is level with the next leg's start, so a leg only claims
-## what lies ahead of its start within a cone (the corner's half width,
-## widening along it to cover forks).
-static func _leg_of(pos: Vector3, legs: Array) -> int:
-	for i in range(legs.size() - 1, 0, -1):
-		var v := _in_leg(pos, legs[i])
-		if v.z <= 0.5 and absf(v.x) < minf(LEG_REACH, CORNER_HALF - v.z):
-			return i
-	return 0
-
-
-static func _in_leg(pos: Vector3, l: Array) -> Vector3:
-	return Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
+		return Vector2(pos.x, pos.z)
+	var best := Vector2(INF, 0.0)
+	for i in legs.size():
+		var l: Array = legs[i]
+		var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
+		var z := v.z + float(l[3])
+		var start := INF if i == 0 else float(l[3]) + 0.5
+		var end := -INF if i == legs.size() - 1 else float(legs[i + 1][3]) - 0.5
+		if z <= start and z >= end and absf(v.x) < absf(best.x):
+			best = Vector2(v.x, z)
+	if is_inf(best.x):
+		var l: Array = legs[-1]
+		var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
+		return Vector2(v.x, v.z + float(l[3]))
+	return best
 
 
 ## [start, end, label] along the route for every gate and encounter,
@@ -98,6 +97,11 @@ static func sections(mission: Dictionary) -> Array:
 	var legs: Array = mission.get("route_legs", [])
 	var out: Array = []
 	for p: Dictionary in mission.get("pieces", []):
+		# Only the main line's: a fork's other line (a high path) isn't
+		# where the bot or the plain runner run.
+		var on: Variant = p.get("mark", p.area.at if p.has("encounter") else null)
+		if on is Array and absf(across(Vector3(on[0], on[1], on[2]), legs)) > OFF_LINE:
+			continue
 		if p.has("gate") and p.has("mark"):
 			var a: Array = p.mark
 			var edge := along(Vector3(a[0], a[1], a[2]), legs) - EDGE_MARK
