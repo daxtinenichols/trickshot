@@ -100,13 +100,13 @@ func _index(id: String) -> int:
 
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
-	check(all.size() == 15, "15 missions (%d)" % all.size())
-	check(Campaign.acts().size() == 6, "the Docks, two acts and Stages 5, 6 and 7")
+	check(all.size() == 16, "16 missions (%d)" % all.size())
+	check(Campaign.acts().size() == 7, "the Docks, Stage 2, two acts and Stages 5, 6 and 7")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
 	check(Campaign.entry(all.size() - 1).get("unlocks", "") == "echo", "the finale unlocks Echo")
-	for id: String in ["l1_1_dawn_run", "l1_2_the_yard", "m02_on_air", "l7_1_signal_out"]:
+	for id: String in ["l1_1_dawn_run", "l1_2_the_yard", "l2_1_on_air", "l7_1_signal_out"]:
 		check(Campaign.is_built(_index(id)), "%s is built" % id)
 
 
@@ -263,15 +263,16 @@ func test_a_fall_restarts_the_mission_from_the_start() -> void:
 
 
 func test_going_down_restarts_with_every_enemy_back() -> void:
-	await _load(_index("m02_on_air"))
+	await _load(_index("l2_1_on_air"))
 	var b: MissionBuilder = level.builder
-	var enc: Node3D = b.encounters[0]
+	# The lookouts (the first encounter is the Host's camera drone).
+	var enc: Node3D = b.encounters[1]
 	var n: int = enc.alive_count()
 	player.global_position = b.spawns[0].origin + Vector3(0, 0.05, -8)
 	await _step(3)
 	check(run.phase == MissionRun.Phase.RUNNING, "running")
 	var c: Vector3 = enc.bounds.get_center()
-	player.global_position = Vector3(c.x, 8.05, c.z)
+	player.global_position = Vector3(c.x, 6.05, c.z)
 	await _step(5)
 	enc.enemies[0].take_hit({"damage": 500.0, "zone": &"body", "position": enc.enemies[0].global_position})
 	check(enc.alive_count() == n - 1, "one killed")
@@ -284,7 +285,7 @@ func test_going_down_restarts_with_every_enemy_back() -> void:
 	check(level._fade_label.text == "DOWN", "it fades out on DOWN")
 	check(await _await_restart(), "the level starts again")
 	b = level.builder
-	enc = b.encounters[0]
+	enc = b.encounters[1]
 	check(player.global_position.distance_to(b.spawns[0].origin) < 1.0, "at the start (%s)" % player.global_position)
 	check(enc.alive_count() == n, "every enemy is back (%d / %d)" % [enc.alive_count(), n])
 	check(PlayerHealth.of(player).health == PlayerHealth.of(player).max_health, "full health")
@@ -415,7 +416,7 @@ func test_radio_plays_story_lines_and_chatter() -> void:
 
 
 func test_chatter_deals_every_line_before_repeating() -> void:
-	await _load(_index("m02_on_air"))
+	await _load(_index("l2_1_on_air"))
 	var radio: RadioFeed = level.radio
 	RadioFeed.reset_chatter()
 	var pool: Array = radio._chatter["bail"]
@@ -728,7 +729,7 @@ func test_beating_the_finale_unlocks_echo() -> void:
 	Campaign.record(i, {"ticks": 3000, "score": 100})
 	check(Campaign.echo_unlocked(), "unlocked by the finale")
 	Campaign.set_runner("echo")
-	check(Campaign.runner_for(_index("m02_on_air")) == "echo", "and playable in other missions")
+	check(Campaign.runner_for(_index("l2_1_on_air")) == "echo", "and playable in other missions")
 	check(Campaign.runner_for(_index("l1_1_dawn_run")) == "parker", "except where the story says otherwise")
 
 
@@ -880,6 +881,13 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 			trick_left -= 1
 			if trick_left <= 0:
 				trick = ""
+				# Look ahead again (a flip leaves the view pitched to its
+				# limit, and a kick or a jump through glass aims with it).
+				player.pitch = 0.0
+		elif trick != "" and trick_left < 24 and player.state != Player.State.AIR:
+			# Landed before it was round: give it up and look ahead.
+			trick = ""
+			player.pitch = 0.0
 		if roll_armed and player.state == Player.State.AIR and player.velocity.y < 0.0:
 			var q := PhysicsRayQueryParameters3D.create(pos, pos + Vector3.DOWN * 1.2, 1)
 			q.exclude = [player.get_rid()]
@@ -1155,23 +1163,27 @@ func test_skyline_and_tower_are_built() -> void:
 
 
 func test_on_air_lookouts_are_raiders() -> void:
-	await _load(_index("m02_on_air"))
+	await _load(_index("l2_1_on_air"))
 	var b: MissionBuilder = level.builder
-	check(b.encounters.size() == 2, "On Air has two lookout posts")
-	var enc: Node3D = b.encounters[0]
+	check(b.encounters.size() == 3, "On Air has the Host's camera drone and two lookout posts")
+	var feed: Node3D = b.encounters[0]
+	check(feed.enemies.size() == 1 and feed.enemies[0].get_meta("enemy_type", "") == "camera_drone",
+		"the first roof has the camera drone filming you")
+	var enc: Node3D = b.encounters[1]
 	var n: int = enc.enemies.size()
-	check(n == 4 or n == 5, "four raiders, and the camera drone once it exists (%d)" % n)
+	check(n == 3, "three gunners, as Mags says (%d)" % n)
 	for e: Node in enc.enemies:
 		if e.get_meta("enemy_type", "") != "":
 			continue
 		check(e.get_script() == MissionBuilder.RAIDER_SCRIPT, "lookouts are raiders")
-		check(absf(e.global_position.y - 8.0) < 0.5, "standing on the roof (%s)" % e.global_position)
+		check(absf(e.global_position.y - 6.0) < 0.5, "standing on the roof (%s)" % e.global_position)
 	check(enc.covers.size() > 0, "with cover spots")
 	check(level.find_children("*", "CanvasLayer", false, false).any(func(n: Node) -> bool: return n.get_script() == level.HURT_OVERLAY_SCRIPT), "and the hurt overlay")
 	# Step onto the lookout roof: they wake.
-	player.respawn(b.spawns[2])
+	var names: Array = run.mission.checkpoints.map(func(cp: Dictionary) -> String: return cp.name)
+	player.respawn(b.spawns[1 + names.find("Lookout roof")])
 	var c: Vector3 = enc.bounds.get_center()
-	player.global_position = Vector3(c.x, 8.05, c.z)
+	player.global_position = Vector3(c.x, 6.05, c.z)
 	await _step(5)
 	check(enc.phase == EnemyEncounter.Phase.ACTIVE, "the encounter starts on the roof")
 	check(run.objective == 2, "practice from the lookout roof: the lookouts are a bonus, the mast is the goal")
@@ -1383,7 +1395,7 @@ func test_skybridge_ends_after_the_bridge_falls() -> void:
 
 
 func test_glass_district_bridge_falls_into_the_silt() -> void:
-	await _load(_index("m03_glass_district"))
+	await _load(_index("l2_3_the_toll"))
 	var bridge: Node3D = null
 	for sp: Node3D in level.builder.set_pieces:
 		if sp.kind == "bridge_collapse":
@@ -1420,7 +1432,7 @@ func test_glass_district_bridge_falls_into_the_silt() -> void:
 	# Every span ends lower than it stood, and the piers between went.
 	for span: Dictionary in bridge._spans:
 		check(not span.nodes.is_empty(), "each span carries its deck")
-	check(bridge._blown.size() == 3, "the three middle piers go (%d)" % bridge._blown.size())
+	check(bridge._blown.size() == 2, "the two piers in the Silt bed go (%d)" % bridge._blown.size())
 	var piers: Array[Node3D] = bridge._blown.duplicate()
 	bridge.reset()
 	for n: Node3D in piers:

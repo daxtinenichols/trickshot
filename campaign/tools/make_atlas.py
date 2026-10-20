@@ -119,6 +119,14 @@ def docks_landmarks():
 
 def other_landmarks():
     return [
+        # Calder Way's road bridge over the Silt bed (bed centre x 1754 at
+        # z 40, 64 m wide): deck at y 8 from its east end on land (x 1830)
+        # to the west abutment (x 1708), on piers every 30 m. 2-3 The Toll
+        # builds the same deck (route.gd bridge, piers 15 m in, then every
+        # 30) and blows it with Parker on it at x 1790; Stage 3 (3-1)
+        # starts there.
+        {"id": "silt_bridge", "name": "The Silt bridge", "boxes": [[1769, 40, 122, 14, 7.0, 8.0],
+            [1815, 40, 2.4, 7, 0, 7.0], [1785, 40, 2.4, 7, 0, 7.0], [1755, 40, 2.4, 7, 0, 7.0], [1725, 40, 2.4, 7, 0, 7.0]], "shade": 4},
         # Calder House: the old radio company's block east of the tower, its
         # wings the Stage 6 levels run through (6-1 Head Office, 6-2
         # Skybridge; boxes round their floors, from campaign-tools/stage6).

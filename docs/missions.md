@@ -56,7 +56,7 @@ Long missions (500–1000 m) are written as a `route`: segments laid end to
 end toward -Z from the start, each roof with its features. The route adds
 its pieces, checkpoints and radio lines to the mission, a street under it
 and the city on both sides, and a bot route the tests run to the end.
-See `m03_glass_district.json`.
+See `l2_2_glass_district.json`.
 
 ```json
 "route": [
@@ -73,7 +73,7 @@ See `m03_glass_district.json`.
 |---|---|
 | `{"roof": length, "y": h, "width": 12, "do": [...]}` | a roof (y 0 is the street). Higher than the roof before and straight on: a yellow face to climb (3 m max). Lower after a gap: a drop (roll from 3.5 m) |
 | `{"roof": 80, "y": 1, "interior": 6}` | the inside of a building: walls and a roof `interior` m over the floor, with skylights every 10 m (a warehouse, an office floor). Enter by ramp or straight on; climb out to a higher roof at its end. `"indoors": h` instead tells `glass`, `door` and `hole` walls how high the ceiling is when the mission builds its own walls (m11) |
-| `{"roof": 26, "bridge": true, "beyond": 150}` | a bridge deck on piers instead of a building (railings, girders); `beyond` m more of the span carry on past its end, seen but not run (m03's Silt bridge) |
+| `{"roof": 26, "bridge": true, "beyond": 150}` | a bridge deck on piers instead of a building (railings, girders); `beyond` m more of the span carry on past its end, seen but not run (2-3 The Toll's Silt bridge) |
 | `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof |
 | `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
 | `{"gate": {"tier": 1}}` | a speed gate, straight after a roof (campaign/speed_gate.gd): a gap the best jump a tier slower (base top speed for tier 1) misses by 0.5 m and an ordinary edge jump at the tier's speed clears by 0.3 m. Tiers want 13.7 / 15.9 / 18.4 m/s at take-off (top speed 11.5 plus a varied combo's Flow); tier 3 needs a long varied combo, so keep it for high paths and late districts. Chalk at the edge (one dash per tier) and where you land; hurdles, a slide bar and a wall hop in the run-up unless `"tricks": false` or the roof already has features in its last 60 m. Miss it and you drop 3 m onto a ledge and climb a yellow face back up, slow and exposed (`"lower": "fall"`: no ledge, a miss is a fall). The landing roof must be at the same height |

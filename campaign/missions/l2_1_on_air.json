@@ -1,0 +1,714 @@
+{
+ "id": "l2_1_on_air",
+ "title": "On Air",
+ "runner": "",
+ "atlas": true,
+ "plain_runner": true,
+ "finish": true,
+ "par_seconds": 150,
+ "start": {
+  "at": [
+   2968,
+   0,
+   318
+  ],
+  "yaw": 90
+ },
+ "route_origin": {
+  "at": [
+   2968,
+   0,
+   318
+  ],
+  "yaw": 90
+ },
+ "tower_views": [
+  [
+   2692.32,
+   6,
+   119
+  ],
+  [
+   2458.32,
+   7,
+   119
+  ]
+ ],
+ "chalk": true,
+ "clutter": [
+  "debris_pile",
+  "tire_stack",
+  "barrel_rust",
+  "crate_stack",
+  "pallet",
+  "vent_stack"
+ ],
+ "objectives": [
+  {
+   "type": "reach",
+   "name": "the lookout roof",
+   "text": "Cross the warehouse roofs",
+   "at": "@Lookout roof"
+  },
+  {
+   "type": "shoot",
+   "count": 3,
+   "text": "Bonus: take out the Static's lookouts"
+  },
+  {
+   "type": "reach",
+   "name": "the relay mast",
+   "text": "Get past the Static's relay mast",
+   "at": "end"
+  }
+ ],
+ "radio": [
+  {
+   "who": "mags",
+   "line": "Warehouse roofs. Static use 'em for lookouts. Head down, keep moving.",
+   "on": "start"
+  },
+  {
+   "who": "host",
+   "line": "Ladies, gentlemen, and... whatever the rest of you are. Our courier has left the building!",
+   "must": true,
+   "keep": true,
+   "on": "go"
+  },
+  {
+   "who": "host",
+   "line": "His name's Parker. Runs for a living. Today? Running for love. Ugh, I know. Parker, darling, you're on the air.",
+   "must": true,
+   "keep": true,
+   "on": "go"
+  },
+  {
+   "who": "host",
+   "line": "Let's make it interesting, folks. Bets are open. My money says he's in the Silt by lunch.",
+   "on": "checkpoint:1"
+  },
+  {
+   "who": "mags",
+   "line": "Two walls up ahead. Run the first, then jump and kick off the second one. Wall hop.",
+   "on": "checkpoint:2",
+   "cue": true
+  },
+  {
+   "who": "mags",
+   "line": "Three gunners. Red laser on you means a shot's coming, so move. And if it gets busy, click the mouse wheel. Slows everything down for a few seconds.",
+   "on": "objective:1"
+  },
+  {
+   "who": "host",
+   "line": "Oh, he shoots too! Echo, sweetheart, you never told me that.",
+   "on": "done:1"
+  },
+  {
+   "who": "parker",
+   "line": "Mags. Crane, up top. Red scarf.",
+   "must": true,
+   "keep": true,
+   "on": "set_piece:juno_crane"
+  },
+  {
+   "who": "mags",
+   "line": "...Keep moving, love.",
+   "must": true,
+   "keep": true,
+   "on": "set_piece:juno_crane"
+  },
+  {
+   "who": "parker",
+   "line": "That was Juno.",
+   "must": true,
+   "keep": true,
+   "on": "set_piece:juno_crane"
+  },
+  {
+   "who": "mags",
+   "line": "I know who it was. Keep moving.",
+   "must": true,
+   "keep": true,
+   "on": "set_piece:juno_crane"
+  },
+  {
+   "who": "mags",
+   "line": "That mast's their relay. Get past it and they lose you. Wall's on your left this time.",
+   "on": "checkpoint:6",
+   "cue": true
+  },
+  {
+   "who": "host",
+   "line": "He's quick, folks! Quicker than the last three couriers I had. Rest in pieces, boys.",
+   "on": "complete"
+  },
+  {
+   "who": "host",
+   "line": "Don't go anywhere. Coming up, the Glass District. Mind the windows. And my toll boys. They bite.",
+   "must": true,
+   "keep": true,
+   "on": "complete"
+  },
+  {
+   "who": "mags",
+   "line": "Don't listen to him. Breathe. Then we go.",
+   "on": "complete"
+  }
+ ],
+ "chatter": {
+  "bail": [
+   {
+    "who": "host",
+    "line": "And he eats it! Folks, I didn't even have to do anything."
+   },
+   {
+    "who": "host",
+    "line": "Rewind that. No, seriously, can somebody rewind that?"
+   },
+   {
+    "who": "host",
+    "line": "Oof. Listeners, I felt that one in my teeth."
+   },
+   {
+    "who": "host",
+    "line": "Ooh! That one's going in the highlights."
+   },
+   {
+    "who": "host",
+    "line": "Ooh. Hear that, folks? Pretty sure that was his pride."
+   },
+   {
+    "who": "host",
+    "line": "Down he goes! Echo, you married this?"
+   }
+  ],
+  "combo": [
+   {
+    "who": "host",
+    "line": "Okay, okay, he's... honestly he's pretty good. Don't tell him I said that."
+   },
+   {
+    "who": "host",
+    "line": "Look at this guy! Somebody give him a jingle."
+   },
+   {
+    "who": "mags",
+    "line": "Ignore him. Keep going, that's lovely."
+   },
+   {
+    "who": "host",
+    "line": "Look at him go! Echo, you watching this? Oh, right. You're tied up."
+   },
+   {
+    "who": "host",
+    "line": "Moves like that, I might have to start paying him."
+   },
+   {
+    "who": "host",
+    "line": "The phones are ringing off the hook! Okay, we don't have phones. But they would be."
+   }
+  ],
+  "fall": [
+   {
+    "who": "host",
+    "line": "And he's in the dirt! Stay down there, it's quieter."
+   },
+   {
+    "who": "mags",
+    "line": "Up. He's only got a show if you stay down."
+   },
+   {
+    "who": "host",
+    "line": "And he's down! Little dust bath for our boy."
+   },
+   {
+    "who": "mags",
+    "line": "Back up you go. Don't give him the satisfaction."
+   }
+  ],
+  "kill": [
+   {
+    "who": "host",
+    "line": "Hey! He was on the clock!"
+   },
+   {
+    "who": "host",
+    "line": "Well, that's one less mouth to feed. Silver linings, folks."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Keep going, don't give them time."
+   },
+   {
+    "who": "host",
+    "line": "Ah, come on, I liked that one. Didn't know his name, but I liked him."
+   },
+   {
+    "who": "host",
+    "line": "Somebody tell payroll."
+   },
+   {
+    "who": "host",
+    "line": "Good lookout, that one. Looked out for about a second."
+   }
+  ],
+  "down": [
+   {
+    "who": "host",
+    "line": "Down goes the courier! Somebody check if he's breathing. Actually, don't."
+   },
+   {
+    "who": "mags",
+    "line": "You're okay. Get up, keep moving this time."
+   },
+   {
+    "who": "host",
+    "line": "Aw, he's having a lie-down. Bless him."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Don't stand where they can see you."
+   },
+   {
+    "who": "host",
+    "line": "And our courier's taking a nap! Somebody get the man a pillow."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Don't stand there in their sights. Run, then shoot."
+   }
+  ],
+  "headshot": [
+   {
+    "who": "host",
+    "line": "Ooh, right in the face. Listeners at home, look away."
+   },
+   {
+    "who": "mags",
+    "line": "That's it."
+   },
+   {
+    "who": "host",
+    "line": "Somebody's been practising."
+   },
+   {
+    "who": "host",
+    "line": "Oh, that's gonna be a closed casket."
+   },
+   {
+    "who": "host",
+    "line": "Right through the headset. Rude."
+   },
+   {
+    "who": "mags",
+    "line": "Clean."
+   }
+  ]
+ },
+ "pieces": [],
+ "route": [
+  {
+   "street": 30,
+   "do": [
+    {
+     "checkpoint": "Warehouse Row",
+     "at": 3
+    },
+    {
+     "label": "WAREHOUSE ROW",
+     "at": 18,
+     "size": 1.2
+    }
+   ]
+  },
+  {
+   "ramp_up": 6,
+   "length": 24
+  },
+  {
+   "roof": 54,
+   "y": 6,
+   "look": "CORRUGATED",
+   "do": [
+    {
+     "checkpoint": "First roof",
+     "at": 3
+    },
+    {
+     "encounter": "the feed",
+     "at": 4,
+     "length": 40,
+     "enemies": [
+      {
+       "type": "camera_drone",
+       "x": 4,
+       "d": 14,
+       "height": 3.5
+      }
+     ]
+    },
+    {
+     "hurdles": true,
+     "at": 22
+    },
+    {
+     "slide": true,
+     "at": 40
+    }
+   ]
+  },
+  {
+   "gap": 6
+  },
+  {
+   "roof": 30,
+   "y": 6,
+   "look": "CORRUGATED",
+   "do": [
+    {
+     "checkpoint": "Second roof",
+     "at": 3
+    },
+    {
+     "hop": true,
+     "side": 1,
+     "at": 10
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "flip"
+  },
+  {
+   "roof": 14,
+   "y": 6,
+   "look": "CORRUGATED"
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 56,
+   "y": 6,
+   "look": "CORRUGATED"
+  },
+  {
+   "gate": {
+    "tier": 1
+   }
+  },
+  {
+   "roof": 20,
+   "y": 6,
+   "look": "CORRUGATED"
+  },
+  {
+   "turn": "right",
+   "size": 24
+  },
+  {
+   "roof": 90,
+   "y": 6,
+   "look": "BRICK",
+   "do": [
+    {
+     "checkpoint": "Lookout roof",
+     "at": 3,
+     "objective": 1
+    },
+    {
+     "hurdles": true,
+     "at": 14
+    },
+    {
+     "hurdles": true,
+     "at": 32
+    },
+    {
+     "hurdles": true,
+     "at": 50
+    },
+    {
+     "hurdles": true,
+     "at": 68
+    },
+    {
+     "encounter": "lookouts",
+     "at": 6,
+     "length": 80,
+     "raiders": [
+      [
+       -4,
+       22
+      ],
+      [
+       4,
+       34
+      ],
+      [
+       -3.5,
+       50,
+       1.5
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "gap": 5
+  },
+  {
+   "roof": 56,
+   "y": 6,
+   "look": "CORRUGATED",
+   "do": [
+    {
+     "checkpoint": "Crane yard",
+     "at": 3
+    },
+    {
+     "set_piece": "juno_crane",
+     "at": 32,
+     "trigger": 4,
+     "radius": 30
+    },
+    {
+     "slide": true,
+     "at": 44
+    }
+   ]
+  },
+  {
+   "roof": 24,
+   "y": 6,
+   "look": "CORRUGATED",
+   "do": [
+    {
+     "hurdles": true,
+     "at": 12
+    }
+   ]
+  },
+  {
+   "turn": "left",
+   "size": 24
+  },
+  {
+   "roof": 24,
+   "y": 6,
+   "do": [
+    {
+     "checkpoint": "Pump house",
+     "at": 3,
+     "objective": 2
+    }
+   ]
+  },
+  {
+   "fork": [
+    {
+     "roof": 36,
+     "y": 9,
+     "look": "RUST",
+     "do": [
+      {
+       "prop": "antenna_mast",
+       "x": 4.6,
+       "at": 26
+      }
+     ]
+    },
+    {
+     "gap": 6
+    },
+    {
+     "roof": 40,
+     "y": 9,
+     "look": "RUST",
+     "do": [
+      {
+       "tape": "l2_1_tape_mast",
+       "x": 0,
+       "at": 20
+      }
+     ]
+    },
+    {
+     "wallrun": 12,
+     "side": -1
+    },
+    {
+     "roof": 30,
+     "y": 9,
+     "look": "RUST",
+     "do": [
+      {
+       "prop": "antenna_mast",
+       "x": -4.6,
+       "at": 10
+      }
+     ]
+    },
+    {
+     "gap": 6
+    },
+    {
+     "roof": 24,
+     "y": 7
+    }
+   ],
+   "side": -1
+  },
+  {
+   "ramp_down": 1,
+   "length": 16
+  },
+  {
+   "roof": 76,
+   "y": 1,
+   "interior": 6,
+   "look": "BRICK",
+   "do": [
+    {
+     "hole": 3.3,
+     "style": "shutter",
+     "at": 8
+    },
+    {
+     "hurdles": "crate_wood",
+     "at": 30
+    },
+    {
+     "door": 3.3,
+     "look": "BRICK",
+     "at": 54
+    },
+    {
+     "lane": 0,
+     "at": 64
+    }
+   ]
+  },
+  {
+   "roof": 24,
+   "y": 4
+  },
+  {
+   "roof": 24,
+   "y": 7
+  },
+  {
+   "join": true
+  },
+  {
+   "roof": 30,
+   "y": 7,
+   "do": [
+    {
+     "checkpoint": "The relay",
+     "at": 3
+    }
+   ]
+  },
+  {
+   "wallrun": 12,
+   "side": -1
+  },
+  {
+   "roof": 80,
+   "y": 7,
+   "look": "CORRUGATED",
+   "do": [
+    {
+     "hurdles": true,
+     "at": 12
+    },
+    {
+     "hurdles": true,
+     "at": 30
+    },
+    {
+     "hurdles": true,
+     "at": 48
+    },
+    {
+     "hurdles": true,
+     "at": 66
+    },
+    {
+     "encounter": "relay crew",
+     "at": 4,
+     "length": 72,
+     "raiders": [
+      [
+       3.5,
+       18
+      ],
+      [
+       -3.5,
+       30
+      ],
+      [
+       4,
+       44,
+       1.0
+      ],
+      [
+       -4,
+       58,
+       1.5
+      ]
+     ],
+     "enemies": [
+      {
+       "type": "camera_drone",
+       "x": -3,
+       "d": 30,
+       "height": 4.5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "gap": 6
+  },
+  {
+   "roof": 20,
+   "y": 7
+  },
+  {
+   "roof": 40,
+   "y": 10,
+   "do": [
+    {
+     "prop": "antenna_mast",
+     "x": 4.0,
+     "at": 30
+    },
+    {
+     "prop": "loudspeaker_pole",
+     "x": -5.2,
+     "at": 26
+    },
+    {
+     "prop": "radio_set",
+     "x": -4.6,
+     "at": 34,
+     "yaw": 30
+    },
+    {
+     "label": "THE RELAY",
+     "at": 30,
+     "size": 1.4
+    },
+    {
+     "mark": "#f57320",
+     "at": 36
+    }
+   ]
+  }
+ ]
+}

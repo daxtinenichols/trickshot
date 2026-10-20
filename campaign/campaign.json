@@ -4,58 +4,126 @@
   {
    "title": "Stage 1: The Docks",
    "missions": [
-    {"id": "l1_1_dawn_run", "number": 0, "label": "1-1", "title": "Dawn Run", "place": "The Line's camp and the dock roofs",
+    {
+     "id": "l1_1_dawn_run",
+     "number": 0,
+     "label": "1-1",
+     "title": "Dawn Run",
+     "place": "The Line's camp and the dock roofs",
      "beat": "Dawn at the Line's camp: Echo hands Parker the insulin for the Okafor kid. On the way back the radio cuts out, smoke climbs off the camp roof and a Static pickup pulls away up the quay with Echo in the back. The Host is on every radio: the hunt is on.",
-     "moves": "Sprint, jump, vault, slide, roll", "enemies": "None. The raid is seen, not fought.",
-     "file": "res://campaign/missions/l1_1_dawn_run.json"},
-    {"id": "l1_2_the_yard", "number": 1, "label": "1-2", "title": "The Yard", "place": "Mags's yard and the container terminal",
+     "moves": "Sprint, jump, vault, slide, roll",
+     "enemies": "None. The raid is seen, not fought.",
+     "file": "res://campaign/missions/l1_1_dawn_run.json"
+    },
+    {
+     "id": "l1_2_the_yard",
+     "number": 1,
+     "label": "1-2",
+     "title": "The Yard",
+     "place": "Mags's yard and the container terminal",
      "beat": "Mags makes Parker run the yard once and hands him his granddad's pistol on the way past. Out through the south gate, Warehouse Row and the tower ahead.",
-     "moves": "Flips, 360s, lean and side flip; combos", "enemies": "Mags's scrap dummies; semi-auto; headshots",
-     "file": "res://campaign/missions/l1_2_the_yard.json"}
+     "moves": "Flips, 360s, lean and side flip; combos",
+     "enemies": "Mags's scrap dummies; semi-auto; headshots",
+     "file": "res://campaign/missions/l1_2_the_yard.json"
+    }
+   ]
+  },
+  {
+   "title": "Stage 2: Warehouse Row and the Glass District",
+   "missions": [
+    {
+     "id": "l2_1_on_air",
+     "number": 2,
+     "label": "2-1",
+     "title": "On Air",
+     "place": "Warehouse Row: the warehouse roofs to the relay mast",
+     "beat": "The Host goes live with Parker's name and opens the betting. The Static's first lookouts, and the Host's camera drone filming the run. On a crane by the second warehouse, a figure in a red scarf watches him go by: Juno.",
+     "moves": "Wall hop, wallrun; a speed gate",
+     "enemies": "Static lookouts; camera drones",
+     "file": "res://campaign/missions/l2_1_on_air.json"
+    },
+    {
+     "id": "l2_2_glass_district",
+     "number": 3,
+     "label": "2-2",
+     "title": "Glass District",
+     "place": "Office towers to the roof facing the toll tower",
+     "beat": "Through the office floors and over the roofs. The Static are sat on every route the Line uses: someone gave them away. Juno smashes the glass walkway in front of Parker and sends him down the stairs.",
+     "moves": "Glass, doors, window cleaners' rigs",
+     "enemies": "Static gunners and spotters",
+     "file": "res://campaign/missions/l2_2_glass_district.json"
+    },
+    {
+     "id": "l2_3_the_toll",
+     "number": 4,
+     "label": "2-3",
+     "title": "The Toll",
+     "place": "The Static's toll tower and the Silt bridge",
+     "beat": "Up the toll tower floor by floor and out onto the old road bridge over the Silt. The Host promised a surprise at the bridge, and he blows it with Parker on it.",
+     "moves": "Climbs, wall hop indoors; a speed gate",
+     "enemies": "The toll crew",
+     "file": "res://campaign/missions/l2_3_the_toll.json"
+    }
    ]
   },
   {
    "title": "Act 1: The Edge",
    "missions": [
-    {"id": "m02_on_air", "number": 2, "title": "On Air", "place": "Warehouse roofs",
-     "beat": "First ambush. The Host names Parker on air and starts calling the run.",
-     "moves": "Wallrun, wall hop", "enemies": "Gunners; slow-mo as an adrenaline burst",
-     "file": "res://campaign/missions/m02_on_air.json"},
-    {"id": "m03_glass_district", "number": 3, "title": "Glass District", "place": "Office towers",
-     "beat": "Through a Static toll tower, floor by floor.",
-     "moves": "Climb, kick doors and windows", "enemies": "Spotters; full-auto mode",
-     "file": "res://campaign/missions/m03_glass_district.json"},
-    {"id": "m04_silt_line", "number": 4, "title": "Silt Line", "place": "Ground level",
+    {
+     "id": "m04_silt_line",
+     "number": 5,
+     "title": "Silt Line",
+     "place": "Ground level",
      "beat": "The Host blows a bridge and drops Parker into the Silt. Climb back up through the Hollows before the dust gets to you.",
-     "moves": "Quick turn, ground roll", "enemies": "Crawlers. Lesson: never stop.",
-     "file": "res://campaign/missions/m04_silt_line.json"}
+     "moves": "Quick turn, ground roll",
+     "enemies": "Crawlers. Lesson: never stop.",
+     "file": "res://campaign/missions/m04_silt_line.json"
+    }
    ]
   },
   {
    "title": "Act 2: Meridian Mall",
    "missions": [
-    {"id": "m05_atrium", "number": 5, "title": "Atrium", "place": "Mall atrium, food court and concourse",
+    {
+     "id": "m05_atrium",
+     "number": 6,
+     "title": "Atrium",
+     "place": "Mall atrium, food court and concourse",
      "beat": "The Static turn the mall into an arena. The Host releases the Hollows for his audience and calls the run like a sports caster.",
-     "moves": "Escalators, walkways, drops; wallrun the hoarding", "enemies": "Leapers and crawlers; gunners on the walkways",
-     "file": "res://campaign/missions/m05_atrium.json"},
-    {"id": "m06_anchor_store", "number": 6, "title": "Anchor Store", "place": "The department store, floor by floor to the roof",
+     "moves": "Escalators, walkways, drops; wallrun the hoarding",
+     "enemies": "Leapers and crawlers; gunners on the walkways",
+     "file": "res://campaign/missions/m05_atrium.json"
+    },
+    {
+     "id": "m06_anchor_store",
+     "number": 7,
+     "title": "Anchor Store",
+     "place": "The department store, floor by floor to the roof",
      "beat": "Every dead TV and radio in the store flickers on at once: Echo's first coded message, hidden in the broadcast. She is alive and fighting back.",
-     "moves": "Climbing: escalators, shelving, the inner atrium", "enemies": "Bruisers (flank or headshot); spotter drones",
-     "file": "res://campaign/missions/m06_anchor_store.json"},
-    {"id": "m07_parking_spiral", "number": 7, "title": "Parking Spiral", "place": "Skybridge and multi-storey car park",
+     "moves": "Climbing: escalators, shelving, the inner atrium",
+     "enemies": "Bruisers (flank or headshot); spotter drones",
+     "file": "res://campaign/missions/m06_anchor_store.json"
+    },
+    {
+     "id": "m07_parking_spiral",
+     "number": 8,
+     "title": "Parking Spiral",
+     "place": "Skybridge and multi-storey car park",
      "beat": "Juno, the Static's star hunter and an old Line courier, waits on the car park's top deck. Chase her down the spiral to a duel.",
-     "moves": "Ramp slides, the running loop, everything at speed", "enemies": "Hunters; Juno boss",
-     "file": "res://campaign/missions/m07_parking_spiral.json"}
+     "moves": "Ramp slides, the running loop, everything at speed",
+     "enemies": "Hunters; Juno boss",
+     "file": "res://campaign/missions/m07_parking_spiral.json"
+    }
    ]
   },
   {
    "title": "Stage 5: Westside",
    "missions": [
-    {"id": "l5_1_storm_channels", "number": 8, "label": "5-1", "title": "Storm Channels", "place": "The Ward's storm channels, car park to the rail embankment",
+    {"id": "l5_1_storm_channels", "number": 9, "label": "5-1", "title": "Storm Channels", "place": "The Ward's storm channels, car park to the rail embankment",
      "beat": "The city starts rooting for Parker and he can see it: listeners wave from the walkways and one hauls a sluice open for him. The Ward hold the channels because the channels are the water.",
      "moves": "Banks, slides, speed gates", "enemies": "Ward troopers, shields, marksmen and gun drones",
      "file": "res://campaign/missions/l5_1_storm_channels.json"},
-    {"id": "l5_2_rail_line", "number": 9, "label": "5-2", "title": "The Rail Line", "place": "The old rail line to the station under Calder House",
+    {"id": "l5_2_rail_line", "number": 10, "label": "5-2", "title": "The Rail Line", "place": "The old rail line to the station under Calder House",
      "beat": "Told by the Ward to end it, the Host changes the course live: he blows the track ahead of Parker twice. Echo's second code picks the junction.",
      "moves": "Long speed run; down and back up the blown sections", "enemies": "Ward squads and gun drones, then the Static",
      "file": "res://campaign/missions/l5_2_rail_line.json"}
@@ -64,19 +132,19 @@
   {
    "title": "Stage 6: Calder House and the Tower",
    "missions": [
-    {"id": "l6_1_head_office", "number": 10, "label": "6-1", "title": "Head Office", "place": "Calder House, lobby to the executive floor",
+    {"id": "l6_1_head_office", "number": 11, "label": "6-1", "title": "Head Office", "place": "Calder House, lobby to the executive floor",
      "beat": "Off the rail line and into Calder House. For the first time the Host is in the room: he shoots from the balconies and runs every time Parker gets close, and in his office there's a photo of him and Mags twenty years ago.",
      "moves": "Kick doors, jump the glass, slide the shutters", "enemies": "The Host (hit him for a bonus); the Static on the office floors, the Ward in the atrium",
      "file": "res://campaign/missions/l6_1_head_office.json"},
-    {"id": "l6_2_skybridge", "number": 11, "label": "6-2", "title": "Skybridge", "place": "Calder House top floors and the bridge to the tower",
+    {"id": "l6_2_skybridge", "number": 12, "label": "6-2", "title": "Skybridge", "place": "Calder House top floors and the bridge to the tower",
      "beat": "Up the Host's stairs and through the tape archive to the roof. Parker reaches Echo on the skybridge, and for a few seconds they're face to face. Then the Ward drag her into the tower and blow the bridge.",
      "moves": "Shaft wallruns, tank tops, the CALDER sign", "enemies": "Static hunters in the archive; Ward squads and rifles on the roof",
      "file": "res://campaign/missions/l6_2_skybridge.json"},
-    {"id": "l6_3_the_climb", "number": 12, "label": "6-3", "title": "The Climb", "place": "The builders' scaffold up the outside of the broadcast tower",
+    {"id": "l6_3_the_climb", "number": 13, "label": "6-3", "title": "The Climb", "place": "The builders' scaffold up the outside of the broadcast tower",
      "beat": "Off the broken skybridge and up the scaffold round the tower. Halfway up, Echo takes over the Host's uplink: his cameras turn to Parker, the Ward's gun drones fall, and the whole city watches the climb.",
      "moves": "Ramps, climbs and wallruns round the tower; the builders' lift", "enemies": "Static crews and Ward squads, deck by deck",
      "file": "res://campaign/missions/l6_3_the_climb.json"},
-    {"id": "l6_4_dead_air", "number": 13, "label": "6-4", "title": "Dead Air", "place": "The studio floors inside the broadcast tower",
+    {"id": "l6_4_dead_air", "number": 14, "label": "6-4", "title": "Dead Air", "place": "The studio floors inside the broadcast tower",
      "beat": "Parker fights up the tower's floors to the studio and reaches Echo, zip-tied at the console. The Host's last trap drops the mast on Parker and sets the studio burning; Echo, cut free, runs.",
      "moves": "All", "enemies": "Ward squads and the Host's elite crew, floor by floor",
      "file": "res://campaign/missions/l6_4_dead_air.json"}
@@ -85,7 +153,7 @@
   {
    "title": "Stage 7: Signal Out",
    "missions": [
-    {"id": "l7_1_signal_out", "number": 14, "label": "7-1", "title": "Signal Out", "place": "Out of the burning studio, over the west roofs, down to the Silt",
+    {"id": "l7_1_signal_out", "number": 15, "label": "7-1", "title": "Signal Out", "place": "Out of the burning studio, over the west roofs, down to the Silt",
      "beat": "You play Echo, and for the first time you are the one being chased. Parker is pinned in the burning studio; the Host comes through the smoke and hunts her himself, calling it live. She leads him down to the Silt, over a girder that holds her and not him, and the Hollows close over him on her own camera.",
      "moves": "All, as Echo; pure speed", "enemies": "The Host as a pursuing boss",
      "file": "res://campaign/missions/l7_1_signal_out.json", "unlocks": "echo"}
