@@ -171,6 +171,8 @@ func test_hard_landing_bails() -> void:
 	c.on_trick(&"backflip", {})
 	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 180)
 	check(p.state == Player.State.STUN, "hard landing stuns")
+	# The bail lands once the late-roll window has passed.
+	await w.step(int(p.tuning.roll_late_window * 60.0) + 2)
 	check(not c.is_active() and c.score == 0, "and loses the combo")
 
 

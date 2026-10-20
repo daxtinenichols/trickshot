@@ -491,7 +491,7 @@
   ]},
   {"roof": 48, "y": 43, "do": [
    {"checkpoint": "Roof", "at": 4, "objective": 3},
-   {"radio": {"who": "mags", "line": "Rifles on the tanks. Stay low, keep moving, you're nearly there."}, "at": 8, "radius": 8},
+   {"radio": {"who": "mags", "line": "Rifles on the tanks. Stay low, keep moving, you're nearly there.", "must": true}, "at": 8, "radius": 8},
    {"prop": "water_tank", "x": -4.4, "at": 14},
    {"prop": "water_tank", "x": 4.4, "at": 32},
    {"encounter": "roof", "at": 4, "length": 42, "troopers": [[-3.6, 14, 0.3], [3.6, 24, 0.8], [-3.6, 36, 1.2]], "enemies": [{"type": "marksman", "x": -4.4, "d": 10, "elevation": 4.1, "wake": 0.4, "cover": false}, {"type": "marksman", "x": 4.4, "d": 28, "elevation": 4.1, "wake": 1.0, "cover": false}, {"type": "gun_drone", "x": 0, "d": 36, "height": 5}]},

@@ -767,7 +767,7 @@
    {"piece": {"light": [4.8, 5.4, -100.375], "color": "#ff5a3a", "range": 7.0, "energy": 1.2}, "at": 0},
    {"label": "THE HOST", "at": 30, "size": 0.7},
    {"door": 0, "at": 54, "look": "WOOD"},
-   {"radio": {"who": "host", "line": "Look at this. You've tracked mud all over my carpet."}, "at": 58, "radius": 6},
+   {"radio": {"who": "host", "line": "Look at this. You've tracked mud all over my carpet.", "must": true}, "at": 58, "radius": 6},
    {"encounter": "office", "at": 56, "length": 38, "raiders": [[-3.6, 14, 0.2]], "enemies": [{"type": "host_boss", "x": -3.2, "d": 30, "appearance": 3, "cover": false, "flee_time": 5.0, "flee_path": [[8.05, 0, -8.4], [8.05, 0, -11.6], [8.0, 2.4, -17.2]]}]},
    {"piece": {"box": [-3.2, 0.4, -82], "size": [2.6, 0.8, 1.2], "kind": "NEUTRAL", "look": "WOOD"}, "at": 0},
    {"piece": {"box": [-5.5, 1.5, -76], "size": [0.9, 3.0, 8], "kind": "NEUTRAL", "look": "WOOD"}, "at": 0},
