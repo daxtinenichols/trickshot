@@ -1,0 +1,1099 @@
+{
+ "id": "l5_2_rail_line",
+ "title": "The Rail Line",
+ "runner": "",
+ "atlas": true,
+ "road_lines": false,
+ "plain_runner": true,
+ "par_seconds": 170,
+ "start": {
+  "at": [
+   604.0,
+   10.0,
+   359.61
+  ],
+  "yaw": 90
+ },
+ "route_origin": {
+  "at": [
+   604.0,
+   10.0,
+   359.61
+  ],
+  "yaw": 90
+ },
+ "chalk": true,
+ "tower_views": [
+  [
+   580,
+   10,
+   359.61
+  ],
+  [
+   470,
+   10,
+   -200
+  ]
+ ],
+ "clutter": [
+  "crate_wood",
+  "barrel_rust",
+  "generator",
+  "tire_stack",
+  "vent_stack",
+  "debris_pile",
+  "pallet",
+  "loudspeaker_pole"
+ ],
+ "objectives": [
+  {
+   "type": "reach",
+   "name": "track nine",
+   "text": "Run the old line north",
+   "at": "@Track nine"
+  },
+  {
+   "type": "shoot",
+   "count": 4,
+   "text": "Clear the Ward squad on the gantry"
+  },
+  {
+   "type": "reach",
+   "name": "the junction",
+   "text": "Back up on the line to the junction",
+   "at": "@Junction"
+  },
+  {
+   "type": "reach",
+   "name": "the sidings",
+   "text": "Take the left track",
+   "at": "@Sidings"
+  },
+  {
+   "type": "shoot",
+   "count": 6,
+   "text": "Break the Static in the sidings and the station"
+  },
+  {
+   "type": "reach",
+   "name": "Calder House",
+   "text": "Out onto the line under Calder House",
+   "at": "end"
+  }
+ ],
+ "radio": [
+  {
+   "on": "start",
+   "who": "vell",
+   "line": "Host, you were paid to end this.",
+   "must": true
+  },
+  {
+   "on": "start",
+   "who": "host",
+   "line": "And I'm paid to make it a good show, Commander. I can do both.",
+   "must": true
+  },
+  {
+   "on": "go",
+   "who": "host",
+   "line": "New rule tonight, folks! I'm changing the route as we go. Let's see how he likes that."
+  },
+  {
+   "on": "checkpoint:1",
+   "who": "mags",
+   "line": "Old train line. Last straight road to the tower."
+  },
+  {
+   "on": "set_piece:blast_nine",
+   "who": "host",
+   "line": "Section nine, gone! Tell him what he's won, Margaret!",
+   "must": true
+  },
+  {
+   "on": "set_piece:blast_nine",
+   "who": "mags",
+   "line": "Don't answer him."
+  },
+  {
+   "on": "set_piece:junction",
+   "who": "echo",
+   "line": "...Porch light's on the left, courier. Left.",
+   "must": true,
+   "cue": true
+  },
+  {
+   "on": "set_piece:junction_passed",
+   "who": "host",
+   "line": "Who keeps getting on my frequency?"
+  },
+  {
+   "on": "set_piece:blast_four",
+   "who": "host",
+   "line": "There goes section four. Folks, I am running out of bridge.",
+   "must": true
+  },
+  {
+   "on": "complete",
+   "who": "mags",
+   "line": "There's the tower. Up you go, kid.",
+   "must": true
+  }
+ ],
+ "route": [
+  {
+   "roof": 7,
+   "y": 10,
+   "look": "RUST",
+   "do": [
+    {
+     "label": "THE OLD LINE",
+     "at": 3,
+     "size": 1.2
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "flip"
+  },
+  {
+   "roof": 12,
+   "y": 10,
+   "look": "RUST",
+   "bare": true
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 15,
+   "y": 10,
+   "look": "RUST",
+   "bare": true,
+   "do": [
+    {
+     "slide": true,
+     "at": 12
+    }
+   ]
+  },
+  {
+   "turn": "right",
+   "size": 30
+  },
+  {
+   "roof": 51,
+   "y": 10,
+   "bridge": true,
+   "do": [
+    {
+     "checkpoint": "Track nine",
+     "at": 4,
+     "objective": 1
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Drones. With guns. Watch for the flash before they fire. One hit and they drop."
+     },
+     "at": 8,
+     "radius": 9
+    },
+    {
+     "encounter": "gantry squad",
+     "at": 8,
+     "length": 42,
+     "troopers": [
+      [
+       -3.6,
+       4,
+       0
+      ],
+      [
+       3.6,
+       8,
+       0
+      ],
+      [
+       -3.6,
+       12,
+       0
+      ],
+      [
+       3.6,
+       16,
+       0.2
+      ],
+      [
+       -3.6,
+       22,
+       0.4
+      ],
+      [
+       3.6,
+       26,
+       0.6
+      ],
+      [
+       -3.6,
+       32,
+       0.8
+      ],
+      [
+       3.6,
+       38,
+       1.0
+      ]
+     ],
+     "enemies": [
+      {
+       "type": "marksman",
+       "x": 3.8,
+       "d": 36,
+       "wake": 0.3
+      },
+      {
+       "type": "gun_drone",
+       "x": 0,
+       "d": 14,
+       "height": 5
+      },
+      {
+       "type": "gun_drone",
+       "x": 2,
+       "d": 28,
+       "height": 5
+      }
+     ]
+    },
+    {
+     "hurdles": true,
+     "at": 0.0
+    },
+    {
+     "slide": true,
+     "at": 14.0
+    },
+    {
+     "hurdles": true,
+     "at": 28.0
+    },
+    {
+     "slide": true,
+     "at": 42.0
+    }
+   ]
+  },
+  {
+   "roof": 44,
+   "y": 10,
+   "bridge": true,
+   "do": [
+    {
+     "set_piece": "track_blast",
+     "at": 44,
+     "trigger": 4,
+     "radius": 14,
+     "id": "blast_nine",
+     "length": 54
+    },
+    {
+     "hurdles": true,
+     "at": 14
+    },
+    {
+     "label": "SECTION 9",
+     "at": 34
+    }
+   ]
+  },
+  {
+   "ramp_down": 0,
+   "length": 18,
+   "slide": true
+  },
+  {
+   "roof": 8,
+   "y": 0,
+   "bare": true
+  },
+  {
+   "ramp_up": 10,
+   "length": 20
+  },
+  {
+   "roof": 18,
+   "y": 10,
+   "look": "RUST",
+   "do": [
+    {
+     "checkpoint": "Back on the line",
+     "at": 4,
+     "objective": 2
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 18,
+   "y": 10,
+   "look": "RUST",
+   "bare": true
+  },
+  {
+   "gap": 3,
+   "trick": "front"
+  },
+  {
+   "roof": 18,
+   "y": 10,
+   "look": "RUST",
+   "bare": true
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 24,
+   "y": 10,
+   "look": "RUST",
+   "bare": true,
+   "do": [
+    {
+     "label": "SIGNAL BOX",
+     "at": 2
+    },
+    {
+     "slide": true,
+     "at": 18
+    }
+   ]
+  },
+  {
+   "roof": 36,
+   "y": 10,
+   "look": "RUST",
+   "bare": true,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 18
+    }
+   ]
+  },
+  {
+   "gate": {
+    "tier": 2,
+    "tricks": false
+   }
+  },
+  {
+   "roof": 16,
+   "y": 10,
+   "bridge": true
+  },
+  {
+   "roof": 41,
+   "y": 10,
+   "bridge": true,
+   "do": [
+    {
+     "checkpoint": "Junction",
+     "at": 4,
+     "objective": 2
+    },
+    {
+     "encounter": "junction drones",
+     "at": 2,
+     "length": 38,
+     "troopers": [
+      [
+       -3.6,
+       10,
+       0
+      ],
+      [
+       3.6,
+       14,
+       0
+      ],
+      [
+       -3.6,
+       18,
+       0.2
+      ],
+      [
+       3.6,
+       22,
+       0.3
+      ],
+      [
+       -3.6,
+       26,
+       0.4
+      ],
+      [
+       3.6,
+       30,
+       0.5
+      ],
+      [
+       -3.6,
+       34,
+       0.6
+      ],
+      [
+       3.6,
+       37,
+       0.7
+      ]
+     ],
+     "enemies": [
+      {
+       "type": "gun_drone",
+       "x": -2,
+       "d": 8,
+       "height": 5
+      },
+      {
+       "type": "gun_drone",
+       "x": 2,
+       "d": 16,
+       "height": 5
+      },
+      {
+       "type": "gun_drone",
+       "x": 0,
+       "d": 24,
+       "height": 6
+      },
+      {
+       "type": "gun_drone",
+       "x": -2,
+       "d": 30,
+       "height": 5
+      },
+      {
+       "type": "marksman",
+       "x": 3.8,
+       "d": 40,
+       "wake": 0.0
+      },
+      {
+       "type": "marksman",
+       "x": -3.8,
+       "d": 44,
+       "wake": 0.0
+      }
+     ]
+    },
+    {
+     "set_piece": "junction",
+     "at": 41,
+     "trigger": 18,
+     "radius": 14,
+     "id": "junction",
+     "spread": 18
+    },
+    {
+     "hurdles": true,
+     "at": 2.0
+    },
+    {
+     "slide": true,
+     "at": 16.0
+    },
+    {
+     "hurdles": true,
+     "at": 30.0
+    }
+   ]
+  },
+  {
+   "plaza": 14,
+   "fork": [
+    {
+     "roof": 16,
+     "y": 10,
+     "bridge": true,
+     "do": [
+      {
+       "label": "RIGHT TRACK",
+       "at": 4
+      }
+     ]
+    },
+    {
+     "gate": {
+      "tier": 3,
+      "tricks": false
+     }
+    },
+    {
+     "roof": 16,
+     "y": 10,
+     "bridge": true,
+     "do": [
+      {
+       "tape": "m09_tape_signal_box",
+       "x": 4.6,
+       "at": 10
+      }
+     ]
+    }
+   ],
+   "side": 1
+  },
+  {
+   "roof": 50,
+   "y": 10,
+   "bridge": true,
+   "do": [
+    {
+     "label": "LEFT TRACK",
+     "at": 6
+    },
+    {
+     "encounter": "sidings",
+     "at": 2,
+     "length": 46,
+     "max_aiming": 8,
+     "enemies": [
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 8,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 10,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 14,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 18,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 22,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 26,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 30,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 34,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 40,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 44,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "bruiser",
+       "x": -3.6,
+       "d": 34,
+       "wake": 0.0,
+       "cover": false,
+       "aim_lead": 0.6
+      },
+      {
+       "type": "bruiser",
+       "x": 3.6,
+       "d": 46,
+       "wake": 0.0,
+       "cover": false,
+       "aim_lead": 0.6
+      }
+     ]
+    },
+    {
+     "hurdles": true,
+     "at": 2.0
+    },
+    {
+     "slide": true,
+     "at": 16.0
+    },
+    {
+     "hurdles": true,
+     "at": 30.0
+    },
+    {
+     "slide": true,
+     "at": 44.0
+    }
+   ]
+  },
+  {
+   "join": true
+  },
+  {
+   "roof": 38,
+   "y": 10,
+   "width": 24,
+   "bridge": true,
+   "do": [
+    {
+     "checkpoint": "Sidings",
+     "at": 4,
+     "objective": 3
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "See that? The Ward won't go anywhere near the Static. They hate each other. Use it."
+     },
+     "at": 4,
+     "radius": 9
+    },
+    {
+     "radio": {
+      "who": "host",
+      "line": "My crew and the sponsor's boys don't really... mix. Bit of history. Don't ask."
+     },
+     "at": 5,
+     "radius": 9
+    },
+    {
+     "set_piece": "wagon",
+     "at": 24,
+     "trigger": 0,
+     "radius": 14,
+     "id": "wagon",
+     "as": "slide"
+    },
+    {
+     "set_piece": "track_blast",
+     "at": 38,
+     "trigger": 4,
+     "radius": 14,
+     "id": "blast_four",
+     "length": 60
+    },
+    {
+     "label": "SECTION 4",
+     "at": 35
+    },
+    {
+     "hurdles": true,
+     "at": 2.0
+    },
+    {
+     "slide": true,
+     "at": 16.0
+    },
+    {
+     "hurdles": true,
+     "at": 30.0
+    }
+   ]
+  },
+  {
+   "ramp_down": 0,
+   "length": 18,
+   "slide": true
+  },
+  {
+   "roof": 36,
+   "y": 0,
+   "bare": true,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 4.0
+    },
+    {
+     "slide": true,
+     "at": 18.0
+    },
+    {
+     "hurdles": true,
+     "at": 32.0
+    }
+   ]
+  },
+  {
+   "ramp_up": 10,
+   "length": 20
+  },
+  {
+   "turn": "left",
+   "size": 30
+  },
+  {
+   "roof": 6,
+   "y": 10,
+   "look": "RUST",
+   "bare": true
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 15,
+   "y": 10,
+   "look": "RUST",
+   "bare": true,
+   "do": [
+    {
+     "label": "WEST CENTRAL",
+     "at": 13,
+     "size": 1.1
+    }
+   ]
+  },
+  {
+   "roof": 48,
+   "y": 10,
+   "interior": 7,
+   "do": [
+    {
+     "checkpoint": "West Central",
+     "at": 2,
+     "objective": 4
+    },
+    {
+     "encounter": "station squad",
+     "at": 2,
+     "length": 40,
+     "max_aiming": 5,
+     "enemies": [
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 8,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 11,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 14,
+       "wake": 0,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 18,
+       "wake": 0.2,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 22,
+       "wake": 0.3,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 26,
+       "wake": 0.4,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 30,
+       "wake": 0.5,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 34,
+       "wake": 0.6,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "raider",
+       "x": -3.6,
+       "d": 38,
+       "wake": 0.7,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "raider",
+       "x": 3.6,
+       "d": 40,
+       "wake": 0.8,
+       "cover": true,
+       "aim_lead": 0.8
+      },
+      {
+       "type": "bruiser",
+       "x": -2.0,
+       "d": 30,
+       "wake": 0.0,
+       "cover": false,
+       "aim_lead": 0.6
+      },
+      {
+       "type": "bruiser",
+       "x": 2.0,
+       "d": 40,
+       "wake": 0.0,
+       "cover": false,
+       "aim_lead": 0.6
+      }
+     ]
+    },
+    {
+     "door": 0,
+     "at": 44
+    },
+    {
+     "hurdles": true,
+     "at": 8.0
+    },
+    {
+     "slide": true,
+     "at": 22.0
+    },
+    {
+     "hurdles": true,
+     "at": 36.0
+    }
+   ]
+  },
+  {
+   "roof": 18,
+   "y": 10,
+   "bridge": true,
+   "do": [
+    {
+     "mark": "#f57320",
+     "at": 12
+    }
+   ]
+  }
+ ],
+ "chatter": {
+  "headshot": [
+   {
+    "who": "host",
+    "line": "Ooh, right off the bridge! That's a long way down for a helmet."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Now the next one."
+   },
+   {
+    "who": "host",
+    "line": "Yikes. Commander, I'd stop sending the tall ones."
+   },
+   {
+    "who": "mags",
+    "line": "Lovely shot."
+   },
+   {
+    "who": "mags",
+    "line": "Clean."
+   },
+   {
+    "who": "host",
+    "line": "Ooh, the sponsor felt that one."
+   }
+  ],
+  "bail": [
+   {
+    "who": "host",
+    "line": "Ooh, tripped on the tracks! Classic."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Watch your feet on the sleepers."
+   },
+   {
+    "who": "host",
+    "line": "Down he goes! Shall I hold the train? There's no train."
+   },
+   {
+    "who": "mags",
+    "line": "Get up, you're fine."
+   },
+   {
+    "who": "host",
+    "line": "Mind the gap, Parker! Seriously. I blew it up."
+   }
+  ],
+  "combo": [
+   {
+    "who": "host",
+    "line": "He's using my wreckage! That's my wreckage, Parker!"
+   },
+   {
+    "who": "mags",
+    "line": "Good. Keep it going across."
+   },
+   {
+    "who": "host",
+    "line": "Okay, who's paying for this guy? Because it isn't me."
+   },
+   {
+    "who": "mags",
+    "line": "That's it. That's the run."
+   },
+   {
+    "who": "host",
+    "line": "I blow up a bridge and he turns it into a stunt show. I hate this."
+   },
+   {
+    "who": "mags",
+    "line": "That's the line. Keep it."
+   }
+  ],
+  "fall": [
+   {
+    "who": "host",
+    "line": "And he's off the bridge! I did warn him. Well, I blew it up, which is sort of a warning."
+   },
+   {
+    "who": "mags",
+    "line": "Off the bridge. Back up, go again."
+   },
+   {
+    "who": "host",
+    "line": "Splash! No, wait, there's no water. Thud!"
+   },
+   {
+    "who": "host",
+    "line": "Off the rails! I've been waiting all night to say that."
+   }
+  ],
+  "kill": [
+   {
+    "who": "host",
+    "line": "Ooh. That's another one of Vell's. He keeps count, you know."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Keep moving, the marksmen can't track you if you move."
+   },
+   {
+    "who": "host",
+    "line": "Somebody tell the Ward they're down another one. Actually, don't, they'll blame me."
+   },
+   {
+    "who": "mags",
+    "line": "Down. Next."
+   },
+   {
+    "who": "host",
+    "line": "And a drone goes down! Those aren't cheap, Parker. I've seen the invoice."
+   },
+   {
+    "who": "host",
+    "line": "Another one off the sponsor's payroll. They'll thank you, Parker. Saves 'em money."
+   }
+  ],
+  "down": [
+   {
+    "who": "mags",
+    "line": "Up. Stay off the open deck."
+   },
+   {
+    "who": "host",
+    "line": "Courier down on the line! Delays expected, folks."
+   },
+   {
+    "who": "mags",
+    "line": "Get up. Keep the drones behind you."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Keep moving. Squads can't hit what won't stand still."
+   },
+   {
+    "who": "host",
+    "line": "Down on the tracks! Somebody check the timetable."
+   }
+  ],
+  "tape": [
+   {
+    "who": "echo",
+    "line": "...there's a pipe under this bridge, runs all the way to the reservoir. That's what the Ward's really guarding."
+   },
+   {
+    "who": "echo",
+    "line": "...the trains stopped the same week the Ward took the reservoir. They said it was the power. It wasn't."
+   }
+  ]
+ }
+}
