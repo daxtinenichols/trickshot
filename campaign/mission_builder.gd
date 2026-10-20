@@ -22,7 +22,7 @@ const SKYLINE_SCRIPT_PATH := "res://campaign/atlas_skyline.gd"
 const DOCKS_SCENE_PATH := "res://campaign/docks_scene.gd"
 ## Stage 6's set pieces (the photo, the uplink, the studio): kinds it builds.
 const TOWER_SCENE_PATH := "res://campaign/tower_scene.gd"
-const TOWER_SCENE_KINDS := ["photo"]
+const TOWER_SCENE_KINDS := ["photo", "uplink", "cage", "watchers", "trap"]
 # Enemies load by path, not class_name (a stale class cache has broken
 # scenes before).
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")

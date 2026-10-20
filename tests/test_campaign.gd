@@ -438,7 +438,7 @@ func test_chatter_deals_every_line_before_repeating() -> void:
 
 
 func test_echo_chatter_waits_for_the_uplink() -> void:
-	await _load(_index("m10_the_climb"))
+	await _load(_index("l6_3_the_climb"))
 	var radio: RadioFeed = level.radio
 	RadioFeed.reset_chatter()
 	var echo := func() -> bool: return radio.queue.any(func(l: Dictionary) -> bool: return l.who == "echo")
@@ -676,7 +676,7 @@ func test_beating_the_finale_unlocks_echo() -> void:
 
 
 func test_echo_waits_in_the_studio_and_runs_the_finale() -> void:
-	await _load(_index("m11_dead_air"))
+	await _load(_index("l6_4_dead_air"))
 	var echo: Node3D = level.find_child("Figure_echo", true, false)
 	check(echo != null, "Echo stands in the Dead Air studio")
 	if echo != null:

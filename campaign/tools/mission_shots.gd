@@ -74,12 +74,21 @@ const SHOTS := [
 	["m09_rail_bridge", Vector3(-14, 16, 10), Vector3(0, 8, -40), "m09_start"],
 	["m09_rail_bridge", Vector3(-80, 24, -392), Vector3(-150, 8, -426), "m09_junction"],
 	["m09_rail_bridge", Vector3(120, 300, 100), Vector3(-260, 0, -420), "m09_overview"],
-	["m10_the_climb", Vector3(20, 30, -150), Vector3(-40, 20, -172), "m10_platforms"],
-	["m10_the_climb", Vector3(80, 200, 80), Vector3(-90, 30, -90), "m10_overview"],
-	["m10_the_climb", Vector3(-62, 52, -70), Vector3(-90, 40, -110), "m10_tower_scaffold"],
-	["m10_the_climb", Vector3(30, 40, 20), Vector3(-60, 25, -60), "m10_tower_decks"],
-	["m11_dead_air", Vector3(0, 48.6, -36), Vector3(0, 47.5, -80), "m11_lobby"],
-	["m11_dead_air", Vector3(100, 260, 60), Vector3(-220, 40, -300), "m11_overview"],
+	["l6_3_the_climb", Vector3(3, 45.5, 56), Vector3(0, 37, 28), "s6_3_stub"],
+	["l6_3_the_climb", Vector3(70, 120, 110), Vector3(0, 50, 0), "s6_3_scaffold"],
+	["l6_3_the_climb", Vector3(-28, 46, -18), Vector3(-28, 50, 40), "s6_3_uplink"],
+	["l6_3_the_climb", Vector3(40, 58, -30), Vector3(46, 55, 10), "s6_3_cage"],
+	["l6_3_the_climb", Vector3(28, 71, 20), Vector3(140, 30, 120), "s6_3_watchers", 2],
+	["l6_3_the_climb", Vector3(-28, 46, -18), Vector3(-28, 50, 40), "s6_3_uplink_on", 40],
+	["l6_3_the_climb", Vector3(-14, 77, 30), Vector3(0, 76, 22), "s6_3_door"],
+	["l6_4_dead_air", Vector3(0, 76.7, 30), Vector3(0, 76, 10), "s6_4_door"],
+	["l6_4_dead_air", Vector3(-4, 76.7, 20), Vector3(-12, 76, 4), "s6_4_vents"],
+	["l6_4_dead_air", Vector3(15, 81.7, -4), Vector3(15, 84, 10), "s6_4_stairwell"],
+	["l6_4_dead_air", Vector3(-12, 86.7, 15), Vector3(-15, 86, -10), "s6_4_corridor"],
+	["l6_4_dead_air", Vector3(0, 106.8, 7), Vector3(0, 106, -4), "s6_4_studio"],
+	["l6_4_dead_air", Vector3(1.2, 106.9, 1.5), Vector3(0, 106, -6), "s6_4_trap_reunion", 150],
+	["l6_4_dead_air", Vector3(1.2, 106.9, 1.5), Vector3(0, 106, -6), "s6_4_trap_fire", 750],
+	["l6_4_dead_air", Vector3(1.2, 106.9, 1.5), Vector3(-6, 106, 0), "s6_4_trap_door", 450],
 	["m12_signal_out", Vector3(-14, 66, 10), Vector3(0, 56, -30), "m12_tower"],
 	["m12_signal_out", Vector3(80, 260, 80), Vector3(-120, 30, -320), "m12_overview"],
 	# The route generator's test route: corners, a fork, climbs and ramps.
@@ -175,6 +184,11 @@ func _shots(campaign: Script, only: String) -> void:
 					sp.call("_fire")
 					for t in int(s[4]):
 						sp.call("tick", s[1], null)
+				elif sp.get("kind") in ["trap", "uplink", "cage", "watchers"]:
+					# Stage 6's: fired where they'd fire, then on (shots of
+					# one level add up their ticks).
+					for t in int(s[4]):
+						sp.call("tick", sp.get("trigger"), null)
 		var cam := Camera3D.new()
 		cam.cull_mask &= ~4
 		cam.fov = 75.0
