@@ -86,6 +86,9 @@ static func expand(mission: Dictionary) -> Dictionary:
 		"leg": 0, "dx": 0.0, "fork": null, "forks": [], "ledges": [],
 		"chalk": mission.get("chalk", false),
 		"roof_look": mission.get("roof_look", "FACADE"),
+		# The walls of interiors ("interior_look": a mall's plastered
+		# concourses want NEUTRAL, a warehouse the default).
+		"wall_look": mission.get("interior_look", "FACADE"),
 		# The roof being laid out: its width and how high its ceiling is
 		# (0 outdoors).
 		"roof_w": WIDTH, "inside": 0.0,
@@ -419,7 +422,7 @@ static func _interior(st: Dictionary, z0: float, length: float, w: float, height
 		if side == open:
 			_add(st, {"box": [side * (w * 0.5 - 0.1), y + RAIL_H * 0.5, z0 - length * 0.5], "size": [0.2, RAIL_H, length], "kind": "NEUTRAL", "look": "RUST"})
 			continue
-		_add(st, {"box": [side * (w * 0.5 + 0.25), y + height * 0.5, z0 - length * 0.5], "size": [0.5, height, length], "kind": "NEUTRAL", "look": "FACADE"})
+		_add(st, {"box": [side * (w * 0.5 + 0.25), y + height * 0.5, z0 - length * 0.5], "size": [0.5, height, length], "kind": "NEUTRAL", "look": st.wall_look})
 	var d := 0.0
 	while d < length - 0.5:
 		var l := minf(8.0, length - d)
@@ -512,7 +515,7 @@ static func _corner_interior(st: Dictionary, quad: Array, pivot: float, turn: fl
 		var c := mid + n
 		if (b - a).length() > 0.5:
 			_add(st, {"box": [c.x, y + height * 0.5, c.y], "size": [0.5, height, (b - a).length() + 0.5],
-				"yaw": rad_to_deg(atan2(b.x - a.x, b.y - a.y)), "kind": "NEUTRAL", "look": "FACADE"})
+				"yaw": rad_to_deg(atan2(b.x - a.x, b.y - a.y)), "kind": "NEUTRAL", "look": st.wall_look})
 	_add(st, {"box": [0, top, pivot], "size": [h * 2.0 + 4.0, 0.5, h * 2.0 + 4.0],
 		"yaw": rad_to_deg(turn * 0.5), "kind": "NEUTRAL", "look": "RUST"})
 
@@ -605,7 +608,7 @@ static func _plaza(st: Dictionary, off: float, length: float) -> void:
 		# floor and a ceiling over it.
 		var w := absf(off) + WIDTH
 		for side: float in [-1.0, 1.0]:
-			_add(st, {"box": [off * 0.5 + side * (w * 0.5 + 0.25), st.y + hall * 0.5, z0 - length * 0.5], "size": [0.5, hall, length], "kind": "NEUTRAL", "look": "FACADE"})
+			_add(st, {"box": [off * 0.5 + side * (w * 0.5 + 0.25), st.y + hall * 0.5, z0 - length * 0.5], "size": [0.5, hall, length], "kind": "NEUTRAL", "look": st.wall_look})
 		_add(st, {"box": [off * 0.5, st.y + hall + 0.25, z0 - length * 0.5], "size": [w + 1.0, 0.5, length], "kind": "NEUTRAL", "look": "RUST"})
 	_lane(st, z0, z0 - length, absf(off) + WIDTH, off * 0.5)
 	_set_low(st, st.y)
@@ -646,7 +649,8 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 		for i in n:
 			var stagger := 0.0 if step >= size.x - 0.01 else (size.z + 0.05 if i % 2 == 1 else 0.0)
 			_add(st, {"prop": hurdle, "at": [-6.0 + size.x * 0.5 + step * i, y, z - stagger]})
-		st.bot.append([z + 1.6, "jump", NAN])
+		# "lead": how far before them the bot jumps (further when it's fast).
+		st.bot.append([z + float(f.get("lead", 1.6)), "jump", NAN])
 		return [d - 4.0, d + 3.0]
 	if f.has("slide"):
 		# A bar 1.1 m up: slide under it. Needs a run-up on the ground.
@@ -931,7 +935,7 @@ static func _encounter(st: Dictionary, f: Dictionary, d: float, z: float, y: flo
 		"raiders": raiders, "mutants": mutants, "cover": cover}
 	if not others.is_empty():
 		piece.enemies = others
-	for k: String in ["hear_shots", "hearing_radius", "max_aiming"]:
+	for k: String in ["hear_shots", "hearing_radius", "max_aiming", "wake_distance"]:
 		if f.has(k):
 			piece[k] = f[k]
 	_add(st, piece)
@@ -975,7 +979,7 @@ static func _ramp(st: Dictionary, seg: Dictionary) -> void:
 		# `interior` m over the top of the ramp.
 		var top: float = top_y + float(seg.interior)
 		for side: float in [-1.0, 1.0]:
-			_add(st, {"box": [side * (WIDTH * 0.5 + 0.25), (bottom_y + top) * 0.5, st.z - length * 0.5], "size": [0.5, top - bottom_y, length], "kind": "NEUTRAL", "look": "FACADE"})
+			_add(st, {"box": [side * (WIDTH * 0.5 + 0.25), (bottom_y + top) * 0.5, st.z - length * 0.5], "size": [0.5, top - bottom_y, length], "kind": "NEUTRAL", "look": st.wall_look})
 		_add(st, {"box": [0, top + 0.25, st.z - length * 0.5], "size": [WIDTH + 1.0, 0.5, length], "kind": "NEUTRAL", "look": "RUST"})
 	st.y = maxf(top_y, bottom_y)
 	_lane(st, st.z, st.z - length, WIDTH, 0.0, NAN, minf(top_y, bottom_y))

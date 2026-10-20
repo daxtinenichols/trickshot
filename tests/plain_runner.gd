@@ -57,25 +57,52 @@ static func make_plain(player: Player) -> void:
 static func along(pos: Vector3, legs: Array) -> float:
 	if legs.is_empty():
 		return pos.z
-	for i in range(legs.size() - 1, -1, -1):
-		var l: Array = legs[i]
-		var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
-		var z := v.z + float(l[3])
-		if i == 0 or z <= float(l[3]) + 0.5:
-			return z
-	return pos.z
+	return _on_leg(pos, legs).y
 
 
 ## A world point's offset across the route (right +).
 static func across(pos: Vector3, legs: Array) -> float:
 	if legs.is_empty():
 		return pos.x
-	var z := along(pos, legs)
-	for i in range(legs.size() - 1, -1, -1):
+	return _on_leg(pos, legs).x
+
+
+## (across, along) on the leg the point is on: of the legs whose stretch
+## (from its corner to the next) it lies along, the one it's nearest across.
+## A route that winds back on itself (a mall circling its atrium) puts a
+## point "past the start" of several legs; the stretch tells them apart.
+static func _on_leg(pos: Vector3, legs: Array) -> Vector2:
+	var i := leg_index(pos, legs)
+	if i < 0:
+		return Vector2(pos.x, pos.z)
+	var l: Array = legs[i]
+	var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
+	return Vector2(v.x, v.z + float(l[3]))
+
+
+## The route's heading (yaw) on the leg a point is on.
+static func heading(pos: Vector3, legs: Array) -> float:
+	var i := leg_index(pos, legs)
+	return float(legs[i][2]) if i >= 0 else 0.0
+
+
+## Which leg a point is on (see _on_leg), or -1 with no legs.
+static func leg_index(pos: Vector3, legs: Array) -> int:
+	var best := -1
+	var best_x := INF
+	var fallback := -1
+	for i in legs.size():
 		var l: Array = legs[i]
-		if i == 0 or z <= float(l[3]) + 0.5:
-			return (Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])).x
-	return pos.x
+		var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
+		var z := v.z + float(l[3])
+		var started := i == 0 or z <= float(l[3]) + 0.5
+		var ended := i + 1 < legs.size() and z < float(legs[i + 1][3]) - 0.5
+		if started and not ended and absf(v.x) < best_x:
+			best = i
+			best_x = absf(v.x)
+		if started and fallback < 0:
+			fallback = i
+	return best if best >= 0 else fallback
 
 
 ## [start, end, label] along the route for every gate and encounter,
@@ -87,6 +114,8 @@ static func sections(mission: Dictionary) -> Array:
 	for p: Dictionary in mission.get("pieces", []):
 		if p.has("gate") and p.has("mark"):
 			var a: Array = p.mark
+			if absf(across(Vector3(a[0], a[1], a[2]), legs)) > 3.0:
+				continue  # on the other line of a fork: the trick line never meets it
 			var edge := along(Vector3(a[0], a[1], a[2]), legs) - EDGE_MARK
 			out.append([edge + 20.0, edge - float(p.get("gap", 15.0)) - 6.0, "tier %d gate" % int(p.gate)])
 		elif p.has("encounter"):

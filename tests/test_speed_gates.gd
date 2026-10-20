@@ -223,8 +223,10 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 	health.can_die = true
 	await c._step(2)
 	p.global_position = entry[0]
-	p.basis = Basis(Vector3.UP, float(entry[1]))
-	p.yaw = float(entry[1])
+	# Facing along the route: the trick line may be part way round a spin.
+	var yaw := float(entry[1]) if legs.is_empty() else PlainRunner.heading(entry[0], legs)
+	p.basis = Basis(Vector3.UP, yaw)
+	p.yaw = yaw
 	p.velocity = p.forward() * p.tuning.top_speed
 	p.momentum = 1.0
 	var start_y: float = p.global_position.y
@@ -238,7 +240,7 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 		if float(s[0]) < float(section[0]):
 			steps.append(s)
 	var frames := int((float(section[0]) - float(section[1])) / 8.0 * 60.0) + 240
-	await c._run_route(steps, frames, float(section[1]), legs)
+	await c._run_route(steps, frames, float(section[1]), legs, maxi(PlainRunner.leg_index(entry[0], legs), 0))
 	tree.physics_frame.disconnect(watch)
 	var past := PlainRunner.along(p.global_position, legs) < float(section[1])
 	var out := "through"

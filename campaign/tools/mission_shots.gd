@@ -283,17 +283,20 @@ func _legs(campaign: Script, id: String) -> void:
 			var s: Array = m.start.at
 			at = Vector3(s[0], 0, s[2]) + fwd * 2.0
 		var q := PhysicsRayQueryParameters3D.create(at + Vector3(0, 60, 0), at - Vector3(0, 10, 0))
-		var floor_y := -INF
-		# The lowest floor under a ceiling: walk down the hits.
+		# The floor: the first thing straight down, or indoors (something
+		# a few meters under that) the floor under the ceiling.
+		var hits: Array[float] = []
 		var from := at + Vector3(0, 60, 0)
-		for k in 8:
+		for k in 2:
 			q = PhysicsRayQueryParameters3D.create(from, at - Vector3(0, 10, 0))
 			var hit := space.intersect_ray(q)
 			if hit.is_empty():
 				break
-			floor_y = (hit.position as Vector3).y
+			hits.append((hit.position as Vector3).y)
 			from = (hit.position as Vector3) - Vector3(0, 0.6, 0)
-		at.y = floor_y if floor_y > -INF else 0.0
+		at.y = 0.0 if hits.is_empty() else hits[0]
+		if hits.size() == 2 and hits[0] - hits[1] > 2.5 and hits[0] - hits[1] < 16.0:
+			at.y = hits[1]
 		for v: Array in [["eye", Vector3(0, 1.7, 0), 0.0], ["high", Vector3(0, 4.5, 0), 6.0]]:
 			var cam := Camera3D.new()
 			cam.cull_mask &= ~4

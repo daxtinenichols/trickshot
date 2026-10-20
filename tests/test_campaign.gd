@@ -766,9 +766,11 @@ func _steer(x: float, veer: bool) -> InputFrame:
 ## over in the air after the next take-off). Returns true once
 ## the mission is complete; false if it runs out of time or passes stop_z
 ## first.
-func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = []) -> bool:
+## `first_leg`: the leg the player starts on, for a run dropped in part way
+## along a route that winds back on itself.
+func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = [], first_leg := 0) -> bool:
 	_legs = legs if not legs.is_empty() else [[0.0, 0.0, 0.0, 0.0]]
-	_leg = 0
+	_leg = first_leg
 	var lane: float = route[0][2] if route[0][1] == "" and not is_nan(route[0][2]) else _local(player.global_position, 0).x
 	var veer := false
 	var next := 0
