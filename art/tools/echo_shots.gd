@@ -139,7 +139,7 @@ func _pose(figure: Script, p: String) -> Dictionary:
 
 ## Echo waiting in the studio, as Parker comes in, then close.
 func _m11(campaign: Script) -> void:
-	var level := await _load_mission(campaign, "m11_dead_air")
+	var level := await _load_mission(campaign, "l6_4_dead_air")
 	var echo: Node3D = level.find_child("Figure_echo", true, false)
 	if echo == null:
 		push_error("echo_shots: no Echo figure in m11")
@@ -161,7 +161,7 @@ func _m11(campaign: Script) -> void:
 
 ## The chase cam on Echo at the top of Signal Out.
 func _m12(campaign: Script) -> void:
-	var level := await _load_mission(campaign, "m12_signal_out")
+	var level := await _load_mission(campaign, "l7_1_signal_out")
 	var p: Node = level.get_node("Player")
 	var body: Node = p.get_node_or_null("RunnerBody")
 	print("m12 runner meta=", p.get_meta("runner", "?"), " body=", body.runner if body else "none")

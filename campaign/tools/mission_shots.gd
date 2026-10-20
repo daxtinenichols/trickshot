@@ -20,6 +20,7 @@ const SHOTS := [
 	["l1_1_dawn_run", Vector3(3228, 40, 150), Vector3(3268, 10, 60), "dk_1_1_fish_market"],
 	["l1_1_dawn_run", Vector3(3246, 18, 8), Vector3(3262, 14, -40), "dk_1_1_container_yard"],
 	["l1_1_dawn_run", Vector3(3262, 17, -150), Vector3(3340, 9, -160), "dk_1_1_high_roof"],
+	["l1_1_dawn_run", Vector3(3259, 16.7, -121), Vector3(3264, 15, -133), "dk_1_1_drop"],
 	["l1_1_dawn_run", Vector3(3452, 24, 40), Vector3(3436, 2, 100), "dk_1_1_raid", 300],
 	["l1_1_dawn_run", Vector3(3425, 13.7, 112), Vector3(3412, 12.5, 118), "dk_1_1_wreck", 2000],
 	["l1_1_dawn_run", Vector3(3428, 16, 124), Vector3(3000, 30, 230), "dk_1_1_skyline_west"],
@@ -30,17 +31,30 @@ const SHOTS := [
 	["l1_2_the_yard", Vector3(3112, 6.5, 321), Vector3(3060, 2.5, 318), "dk_1_2_speed_gate"],
 	["l1_2_the_yard", Vector3(2992, 1.7, 318), Vector3(2700, 30, 318), "dk_1_2_gate_west"],
 	["l1_2_the_yard", Vector3(2972, 1.7, 318), Vector3(0, 120, 0), "dk_1_2_skyline_west"],
-	["m02_on_air", Vector3(-14, 18, 6), Vector3(0, 8, -40), "m02_start"],
-	["m02_on_air", Vector3(-12, 16, -150), Vector3(0, 8, -190), "m02_lookouts"],
-	["m02_on_air", Vector3(320, 260, 60), Vector3(120, 0, -380), "m02_overview"],
-	["m02_on_air", Vector3(214.7, 3.2, -362), Vector3(214.7, 2.5, -400), "m02_warehouse"],
-	["m02_on_air", Vector3(170, 22, -325), Vector3(205, 9, -370), "m02_fork"],
-	["m03_glass_district", Vector3(-14, 22, 10), Vector3(0, 14, -40), "m03_start"],
-	["m03_glass_district", Vector3(-12, 18, -236), Vector3(0, 11, -275), "m03_toll_roof"],
-	["m03_glass_district", Vector3(-50, 75, 30), Vector3(0, 10, -280), "m03_overview"],
-	["m03_glass_district", Vector3(-60.1, 16, -250.1), Vector3(-88.4, 15.5, -278.4), "m03_offices"],
-	["m03_glass_district", Vector3(-358, 13, -712), Vector3(-347.9, 7, -790), "m03_bridge"],
-	["m03_glass_district", Vector3(-395, 7, -790), Vector3(-347.9, 6, -835), "m03_bridge_side"],
+	# Stage 5, Westside.
+	["l5_1_storm_channels", Vector3(1012, 15, -110), Vector3(960, 4, -110), "ws_5_1_spillway"],
+	["l5_1_storm_channels", Vector3(930, 14, -100), Vector3(870, 0, -110), "ws_5_1_channel"],
+	["l5_1_storm_channels", Vector3(915, 1.7, -110), Vector3(895, 4, -110), "ws_5_1_listeners", 60],
+	["l5_1_storm_channels", Vector3(822, 1.8, -26), Vector3(822, 2.5, -10), "ws_5_1_sluice", 90],
+	["l5_1_storm_channels", Vector3(822, 11.7, 306), Vector3(818, 9, 330), "ws_5_1_ward_water", 10],
+	["l5_1_storm_channels", Vector3(772, 2, 359.6), Vector3(720, 3, 359.6), "ws_5_1_outflow", 60],
+	["l5_1_storm_channels", Vector3(640, 9.7, 359.6), Vector3(600, 11, 359.6), "ws_5_1_rail_line"],
+	["l5_2_rail_line", Vector3(606, 11.7, 359.6), Vector3(570, 10, 359.6), "ws_5_2_old_line"],
+	["l5_2_rail_line", Vector3(556, 14, 256), Vector3(555, 4, 222), "ws_5_2_blast_nine", 150],
+	["l5_2_rail_line", Vector3(555, 11.7, 24), Vector3(555, 13, 6), "ws_5_2_junction", 100],
+	["l5_2_rail_line", Vector3(556, 12.5, -78), Vector3(555, 11, -100), "ws_5_2_wagon", 140],
+	["l5_2_rail_line", Vector3(556, 14, -96), Vector3(555, 4, -140), "ws_5_2_blast_four", 150],
+	["l5_2_rail_line", Vector3(522, 12, -200), Vector3(480, 11, -200), "ws_5_2_station"],
+	["l5_2_rail_line", Vector3(452, 11.7, -200), Vector3(150, 70, 20), "ws_5_2_calder_house"],
+	["l5_2_rail_line", Vector3(470, 11.7, -200), Vector3(300, 30, -200), "ws_5_2_end_ahead"],
+	# Stage 6, Calder House and the Tower (atlas coordinates).
+	["l6_1_head_office", Vector3(452, 11.7, -200), Vector3(380, 9, -200), "s6_1_platform"],
+	["l6_1_head_office", Vector3(560, 150, -420), Vector3(250, 0, -100), "s6_1_overview"],
+	["l6_1_head_office", Vector3(262, 23.7, 74), Vector3(276, 23.0, 68), "s6_1_office"],
+	["l6_1_head_office", Vector3(273.5, 23.75, 70.4), Vector3(273.5, 23.7, 67.1), "s6_1_photo"],
+	["l6_2_skybridge", Vector3(197, 45.7, 168), Vector3(197, 44, 225), "s6_2_tanks"],
+	["l6_2_skybridge", Vector3(0, 44.7, 150), Vector3(0, 46, 20), "s6_2_bridge"],
+	["l6_2_skybridge", Vector3(110, 80, 150), Vector3(0, 40, 50), "s6_2_bridge_outside"],
 	["m04_silt_line", Vector3(-10, 6, 8), Vector3(0, 0, -40), "m04_silt"],
 	["m04_silt_line", Vector3(-3, 1.8, 3), Vector3(0, 6, -40), "m04_wreck"],
 	["m04_silt_line", Vector3(-22, 16, 40), Vector3(0, 3, -30), "m04_wreck_behind"],
@@ -60,20 +74,33 @@ const SHOTS := [
 	["m07_parking_spiral", Vector3(-15.5, 8.5, -485), Vector3(-15.5, 5, -530), "act2_m07_lower_lap"],
 	["m07_parking_spiral", Vector3(70, 45, -430), Vector3(0, 10, -510), "act2_m07_garage_outside"],
 	["m07_parking_spiral", Vector3(8, 4, -486), Vector3(-2, 2, -530), "act2_m07_core"],
-	["m08_storm_channels", Vector3(-14, 14, 10), Vector3(0, 4, -40), "m08_start"],
-	["m08_storm_channels", Vector3(-11, 7, -104), Vector3(0, 0, -150), "m08_channel"],
-	["m08_storm_channels", Vector3(100, 260, 100), Vector3(-220, 0, -400), "m08_overview"],
-	["m09_rail_bridge", Vector3(-14, 16, 10), Vector3(0, 8, -40), "m09_start"],
-	["m09_rail_bridge", Vector3(-80, 24, -392), Vector3(-150, 8, -426), "m09_junction"],
-	["m09_rail_bridge", Vector3(120, 300, 100), Vector3(-260, 0, -420), "m09_overview"],
-	["m10_the_climb", Vector3(20, 30, -150), Vector3(-40, 20, -172), "m10_platforms"],
-	["m10_the_climb", Vector3(80, 200, 80), Vector3(-90, 30, -90), "m10_overview"],
-	["m10_the_climb", Vector3(-62, 52, -70), Vector3(-90, 40, -110), "m10_tower_scaffold"],
-	["m10_the_climb", Vector3(30, 40, 20), Vector3(-60, 25, -60), "m10_tower_decks"],
-	["m11_dead_air", Vector3(0, 48.6, -36), Vector3(0, 47.5, -80), "m11_lobby"],
-	["m11_dead_air", Vector3(100, 260, 60), Vector3(-220, 40, -300), "m11_overview"],
-	["m12_signal_out", Vector3(-14, 66, 10), Vector3(0, 56, -30), "m12_tower"],
-	["m12_signal_out", Vector3(80, 260, 80), Vector3(-120, 30, -320), "m12_overview"],
+	["l6_3_the_climb", Vector3(3, 45.5, 56), Vector3(0, 37, 28), "s6_3_stub"],
+	["l6_3_the_climb", Vector3(70, 120, 110), Vector3(0, 50, 0), "s6_3_scaffold"],
+	["l6_3_the_climb", Vector3(-28, 46, -18), Vector3(-28, 50, 40), "s6_3_uplink"],
+	["l6_3_the_climb", Vector3(40, 58, -30), Vector3(46, 55, 10), "s6_3_cage"],
+	["l6_3_the_climb", Vector3(28, 71, 20), Vector3(140, 30, 120), "s6_3_watchers", 2],
+	["l6_3_the_climb", Vector3(-28, 46, -18), Vector3(-28, 50, 40), "s6_3_uplink_on", 40],
+	["l6_3_the_climb", Vector3(-14, 77, 30), Vector3(0, 76, 22), "s6_3_door"],
+	["l6_4_dead_air", Vector3(0, 76.7, 30), Vector3(0, 76, 10), "s6_4_door"],
+	["l6_4_dead_air", Vector3(-4, 76.7, 20), Vector3(-12, 76, 4), "s6_4_vents"],
+	["l6_4_dead_air", Vector3(15, 81.7, -4), Vector3(15, 84, 10), "s6_4_stairwell"],
+	["l6_4_dead_air", Vector3(-12, 86.7, 15), Vector3(-15, 86, -10), "s6_4_corridor"],
+	["l6_4_dead_air", Vector3(0, 106.8, 7), Vector3(0, 106, -4), "s6_4_studio"],
+	["l6_4_dead_air", Vector3(1.2, 106.9, 1.5), Vector3(0, 106, -6), "s6_4_trap_reunion", 150],
+	["l6_4_dead_air", Vector3(1.2, 106.9, 1.5), Vector3(0, 106, -6), "s6_4_trap_fire", 750],
+	["l6_4_dead_air", Vector3(1.2, 106.9, 1.5), Vector3(-6, 106, 0), "s6_4_trap_door", 450],
+	# Stage 7, Signal Out (atlas): the studio, the chute over the Silt, the
+	# west roofs, the bank and the girder (campaign/tools/signal_out_shots.gd
+	# plays the fall).
+	["l7_1_signal_out", Vector3(-13.2, 106.6, 0), Vector3(4, 106.0, 0), "s7_opening"],
+	["l7_1_signal_out", Vector3(4, 108.0, 3.5), Vector3(-14, 105.4, -1), "s7_studio"],
+	["l7_1_signal_out", Vector3(-22, 107.2, 3), Vector3(-108, 52, 0), "s7_chute"],
+	["l7_1_signal_out", Vector3(-40, 22, -70), Vector3(-55, 10, 10), "s7_over_silt"],
+	["l7_1_signal_out", Vector3(-277, 49.7, 14), Vector3(-277, 44, 90), "s7_west_roofs"],
+	["l7_1_signal_out", Vector3(-150, 16, 311), Vector3(-80, 0, 311), "s7_down_to_bank"],
+	["l7_1_signal_out", Vector3(-88, 2.7, 311.5), Vector3(-21, 1.0, 311), "s7_girder"],
+	["l7_1_signal_out", Vector3(-30, 14, 260), Vector3(-53, 0, 311), "s7_crossing"],
+	["l7_1_signal_out", Vector3(150, 320, 560), Vector3(-140, 0, 160), "s7_overview"],
 	# The route generator's test route: corners, a fork, climbs and ramps.
 	["res://tests/fixtures/route_twists.json", Vector3(-150, 300, 120), Vector3(-260, 0, -130), "twists_overview"],
 	["res://tests/fixtures/route_twists.json", Vector3(10, 22, -40), Vector3(-30, 10, -66), "twists_corner"],
@@ -112,6 +139,10 @@ func _run() -> void:
 		await _angled(campaign, only.trim_prefix("angled:"))
 		quit()
 		return
+	if only == "carry":
+		await _carry(campaign)
+		quit()
+		return
 	if only != "":
 		await _shots(campaign, only)
 		quit()
@@ -128,16 +159,19 @@ func _run() -> void:
 	await _shots(campaign, "")
 
 	# First person, a few seconds in, with the radio and objective up.
-	var level: Node = await _load_mission(campaign, "m02_on_air")
+	var level: Node = await _load_mission(campaign, "l2_1_on_air")
 	var p: Node = level.get_node("Player")
 	p.set_physics_process(false)
-	p.global_position = Vector3(0, 8, -40)
+	# 2-1's first warehouse roof, heading west.
+	p.global_position = Vector3(2885, 6, 318)
+	p.basis = Basis(Vector3.UP, PI * 0.5)
+	p.yaw = PI * 0.5
 	p.set_view(0.15, -0.05)
 	level.radio.say("host", "Ladies, gentlemen, and... whatever the rest of you are. Our courier has left the building!")
 	level.radio.advance(0.0)
 	_hide_ui(level, false)
 	await _frames(10)
-	_save("m02_first_person_radio")
+	_save("l2_1_first_person_radio")
 	# The results card.
 	level.mission_hud.show_results({"seconds": 52.4, "score": 18450, "best_combo": 6200, "par_seconds": 60.0,
 		"total_tapes": 1, "tapes": ["x"], "restarts": 1, "practice": false, "records": {"time": true}},
@@ -163,14 +197,25 @@ func _shots(campaign: Script, only: String) -> void:
 		if s.size() > 4:
 			# Play the set pieces out first.
 			for sp: Node in level.builder.set_pieces:
-				if sp.get("kind") == "camp" and sp.get("state") == "intact":
+				var camp: bool = sp.get("kind") == "camp" and sp.get("state") == "intact"
+				# Other set pieces in sight (Westside's blasts, wagon, signals).
+				var near: bool = sp is Node3D and sp.get("fired") == false and sp.has_method("_fire") \
+					and (sp as Node3D).global_position.distance_to(s[1]) < 90.0
+				if near:
+					sp.set("fired", true)
+				if camp or near:
 					sp.call("_fire")
 					for t in int(s[4]):
 						sp.call("tick", s[1], null)
+				elif sp.get("kind") in ["trap", "uplink", "cage", "watchers"]:
+					# Stage 6's: fired where they'd fire, then on (shots of
+					# one level add up their ticks).
+					for t in int(s[4]):
+						sp.call("tick", sp.get("trigger"), null)
 		var cam := Camera3D.new()
 		cam.cull_mask &= ~4
 		cam.fov = 75.0
-		cam.far = 600.0 if s.size() > 4 or String(s[0]).begins_with("l1_") else 500.0
+		cam.far = 600.0 if s.size() > 4 or String(s[0]).begins_with("l") else 500.0
 		level.add_child(cam)
 		cam.look_at_from_position(s[1], s[2])
 		cam.make_current()
@@ -181,6 +226,36 @@ func _shots(campaign: Script, only: String) -> void:
 	if level != null:
 		level.queue_free()
 		await _frames(2)
+
+
+## Dawn Run's parcel in hand: first person on the opening roof, then the
+## chase camera's view of Parker carrying it, then the toss into the crate.
+func _carry(campaign: Script) -> void:
+	var level: Node = await _load_mission(campaign, "l1_1_dawn_run")
+	var p: Node = level.get_node("Player")
+	p.set_physics_process(false)
+	p.set_view(PI * 0.5, -0.1)
+	_hide_ui(level, false)
+	await _frames(10)
+	_save("dk_1_1_parcel_first_person")
+	var chase: Node = p.get_node_or_null("ChaseCamera")
+	if chase != null:
+		chase.set_active(true)
+		await _frames(20)
+		_save("dk_1_1_parcel_third_person")
+		chase.set_active(false)
+	# The toss: stand short of the drop, deliver, catch it mid-flight.
+	var drop: Node = level.run.drop_offs[0]
+	p.global_position = Vector3(3260, 15.05, -122)
+	p.set_view(0.25, -0.15)
+	await _frames(4)
+	drop.deliver(p.camera.global_position + Vector3(0.2, -0.25, -0.4), "parcel")
+	await _frames(8)
+	_save("dk_1_1_parcel_toss")
+	await _frames(30)
+	_save("dk_1_1_parcel_delivered")
+	level.queue_free()
+	await _frames(2)
 
 
 ## Down the course: from the start and each checkpoint toward the next one

@@ -43,10 +43,19 @@ const TAPE_RADIUS := 1.4
 ## The player respawns itself below y = -40 (Player._physics_process), so a
 ## fall has to be noticed well above that (even falling a metre a tick).
 const LOWEST_FAIL_Y := -30.0
+## Below fail_y or in a pit you've only fallen once nothing but the bare
+## ground is under you: anything solid this close below your feet (a
+## crate, a kerb, a low roof) holds you up.
+const HOLD_DEPTH := 4.0
+## The bare ground: the route's ground slab (kind FLOOR) this low.
+const GROUND_TOP := 0.5
 ## A banked combo at this multiplier or more is worth a radio reaction.
 const COMBO_REACTION_MULTIPLIER := 4
 ## Points for each bonus goal finished.
 const BONUS_POINTS := 1000
+## A delivery's base points, into the running combo (so speed scales it).
+const DELIVERY_POINTS := 500
+const DROP_OFF_SCRIPT := "res://campaign/drop_off.gd"
 
 var phase := Phase.READY
 var ticks := 0
@@ -97,6 +106,8 @@ var _respawning := false
 const NEAR_GAP := 6.0
 var _host_near := false
 var _start_pos := Vector3.ZERO
+## "deliver" objective index -> its drop-off (campaign/drop_off.gd).
+var drop_offs := {}
 
 
 func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) -> void:
@@ -138,12 +149,25 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 				event.emit("host_close")
 			else:
 				_on_story_event("set_piece:" + kind))
+	# Set pieces that wait for a mission event ("on") rather than a place.
+	event.connect(func(e: String) -> void:
+		for sp: Node3D in builder.set_pieces:
+			if sp.has_method("on_event"):
+				sp.on_event(e, self))
+	for i in objectives.size():
+		if String(objectives[i].get("type", "")) == "deliver":
+			var d: Node3D = (load(DROP_OFF_SCRIPT) as Script).new()
+			d.name = "DropOff_%d" % i
+			b.add_child(d)
+			d.setup(objectives[i], carry_object(), b)
+			drop_offs[i] = d
 	_start_pos = b.spawns[0].origin
 	event.connect(_save_choice)
+	event.connect(_carry_event)
 	_reset_run(0)
 
 
-## An enemy's own story moment, like the Host's "host:hit" (m09b): played
+## An enemy's own story moment, like the Host's "host:hit" (Head Office): played
 ## as is and numbered across the run ("host:hit:1", "host:hit:2"), so the
 ## radio can answer the first and the second differently.
 func _on_story_event(e: String) -> void:
@@ -153,10 +177,19 @@ func _on_story_event(e: String) -> void:
 
 
 ## A boss's fate ("fate:spared") is a story choice later missions remember
-## (not from a practice run).
+## (not from a practice run). So is whatever the mission's "remember" names
+## ({"host:hit": "host_hit"}): "yes" once it happens, "no" from the start.
 func _save_choice(e: String) -> void:
-	if e.begins_with("fate:") and not practice and mission_index >= 0:
+	if practice or mission_index < 0:
+		return
+	if e.begins_with("fate:"):
 		Campaign.set_choice(mission_index, "fate", e.substr(5))
+	var remember: Dictionary = mission.get("remember", {})
+	if e == "start":
+		for k: String in remember:
+			Campaign.set_choice(mission_index, String(remember[k]), "no")
+	elif remember.has(e):
+		Campaign.set_choice(mission_index, String(remember[e]), "yes")
 
 
 ## Starts the mission: call after connecting to `event` (the radio).
@@ -171,6 +204,48 @@ func seconds() -> float:
 
 func fail_y() -> float:
 	return maxf(mission.get("fail_y", -50.0), LOWEST_FAIL_Y)
+
+
+## Off the course with nothing of it under you: below fail_y or in a pit,
+## and not standing on (or just over) anything but the bare ground. Never
+## while you're on a prop, a piece or a roof, however low it is.
+## `floors`: what you're standing on (Player's floor contacts), if anything.
+func is_fall(pos: Vector3, floors: Array = []) -> bool:
+	if pos.y < LOWEST_FAIL_Y:
+		return true
+	if pos.y >= fail_y() and not _in_pit(pos):
+		return false
+	return not held_up(pos, floors)
+
+
+## Something other than the bare ground under you: one of `floors`, or
+## the first thing straight down within HOLD_DEPTH.
+func held_up(pos: Vector3, floors: Array = []) -> bool:
+	for b: Object in floors:
+		if not is_bare_ground(b, pos.y):
+			return true
+	if player == null or not player.is_inside_tree():
+		return false
+	var space := player.get_world_3d().direct_space_state
+	var q := PhysicsRayQueryParameters3D.create(pos + Vector3(0, 0.3, 0), pos - Vector3(0, HOLD_DEPTH, 0), 1)
+	var hit := space.intersect_ray(q)
+	return not hit.is_empty() and not is_bare_ground(hit.collider, (hit.position as Vector3).y)
+
+
+static func is_bare_ground(body: Object, top: float) -> bool:
+	return body != null and body.has_meta("kind") and String(body.get_meta("kind")) == "FLOOR" and top < GROUND_TOP
+
+
+## What the player is standing on now (walkable contacts of its last move).
+func _floor_bodies() -> Array:
+	var out: Array = []
+	if player == null or not player.is_on_floor():
+		return out
+	for i in player.get_slide_collision_count():
+		var c := player.get_slide_collision(i)
+		if c.get_normal().y > 0.6:
+			out.append(c.get_collider())
+	return out
 
 
 ## Down off the course (low, and not on any of its streets): see "pits"
@@ -232,6 +307,9 @@ func bonus_text() -> String:
 
 ## What the HUD shows for the active objective, with progress.
 func objective_text() -> String:
+	if phase == Phase.COMPLETE:
+		# Not the last goal any more: you're there (the radio may still talk).
+		return "Level complete"
 	var o := current_objective()
 	if o.is_empty():
 		return ""
@@ -261,7 +339,17 @@ func total_tapes() -> int:
 
 
 func _physics_process(_delta: float) -> void:
-	if player == null or phase == Phase.COMPLETE or phase == Phase.LOST:
+	if player == null:
+		return
+	if phase == Phase.COMPLETE or phase == Phase.LOST:
+		# The chase is over: he stops (or holds you, if he caught you).
+		if pursuer != null:
+			pursuer.hold(player.global_position, 1.0 / Engine.physics_ticks_per_second)
+		if phase == Phase.COMPLETE:
+			# An ending set piece (the bridge going) plays out after the win.
+			for sp: Node3D in builder.set_pieces:
+				if sp.has_method("busy") and sp.busy():
+					sp.tick(player.global_position, self)
 		return
 	var pos := player.global_position
 	if phase == Phase.READY:
@@ -270,7 +358,7 @@ func _physics_process(_delta: float) -> void:
 			event.emit("go")
 	if phase == Phase.RUNNING:
 		ticks += 1
-	if pos.y < fail_y() or _in_pit(pos):
+	if is_fall(pos, _floor_bodies()):
 		falls += 1
 		_lose("fall")
 		return
@@ -280,6 +368,7 @@ func _physics_process(_delta: float) -> void:
 		pursuer.tick(pos, 1.0 / Engine.physics_ticks_per_second)
 		if pursuer.has_caught():
 			catches += 1
+			pursuer.catch(pos)
 			_lose("caught")
 			return
 		# He's on your back: the radio can react (once until you pull away).
@@ -314,12 +403,16 @@ func _begin_objective(i: int) -> void:
 
 func _check_objective(pos: Vector3) -> void:
 	var o := current_objective()
-	if o.is_empty() or phase == Phase.READY and o.get("type", "reach") == "reach":
+	if o.is_empty() or phase == Phase.READY and o.get("type", "reach") in ["reach", "deliver"]:
 		return
 	var done := false
 	match String(o.get("type", "reach")):
 		"reach":
 			done = inside(o, pos) or _reached_later(pos)
+		"deliver":
+			# Only by going through the drop-off: reaching a later goal
+			# never counts a delivery you ran past.
+			done = inside(o, pos)
 		"score":
 			done = _score() >= int(o.points)
 		"combo":
@@ -335,6 +428,8 @@ func _check_objective(pos: Vector3) -> void:
 		"event":
 			done = int(event_counts.get(String(o.get("event", "")), 0)) >= int(o.get("count", 1))
 	if done:
+		if drop_offs.has(objective):
+			_deliver(objective)
 		event.emit("done:%d" % objective)
 		_close_bonuses(objective)
 		if _next_required(objective + 1) >= objectives.size():
@@ -556,6 +651,11 @@ func start_practice(index: int) -> void:
 	if index > 0:
 		var cps: Array = mission.get("checkpoints", [])
 		_begin_objective(cps[index - 1].get("objective", objective) if index - 1 < cps.size() else objective)
+		# A practice start past a drop-off: already delivered.
+		for i: int in drop_offs:
+			if i < objective:
+				_set_held(carry_then())
+				drop_offs[i].show_delivered()
 	else:
 		_begin_objective(0)
 
@@ -581,6 +681,9 @@ func _reset_run(index: int) -> void:
 	if pursuer != null:
 		pursuer.reset(_start_pos)
 	_reset_set_pieces()
+	_set_held(carry_object())
+	for i: int in drop_offs:
+		drop_offs[i].reset()
 	# A fresh run: everyone is back, even the ones killed last time.
 	for enc: Node3D in builder.encounters:
 		enc.reset(true)
@@ -641,3 +744,51 @@ func _reset_set_pieces() -> void:
 	_host_near = false
 	for sp: Node3D in builder.set_pieces:
 		sp.reset()
+
+
+# ---------------------------------------------------------------- carrying
+
+## What the mission has you carry instead of the gun: its "carry" key, a
+## kind ("parcel") or {"object", "until", "then"}. "gun" when there's none.
+func carry_object() -> String:
+	var c: Variant = mission.get("carry", "gun")
+	return String(c.get("object", "gun")) if c is Dictionary else String(c)
+
+
+## What the hands hold after a delivery or the "until" event: "hands"
+## (nothing; Dawn Run runs home empty-handed) unless "then" says ("gun").
+func carry_then() -> String:
+	var c: Variant = mission.get("carry", "gun")
+	return String(c.get("then", "hands")) if c is Dictionary else "hands"
+
+
+## What's in the player's hands now ("gun" without a weapon node).
+func held() -> String:
+	var w: Node = player.weapon if player != null else null
+	return String(w.held) if w != null and "held" in w else "gun"
+
+
+func _set_held(kind: String) -> void:
+	var w: Node = player.weapon if player != null else null
+	if w != null and "held" in w:
+		w.held = kind
+
+
+## The carry's "until" event (e.g. "set_piece:handoff") swaps to "then".
+func _carry_event(e: String) -> void:
+	var c: Variant = mission.get("carry", null)
+	if c is Dictionary and c.has("until") and e == String(c.until) and phase != Phase.READY:
+		_set_held(carry_then())
+
+
+## The object leaves your hands at drop-off `i`, tossed in on the run: you
+## keep every bit of speed, the combo gets DELIVERED, the radio "delivered".
+func _deliver(i: int) -> void:
+	var from := player.global_position + Vector3.UP * 1.2
+	if player.camera != null:
+		from = player.camera.global_position - player.camera.global_basis.z * 0.4 + Vector3.DOWN * 0.25
+	drop_offs[i].deliver(from, held())
+	_set_held(carry_then())
+	if combo != null:
+		combo.add(&"delivered", DELIVERY_POINTS, player.horizontal_speed())
+	event.emit("delivered")

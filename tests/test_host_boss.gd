@@ -58,6 +58,32 @@ func test_the_host_runs_when_hit_and_cant_die() -> void:
 	check(e.encounter.phase == e.encounter.Phase.CLEARED, "and his encounter can clear")
 
 
+## Head Office: he leaves his office through a real door, not a wall. With
+## a flee_path he runs through his points in order, opens the kick door in
+## his way and is only gone once he's through it.
+func test_the_host_runs_out_through_his_door() -> void:
+	var e := await _boss({"appearance": 3, "flee_time": 5.0, "flee_path": [[0, 0, -6], [0, 0, -11]]})
+	# A wall 8 m behind him with a doorway on his line (hinge at its left).
+	w.add_box(Vector3(-3.55, 1.5, -28), Vector3(6, 3, 0.3))
+	w.add_box(Vector3(3.55, 1.5, -28), Vector3(6, 3, 0.3))
+	w.add_box(Vector3(0, 2.6, -28), Vector3(1.1, 0.8, 0.3))
+	var door: Node3D = load("res://levels/door.gd").new()
+	door.position = Vector3(-0.55, 0, -28)
+	w.add_child(door)
+	await w.step(10)
+	e.take_hit({"damage": 1.0, "zone": &"body", "position": e.global_position + Vector3.UP})
+	var furthest := 0.0
+	for i in 240:
+		await w.step(1)
+		if not e.gone:
+			furthest = minf(furthest, e.global_position.z)
+		else:
+			break
+	check(door.is_open, "he opened the door on his way")
+	check(furthest < -29.0, "he went through it (got to z %.1f)" % furthest)
+	check(e.gone, "and he's gone on the far side")
+
+
 func test_the_host_runs_on_his_own_after_a_while() -> void:
 	var e := await _boss({"run_after": 1.5})
 	await w.step(150)

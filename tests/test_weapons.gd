@@ -220,17 +220,22 @@ func test_first_shot_is_exact_at_full_sprint() -> void:
 		check(&"fast" in hits[0].tags, "fast shot is tagged")
 
 
-func test_spam_blooms_and_recovers() -> void:
+func test_full_auto_has_no_bloom() -> void:
 	await _setup()
 	var gun := _gun()
-	var s0 := gun.current_spread()
+	gun.aim_assist = 0.0
+	var t := _target(Vector3(0, 0, -30))
+	t.max_health = 1.0e9
+	t.health = t.max_health
+	await w.step(2)
+	_aim(_head(t))
 	gun.full_auto = true
 	gun.trigger_held = true
-	await w.step(30)
+	await w.step(60)
 	gun.trigger_held = false
-	check(gun.current_spread() > s0 + 1.0, "holding the trigger blooms the spread")
-	await w.step(40)
-	check_near(gun.current_spread(), s0, 0.01, "spread recovers once you stop")
+	check(hits.size() >= 8, "held full auto for a second (%d hits)" % hits.size())
+	var heads := hits.filter(func(h: Dictionary) -> bool: return h.zone == &"head").size()
+	check(heads == hits.size(), "every shot lands on the head at 30 m: no spread, no bloom (%d of %d)" % [heads, hits.size()])
 
 
 func test_recoil_kicks_view_without_moving_aim() -> void:
@@ -480,3 +485,42 @@ func test_gun_hooks_for_art() -> void:
 			shown += 1
 	check(shown == 0, "the test pistol's boxes hide for a real model")
 	check(gun.view_model.visible, "the view model node stays for the real gun")
+
+
+# ------------------------------------------------------------------ carrying
+
+func test_carrying_takes_the_guns_place() -> void:
+	await _setup()
+	var gun := _gun()
+	var t := _target(Vector3(0, 0, -8))
+	var changes: Array[String] = []
+	gun.held_changed.connect(func(h: String) -> void: changes.append(h))
+	gun.held = "parcel"
+	check(changes == ["parcel"] and not gun.is_armed(), "the parcel is in hand")
+	check(not gun.view_model.visible and gun.carry_model != null, "the gun's hidden, the parcel shows")
+	check(gun.carry_model.get_child(0).layers == Pistol.VIEW_LAYER, "on the first-person layer")
+	await _shoot(_head(t))
+	await w.step(5)
+	check(gun.shots_fired == 0 and hits.is_empty(), "the trigger does nothing")
+	gun.aim_held = true
+	gun.reload_pressed = true
+	await w.step(20)
+	check(gun.aim_blend == 0.0 and not gun.is_reloading(), "no aiming or reloading")
+	gun.aim_held = false
+	gun.held = "hands"
+	check(gun.carry_model == null and not gun.view_model.visible, "empty hands show nothing")
+	gun.held = "gun"
+	check(gun.is_armed() and gun.view_model.visible, "the gun comes back")
+	await w.step(5)
+	await _shoot(_head(t))
+	check(gun.shots_fired == 1, "and fires again")
+
+
+func test_every_carry_model_builds() -> void:
+	var models: Script = load("res://weapons/carry_models.gd")
+	for kind: String in models.KINDS:
+		var m: Node3D = models.build(kind, 4)
+		var meshes := m.find_children("*", "MeshInstance3D", true, false)
+		check(meshes.size() >= 3, "%s has a model" % kind)
+		check(meshes.all(func(x: Node) -> bool: return (x as MeshInstance3D).layers == 4), "%s on the asked layer" % kind)
+		m.free()

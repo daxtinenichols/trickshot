@@ -119,9 +119,32 @@ def docks_landmarks():
 
 def other_landmarks():
     return [
-        {"id": "calder_house", "name": "Calder House", "boxes": [[150, 20, 60, 60, 0, 150]], "shade": 3},
+        # Calder Way's road bridge over the Silt bed (bed centre x 1754 at
+        # z 40, 64 m wide): deck at y 8 from its east end on land (x 1830)
+        # to the west abutment (x 1708), on piers every 30 m. 2-3 The Toll
+        # builds the same deck (route.gd bridge, piers 15 m in, then every
+        # 30) and blows it with Parker on it at x 1790; Stage 3 (3-1)
+        # starts there.
+        {"id": "silt_bridge", "name": "The Silt bridge", "boxes": [[1769, 40, 122, 14, 7.0, 8.0],
+            [1815, 40, 2.4, 7, 0, 7.0], [1785, 40, 2.4, 7, 0, 7.0], [1755, 40, 2.4, 7, 0, 7.0], [1725, 40, 2.4, 7, 0, 7.0]], "shade": 4},
+        # Calder House: the old radio company's block east of the tower, its
+        # wings the Stage 6 levels run through (6-1 Head Office, 6-2
+        # Skybridge; boxes round their floors, from campaign-tools/stage6).
+        {"id": "calder_house", "name": "Calder House", "boxes": [
+            [394, -200, 126, 26, 0, 15], [344, -272, 26, 122, 0, 12], [276, -320, 114, 26, 0, 12],
+            [224, -178, 38, 262, 0, 18], [194, -58, 58, 16, 0, 22.5], [173, 17, 26, 138, 0, 27],
+            [233, 73, 98, 14, 0, 27], [351, 73, 154, 26, 0, 36], [415, 125, 26, 82, 0, 36],
+            [295, 146, 218, 36, 0, 45], [197, 205, 22, 86, 0, 45], [88.5, 237, 199, 22, 0, 48],
+            [0, 196, 14, 64, 0, 45]], "shade": 3},
         {"id": "meridian_mall", "name": "Meridian Mall", "boxes": [[1290, 120, 190, 150, 0, 26], [1290, -60, 120, 70, 0, 34]], "shade": 1},
-        {"id": "rail_line", "name": "Westside rail line", "boxes": [[725, -200, 550, 10, 8, 10]], "shade": 4},
+        # Westside (Stage 5, exact): the rail line's viaduct, north from the
+        # sidings to West Central and west to the end of the line, plus its
+        # branch east to Meridian. 5-2 The Rail Line runs on it and ends at
+        # "westside_exit", where Stage 6 starts ("point", "yaw").
+        {"id": "rail_line", "name": "Westside rail line", "boxes": [[555, 76, 14, 576, 8, 10], [502, -200, 104, 14, 8, 10],
+                                                                    [790, -200, 420, 10, 8, 10]], "shade": 4},
+        {"id": "westside_exit", "name": "End of the Westside line", "boxes": [[452, -200, 4, 12, 0, 9]], "shade": 4,
+         "point": [450, 10, -200], "yaw": 90},
         {"id": "dam", "name": "The dam", "boxes": [[-150, -2640, 420, 26, 0, 48]], "shade": 2},
         {"id": "terrace_wall", "name": "The Ward's wall", "boxes": [[460, -1900, 900, 6, 0, 18], [20, -2225, 6, 650, 0, 18], [900, -2225, 6, 650, 0, 18]], "shade": 3},
     ]

@@ -12,6 +12,11 @@ extends Node3D
 ## lunges, and within `catch_distance` (path or straight line) you're caught.
 ## Set pieces can bring him in close (`close_in`): he took a shortcut.
 ##
+## Once the chase stops (you're caught, or the mission's over) MissionRun
+## calls hold() every tick instead of tick(): he stops dead, he doesn't run
+## on the spot. catch(you) first makes it a catch: he closes the last meter
+## and grabs you (the body plays the grab from `caught` / `catch_ticks`).
+##
 ## Deterministic: driven by MissionRun's physics tick, no physics queries.
 ## The body (the Host's model) only reads his state.
 
@@ -44,6 +49,14 @@ var catchup_speed := 15.0
 var shortcut_range := 12.0
 var shortcut_ratio := 1.3
 var display_name := "THE HOST"
+## Where he comes from at the start ("lead_in": [[x, y, z], ...], ending at
+## the spawn): he stands at the first point, in sight, and runs the rest
+## before your own path, so the chase opens with him coming at you instead
+## of appearing after `delay`. Only at the start, not at checkpoints.
+var lead_in := PackedVector3Array()
+## A set piece has him (the Silt fall at the end of Signal Out): tick() and
+## the catch leave him alone, and the set piece moves him.
+var scripted := false
 
 ## Your path so far, and the distance along it to each point.
 var crumbs := PackedVector3Array()
@@ -66,6 +79,12 @@ var lunging := false
 var cutting := false
 ## Ticks since a set piece brought him in (the body plays a drop-in).
 var since_close_in := 1 << 20
+## He's got you: set by catch(), for the body's grab.
+var caught := false
+## Ticks since catch().
+var catch_ticks := 0
+## How close he ends up to whoever he grabbed (m, center to center).
+var grab_distance := 0.85
 var _crumb_i := 0
 
 var _body: Node3D
@@ -77,6 +96,10 @@ func configure(d: Dictionary) -> void:
 		if d.has(k):
 			set(k, float(d[k]))
 	display_name = d.get("name", display_name)
+	lead_in.clear()
+	for a: Variant in d.get("lead_in", []):
+		if a is Array and a.size() >= 3:
+			lead_in.append(Vector3(a[0], a[1], a[2]))
 
 
 func _ready() -> void:
@@ -87,19 +110,31 @@ func _ready() -> void:
 func reset(at: Vector3) -> void:
 	crumbs = PackedVector3Array([at])
 	_lengths = PackedFloat32Array([0.0])
+	var lead := lead_in.size() >= 2 and lead_in[lead_in.size() - 1].distance_to(at) < 1.0
+	if lead:
+		crumbs = lead_in.duplicate()
+		crumbs[crumbs.size() - 1] = at
+		_lengths = PackedFloat32Array([0.0])
+		for i in range(1, crumbs.size()):
+			_lengths.append(_lengths[i - 1] + crumbs[i].distance_to(crumbs[i - 1]))
 	along = 0.0
 	_crumb_i = 0
-	_wait = delay
+	scripted = false
+	_wait = 0.0 if lead else delay
 	_chase_time = 0.0
 	gap = INF
 	direct = INF
-	pos = at
 	velocity = Vector3.ZERO
 	lunging = false
 	cutting = false
 	since_close_in = 1 << 20
-	global_position = at
-	visible = false
+	caught = false
+	catch_ticks = 0
+	pos = crumbs[0]
+	global_position = pos
+	visible = lead
+	if lead:
+		_face(at - pos)
 
 
 func waiting() -> bool:
@@ -136,6 +171,8 @@ func path_gap() -> float:
 
 
 func tick(target: Vector3, dt: float) -> void:
+	if scripted:
+		return
 	if crumbs.is_empty():
 		reset(target)
 	var last := crumbs[crumbs.size() - 1]
@@ -174,7 +211,48 @@ func tick(target: Vector3, dt: float) -> void:
 
 
 func has_caught() -> bool:
-	return not in_grace() and gap <= catch_distance
+	return not scripted and not in_grace() and gap <= catch_distance
+
+
+## He's got you at `target` (your position): from now on hold() closes in
+## and the body grabs. Call once, when has_caught() first goes true (or from
+## a set piece that scripts a catch).
+func catch(target: Vector3) -> void:
+	caught = true
+	catch_ticks = 0
+	lunging = false
+	cutting = false
+	visible = true
+	_face(target - pos)
+
+
+## The chase has stopped (caught, mission over, or paused by the mission):
+## he stops running, so the body settles to a stand instead of running on
+## the spot. Caught, he steps in to `grab_distance` of `target` and holds
+## you there. Call every physics tick instead of tick().
+func hold(target: Vector3, dt: float) -> void:
+	# A set piece moving him itself (e.g. a fall) keeps him.
+	if scripted and not caught:
+		return
+	var before := pos
+	lunging = false
+	cutting = false
+	if caught:
+		catch_ticks += 1
+		var flat := Vector3(target.x - pos.x, 0, target.z - pos.z)
+		var want := target - flat.normalized() * grab_distance if flat.length() > 0.01 else pos
+		want.y = target.y
+		pos = pos.move_toward(want, 9.0 * dt)
+		_face(flat)
+	global_position = pos
+	direct = pos.distance_to(target)
+	velocity = (pos - before) / dt if dt > 0.0 and not caught else Vector3.ZERO
+
+
+func _face(dir: Vector3) -> void:
+	dir.y = 0.0
+	if dir.length() > 0.05:
+		global_basis = Basis.looking_at(dir.normalized(), Vector3.UP)
 
 
 ## A set piece: he took a shortcut and is suddenly `to_gap` m behind you

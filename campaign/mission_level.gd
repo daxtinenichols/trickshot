@@ -8,6 +8,10 @@ extends "res://levels/sandbox.gd"
 ## Reloading leaves nothing behind (kicked doors, broken glass, enemies,
 ## set pieces, the radio's once-only lines, score, combo, Flow, health),
 ## which resetting each system in place could miss.
+##
+## The first time you play a level it holds you at the start (free look,
+## no moving) while its opening lines are said, then lets you go. After a
+## restart, or on a level finished before, the opening is skipped.
 
 signal restarted(fresh: Node)
 
@@ -18,6 +22,10 @@ const STORY_WAIT_MAX := 90.0
 ## the quicker one for Backspace / the menu's Restart.
 const LOSS_TICKS := 60
 const RESTART_TICKS := 15
+## Caught in the chase: longer, and the fade waits, so you see him grab you
+## (your view turns to him) before it goes dark.
+const CAUGHT_TICKS := 105
+const CAUGHT_FADE_FROM := 0.45
 const LOSS_TEXT := {"fall": "FELL", "caught": "CAUGHT", "down": "DOWN"}
 
 var run: MissionRun
@@ -36,7 +44,13 @@ var _fade: ColorRect
 var _fade_label: Label
 var _fade_ticks := 0
 var _fade_total := 0
+var _fade_from := 0.0
 var _restarting := false
+## The empty input holding you still while the opening plays (null when
+## free).
+var _hold: InputFrame
+var _hold_layer: CanvasLayer
+var _hold_label: Label
 
 
 func _ready() -> void:
@@ -68,7 +82,10 @@ func _ready() -> void:
 	mission_hud.menu_pressed.connect(func() -> void: Campaign.open_menu(get_tree()))
 	run.completed.connect(_on_completed)
 	_build_fade()
+	radio.skip_opening = restarts > 0 or start_zone > 0 or index >= 0 and Campaign.is_complete(index)
 	run.begin()
+	if radio.opening_playing():
+		_hold_still()
 	if start_zone > 0:
 		go_to_zone(start_zone)
 	if restarts == 0:
@@ -85,10 +102,18 @@ func _on_completed(result: Dictionary) -> void:
 
 
 func _process(delta: float) -> void:
+	if _hold != null:
+		_hold_label.text = "ON AIR  %d" % ceili(radio.opening_left())
+	if radio != null and run != null:
+		# Set pieces timed to the radio (a bridge blows after its line).
+		var on_air: String = radio.current.get("line", "")
+		for sp: Node3D in run.builder.set_pieces:
+			if sp.has_method("hear"):
+				sp.hear(on_air)
 	if _results.is_empty():
 		return
 	_results.waited += delta
-	if radio != null and radio.busy() and _results.waited < STORY_WAIT_MAX:
+	if _results.waited < STORY_WAIT_MAX and (radio != null and radio.busy() or _set_piece_busy()):
 		return
 	var r := _results
 	_results = {}
@@ -98,6 +123,13 @@ func _process(delta: float) -> void:
 	if DisplayServer.get_name() != "headless":
 		player.capture_mouse(false)
 	mission_hud.show_results(r.result, run.mission.get("title", "Mission complete"), r.next)
+
+
+func _set_piece_busy() -> bool:
+	for sp: Node3D in run.builder.set_pieces:
+		if sp.has_method("busy") and sp.busy():
+			return true
+	return false
 
 
 func _next() -> void:
@@ -118,21 +150,75 @@ func _on_lost(reason: String) -> void:
 	player.use_device_input = false
 	player.scripted_input = InputFrame.new()
 	Engine.time_scale = 1.0
-	_fade_total = RESTART_TICKS if reason == "restart" else LOSS_TICKS
+	_fade_total = RESTART_TICKS if reason == "restart" else (CAUGHT_TICKS if reason == "caught" else LOSS_TICKS)
+	_fade_from = CAUGHT_FADE_FROM if reason == "caught" else 0.0
 	_fade_ticks = 0
 	_fade_label.text = LOSS_TEXT.get(reason, "")
 	_fade_layer.visible = true
 
 
+# ---------------------------------------------------------------- opening
+
+func _hold_still() -> void:
+	_hold = InputFrame.new()
+	player.scripted_input = _hold
+	_hold_layer = CanvasLayer.new()
+	_hold_layer.layer = 7
+	add_child(_hold_layer)
+	_hold_label = Label.new()
+	_hold_label.add_theme_font_size_override("font_size", 30)
+	_hold_label.add_theme_color_override("font_color", Color(1.0, 0.36, 0.3))
+	_hold_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_hold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hold_label.position = Vector2(-120, 90)
+	_hold_label.custom_minimum_size = Vector2(240, 0)
+	_hold_layer.add_child(_hold_label)
+
+
+## The opening has been said: you're free to go.
+func _release() -> void:
+	# Tests (and the results card) may have taken the input over since.
+	if player.scripted_input == _hold:
+		player.scripted_input = null
+	_hold = null
+	_hold_layer.queue_free()
+	hud.show_toast("GO", 1.0)
+
+
+## True while the opening holds you at the start.
+func holding() -> bool:
+	return _hold != null
+
+
 func _physics_process(_delta: float) -> void:
+	if _hold != null and not radio.opening_playing():
+		_release()
 	if _fade_total <= 0 or _restarting:
 		return
 	_fade_ticks += 1
 	var t := float(_fade_ticks) / _fade_total
+	if _fade_from > 0.0:
+		_look_at_catcher()
+		t = clampf((t - _fade_from) / (1.0 - _fade_from), 0.0, 1.0)
 	_fade.color.a = clampf(t * 1.4, 0.0, 1.0)
 	_fade_label.modulate.a = clampf(t * 3.0, 0.0, 1.0)
 	if _fade_ticks >= _fade_total:
 		restart()
+
+
+## Turns your view to whoever caught you (the chase's Pursuer).
+func _look_at_catcher() -> void:
+	var p := run.pursuer if run != null else null
+	if p == null or not p.caught:
+		return
+	var eye: Vector3 = player.global_position + Vector3(0, 1.6, 0)
+	var to := p.global_position + Vector3(0, 1.7, 0) - eye
+	if Vector2(to.x, to.z).length() < 0.05:
+		return
+	var want_yaw := atan2(-to.x, -to.z)
+	var want_pitch := atan2(to.y, Vector2(to.x, to.z).length())
+	player.yaw = lerp_angle(player.yaw, want_yaw, 0.18)
+	player.pitch = lerpf(player.pitch, want_pitch, 0.18)
 
 
 ## Starts this mission again from its start (or the practice start): a

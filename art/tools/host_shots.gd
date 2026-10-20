@@ -2,7 +2,7 @@ extends SceneTree
 ## Renders the Host for review: next to Parker, his pose sheet (run, lunge,
 ## fall, landing), and the chase in Signal Out from in front of Echo
 ## looking back at him (frames for a clip with `clip`).
-##   xvfb-run -a godot --path . --fixed-fps 60 -s res://art/tools/host_shots.gd -- <out_dir> [lineup,poses,chase,clip]
+##   xvfb-run -a godot --path . --fixed-fps 60 -s res://art/tools/host_shots.gd -- <out_dir> [lineup,poses,chase,clip,catch]
 ## Scripts run with -s load before the autoloads, so nothing here is typed
 ## with classes that need them.
 
@@ -26,7 +26,7 @@ func _run() -> void:
 	root.size = Vector2i(1280, 720)
 	var campaign: Script = load("res://campaign/campaign.gd")
 	campaign.persist = false
-	if "lineup" in parts or "poses" in parts or "boss" in parts:
+	if "lineup" in parts or "poses" in parts or "boss" in parts or "catch" in parts:
 		var level: Node3D = load("res://levels/sandbox.tscn").instantiate()
 		root.add_child(level)
 		var player: Node = level.get_node("Player")
@@ -42,6 +42,8 @@ func _run() -> void:
 			await _pose_sheet(level, spot)
 		if "boss" in parts:
 			await _boss(level, player, spot)
+		if "catch" in parts:
+			await _catch(level, spot)
 		level.queue_free()
 		await _frames(2)
 	if "chase" in parts or "clip" in parts:
@@ -154,7 +156,7 @@ func _boss(level: Node3D, player: Node3D, spot: Vector3) -> void:
 ## she stops and he gets her. With `clip`, saves every other frame for a
 ## video (30 fps).
 func _chase(campaign: Script, clip: bool) -> void:
-	var level := await _load_mission(campaign, "m12_signal_out")
+	var level := await _load_mission(campaign, "l7_1_signal_out")
 	var p: Node3D = level.get_node("Player")
 	var run: Node = level.find_child("MissionRun", true, false)
 	var steps: Array = run.mission.bot
@@ -222,6 +224,28 @@ func _load_mission(campaign: Script, id: String) -> Node3D:
 func _hide_ui(level: Node) -> void:
 	for c in level.find_children("*", "CanvasLayer", true, false):
 		(c as CanvasLayer).visible = false
+
+
+## The catch (Pursuer.catch + hold): he reaches, then has Echo (side view).
+func _catch(level: Node3D, spot: Vector3) -> void:
+	var echo := _body(level, "echo", spot, 0.0)
+	echo.pose_override = RunnerPoses.run(0.25, 0.6)
+	var p: Node3D = load("res://campaign/pursuer.gd").new()
+	level.add_child(p)
+	p.reset(spot + Vector3(0, 0, 2.6))
+	p.visible = true
+	await _frames(2)
+	p.catch(spot)
+	for shot: Array in [[4, "catch_reach"], [40, "catch_grab"]]:
+		while p.catch_ticks < int(shot[0]):
+			p.hold(spot, 1.0 / 60.0)
+			await process_frame
+		var cam := _camera(level, spot + Vector3(3.6, 1.5, 1.2), spot + Vector3(0, 1.1, 0.5), 45.0)
+		await _frames(3)
+		_save(shot[1])
+		cam.queue_free()
+	p.queue_free()
+	echo.queue_free()
 
 
 func _frames(n: int) -> void:
