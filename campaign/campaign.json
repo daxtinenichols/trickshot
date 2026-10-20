@@ -49,7 +49,7 @@
    ]
   },
   {
-   "title": "Stage 5: Westside",
+   "title": "Act 3: The Signal",
    "missions": [
     {"id": "l5_1_storm_channels", "number": 8, "label": "5-1", "title": "Storm Channels", "place": "The Ward's storm channels, car park to the rail embankment",
      "beat": "The city starts rooting for Parker and he can see it: listeners wave from the walkways and one hauls a sluice open for him. The Ward hold the channels because the channels are the water.",
@@ -58,12 +58,7 @@
     {"id": "l5_2_rail_line", "number": 9, "label": "5-2", "title": "The Rail Line", "place": "The old rail line to the station under Calder House",
      "beat": "Told by the Ward to end it, the Host changes the course live: he blows the track ahead of Parker twice. Echo's second code picks the junction.",
      "moves": "Long speed run; down and back up the blown sections", "enemies": "Ward squads and gun drones, then the Static",
-     "file": "res://campaign/missions/l5_2_rail_line.json"}
-   ]
-  },
-  {
-   "title": "Act 3: The Signal",
-   "missions": [
+     "file": "res://campaign/missions/l5_2_rail_line.json"},
     {"id": "m09b_head_office", "number": 10, "title": "Head Office", "place": "Calder House, lobby to the executive floor",
      "beat": "For the first time the Host is in the room. He comes down to deal with Parker himself, shoots from the balconies and runs every time Parker gets close.",
      "moves": "Kick doors, jump the glass, slide the shutters", "enemies": "The Host (hit him for a bonus); the Static on the office floors, the Ward in the atrium",

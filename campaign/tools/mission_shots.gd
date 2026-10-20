@@ -30,6 +30,22 @@ const SHOTS := [
 	["l1_2_the_yard", Vector3(3112, 6.5, 321), Vector3(3060, 2.5, 318), "dk_1_2_speed_gate"],
 	["l1_2_the_yard", Vector3(2992, 1.7, 318), Vector3(2700, 30, 318), "dk_1_2_gate_west"],
 	["l1_2_the_yard", Vector3(2972, 1.7, 318), Vector3(0, 120, 0), "dk_1_2_skyline_west"],
+	# Stage 5, Westside.
+	["l5_1_storm_channels", Vector3(1012, 15, -110), Vector3(960, 4, -110), "ws_5_1_spillway"],
+	["l5_1_storm_channels", Vector3(930, 14, -100), Vector3(870, 0, -110), "ws_5_1_channel"],
+	["l5_1_storm_channels", Vector3(915, 1.7, -110), Vector3(895, 4, -110), "ws_5_1_listeners", 60],
+	["l5_1_storm_channels", Vector3(822, 1.8, -26), Vector3(822, 2.5, -10), "ws_5_1_sluice", 90],
+	["l5_1_storm_channels", Vector3(822, 11.7, 306), Vector3(818, 9, 330), "ws_5_1_ward_water", 10],
+	["l5_1_storm_channels", Vector3(772, 2, 359.6), Vector3(720, 3, 359.6), "ws_5_1_outflow", 60],
+	["l5_1_storm_channels", Vector3(640, 9.7, 359.6), Vector3(600, 11, 359.6), "ws_5_1_rail_line"],
+	["l5_2_rail_line", Vector3(606, 11.7, 359.6), Vector3(570, 10, 359.6), "ws_5_2_old_line"],
+	["l5_2_rail_line", Vector3(556, 14, 256), Vector3(555, 4, 222), "ws_5_2_blast_nine", 150],
+	["l5_2_rail_line", Vector3(555, 11.7, 24), Vector3(555, 13, 6), "ws_5_2_junction", 100],
+	["l5_2_rail_line", Vector3(556, 12.5, -78), Vector3(555, 11, -100), "ws_5_2_wagon", 140],
+	["l5_2_rail_line", Vector3(556, 14, -96), Vector3(555, 4, -140), "ws_5_2_blast_four", 150],
+	["l5_2_rail_line", Vector3(522, 12, -200), Vector3(480, 11, -200), "ws_5_2_station"],
+	["l5_2_rail_line", Vector3(452, 11.7, -200), Vector3(150, 70, 20), "ws_5_2_calder_house"],
+	["l5_2_rail_line", Vector3(470, 11.7, -200), Vector3(300, 30, -200), "ws_5_2_end_ahead"],
 	["m02_on_air", Vector3(-14, 18, 6), Vector3(0, 8, -40), "m02_start"],
 	["m02_on_air", Vector3(-12, 16, -150), Vector3(0, 8, -190), "m02_lookouts"],
 	["m02_on_air", Vector3(320, 260, 60), Vector3(120, 0, -380), "m02_overview"],
@@ -157,7 +173,13 @@ func _shots(campaign: Script, only: String) -> void:
 		if s.size() > 4:
 			# Play the set pieces out first.
 			for sp: Node in level.builder.set_pieces:
-				if sp.get("kind") == "camp" and sp.get("state") == "intact":
+				var camp: bool = sp.get("kind") == "camp" and sp.get("state") == "intact"
+				# Other set pieces in sight (Westside's blasts, wagon, signals).
+				var near: bool = sp is Node3D and sp.get("fired") == false and sp.has_method("_fire") \
+					and (sp as Node3D).global_position.distance_to(s[1]) < 90.0
+				if near:
+					sp.set("fired", true)
+				if camp or near:
 					sp.call("_fire")
 					for t in int(s[4]):
 						sp.call("tick", s[1], null)

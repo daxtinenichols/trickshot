@@ -1386,7 +1386,8 @@ func test_route_finishes_keep_you_on_the_roof() -> void:
 		level.queue_free()
 		level = null
 		await tree.physics_frame
-	check(ran >= 6, "route finishes were tried (%d)" % ran)
+	# (Storm Channels and the rail line are atlas levels now: they run on.)
+	check(ran >= 5, "route finishes were tried (%d)" % ran)
 
 
 ## Runs the loaded mission's route bot (or its fork lines) to the end.
@@ -2055,7 +2056,8 @@ func test_city_props_stand_clear_of_buildings() -> void:
 				if not Geometry2D.intersect_polygons(foot, w).is_empty():
 					sunk.append("%s at %s" % [p.prop, p.at])
 					break
-		check(props > 10, "%s has city props (%d)" % [id, props])
+		# (The Rail Line runs up on the tracks, over few streets.)
+		check(props > 5, "%s has city props (%d)" % [id, props])
 		check(sunk.is_empty(), "%s: no city prop in a building (%d: %s)" % [id, sunk.size(), sunk.slice(0, 4)])
 
 

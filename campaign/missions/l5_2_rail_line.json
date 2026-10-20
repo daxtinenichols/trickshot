@@ -23,6 +23,18 @@
   "yaw": 90
  },
  "chalk": true,
+ "tower_views": [
+  [
+   580,
+   10,
+   359.61
+  ],
+  [
+   470,
+   10,
+   -200
+  ]
+ ],
  "clutter": [
   "crate_wood",
   "barrel_rust",
@@ -634,7 +646,7 @@
        "aim_lead": 1.0
       },
       {
-       "type": "heavy",
+       "type": "bruiser",
        "x": -3.6,
        "d": 34,
        "wake": 0.0,
@@ -642,7 +654,7 @@
        "aim_lead": 0.6
       },
       {
-       "type": "heavy",
+       "type": "bruiser",
        "x": 3.6,
        "d": 46,
        "wake": 0.0,
@@ -885,7 +897,7 @@
        "aim_lead": 0.8
       },
       {
-       "type": "heavy",
+       "type": "bruiser",
        "x": -2.0,
        "d": 30,
        "wake": 0.0,
@@ -893,7 +905,7 @@
        "aim_lead": 0.6
       },
       {
-       "type": "heavy",
+       "type": "bruiser",
        "x": 2.0,
        "d": 40,
        "wake": 0.0,
@@ -908,15 +920,15 @@
     },
     {
      "hurdles": true,
-     "at": 4.0
+     "at": 8.0
     },
     {
      "slide": true,
-     "at": 18.0
+     "at": 22.0
     },
     {
      "hurdles": true,
-     "at": 32.0
+     "at": 36.0
     }
    ]
   },
@@ -925,11 +937,6 @@
    "y": 10,
    "bridge": true,
    "do": [
-    {
-     "label": "CALDER HOUSE",
-     "at": 8,
-     "size": 1.5
-    },
     {
      "mark": "#f57320",
      "at": 12

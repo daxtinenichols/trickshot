@@ -23,6 +23,13 @@
   "yaw": 90
  },
  "chalk": true,
+ "tower_views": [
+  [
+   1010,
+   12,
+   -110
+  ]
+ ],
  "clutter": [
   "debris_pile",
   "tire_stack",

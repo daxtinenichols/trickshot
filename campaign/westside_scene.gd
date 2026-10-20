@@ -524,7 +524,8 @@ func _build_wagon() -> void:
 	var dark := _mat(Color(0.16, 0.15, 0.14))
 	_box(_wagon, Vector3(0, (WAGON_UNDER + WAGON_TOP) * 0.5, 0), Vector3(WAGON_W, WAGON_TOP - WAGON_UNDER, WAGON_LEN), brown, false)
 	for z: float in [-WAGON_LEN * 0.36, WAGON_LEN * 0.36]:
-		_box(_wagon, Vector3(0, WAGON_UNDER * 0.5, z), Vector3(WAGON_W - 0.4, WAGON_UNDER, 1.6), dark, false)
+		# Clear of the deck by a hair so its base doesn't share the rails' plane.
+		_box(_wagon, Vector3(0, (WAGON_UNDER + 0.03) * 0.5, z), Vector3(WAGON_W - 0.4, WAGON_UNDER - 0.03, 1.6), dark, false)
 	var paint := Label3D.new()
 	paint.text = "STATIC"
 	paint.font_size = 96
@@ -591,9 +592,10 @@ func _build_junction() -> void:
 		_box(self, Vector3(x, 4.0, z), Vector3(0.35, 8.0, 0.35), steel, false)
 	_box(self, Vector3(spread * 0.5, 8.0, z), Vector3(spread + 13.6, 0.5, 0.5), steel, false)
 	for x: float in [0.0, spread]:
-		_box(self, Vector3(x, 6.9, z), Vector3(0.8, 1.8, 0.5), _mat(Color(0.08, 0.08, 0.08)), false)
-		var red := _box(self, Vector3(x, 7.35, z + 0.27), Vector3(0.45, 0.45, 0.05), _mat(Color(1.0, 0.1, 0.06), 4.0), false) as MeshInstance3D
-		var green := _box(self, Vector3(x, 6.55, z + 0.27), Vector3(0.45, 0.45, 0.05), _mat(Color(0.1, 1.0, 0.35), 4.0), false) as MeshInstance3D
+		# Big heads: read from the far end of the junction roof.
+		_box(self, Vector3(x, 6.3, z), Vector3(1.4, 3.0, 0.6), _mat(Color(0.08, 0.08, 0.08)), false)
+		var red := _box(self, Vector3(x, 7.0, z + 0.32), Vector3(0.95, 0.95, 0.05), _mat(Color(1.0, 0.1, 0.06), 6.0), false) as MeshInstance3D
+		var green := _box(self, Vector3(x, 5.6, z + 0.32), Vector3(0.95, 0.95, 0.05), _mat(Color(0.1, 1.0, 0.35), 6.0), false) as MeshInstance3D
 		_signals.append(red)
 		_signals.append(green)
 
