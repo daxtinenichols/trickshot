@@ -1,0 +1,604 @@
+{
+ "id": "l2_3_the_toll",
+ "title": "The Toll",
+ "runner": "",
+ "atlas": true,
+ "plain_runner": true,
+ "city_open": [
+  [
+   1690,
+   -80,
+   1815,
+   160
+  ]
+ ],
+ "par_seconds": 130,
+ "start": {
+  "at": [
+   2118.32,
+   13.0,
+   -479.68
+  ],
+  "yaw": 90.0
+ },
+ "route_origin": {
+  "at": [
+   2118.32,
+   13.0,
+   -479.68
+  ],
+  "yaw": 90.0
+ },
+ "chalk": true,
+ "clutter": [
+  "vent_stack",
+  "debris_pile",
+  "barrel_rust",
+  "crate_stack"
+ ],
+ "objectives": [
+  {
+   "type": "reach",
+   "name": "the toll floors",
+   "text": "Into the toll tower",
+   "at": "@Toll floors"
+  },
+  {
+   "type": "shoot",
+   "count": 3,
+   "text": "Bonus: take out the toll crew"
+  },
+  {
+   "type": "reach",
+   "name": "the bridge",
+   "text": "Over the toll roof to the Silt bridge",
+   "at": "end"
+  }
+ ],
+ "radio": [
+  {
+   "who": "host",
+   "line": "Toll's one arm and one leg, Parker. Or the other way round. We're flexible.",
+   "must": true,
+   "keep": true,
+   "on": "go"
+  },
+  {
+   "who": "host",
+   "line": "Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker.",
+   "must": true,
+   "keep": true,
+   "on": "set_piece:bridge_collapse_down"
+  }
+ ],
+ "chatter": {
+  "bail": [
+   {
+    "who": "host",
+    "line": "Ooh, careful, that's a real... well, it was a window."
+   },
+   {
+    "who": "host",
+    "line": "Down he goes! Folks, we're gonna need more glass."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Don't think about it."
+   },
+   {
+    "who": "host",
+    "line": "Through the window and right into my heart, folks."
+   },
+   {
+    "who": "host",
+    "line": "Glass everywhere. Somebody sweep that up."
+   }
+  ],
+  "combo": [
+   {
+    "who": "host",
+    "line": "Listen to that glass go! That's music, that is."
+   },
+   {
+    "who": "mags",
+    "line": "Lovely. Stay on it."
+   },
+   {
+    "who": "host",
+    "line": "He's good. I hate that he's good."
+   },
+   {
+    "who": "mags",
+    "line": "That's it, kid, keep flowing."
+   },
+   {
+    "who": "host",
+    "line": "The man's a walking highlight reel. A bleeding one, but still."
+   },
+   {
+    "who": "mags",
+    "line": "That's it. Keep it going."
+   }
+  ],
+  "fall": [
+   {
+    "who": "host",
+    "line": "And he's back on the street, where he belongs!"
+   },
+   {
+    "who": "mags",
+    "line": "Find a way up. You know how."
+   },
+   {
+    "who": "host",
+    "line": "Street level! Mind the Silt, darling."
+   },
+   {
+    "who": "mags",
+    "line": "Back up. Same line, faster."
+   }
+  ],
+  "kill": [
+   {
+    "who": "host",
+    "line": "Oh, come on. Do you know how hard it is to find people who can climb?"
+   },
+   {
+    "who": "mags",
+    "line": "Nice. Go."
+   },
+   {
+    "who": "host",
+    "line": "Another one! Folks, I'm running out of lookouts."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Keep moving."
+   },
+   {
+    "who": "host",
+    "line": "And the lookout's... not looking out. Not anymore."
+   },
+   {
+    "who": "host",
+    "line": "That spotter had a family, you know. Well. A rat. He called it Biscuit."
+   }
+  ],
+  "headshot": [
+   {
+    "who": "mags",
+    "line": "Good shot."
+   },
+   {
+    "who": "host",
+    "line": "Ooh. Right in the earpiece. Feedback, everybody."
+   },
+   {
+    "who": "host",
+    "line": "Yeesh. Somebody clean that up, the windows are bad enough."
+   },
+   {
+    "who": "mags",
+    "line": "Yes. That's how you do it."
+   },
+   {
+    "who": "mags",
+    "line": "Clean."
+   }
+  ],
+  "down": [
+   {
+    "who": "host",
+    "line": "Courier down! On the glass, too. That's gotta sting."
+   },
+   {
+    "who": "mags",
+    "line": "Get up. Keep the glass between you and them."
+   },
+   {
+    "who": "host",
+    "line": "Aaand he's down. Don't touch that dial, folks."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Run first, then shoot."
+   },
+   {
+    "who": "mags",
+    "line": "Don't stand there trading shots. Run, then shoot."
+   }
+  ],
+  "tape": [
+   {
+    "who": "echo",
+    "line": "...he's got lookouts on every roof with glass. They watch the reflections. Stay low, stay quick."
+   },
+   {
+    "who": "echo",
+    "line": "...if anyone finds this, go west. Keep going west. He keeps the keys on his belt."
+   }
+  ]
+ },
+ "pieces": [],
+ "route": [
+  {
+   "roof": 95.32,
+   "y": 13,
+   "look": "FACADE",
+   "do": [
+    {
+     "checkpoint": "Toll gate",
+     "at": 3
+    }
+   ]
+  },
+  {
+   "gap": 5
+  },
+  {
+   "roof": 70,
+   "y": 13,
+   "interior": 7,
+   "look": "BRICK",
+   "do": [
+    {
+     "label": "TOLL",
+     "at": 4,
+     "size": 1.4
+    },
+    {
+     "hop": true,
+     "side": -1,
+     "at": 18
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Wall hop. First wall, then jump to the second.",
+      "cue": true
+     },
+     "at": 6,
+     "radius": 8
+    },
+    {
+     "hurdles": "crate_wood",
+     "at": 52
+    }
+   ]
+  },
+  {
+   "roof": 30,
+   "y": 16,
+   "look": "BRICK"
+  },
+  {
+   "turn": "left",
+   "size": 24
+  },
+  {
+   "roof": 90,
+   "y": 16,
+   "interior": 4.5,
+   "look": "TILE",
+   "do": [
+    {
+     "checkpoint": "Toll floors",
+     "at": 3,
+     "objective": 1
+    },
+    {
+     "hurdles": "crate_wood",
+     "at": 14
+    },
+    {
+     "hurdles": "crate_wood",
+     "at": 32
+    },
+    {
+     "hurdles": "crate_wood",
+     "at": 50
+    },
+    {
+     "encounter": "toll booth",
+     "at": 8,
+     "length": 66,
+     "raiders": [
+      [
+       3.5,
+       14
+      ],
+      [
+       -3.5,
+       26
+      ],
+      [
+       3.5,
+       40,
+       1
+      ],
+      [
+       -3.5,
+       54,
+       1.5
+      ]
+     ]
+    },
+    {
+     "door": -3.3,
+     "look": "BRICK",
+     "at": 80
+    }
+   ]
+  },
+  {
+   "roof": 60,
+   "y": 19,
+   "interior": 4.5,
+   "look": "TILE",
+   "do": [
+    {
+     "glass": 3.3,
+     "at": 18
+    },
+    {
+     "slide": true,
+     "at": 44
+    }
+   ]
+  },
+  {
+   "roof": 80,
+   "y": 22,
+   "interior": 4.5,
+   "look": "TILE",
+   "do": [
+    {
+     "hurdles": "crate_wood",
+     "at": 16
+    },
+    {
+     "glass": 0,
+     "at": 34
+    },
+    {
+     "hurdles": "pallet",
+     "at": 54
+    },
+    {
+     "door": 3.3,
+     "look": "BRICK",
+     "at": 72
+    }
+   ]
+  },
+  {
+   "roof": 145.0,
+   "y": 22,
+   "look": "FACADE",
+   "do": [
+    {
+     "checkpoint": "Toll roof",
+     "at": 3,
+     "objective": 2
+    },
+    {
+     "hurdles": true,
+     "at": 12
+    },
+    {
+     "hurdles": true,
+     "at": 30
+    },
+    {
+     "hurdles": true,
+     "at": 48
+    },
+    {
+     "hurdles": true,
+     "at": 66
+    },
+    {
+     "hurdles": true,
+     "at": 84
+    },
+    {
+     "hurdles": true,
+     "at": 102
+    },
+    {
+     "hurdles": true,
+     "at": 120
+    },
+    {
+     "hurdles": true,
+     "at": 138
+    },
+    {
+     "encounter": "toll roof",
+     "at": 8,
+     "length": 133.0,
+     "raiders": [
+      [
+       4,
+       18
+      ],
+      [
+       -4,
+       30
+      ],
+      [
+       3.5,
+       46,
+       1
+      ],
+      [
+       -3.5,
+       60,
+       1.5
+      ]
+     ],
+     "enemies": [
+      {
+       "type": "camera_drone",
+       "x": -3,
+       "d": 24,
+       "height": 5
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "flip"
+  },
+  {
+   "roof": 14,
+   "y": 22,
+   "look": "FACADE"
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 56,
+   "y": 22,
+   "look": "FACADE"
+  },
+  {
+   "gate": {
+    "tier": 1
+   }
+  },
+  {
+   "roof": 30,
+   "y": 22,
+   "look": "FACADE"
+  },
+  {
+   "turn": "right",
+   "size": 24
+  },
+  {
+   "roof": 10,
+   "y": 22,
+   "look": "FACADE"
+  },
+  {
+   "ramp_down": 8,
+   "length": 30
+  },
+  {
+   "roof": 30,
+   "y": 8,
+   "do": [
+    {
+     "radio": {
+      "who": "host",
+      "line": "He's at the bridge, folks. Shame about the bridge.",
+      "must": true,
+      "keep": true
+     },
+     "at": 2,
+     "radius": 8
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Parker, hang on. Something's off with that bridge.",
+      "must": true,
+      "keep": true
+     },
+     "at": 3,
+     "radius": 8
+    },
+    {
+     "hurdles": "barricade_jersey",
+     "at": 16
+    }
+   ]
+  },
+  {
+   "roof": 40.0,
+   "bridge": true,
+   "beyond": 82.0,
+   "do": [
+    {
+     "label": "THE SILT BRIDGE",
+     "at": 2,
+     "size": 1.4
+    },
+    {
+     "piece": {
+      "mark": [
+       0,
+       -7.98,
+       -76
+      ],
+      "size": [
+       220,
+       72
+      ],
+      "color": "#7a6c58"
+     },
+     "at": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -3.2,
+       0,
+       -64
+      ],
+      "yaw": 12
+     },
+     "at": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       3.4,
+       0,
+       -88
+      ],
+      "yaw": 168
+     },
+     "at": 0
+    },
+    {
+     "piece": {
+      "prop": "barricade_jersey",
+      "at": [
+       -1.5,
+       0,
+       -102
+      ],
+      "yaw": 70
+     },
+     "at": 0
+    },
+    {
+     "mark": "#f57320",
+     "at": 36.0
+    },
+    {
+     "set_piece": "bridge_collapse",
+     "at": 40.0,
+     "on": "complete",
+     "breaks": [
+      15,
+      45,
+      75,
+      105
+     ],
+     "hinges": "far",
+     "cue": "Parker, hang on. Something's off with that bridge.",
+     "blast_after": 2
+    }
+   ]
+  }
+ ]
+}
