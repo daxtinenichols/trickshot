@@ -558,6 +558,61 @@ func test_close_to_the_host_is_caught() -> void:
 	p.queue_free()
 
 
+## When the chase stops he stops: no running on the spot after the mission
+## ends. Caught, he steps in, grabs you and holds you (Dax 2026-10-19).
+func test_the_host_stops_and_grabs_when_the_chase_ends() -> void:
+	var p := Pursuer.new()
+	p.delay = 0.0
+	p.grace = 0.0
+	tree.root.add_child(p)
+	p.reset(Vector3.ZERO)
+	var host: Node = p.get_node_or_null("HostBody")
+	for i in 120:
+		p.tick(Vector3(0, 0, -0.25 * i - 12.0), 1.0 / 60.0)
+		await tree.process_frame
+	check(host.weight("run") > 0.6, "he's running (%.2f)" % host.weight("run"))
+	# The mission's over: MissionRun holds him instead of ticking him.
+	var you := Vector3(0, 0, -42)
+	for i in 40:
+		p.hold(you, 1.0 / 60.0)
+		await tree.process_frame
+	check(p.velocity == Vector3.ZERO, "he stops")
+	check(host.weight("run") < 0.15 and host.weight("idle") > 0.7, "and stands, not running on the spot (run %.2f)" % host.weight("run"))
+	# Caught: he closes in and grabs.
+	you = p.pos + Vector3(0, 0, -2.0)
+	p.catch(you)
+	for i in 40:
+		p.hold(you, 1.0 / 60.0)
+		await tree.process_frame
+	check(p.caught and p.catch_ticks == 40, "he's got you")
+	check(absf(p.pos.distance_to(you) - p.grab_distance) < 0.1, "right on you (%.2f m)" % p.pos.distance_to(you))
+	check(host.weight("grab") > 0.9, "grabbing (%.2f)" % host.weight("grab"))
+	var fwd := -p.global_basis.z
+	check(fwd.dot((you - p.pos).normalized()) > 0.95, "facing you")
+	p.reset(Vector3.ZERO)
+	check(not p.caught, "a restart lets you go")
+	p.queue_free()
+
+
+## In the mission: stop running and he catches you, MissionRun holds him on
+## you while the screen fades, and your view turns to him.
+func test_caught_in_signal_out_he_grabs_you() -> void:
+	# The Stage 7 rebuild renames the chase level.
+	await _load(_index("l7_1_signal_out") if _index("l7_1_signal_out") >= 0 else _index("m12_signal_out"))
+	await _step(30, _forward())
+	for i in 400:
+		if run.phase == MissionRun.Phase.LOST:
+			break
+		await _step(1)
+	check(run.phase == MissionRun.Phase.LOST and run.lost_reason == "caught", "stood still, you're caught (%s)" % run.lost_reason)
+	check(run.pursuer.caught, "he grabs you")
+	await _step(30)
+	check(run.pursuer.pos.distance_to(player.global_position) < 1.2, "and holds you (%.2f m)" % run.pursuer.pos.distance_to(player.global_position))
+	var to: Vector3 = run.pursuer.global_position - player.global_position
+	var look := Vector3(-sin(player.yaw), 0, -cos(player.yaw))
+	check(look.dot(Vector3(to.x, 0, to.z).normalized()) > 0.8, "you're turned to face him")
+
+
 ## He's quicker than you think: past the leash he sprints to catch up, and
 ## inside lunge range he lunges.
 func test_the_host_keeps_up_and_lunges() -> void:
@@ -1217,6 +1272,61 @@ func test_head_office_host_hits_are_a_bonus() -> void:
 			check(r.has("at") or on in ["start", "go", "complete"] or on.begins_with("checkpoint:") or on.begins_with("host:")
 				or on.begins_with("set_piece:"),
 				"%s: line '%s' has a known trigger" % [id, r.line])
+
+
+## His office's PRIVATE door isn't painted on: when he runs he opens it,
+## goes through and up the stairs behind it, and the stairwell is shut in
+## (a dead end for you, with a floor and walls all round).
+func test_head_office_host_leaves_through_his_private_door() -> void:
+	# Stage 6 renames Head Office.
+	await _load(_index("l6_1_head_office") if _index("l6_1_head_office") >= 0 else _index("m09b_head_office"))
+	var host: Node3D = null
+	for enc: Node3D in level.builder.encounters:
+		for e: Node in enc.enemies:
+			if e.get("appearance") == 3:
+				host = e
+	check(host != null, "the Host is in his office")
+	if host == null:
+		return
+	var home: Vector3 = host.global_position
+	var door: Node3D = null
+	for d: Node3D in tree.get_nodes_in_group("doors"):
+		if EnemyMath.horizontal(d.global_position - home).length() < 16.0 and (door == null
+				or d.global_position.distance_to(home) > door.global_position.distance_to(home)):
+			door = d
+	check(door != null, "his private door is behind him (host at %s, %d doors)" % [home, tree.get_nodes_in_group("doors").size()])
+	if door == null:
+		return
+	var normal: Vector3 = door.global_transform.basis.z
+	var side := signf(normal.dot(home - door.global_position))
+	# You come in down the office; he takes one hit and runs.
+	player.global_position = home + side * normal * 9.0 + Vector3(0, 0.1, 0)
+	host.encounter.start()
+	host.activate(player)
+	await _step(5)
+	host.take_hit({"damage": 1.0, "zone": &"body", "position": host.global_position + Vector3.UP})
+	var past := -INF
+	var rose := 0.0
+	for i in 360:
+		await _step(1)
+		if not is_instance_valid(host) or host.gone:
+			break
+		past = maxf(past, -side * normal.dot(host.global_position - door.global_position))
+		rose = maxf(rose, host.global_position.y - home.y)
+	check(door.is_open, "he opened his door")
+	check(past > 3.0, "and ran through it (%.1f m past the door)" % past)
+	check(rose > 1.5, "up his stairs (%.1f m)" % rose)
+	check(is_instance_valid(host) and host.gone, "then he's gone")
+	if not is_instance_valid(host):
+		return
+	# Behind the door: a floor under him and walls all round, no way out.
+	var space := player.get_world_3d().direct_space_state
+	var inside: Vector3 = door.global_transform * Vector3(0.55, 1.2, 0) - side * normal * 2.0
+	var floor_hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(inside, inside + Vector3.DOWN * 3.0))
+	check(not floor_hit.is_empty() and inside.y - floor_hit.position.y < 1.5, "a floor behind his door")
+	for dir: Vector3 in [Vector3.LEFT, Vector3.RIGHT, Vector3.FORWARD, Vector3.BACK, Vector3.UP]:
+		var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(inside, inside + dir * 12.0))
+		check(not hit.is_empty() or dir.dot(normal) * side > 0.5, "the stairwell is shut in (%s)" % dir)
 
 
 ## Skybridge ends at the Ward's glass gate: you can't get past it, they

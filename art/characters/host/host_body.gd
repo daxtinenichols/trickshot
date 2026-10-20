@@ -11,7 +11,9 @@ extends Node3D
 ##   * dropping off a ledge (your path goes down) he falls, then lands in a
 ##     crouch;
 ##   * close to you he lunges: chest down, both arms reaching for you;
-##   * a set piece that brings him in plays a drop-down landing.
+##   * a set piece that brings him in plays a drop-down landing;
+##   * when he catches you (Pursuer.catch) he grabs: arms out, then wrapped
+##     round you and hauling you up (grab(k), k 0..1 over GRAB_TICKS).
 ## Heavy footsteps play from where he is, so you hear him gaining.
 
 const BODY_SCRIPT_PATH := "res://art/characters/runner/runner_body.gd"
@@ -23,12 +25,14 @@ const DROP_HEIGHT := 4.0
 ## The layer every camera renders (not RunnerBody.LAYER).
 const WORLD_LAYER := 1
 const DROP_TICKS := 26
-const RATES := {"run": 10.0, "fall": 7.0, "lunge": 9.0, "land": 14.0, "idle": 6.0}
+const RATES := {"run": 10.0, "fall": 7.0, "lunge": 9.0, "land": 14.0, "idle": 6.0, "grab": 18.0}
+## Ticks from the catch to the full grab.
+const GRAB_TICKS := 24
 
 var pursuer: Node3D
 var body: Node3D
 
-var _weights := {"run": 0.0, "fall": 0.0, "lunge": 0.0, "land": 0.0, "idle": 1.0}
+var _weights := {"run": 0.0, "fall": 0.0, "lunge": 0.0, "land": 0.0, "idle": 1.0, "grab": 0.0}
 var _phase := 0.0
 var _prev_pos := Vector3.ZERO
 var _cur_pos := Vector3.ZERO
@@ -92,6 +96,9 @@ func _process(delta: float) -> void:
 	_vy = lerpf(_vy, vel.y, 1.0 - exp(-12.0 * delta))
 
 	var targets := {}
+	if bool(pursuer.get("caught")):
+		_pose_grab(at, delta)
+		return
 	var falling := clampf((-_vy - 4.0) / 4.0, 0.0, 1.0)
 	if int(pursuer.since_close_in) < 40:
 		_land = 1.0
@@ -131,6 +138,54 @@ func _process(delta: float) -> void:
 	_lean = lerpf(_lean, lean_target, 1.0 - exp(-8.0 * delta))
 	var b := _yaw_basis * Basis(Vector3.RIGHT, -_lean) * Basis(Vector3.UP, PI)
 	body.global_transform = Transform3D(b.scaled(Vector3.ONE * SCALE), at)
+
+
+## He's got you: everything else eases out and the grab plays.
+func _pose_grab(at: Vector3, delta: float) -> void:
+	for k: String in _weights:
+		_weights[k] = lerpf(_weights[k], 1.0 if k == "grab" else 0.0, 1.0 - exp(-float(RATES[k]) * delta))
+	var k := clampf(float(pursuer.get("catch_ticks")) / GRAB_TICKS, 0.0, 1.0)
+	_speed = 0.0
+	body.pose_override = _mix({
+		"run": RunnerPoses.run(_phase, 1.0),
+		"fall": RunnerPoses.fall(),
+		"lunge": lunge(_phase),
+		"land": RunnerPoses.crouch(),
+		"idle": RunnerPoses.idle(),
+		"grab": grab(k),
+	})
+	_yaw_basis = _yaw_basis.slerp(pursuer.global_basis.orthonormalized(), 1.0 - exp(-20.0 * delta))
+	# Leaning in over you as he grabs, then upright as he hauls.
+	_lean = lerpf(_lean, deg_to_rad(14.0) * (1.0 - k * 0.6), 1.0 - exp(-12.0 * delta))
+	var b := _yaw_basis * Basis(Vector3.RIGHT, -_lean) * Basis(Vector3.UP, PI)
+	body.global_transform = Transform3D(b.scaled(Vector3.ONE * SCALE), at)
+
+
+## The catch, k 0..1: arms flung out reaching (0), then wrapped round
+## whoever he's caught, chest pulled back and knees bent as he hauls them up
+## (1). Feet planted wide.
+static func grab(k: float) -> Dictionary:
+	var e := k * k * (3.0 - 2.0 * k)
+	var pose := RunnerPoses.idle()
+	pose["Hips"] = Vector3(lerpf(14, 4, e), 0, 0)
+	pose["Spine"] = Vector3(lerpf(20, -6, e), 0, 0)
+	pose["Chest"] = Vector3(lerpf(10, -10, e), 0, 0)
+	pose["Neck"] = Vector3(lerpf(-16, 4, e), 0, 0)
+	pose["Head"] = Vector3(lerpf(-14, 8, e), 0, 0)
+	pose["LeftUpperLeg"] = Vector3(lerpf(40, 34, e), 0, 12)
+	pose["LeftLowerLeg"] = Vector3(lerpf(-50, -56, e), 0, 0)
+	pose["LeftFoot"] = Vector3(12, 0, 0)
+	pose["RightUpperLeg"] = Vector3(lerpf(-10, 18, e), 0, -12)
+	pose["RightLowerLeg"] = Vector3(lerpf(-20, -46, e), 0, 0)
+	pose["RightFoot"] = Vector3(14, 0, 0)
+	# Arms: reaching wide and high, then closed in, hands crossed.
+	pose["LeftUpperArm"] = Vector3(lerpf(96, 58, e), 0, lerpf(34, -24, e))
+	pose["LeftLowerArm"] = Vector3(lerpf(10, 78, e), 0, 0)
+	pose["LeftHand"] = Vector3(lerpf(-20, 0, e), 0, 0)
+	pose["RightUpperArm"] = Vector3(lerpf(96, 58, e), 0, lerpf(-34, 24, e))
+	pose["RightLowerArm"] = Vector3(lerpf(10, 78, e), 0, 0)
+	pose["RightHand"] = Vector3(lerpf(-20, 0, e), 0, 0)
+	return pose
 
 
 ## Reaching for you mid-stride: chest down, both arms out in front, the
