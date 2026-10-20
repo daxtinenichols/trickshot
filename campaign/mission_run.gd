@@ -261,7 +261,12 @@ func total_tapes() -> int:
 
 
 func _physics_process(_delta: float) -> void:
-	if player == null or phase == Phase.COMPLETE or phase == Phase.LOST:
+	if player == null:
+		return
+	if phase == Phase.COMPLETE or phase == Phase.LOST:
+		# The chase is over: he stops (or holds you, if he caught you).
+		if pursuer != null:
+			pursuer.hold(player.global_position, 1.0 / Engine.physics_ticks_per_second)
 		return
 	var pos := player.global_position
 	if phase == Phase.READY:
@@ -280,6 +285,7 @@ func _physics_process(_delta: float) -> void:
 		pursuer.tick(pos, 1.0 / Engine.physics_ticks_per_second)
 		if pursuer.has_caught():
 			catches += 1
+			pursuer.catch(pos)
 			_lose("caught")
 			return
 		# He's on your back: the radio can react (once until you pull away).

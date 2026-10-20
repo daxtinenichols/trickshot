@@ -1010,6 +1010,7 @@
    {"piece": {"box": [6.35, 3.3, -100.375], "size": [0.3, 6.6, 8.75], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [4.8, 3.3, -104.6], "size": [3.4, 6.6, 0.3], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [4.8, 6.75, -100.375], "size": [3.4, 0.3, 8.75], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [4.8, 5.6, -96.15], "size": [3.4, 2.0, 0.3], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"ramp": [4.8, 2.4, -102.4], "to": [4.8, 0, -98.0], "width": 2.8, "kind": "NEUTRAL"}, "at": 0},
    {"piece": {"box": [4.8, 1.2, -103.5], "size": [2.8, 2.4, 2.2], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"piece": {"box": [4.8, 3.5, -104.42], "size": [1.2, 2.2, 0.06], "kind": "NEUTRAL", "look": "RUST"}, "at": 0},

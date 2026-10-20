@@ -18,6 +18,10 @@ const STORY_WAIT_MAX := 90.0
 ## the quicker one for Backspace / the menu's Restart.
 const LOSS_TICKS := 60
 const RESTART_TICKS := 15
+## Caught in the chase: longer, and the fade waits, so you see him grab you
+## (your view turns to him) before it goes dark.
+const CAUGHT_TICKS := 105
+const CAUGHT_FADE_FROM := 0.45
 const LOSS_TEXT := {"fall": "FELL", "caught": "CAUGHT", "down": "DOWN"}
 
 var run: MissionRun
@@ -36,6 +40,7 @@ var _fade: ColorRect
 var _fade_label: Label
 var _fade_ticks := 0
 var _fade_total := 0
+var _fade_from := 0.0
 var _restarting := false
 
 
@@ -118,7 +123,8 @@ func _on_lost(reason: String) -> void:
 	player.use_device_input = false
 	player.scripted_input = InputFrame.new()
 	Engine.time_scale = 1.0
-	_fade_total = RESTART_TICKS if reason == "restart" else LOSS_TICKS
+	_fade_total = RESTART_TICKS if reason == "restart" else (CAUGHT_TICKS if reason == "caught" else LOSS_TICKS)
+	_fade_from = CAUGHT_FADE_FROM if reason == "caught" else 0.0
 	_fade_ticks = 0
 	_fade_label.text = LOSS_TEXT.get(reason, "")
 	_fade_layer.visible = true
@@ -129,10 +135,28 @@ func _physics_process(_delta: float) -> void:
 		return
 	_fade_ticks += 1
 	var t := float(_fade_ticks) / _fade_total
+	if _fade_from > 0.0:
+		_look_at_catcher()
+		t = clampf((t - _fade_from) / (1.0 - _fade_from), 0.0, 1.0)
 	_fade.color.a = clampf(t * 1.4, 0.0, 1.0)
 	_fade_label.modulate.a = clampf(t * 3.0, 0.0, 1.0)
 	if _fade_ticks >= _fade_total:
 		restart()
+
+
+## Turns your view to whoever caught you (the chase's Pursuer).
+func _look_at_catcher() -> void:
+	var p := run.pursuer if run != null else null
+	if p == null or not p.caught:
+		return
+	var eye: Vector3 = player.global_position + Vector3(0, 1.6, 0)
+	var to := p.global_position + Vector3(0, 1.7, 0) - eye
+	if Vector2(to.x, to.z).length() < 0.05:
+		return
+	var want_yaw := atan2(-to.x, -to.z)
+	var want_pitch := atan2(to.y, Vector2(to.x, to.z).length())
+	player.yaw = lerp_angle(player.yaw, want_yaw, 0.18)
+	player.pitch = lerpf(player.pitch, want_pitch, 0.18)
 
 
 ## Starts this mission again from its start (or the practice start): a

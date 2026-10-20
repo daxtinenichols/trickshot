@@ -557,6 +557,61 @@ func test_close_to_the_host_is_caught() -> void:
 	p.queue_free()
 
 
+## When the chase stops he stops: no running on the spot after the mission
+## ends. Caught, he steps in, grabs you and holds you (Dax 2026-10-19).
+func test_the_host_stops_and_grabs_when_the_chase_ends() -> void:
+	var p := Pursuer.new()
+	p.delay = 0.0
+	p.grace = 0.0
+	tree.root.add_child(p)
+	p.reset(Vector3.ZERO)
+	var host: Node = p.get_node_or_null("HostBody")
+	for i in 120:
+		p.tick(Vector3(0, 0, -0.25 * i - 12.0), 1.0 / 60.0)
+		await tree.process_frame
+	check(host.weight("run") > 0.6, "he's running (%.2f)" % host.weight("run"))
+	# The mission's over: MissionRun holds him instead of ticking him.
+	var you := Vector3(0, 0, -42)
+	for i in 40:
+		p.hold(you, 1.0 / 60.0)
+		await tree.process_frame
+	check(p.velocity == Vector3.ZERO, "he stops")
+	check(host.weight("run") < 0.15 and host.weight("idle") > 0.7, "and stands, not running on the spot (run %.2f)" % host.weight("run"))
+	# Caught: he closes in and grabs.
+	you = p.pos + Vector3(0, 0, -2.0)
+	p.catch(you)
+	for i in 40:
+		p.hold(you, 1.0 / 60.0)
+		await tree.process_frame
+	check(p.caught and p.catch_ticks == 40, "he's got you")
+	check(absf(p.pos.distance_to(you) - p.grab_distance) < 0.1, "right on you (%.2f m)" % p.pos.distance_to(you))
+	check(host.weight("grab") > 0.9, "grabbing (%.2f)" % host.weight("grab"))
+	var fwd := -p.global_basis.z
+	check(fwd.dot((you - p.pos).normalized()) > 0.95, "facing you")
+	p.reset(Vector3.ZERO)
+	check(not p.caught, "a restart lets you go")
+	p.queue_free()
+
+
+## In the mission: stop running and he catches you, MissionRun holds him on
+## you while the screen fades, and your view turns to him.
+func test_caught_in_signal_out_he_grabs_you() -> void:
+	# The Stage 7 rebuild renames the chase level.
+	await _load(_index("l7_1_signal_out") if _index("l7_1_signal_out") >= 0 else _index("m12_signal_out"))
+	await _step(30, _forward())
+	for i in 400:
+		if run.phase == MissionRun.Phase.LOST:
+			break
+		await _step(1)
+	check(run.phase == MissionRun.Phase.LOST and run.lost_reason == "caught", "stood still, you're caught (%s)" % run.lost_reason)
+	check(run.pursuer.caught, "he grabs you")
+	await _step(30)
+	check(run.pursuer.pos.distance_to(player.global_position) < 1.2, "and holds you (%.2f m)" % run.pursuer.pos.distance_to(player.global_position))
+	var to: Vector3 = run.pursuer.global_position - player.global_position
+	var look := Vector3(-sin(player.yaw), 0, -cos(player.yaw))
+	check(look.dot(Vector3(to.x, 0, to.z).normalized()) > 0.8, "you're turned to face him")
+
+
 ## He's quicker than you think: past the leash he sprints to catch up, and
 ## inside lunge range he lunges.
 func test_the_host_keeps_up_and_lunges() -> void:
