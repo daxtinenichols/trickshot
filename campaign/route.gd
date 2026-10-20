@@ -424,8 +424,8 @@ static func _finish(st: Dictionary, mission: Dictionary) -> float:
 	var inside: float = last.inside
 	if inside > 0.0:
 		# The room ends in a wall (up to its ceiling) with a door in it.
-		_add(st, {"box": [0, y + inside * 0.5, z - 0.25], "size": [w + 1.0, inside, 0.5], "kind": "NEUTRAL", "look": "FACADE"})
-		_finish_door(st, y, z - 0.0)
+		_add(st, {"box": [0, y + inside * 0.5, z - 0.25], "size": [w + 1.0, inside, 0.5], "kind": "NEUTRAL", "look": "TILE"})
+		_finish_door(st, y, z)
 		return 0.0
 	var runout := FINISH_RUNOUT
 	st.runout = runout
@@ -434,21 +434,22 @@ static func _finish(st: Dictionary, mission: Dictionary) -> float:
 	_lane(st, z, end, w)
 	# Walls either side from the goal's start to the end building, too
 	# tall to climb or vault, and the building across the end.
+	# (In the level's own building look: on the tower, the tower.)
 	var from := z + FINISH_BEFORE
 	for side: float in [-1.0, 1.0]:
-		_add(st, {"box": [side * (half + 0.25), y + FINISH_WALL * 0.5, (from + end) * 0.5], "size": [0.5, FINISH_WALL, from - end], "kind": "NEUTRAL", "look": "FACADE"})
-	_add(st, {"box": [0, y + (FINISH_WALL + 2.0) * 0.5, end - 2.0], "size": [w + 1.0, FINISH_WALL + 2.0, 4.0], "kind": "NEUTRAL", "look": "FACADE", "footprint": true})
+		_add(st, {"box": [side * (half + 0.25), y + FINISH_WALL * 0.5, (from + end) * 0.5], "size": [0.5, FINISH_WALL, from - end], "kind": "NEUTRAL", "look": last.look})
+	_add(st, {"box": [0, y + (FINISH_WALL + 2.0) * 0.5, end - 2.0], "size": [w + 1.0, FINISH_WALL + 2.0, 4.0], "kind": "NEUTRAL", "look": last.look, "footprint": true})
 	_finish_door(st, y, end)
 	return runout
 
 
-## A shut steel door in its frame on the wall facing the run at z, with a
-## lamp over it: the way on, for the next level.
+## A shut steel door in its frame on the wall facing the run at z: the
+## way on, for the next level.
 static func _finish_door(st: Dictionary, y: float, z: float) -> void:
-	_add(st, {"box": [0, y + 1.35, z + 0.06], "size": [2.0, 2.7, 0.12], "kind": "NEUTRAL", "look": "RUST"})
-	_add(st, {"box": [0, y + 2.85, z + 0.1], "size": [2.6, 0.3, 0.2], "kind": "NEUTRAL", "look": "NEUTRAL"})
+	_add(st, {"box": [0, y + 1.5, z + 0.06], "size": [2.4, 3.0, 0.12], "kind": "NEUTRAL", "look": "RUST"})
+	_add(st, {"box": [0, y + 3.15, z + 0.1], "size": [3.0, 0.3, 0.2], "kind": "NEUTRAL", "look": "NEUTRAL"})
 	for side: float in [-1.0, 1.0]:
-		_add(st, {"box": [side * 1.15, y + 1.4, z + 0.1], "size": [0.3, 2.8, 0.2], "kind": "NEUTRAL", "look": "NEUTRAL"})
+		_add(st, {"box": [side * 1.35, y + 1.5, z + 0.1], "size": [0.3, 3.0, 0.2], "kind": "NEUTRAL", "look": "NEUTRAL"})
 
 
 ## A bridge deck instead of a building: a concrete slab on piers with
