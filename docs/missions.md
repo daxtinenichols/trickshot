@@ -109,6 +109,8 @@ Features on a roof, `at` meters from its start:
 | `{"lane": x}` | where the test bot runs from here |
 | `{"set_piece": "debris", "as": "slide", "at": 46, "trigger": 20}` | a chase set piece (see The chase) |
 
+**Finish.** A route that ends up high (not on a street or a bridge) ends in a finish you can't run off: a white line, then the roof runs on 16 m between 8 m walls to a building across the end with a shut door in it, all in the last roof's look. If the last roof is indoors (`interior`/`indoors`) it's just the room's end wall with a door. The `"at": "end"` goal reaches over the run-out, so you win the moment you cross the line. `"finish": false` leaves it out (a set piece ending); atlas levels leave it out unless `"finish": true`, as the next level carries on from their end.
+
 Everything after a corner is laid out turned with the run (checkpoints
 face along it). Two 45° corners make a 90° turn with a diagonal stretch
 between; on a diagonal leg roofs are turned boxes and checkpoints turned
@@ -203,9 +205,23 @@ has to do it to go on.
 | `event` | `event` (an enemy's story event, like `host:hit`, or a set piece's, like `set_piece:skybridge_down`), `count` | as a bonus goal (`"optional": true`): it happened that many times since the goal opened; as a required goal: that many times this run (Skybridge ends on its bridge falling) |
 | `clear` | `encounter` (its id) | that encounter is cleared: every enemy down, or out of the fight like a spared Juno |
 | `duel` | `encounter` (its id), `radius` (4 m) | its boss (Juno) is shot down, or you get within `radius` of her and she concedes; then you spare her or not |
+| `deliver` | like `reach`, plus `drop` (`"crate"` or `"hatch"`), `drop_at` [x, y, z] for the receptacle (default the region's centre), `drop_yaw` (degrees the floor chalk faces; 0 reads heading -Z) | you run through the region: the carried object is tossed in on the move (no stop, speed kept), +500 DELIVERED into the combo, radio `delivered`. Only going through counts: a later `reach` goal never credits it |
 
 Reaching a later `reach` goal counts the `reach` goals before it (a high
 line or a shortcut that runs past one region never sends you back for it).
+
+### Carrying instead of the gun
+
+`"carry": "parcel"` (or `{"object": "parcel", "until": "<event>", "then":
+"hands"}`) puts an object in the runner's hand instead of the pistol: no
+fire, aim or reload; kicks and every move work as normal and enemies still
+fight. Objects (weapons/carry_models.gd): `parcel`, `jerry_can`, `relay`,
+`tape`; `"hands"` is nothing at all. A `deliver` objective takes the object
+and leaves the hands holding `then` (default `"hands"`; `"gun"` hands the
+pistol back); `until` swaps to `then` on a radio event instead (like
+`set_piece:handoff`). A bail or a hard landing never drops it, and a loss
+restarts the level holding it again. Every carry level needs a `deliver`
+on its route (Dax 2026-10-20).
 
 `text` is what the HUD shows; without it a default is written. Keep it
 short (the tests hold the mall's to 56 characters) and name what the
