@@ -269,8 +269,9 @@ static func _no_floor(level: Node, space: PhysicsDirectSpaceState3D, reached: Di
 	var out: Array[Vector3] = []
 	var seen := {}
 	for mi: MeshInstance3D in _meshes(level):
-		# Scripted set pieces (a bridge that blows) and fire glow aren't floors.
-		if mi.is_in_group("mission_fire") or _in_set_piece(mi):
+		# Scripted set pieces (a bridge that blows), fire glow and enemies
+		# (a soldier's shoulders) aren't floors.
+		if mi.is_in_group("mission_fire") or _in_set_piece(mi) or _in_encounter(mi):
 			continue
 		var box := mi.global_transform * mi.get_aabb()
 		if not box.intersects(area) or box.size.x * box.size.z < 0.5:
@@ -380,6 +381,14 @@ static func _solid_at(space: PhysicsDirectSpaceState3D, p: Vector3) -> bool:
 static func _in_set_piece(n: Node) -> bool:
 	while n != null:
 		if String(n.name).begins_with("SetPiece_"):
+			return true
+		n = n.get_parent()
+	return false
+
+
+static func _in_encounter(n: Node) -> bool:
+	while n != null:
+		if String(n.name).begins_with("Encounter_"):
 			return true
 		n = n.get_parent()
 	return false
