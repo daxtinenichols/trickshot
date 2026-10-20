@@ -1487,13 +1487,16 @@ func test_the_girder_holds_echo_and_gives_under_the_host() -> void:
 	var a := fall.global_position
 	var b := fall.to_global(Vector3(0, 0, -span))
 	check(absf(a.x - float(cut[0])) < 0.5 and absf(b.x - float(cut[2])) < 0.5, "the girder spans the channel bank to bank (%.1f to %.1f)" % [a.x, b.x])
-	# Nothing to stand on in the channel but the girder.
+	# Off the girder is the channel's bed, down in the dust: a fall.
 	var space := player.get_world_3d().direct_space_state
 	await _step(3)
 	var beside := fall.to_global(Vector3(4.0, 3.0, -span * 0.3))
 	var q := PhysicsRayQueryParameters3D.create(beside, beside + Vector3.DOWN * 10.0, 1)
 	q.exclude = [player.get_rid()]
-	check(space.intersect_ray(q).is_empty(), "no floor in the Silt beside the girder")
+	var bed := space.intersect_ray(q)
+	check(not bed.is_empty() and float(bed.position.y) < 0.0, "the channel's bed is under the street beside the girder")
+	if not bed.is_empty():
+		check(run.is_fall(bed.position + Vector3(0, 0.05, 0)), "landing in the Silt is a fall")
 	var on := fall.to_global(Vector3(0.0, 3.0, -span * 0.3))
 	q = PhysicsRayQueryParameters3D.create(on, on + Vector3.DOWN * 10.0, 1)
 	q.exclude = [player.get_rid()]
@@ -1600,7 +1603,8 @@ func test_route_finishes_keep_you_on_the_roof() -> void:
 		level.queue_free()
 		level = null
 		await tree.physics_frame
-	check(ran >= 6, "route finishes were tried (%d)" % ran)
+	# (Signal Out ends on its set piece, with no finish.)
+	check(ran >= 5, "route finishes were tried (%d)" % ran)
 
 
 ## Runs the loaded mission's route bot (or its fork lines) to the end.

@@ -34,6 +34,8 @@ const PLAZA := 28.0
 ## A bridge deck's thickness and the distance between its piers.
 const BRIDGE_DECK := 1.0
 const BRIDGE_SPAN := 30.0
+## Top of the bed under a "floor_cut" (below the skyline's ground at -0.35).
+const CUT_BED := -0.45
 ## Clutter that sits at roof edges, out of the lane.
 const CLUTTER := ["ac_unit", "vent_stack", "satellite_dish", "generator", "barrel_rust",
 	"crate_wood", "tire_stack", "crate_stack", "antenna_mast", "loudspeaker_pole"]
@@ -155,6 +157,14 @@ static func expand(mission: Dictionary) -> Dictionary:
 		var top := -0.02 if mission.has("base") else 0.0
 		for r: Rect2 in _floor_parts(ground, mission.get("floor_cut", [])):
 			pieces.push_front({"box": [r.get_center().x, top - 0.5, r.get_center().y], "size": [r.size.x, 1, r.size.y], "kind": "FLOOR"})
+		# The cut's bed: solid under the skyline's ground (so a fall in
+		# there lands on the bare ground, a fall like any other), under
+		# the set piece's dust.
+		var cut: Array = mission.get("floor_cut", [])
+		if cut.size() >= 4:
+			var hole := Rect2(Vector2(cut[0], cut[1]), Vector2(float(cut[2]) - float(cut[0]), float(cut[3]) - float(cut[1]))).intersection(ground)
+			if hole.has_area():
+				pieces.push_front({"box": [hole.get_center().x, CUT_BED - 0.5, hole.get_center().y], "size": [hole.size.x, 1, hole.size.y], "kind": "FLOOR"})
 	if mission.get("skyline", true) != false:
 		var atlas: bool = mission.get("atlas", false)
 		if atlas:
