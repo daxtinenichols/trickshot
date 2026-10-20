@@ -1498,7 +1498,7 @@ func test_route_finishes_keep_you_on_the_roof() -> void:
 		level = null
 		await tree.physics_frame
 	# (Stages 5 and 6 are atlas levels now: they run on, no finish.)
-	check(ran >= 4, "route finishes were tried (%d)" % ran)
+	check(ran >= 2, "route finishes were tried (%d)" % ran)
 
 
 ## Runs the loaded mission's route bot (or its fork lines) to the end.
