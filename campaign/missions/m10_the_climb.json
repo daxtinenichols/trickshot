@@ -122,10 +122,10 @@
  "radio": [
   {"on": "start", "who": "host", "line": "Ten minutes, folks. That's how long he's got. After that, well. Ask his wife."},
   {"on": "go", "who": "parker", "line": "I'm coming, Echo."},
-  {"on": "checkpoint:1", "who": "echo", "line": "Hi. Port Calder? It's Echo. He's lying to you. He's been lying to you for twenty years.", "keep": true},
-  {"on": "checkpoint:1", "who": "echo", "line": "I've got the cameras now. Look at him go.", "keep": true},
-  {"on": "checkpoint:1", "who": "host", "line": "Get her off my uplink! GET HER OFF!", "keep": true},
-  {"on": "checkpoint:1", "who": "mags", "line": "Gun drones just went dark. That was her! Climb, Parker!", "keep": true},
+  {"on": "checkpoint:1", "who": "echo", "line": "Hi. Port Calder? It's Echo. He's lying to you. He's been lying to you for twenty years.", "must": true},
+  {"on": "checkpoint:1", "who": "echo", "line": "I've got the cameras now. Look at him go.", "must": true},
+  {"on": "checkpoint:1", "who": "host", "line": "Get her off my uplink! GET HER OFF!", "must": true},
+  {"on": "checkpoint:1", "who": "mags", "line": "Gun drones just went dark. That was her! Climb, Parker!", "must": true},
   {"on": "checkpoint:3", "who": "host", "line": "Three minutes! Two! I don't even know anymore!"},
   {"on": "complete", "who": "host", "line": "Fine. Fine! Come on in. Studio's open. Mind the step."}
  ],

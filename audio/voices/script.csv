@@ -1,9 +1,9 @@
 who,file,where,line
 host,host/64618e95e6dc.ogg,brief: m06 Anchor Store,He's on the roof! And guess who's waiting for him over at the car park. Go on. Guess.
 mags,mags/1d1d3d07867f.ogg,brief: m06 Anchor Store,"Department store. There's a roof hatch, top floor, back corner. Up you go."
+echo,echo/2a010073f168.ogg,l1_1_dawn_run,Don't drop this one.
 echo,echo/5f05e116c7f0.ogg,l1_1_dawn_run,Tuesday.
 echo,echo/75634e8fa467.ogg,l1_1_dawn_run,Hey. Porch light's on.
-echo,echo/9ebf06c9dd74.ogg,l1_1_dawn_run,"Don't drop this one. It's insulin, for the Okafor kid."
 host,host/0a691e14c4bb.ogg,l1_1_dawn_run,"Echo's up here with me, fixing my tower. Lovely hands. Parker, darling, come and get her. Everybody's listening."
 host,host/4251fff3f2c3.ogg,l1_1_dawn_run,"Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you."
 host,host/c4421b111046.ogg,l1_1_dawn_run,"Oh, and is Mags there? Course she is. Tell her I said hi."
@@ -18,7 +18,6 @@ mags,mags/65b83631a179.ogg,l1_1_dawn_run,Nobody delivers anything from down ther
 mags,mags/75a9719abd23.ogg,l1_1_dawn_run,Showing off already? It's barely light out.
 mags,mags/779a48bbb9f8.ogg,l1_1_dawn_run,"Rails coming up. Don't hop 'em, jump right into them. Vault keeps your speed."
 mags,mags/7bcf5e951f4d.ogg,l1_1_dawn_run,Up you get.
-mags,mags/81f2ce1644c9.ogg,l1_1_dawn_run,High roof past the fish market. And back for breakfast. I'm not keeping it warm.
 mags,mags/837b8e627f8c.ogg,l1_1_dawn_run,Eh. Happens. Shake it off.
 mags,mags/852dec8d0245.ogg,l1_1_dawn_run,"Okay. Okay, that was pretty good."
 mags,mags/93f8621b92a6.ogg,l1_1_dawn_run,"That door's been stuck since the storm. Kick it in. Or use the window, if you're feeling polite."
@@ -34,7 +33,8 @@ mags,mags/eaf8f6b72c25.ogg,l1_1_dawn_run,Big drop here. Crouch right before you 
 mags,mags/ee9506eeef72.ogg,l1_1_dawn_run,They went straight for her bunk. Didn't even look at the others.
 mags,mags/efb3599d8305.ogg,l1_1_dawn_run,"Roofs, Parker. Stay on the roofs."
 mags,mags/f1aa818cbf59.ogg,l1_1_dawn_run,"Down you go. Find a way back up, kid."
-parker,parker/113514bb94c0.ogg,l1_1_dawn_run,When have I ever dropped one?
+mags,mags/f2105dfe548d.ogg,l1_1_dawn_run,"Fish market, high roof. Back for breakfast."
+parker,parker/7218c185f1d6.ogg,l1_1_dawn_run,When have I ever?
 host,host/0887825329c9.ogg,l1_2_the_yard,"Still on the playground, Parker? Echo says you're always late. She's not wrong, is she?"
 host,host/a28fe96c14e4.ogg,l1_2_the_yard,I'm not paid to look out windows. I'm paid to talk.
 host,host/ab20dfd8d85b.ogg,l1_2_the_yard,"...and that's the weather. Margaret, is it raining? Is that right?"
@@ -144,6 +144,7 @@ host,host/a20148abc5f1.ogg,m03_glass_district,"Through the window and right into
 host,host/c31d47819607.ogg,m03_glass_district,"Oh, come on. Do you know how hard it is to find people who can climb?"
 host,host/d5b2fe14584b.ogg,m03_glass_district,"Ooh. Right in the earpiece. Feedback, everybody."
 host,host/d69531ba5c69.ogg,m03_glass_district,"Listen to that glass go! That's music, that is."
+host,host/e4d64c146d96.ogg,m03_glass_district,"Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker."
 host,host/e90efb7389c3.ogg,m03_glass_district,"Yeesh. Somebody clean that up, the windows are bad enough."
 host,host/eeea2488529f.ogg,m03_glass_district,And the lookout's... not looking out. Not anymore.
 host,host/f541c9882dd3.ogg,m03_glass_district,"That spotter had a family, you know. Well. A rat. He called it Biscuit."
@@ -183,7 +184,6 @@ host,host/97a89bf168ae.ogg,m04_silt_line,"Look at him dance down there! Come on,
 host,host/9cbe245766c3.ogg,m04_silt_line,"He climbed out! Nobody climbs out of the Silt, folks. Okay. Bigger bridge next time."
 host,host/ae265e86f12b.ogg,m04_silt_line,"Oh, he's making them look slow. They're not slow!"
 host,host/bfd86aa5410a.ogg,m04_silt_line,"Down in the Silt! Folks, I'm not going down there to check."
-host,host/e4d64c146d96.ogg,m04_silt_line,"Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker."
 host,host/f36580144d70.ogg,m04_silt_line,"Ooh, he's swatting crawlers! Plenty more where that came from."
 host,host/ffc051f7645f.ogg,m04_silt_line,"Dinner's... oh, he's up again. Well, they'll keep."
 mags,mags/0cf037e95d9c.ogg,m04_silt_line,"You're alive. Okay. Okay, good. Run. It's not the dust you need to worry about."
