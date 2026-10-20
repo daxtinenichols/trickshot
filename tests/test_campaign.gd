@@ -101,12 +101,12 @@ func _index(id: String) -> int:
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
 	check(all.size() == 16, "16 missions (%d)" % all.size())
-	check(Campaign.acts().size() == 6, "the Docks, Act 1, the Silt, the Mall, Westside and Stage 6")
+	check(Campaign.acts().size() == 7, "the Docks, two acts and Stages 3, 5, 6 and 7")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
 	check(Campaign.entry(all.size() - 1).get("unlocks", "") == "echo", "the finale unlocks Echo")
-	for id: String in ["l1_1_dawn_run", "l1_2_the_yard", "m02_on_air", "m12_signal_out"]:
+	for id: String in ["l1_1_dawn_run", "l1_2_the_yard", "m02_on_air", "l7_1_signal_out"]:
 		check(Campaign.is_built(_index(id)), "%s is built" % id)
 
 
@@ -470,7 +470,7 @@ func test_juno_fate_carries_to_the_ending() -> void:
 		Campaign.reset_progress()
 		if spared:
 			Campaign.save().set_value("m07_parking_spiral", "fate", "spared")
-		await _load(_index("m12_signal_out"))
+		await _load(_index("l7_1_signal_out"))
 		var radio: RadioFeed = level.radio
 		radio.notify("complete")
 		var juno := radio.queue.any(func(l: Dictionary) -> bool: return l.who == "juno")
@@ -650,7 +650,7 @@ func test_the_host_gives_you_a_head_start() -> void:
 
 
 func test_the_host_has_his_own_model() -> void:
-	await _load(_index("m12_signal_out"))
+	await _load(_index("l7_1_signal_out"))
 	var host: Node = run.pursuer.get_node_or_null("HostBody")
 	check(host != null, "the Host has a body")
 	var body: Node = host.get("body") if host != null else null
@@ -672,7 +672,7 @@ func test_the_host_has_his_own_model() -> void:
 ## landed, the Host cuts in close, and going back to a checkpoint resets
 ## them.
 func test_signal_out_set_pieces() -> void:
-	await _load(_index("m12_signal_out"))
+	await _load(_index("l7_1_signal_out"))
 	var kinds := {}
 	for sp: Node3D in level.builder.set_pieces:
 		kinds[sp.kind] = kinds.get(sp.kind, 0) + 1
@@ -700,11 +700,11 @@ func test_signal_out_set_pieces() -> void:
 
 
 func test_standing_still_in_the_chase_gets_you_caught() -> void:
-	await _load(_index("m12_signal_out"))
+	await _load(_index("l7_1_signal_out"))
 	check(run.pursuer != null, "the finale has a pursuer")
 	check(player.get_meta("runner") == "echo", "played as Echo")
 	await _step(5)
-	player.global_position = level.builder.spawns[0].origin + Vector3(0, 0.05, -8)
+	player.global_position = level.builder.spawns[0].origin + Vector3(-8, 0.05, 0)
 	await _step(1)
 	check(run.phase == MissionRun.Phase.RUNNING, "the chase starts when you move")
 	var caught := false
@@ -717,11 +717,13 @@ func test_standing_still_in_the_chase_gets_you_caught() -> void:
 	check(run.phase == MissionRun.Phase.LOST and level._fade_label.text == "CAUGHT", "and that loses the run")
 	check(await _await_restart(), "the level restarts")
 	check(player.global_position.distance_to(level.builder.spawns[0].origin) < 1.0, "back at the start")
-	check(not run.pursuer.visible and run.catches == 0, "he waits again before coming")
+	var lead: Array = run.mission.pursuer.lead_in
+	check(run.catches == 0 and run.pursuer.global_position.distance_to(MissionBuilder.vec(lead[0])) < 0.1,
+		"he's back in the smoke, waiting for her to run")
 
 
 func test_beating_the_finale_unlocks_echo() -> void:
-	var i := _index("m12_signal_out")
+	var i := _index("l7_1_signal_out")
 	check(not Campaign.echo_unlocked(), "locked at first")
 	Campaign.record(i, {"ticks": 3000, "score": 100})
 	check(Campaign.echo_unlocked(), "unlocked by the finale")
@@ -742,7 +744,7 @@ func test_echo_waits_in_the_studio_and_runs_the_finale() -> void:
 		check(absf(echo.global_position.y - (end.y - 2.0)) < 0.5, "standing on the studio floor")
 	level.queue_free()
 	await tree.process_frame
-	await _load(_index("m12_signal_out"))
+	await _load(_index("l7_1_signal_out"))
 	ArtLook.attach_to_player(player)
 	var body: Node = player.get_node("RunnerBody")
 	check(body.runner == "echo", "Signal Out shows Echo's model")
@@ -936,6 +938,17 @@ func test_atlas_levels_meet() -> void:
 		var b := Campaign.load_mission_file(order[i][1])
 		var end := MissionBuilder.vec(a.route_end)
 		var start := MissionBuilder.vec(b.route_origin.at)
+		var lead: Array = b.get("pursuer", {}).get("lead_in", [])
+		if not lead.is_empty():
+			# A chase that opens on the chaser (Signal Out, out of Dead Air's
+			# studio): the spawn is a few strides from where the last level
+			# left off, on that floor, facing back at him where his lead-in
+			# ends; the route runs out of the room from there.
+			var at := MissionBuilder.vec(b.start.at)
+			check(at.distance_to(end) < 20.0 and absf(at.y - end.y) < 0.05 and absf(start.y - end.y) < 0.05
+				and at.distance_to(MissionBuilder.vec(lead[-1])) < 0.05,
+				"%s spawns just on from where %s ends, where the Host's lead-in ends (%s, %s)" % [b.id, a.id, at, end])
+			continue
 		check(end.distance_to(start) < 0.05, "%s ends where %s starts (%s, %s)" % [a.id, b.id, end, start])
 		check(is_equal_approx(wrapf(float(a.route_end_yaw) - float(b.route_origin.yaw), -180.0, 180.0), 0.0),
 			"facing the same way (%s, %s)" % [a.route_end_yaw, b.route_origin.yaw])
@@ -1501,15 +1514,124 @@ func _forward() -> InputFrame:
 
 
 func test_signal_out_can_be_escaped() -> void:
-	await _load(_index("m12_signal_out"))
+	await _load(_index("l7_1_signal_out"))
+	var heard := {}
+	run.event.connect(func(e: String) -> void: heard[e] = int(heard.get(e, 0)) + 1)
 	await _step(10)
-	var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
+	var frames := int(run.mission.route_length / 6.0 * 60.0) + 900
 	var done := await _run_route(run.mission.bot, frames, -INF, run.mission.route_legs, run.mission.get("bot_steady", false))
 	check(done, "a scripted run outruns the Host (stopped at %s)" % player.global_position)
-	check(run.mission.route_length >= 900.0, "a long chase (%d m)" % int(run.mission.route_length))
+	var length := int(run.mission.route_length)
+	check(length >= 600 and length <= 900, "a full level's chase, 600-900 m (%d m)" % length)
 	check(run.catches == 0, "without being caught (%d)" % run.catches)
 	check(run.falls == 0, "without falling (%d)" % run.falls)
 	check(Campaign.echo_unlocked(), "Echo unlocked")
+	# The ending is seen: he followed her onto the girder, it gave under
+	# him, and the Silt had him before the level was done.
+	for e: String in ["set_piece:silt_girder", "set_piece:silt_fall", "set_piece:silt_break", "set_piece:silt_down"]:
+		check(heard.get(e, 0) == 1, "%s happened once (%d)" % [e, heard.get(e, 0)])
+	var fall: Node3D = _silt_fall()
+	var host_at := fall.to_local(run.pursuer.global_position)
+	check(not run.pursuer.visible and host_at.y < -2.0, "the Host went under the dust (%.1f m)" % host_at.y)
+	check(host_at.z < -fall.get("_length") * 0.5, "off the far half of the girder (%.1f m along)" % -host_at.z)
+	var echo_at := fall.to_local(player.global_position)
+	check(echo_at.z < -fall.get("_length") and player.global_position.y > -0.1, "Echo safe on the far bank (%s)" % echo_at)
+
+
+## Signal Out opens on the burning studio: Parker pinned, Echo facing back
+## into it, and the Host already there in the smoke, in sight, before she
+## moves; he comes when she runs.
+func test_signal_out_opens_on_the_host() -> void:
+	await _load(_index("l7_1_signal_out"))
+	await _step(5)
+	var spawn: Transform3D = level.builder.spawns[0]
+	var host: Pursuer = run.pursuer
+	check(run.phase == MissionRun.Phase.READY, "waiting at the start")
+	check(host.visible, "the Host is in sight from the first frame")
+	var to_host := host.global_position - spawn.origin
+	var facing := -spawn.basis.z
+	check(to_host.length() > 10.0 and to_host.length() < 20.0, "a few strides away (%.1f m)" % to_host.length())
+	check(facing.dot(Vector3(to_host.x, 0, to_host.z).normalized()) > 0.9, "straight ahead of where Echo looks")
+	check(level.find_child("Figure_parker", true, false) != null, "Parker is in the studio")
+	var start := host.global_position
+	await _step(30)
+	check(host.global_position.distance_to(start) < 0.01, "he waits while she does")
+	player.global_position = spawn.origin + Vector3(-6, 0.05, 0)
+	await _step(40)
+	check(host.global_position.distance_to(start) > 3.0, "and comes once she runs")
+	check(run.catches == 0, "inside his head start")
+	# A practice run from a checkpoint: no lead-in, he comes after his delay.
+	run.start_practice(1)
+	check(not host.visible and host.waiting(), "from a checkpoint he waits out of sight first")
+
+
+## The Silt crossing: the girder holds Echo (it sags), takes the Host off the
+## chase once she's over, and gives under him; a new run puts it all back.
+func test_the_girder_holds_echo_and_gives_under_the_host() -> void:
+	await _load(_index("l7_1_signal_out"))
+	var fall: Node3D = _silt_fall()
+	check(fall != null, "the Silt crossing is built")
+	if fall == null:
+		return
+	var span: float = fall.get("_length")
+	var cut: Array = run.mission.floor_cut
+	var a := fall.global_position
+	var b := fall.to_global(Vector3(0, 0, -span))
+	check(absf(a.x - float(cut[0])) < 0.5 and absf(b.x - float(cut[2])) < 0.5, "the girder spans the channel bank to bank (%.1f to %.1f)" % [a.x, b.x])
+	# Off the girder is the channel's bed, down in the dust: a fall.
+	var space := player.get_world_3d().direct_space_state
+	await _step(3)
+	var beside := fall.to_global(Vector3(4.0, 3.0, -span * 0.3))
+	var q := PhysicsRayQueryParameters3D.create(beside, beside + Vector3.DOWN * 10.0, 1)
+	q.exclude = [player.get_rid()]
+	var bed := space.intersect_ray(q)
+	check(not bed.is_empty() and float(bed.position.y) < 0.0, "the channel's bed is under the street beside the girder")
+	if not bed.is_empty():
+		check(run.is_fall(bed.position + Vector3(0, 0.05, 0)), "landing in the Silt is a fall")
+	var on := fall.to_global(Vector3(0.0, 3.0, -span * 0.3))
+	q = PhysicsRayQueryParameters3D.create(on, on + Vector3.DOWN * 10.0, 1)
+	q.exclude = [player.get_rid()]
+	var hit := space.intersect_ray(q)
+	check(not hit.is_empty() and absf(hit.position.y - a.y) < 0.3, "the girder's top is level with the bank")
+	# Out on the girder with the Host behind her: it sags, he follows.
+	player.global_position = run.builder.spawns[0].origin + Vector3(-6, 0.05, 0)
+	await _step(2)
+	player.global_position = fall.to_global(Vector3(0, 0.05, -span * 0.5))
+	await _step(4)
+	check(fall.get("_east").position.y < -0.1, "the middle sags under her")
+	check(int(run.event_counts.get("set_piece:silt_girder", 0)) == 1, "stepping on it cues the Host's last line")
+	check(not fall.fired, "it holds")
+	# Over: the chase stops and he runs on along the girder until it goes.
+	# He's just behind her on the girder (6 m back along her path).
+	run.pursuer.along = run.pursuer.total() - 6.0
+	run.pursuer.pos = run.pursuer.point_at(run.pursuer.along)
+	player.global_position = fall.to_global(Vector3(0, 0.05, -span - 8.0))
+	await _step(2)
+	check(fall.fired and run.pursuer.scripted, "once she's over, the set piece has him")
+	var broke := false
+	for i in 120:
+		await tree.physics_frame
+		if fall.get("_broken"):
+			broke = true
+			break
+	check(broke, "the far half gives under him")
+	check(fall.to_local(run.pursuer.global_position).z < -span * 0.5, "while he's on the far half")
+	var feed: CanvasLayer = fall.get("_feed")
+	check(feed != null and feed.visible, "Echo's drone feed is on screen")
+	await _step(300)
+	check(run.catches == 0, "he never catches her from the girder")
+	check(int(run.event_counts.get("set_piece:silt_down", 0)) == 1, "the dust has him")
+	check(run.phase == MissionRun.Phase.COMPLETE, "and that ends the level")
+	run.start_practice(0)
+	check(not fall.fired and not fall.get("_broken") and not run.pursuer.scripted, "a new run puts the girder back and frees him")
+	check(absf(fall.get("_east").position.y) < 0.01, "the girder's whole again")
+
+
+func _silt_fall() -> Node3D:
+	for sp: Node3D in level.builder.set_pieces:
+		if sp.kind == "silt_fall":
+			return sp
+	return null
 
 
 ## Every mission built from a route: a bot runs the route it generates
@@ -1572,8 +1694,9 @@ func test_route_finishes_keep_you_on_the_roof() -> void:
 		level.queue_free()
 		level = null
 		await tree.physics_frame
-	# (Stages 5 and 6 are atlas levels now: they run on, no finish.)
-	check(ran >= 2, "route finishes were tried (%d)" % ran)
+	# (Stages 5 and 6 are atlas levels now: they run on, no finish; Signal
+	# Out ends on its set piece.)
+	check(ran >= 1, "route finishes were tried (%d)" % ran)
 
 
 ## Runs the loaded mission's route bot (or its fork lines) to the end.
