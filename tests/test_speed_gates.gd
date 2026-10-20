@@ -237,21 +237,22 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 	p.yaw = float(entry[1])
 	p.velocity = p.forward() * p.tuning.top_speed
 	p.momentum = 1.0
-	# Measured from the ground under the drop-in (the trick line may have
-	# come in mid-jump).
 	var start_y: float = p.global_position.y
-	var q := PhysicsRayQueryParameters3D.create(p.global_position, p.global_position + Vector3.DOWN * 6.0, 1)
-	q.exclude = [p.get_rid()]
-	var under := p.get_world_3d().direct_space_state.intersect_ray(q)
-	if not under.is_empty():
-		start_y = minf(start_y, under.position.y)
+	if m.get("bot_steady", false):
+		# Measured from the ground under the drop-in (the trick line may
+		# have come in mid-jump).
+		var q := PhysicsRayQueryParameters3D.create(p.global_position, p.global_position + Vector3.DOWN * 6.0, 1)
+		q.exclude = [p.get_rid()]
+		var under := p.get_world_3d().direct_space_state.intersect_ray(q)
+		if not under.is_empty():
+			start_y = minf(start_y, under.position.y)
 	var taken := [0.0]
 	health.damaged.connect(func(a: float, _f: Vector3, _k: StringName) -> void: taken[0] += a)
 	var low := [INF]
 	var watch := func() -> void: low[0] = minf(low[0], p.global_position.y)
 	tree.physics_frame.connect(watch)
 	var steps: Array = [[float(section[0]) + 1.0, "", float(entry[2])]]
-	for s: Array in PlainRunner.plain_steps(m.bot):
+	for s: Array in PlainRunner.plain_steps(m.bot, m.get("bot_steady", false)):
 		if float(s[0]) < float(section[0]):
 			steps.append(s)
 	var frames := int((float(section[0]) - float(section[1])) / 8.0 * 60.0) + 240

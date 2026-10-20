@@ -897,8 +897,10 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 				trick = ""
 				# Look ahead again (a flip leaves the view pitched to its
 				# limit, and a kick or a jump through glass aims with it).
-				player.pitch = 0.0
-		elif trick != "" and trick_left < 24 and player.state != Player.State.AIR:
+				# A steady line looks ahead once down instead.
+				if not steady:
+					player.pitch = 0.0
+		elif not steady and trick != "" and trick_left < 24 and player.state != Player.State.AIR:
 			# Landed before it was round: give it up and look ahead.
 			trick = ""
 			player.pitch = 0.0
