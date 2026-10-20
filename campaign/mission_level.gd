@@ -8,6 +8,10 @@ extends "res://levels/sandbox.gd"
 ## Reloading leaves nothing behind (kicked doors, broken glass, enemies,
 ## set pieces, the radio's once-only lines, score, combo, Flow, health),
 ## which resetting each system in place could miss.
+##
+## The first time you play a level it holds you at the start (free look,
+## no moving) while its opening lines are said, then lets you go. After a
+## restart, or on a level finished before, the opening is skipped.
 
 signal restarted(fresh: Node)
 
@@ -37,6 +41,11 @@ var _fade_label: Label
 var _fade_ticks := 0
 var _fade_total := 0
 var _restarting := false
+## The empty input holding you still while the opening plays (null when
+## free).
+var _hold: InputFrame
+var _hold_layer: CanvasLayer
+var _hold_label: Label
 
 
 func _ready() -> void:
@@ -68,7 +77,10 @@ func _ready() -> void:
 	mission_hud.menu_pressed.connect(func() -> void: Campaign.open_menu(get_tree()))
 	run.completed.connect(_on_completed)
 	_build_fade()
+	radio.skip_opening = restarts > 0 or start_zone > 0 or index >= 0 and Campaign.is_complete(index)
 	run.begin()
+	if radio.opening_playing():
+		_hold_still()
 	if start_zone > 0:
 		go_to_zone(start_zone)
 	if restarts == 0:
@@ -85,6 +97,8 @@ func _on_completed(result: Dictionary) -> void:
 
 
 func _process(delta: float) -> void:
+	if _hold != null:
+		_hold_label.text = "ON AIR  %d" % ceili(radio.opening_left())
 	if radio != null and run != null:
 		# Set pieces timed to the radio (a bridge blows after its line).
 		var on_air: String = radio.current.get("line", "")
@@ -137,7 +151,42 @@ func _on_lost(reason: String) -> void:
 	_fade_layer.visible = true
 
 
+# ---------------------------------------------------------------- opening
+
+func _hold_still() -> void:
+	_hold = InputFrame.new()
+	player.scripted_input = _hold
+	_hold_layer = CanvasLayer.new()
+	_hold_layer.layer = 7
+	add_child(_hold_layer)
+	_hold_label = Label.new()
+	_hold_label.add_theme_font_size_override("font_size", 30)
+	_hold_label.add_theme_color_override("font_color", Color(1.0, 0.36, 0.3))
+	_hold_label.set_anchors_preset(Control.PRESET_CENTER_TOP)
+	_hold_label.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
+	_hold_label.position = Vector2(-120, 90)
+	_hold_label.custom_minimum_size = Vector2(240, 0)
+	_hold_layer.add_child(_hold_label)
+
+
+## The opening has been said: you're free to go.
+func _release() -> void:
+	# Tests (and the results card) may have taken the input over since.
+	if player.scripted_input == _hold:
+		player.scripted_input = null
+	_hold = null
+	_hold_layer.queue_free()
+	hud.show_toast("GO", 1.0)
+
+
+## True while the opening holds you at the start.
+func holding() -> bool:
+	return _hold != null
+
+
 func _physics_process(_delta: float) -> void:
+	if _hold != null and not radio.opening_playing():
+		_release()
 	if _fade_total <= 0 or _restarting:
 		return
 	_fade_ticks += 1

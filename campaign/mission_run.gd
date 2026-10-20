@@ -43,6 +43,12 @@ const TAPE_RADIUS := 1.4
 ## The player respawns itself below y = -40 (Player._physics_process), so a
 ## fall has to be noticed well above that (even falling a metre a tick).
 const LOWEST_FAIL_Y := -30.0
+## Below fail_y or in a pit you've only fallen once nothing but the bare
+## ground is under you: anything solid this close below your feet (a
+## crate, a kerb, a low roof) holds you up.
+const HOLD_DEPTH := 4.0
+## The bare ground: the route's ground slab (kind FLOOR) this low.
+const GROUND_TOP := 0.5
 ## A banked combo at this multiplier or more is worth a radio reaction.
 const COMBO_REACTION_MULTIPLIER := 4
 ## Points for each bonus goal finished.
@@ -161,7 +167,7 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 	_reset_run(0)
 
 
-## An enemy's own story moment, like the Host's "host:hit" (m09b): played
+## An enemy's own story moment, like the Host's "host:hit" (Head Office): played
 ## as is and numbered across the run ("host:hit:1", "host:hit:2"), so the
 ## radio can answer the first and the second differently.
 func _on_story_event(e: String) -> void:
@@ -171,10 +177,19 @@ func _on_story_event(e: String) -> void:
 
 
 ## A boss's fate ("fate:spared") is a story choice later missions remember
-## (not from a practice run).
+## (not from a practice run). So is whatever the mission's "remember" names
+## ({"host:hit": "host_hit"}): "yes" once it happens, "no" from the start.
 func _save_choice(e: String) -> void:
-	if e.begins_with("fate:") and not practice and mission_index >= 0:
+	if practice or mission_index < 0:
+		return
+	if e.begins_with("fate:"):
 		Campaign.set_choice(mission_index, "fate", e.substr(5))
+	var remember: Dictionary = mission.get("remember", {})
+	if e == "start":
+		for k: String in remember:
+			Campaign.set_choice(mission_index, String(remember[k]), "no")
+	elif remember.has(e):
+		Campaign.set_choice(mission_index, String(remember[e]), "yes")
 
 
 ## Starts the mission: call after connecting to `event` (the radio).
@@ -189,6 +204,48 @@ func seconds() -> float:
 
 func fail_y() -> float:
 	return maxf(mission.get("fail_y", -50.0), LOWEST_FAIL_Y)
+
+
+## Off the course with nothing of it under you: below fail_y or in a pit,
+## and not standing on (or just over) anything but the bare ground. Never
+## while you're on a prop, a piece or a roof, however low it is.
+## `floors`: what you're standing on (Player's floor contacts), if anything.
+func is_fall(pos: Vector3, floors: Array = []) -> bool:
+	if pos.y < LOWEST_FAIL_Y:
+		return true
+	if pos.y >= fail_y() and not _in_pit(pos):
+		return false
+	return not held_up(pos, floors)
+
+
+## Something other than the bare ground under you: one of `floors`, or
+## the first thing straight down within HOLD_DEPTH.
+func held_up(pos: Vector3, floors: Array = []) -> bool:
+	for b: Object in floors:
+		if not is_bare_ground(b, pos.y):
+			return true
+	if player == null or not player.is_inside_tree():
+		return false
+	var space := player.get_world_3d().direct_space_state
+	var q := PhysicsRayQueryParameters3D.create(pos + Vector3(0, 0.3, 0), pos - Vector3(0, HOLD_DEPTH, 0), 1)
+	var hit := space.intersect_ray(q)
+	return not hit.is_empty() and not is_bare_ground(hit.collider, (hit.position as Vector3).y)
+
+
+static func is_bare_ground(body: Object, top: float) -> bool:
+	return body != null and body.has_meta("kind") and String(body.get_meta("kind")) == "FLOOR" and top < GROUND_TOP
+
+
+## What the player is standing on now (walkable contacts of its last move).
+func _floor_bodies() -> Array:
+	var out: Array = []
+	if player == null or not player.is_on_floor():
+		return out
+	for i in player.get_slide_collision_count():
+		var c := player.get_slide_collision(i)
+		if c.get_normal().y > 0.6:
+			out.append(c.get_collider())
+	return out
 
 
 ## Down off the course (low, and not on any of its streets): see "pits"
@@ -297,7 +354,7 @@ func _physics_process(_delta: float) -> void:
 			event.emit("go")
 	if phase == Phase.RUNNING:
 		ticks += 1
-	if pos.y < fail_y() or _in_pit(pos):
+	if is_fall(pos, _floor_bodies()):
 		falls += 1
 		_lose("fall")
 		return
