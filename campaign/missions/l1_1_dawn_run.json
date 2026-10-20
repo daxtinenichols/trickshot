@@ -9,8 +9,9 @@
  "start": {"at": [3420, 12, 136], "yaw": 90},
  "route_origin": {"at": [3420, 12, 136], "yaw": 90},
  "chalk": true,
+ "carry": {"object": "parcel", "then": "hands"},
  "objectives": [
-  {"type": "reach", "name": "the drop", "text": "Deliver the parcel to the drop on the high roof", "at": "@High roof"},
+  {"type": "deliver", "name": "the drop", "text": "Deliver the parcel to the drop on the high roof", "at": "@High roof", "drop_at": [3265, 15, -133]},
   {"type": "reach", "name": "camp", "text": "Get back to camp", "at": "end"}
  ],
  "radio": [
