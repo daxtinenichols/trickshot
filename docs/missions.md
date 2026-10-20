@@ -152,6 +152,7 @@ ground under gaps gets rubble and wrecks. Same mission, same city.
 | `"skyline": false` | no city |
 | `"road_lines": false` | no road lines (streets that are really storm channels) |
 | `"city_open": [[x0, z0, x1, z1]]` | ground the city leaves open: the hollow a spiral climbs round (m10) |
+| `"floor_cut": [x0, z0, x1, z1]` | no street floor there (and no city clutter): the Silt's channel in Signal Out, a fall |
 
 Base maps give the city their ground as a `FOOTPRINT` const (x, z rect);
 the city keeps off it and its ring of buildings.
@@ -275,7 +276,9 @@ a recorded take saved under `audio/voices/recorded/` replaces the synthetic one.
             "leash": 12, "catchup_speed": 15}
 ```
 
-He sets off `delay` seconds after you (at the start and after each
+`"lead_in": [[x, y, z], ...]` (ending at the spawn) puts him in sight at
+the first point when the level starts and has him run the rest before your
+path: no `delay` then (checkpoints still use it). He sets off `delay` seconds after you (at the start and after each
 checkpoint), and for the `grace` seconds after that he can't catch you,
 lunge or sprint to catch up: a head start. He follows your exact path, speeds up
 over time (to just under your sprint), and never drops more than `leash`
@@ -297,7 +300,14 @@ stays as an obstacle (`"as": "slide"` or `"hurdle"`; solid once landed),
 (`height`, `fall_yaw` degrees from the run) topples over, `"skybridge"`
 (Skybridge's ending: a glass gate across the bridge with Echo behind it; the
 Ward walk her back over the `span` m to the tower door, it shuts, and the span
-blows and drops; the gate never opens). Events: `host_close` (a shortcut),
+blows and drops; the gate never opens), `"silt_fall"` (Signal Out's end,
+campaign/silt_fall.gd: a girder `span` m over the Silt from this spot, Hollows
+lying in the dust, Echo's camera drone; `channel` [x0, z0, x1, z1] is the
+riverbed shown, the same rect as the mission's `floor_cut`. Once you're over,
+it takes the Host off the chase (`Pursuer.scripted`), the far half gives
+under him and the Hollows pull him under while the drone's feed is on
+screen; events `silt_girder` (you step on), `silt_fall`, `silt_break`,
+`silt_down` (the last objective waits for it)). Events: `host_close` (a shortcut),
 `host_near` (he's within 6 m), `set_piece:<kind>` (and `set_piece:skybridge_blast`,
 `set_piece:skybridge_down` as that scene plays out; each also counts like a
 story event, so `set_piece:skybridge_down:1` works too); chatter and radio can

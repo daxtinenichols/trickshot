@@ -161,7 +161,7 @@ func _m11(campaign: Script) -> void:
 
 ## The chase cam on Echo at the top of Signal Out.
 func _m12(campaign: Script) -> void:
-	var level := await _load_mission(campaign, "m12_signal_out")
+	var level := await _load_mission(campaign, "l7_1_signal_out")
 	var p: Node = level.get_node("Player")
 	var body: Node = p.get_node_or_null("RunnerBody")
 	print("m12 runner meta=", p.get_meta("runner", "?"), " body=", body.runner if body else "none")

@@ -154,7 +154,7 @@ func _boss(level: Node3D, player: Node3D, spot: Vector3) -> void:
 ## she stops and he gets her. With `clip`, saves every other frame for a
 ## video (30 fps).
 func _chase(campaign: Script, clip: bool) -> void:
-	var level := await _load_mission(campaign, "m12_signal_out")
+	var level := await _load_mission(campaign, "l7_1_signal_out")
 	var p: Node3D = level.get_node("Player")
 	var run: Node = level.find_child("MissionRun", true, false)
 	var steps: Array = run.mission.bot

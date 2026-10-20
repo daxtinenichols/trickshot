@@ -141,7 +141,8 @@ static func expand(mission: Dictionary) -> Dictionary:
 	var ground := bounds.grow(70.0)
 	if not mission.has("no_floor"):
 		var top := -0.02 if mission.has("base") else 0.0
-		pieces.push_front({"box": [ground.get_center().x, top - 0.5, ground.get_center().y], "size": [ground.size.x, 1, ground.size.y], "kind": "FLOOR"})
+		for r: Rect2 in _floor_parts(ground, mission.get("floor_cut", [])):
+			pieces.push_front({"box": [r.get_center().x, top - 0.5, r.get_center().y], "size": [r.size.x, 1, r.size.y], "kind": "FLOOR"})
 	if mission.get("skyline", true) != false:
 		var atlas: bool = mission.get("atlas", false)
 		if atlas:
@@ -150,6 +151,7 @@ static func expand(mission: Dictionary) -> Dictionary:
 		var lanes := _lane_areas(st)
 		City.build(mission, lanes, ground, String(mission.get("id", "route")))
 		_clear_streets(st, mission, first)
+		_clear_cut(mission, first)
 		if atlas:
 			Atlas.after_city(mission, first, ground, bounds, lanes)
 	if not mission.has("fail_y"):
@@ -162,6 +164,25 @@ static func expand(mission: Dictionary) -> Dictionary:
 			if o.get("at", null) is String:
 				_resolve(o, mission, st)
 	return mission
+
+
+## The street floor over `ground`, less a "floor_cut" [x0, z0, x1, z1] (the
+## Silt's channel in Signal Out): the strips either side of the cut, and
+## across its ends where the ground reaches past them.
+static func _floor_parts(ground: Rect2, cut: Array) -> Array[Rect2]:
+	if cut.size() < 4:
+		return [ground]
+	var hole := Rect2(Vector2(cut[0], cut[1]), Vector2(float(cut[2]) - float(cut[0]), float(cut[3]) - float(cut[1]))).intersection(ground)
+	if not hole.has_area():
+		return [ground]
+	var out: Array[Rect2] = []
+	for r: Rect2 in [Rect2(ground.position.x, ground.position.y, hole.position.x - ground.position.x, ground.size.y),
+			Rect2(hole.end.x, ground.position.y, ground.end.x - hole.end.x, ground.size.y),
+			Rect2(hole.position.x, ground.position.y, hole.size.x, hole.position.y - ground.position.y),
+			Rect2(hole.position.x, hole.end.y, hole.size.x, ground.end.y - hole.end.y)]:
+		if r.size.x > 0.01 and r.size.y > 0.01:
+			out.append(r)
+	return out
 
 
 ## Where the route's first leg starts: `route_origin` {"at", "yaw"}, the
@@ -1032,6 +1053,22 @@ static func _clear_streets(st: Dictionary, mission: Dictionary, first: int) -> v
 		var p: Dictionary = mission.pieces[i]
 		var at: Variant = p.get("at", p.get("fire", null)) if (p.has("prop") or p.has("fire")) else null
 		if at is Array and _on_street(st, streets, Vector2(at[0], at[2])):
+			continue
+		kept.append(p)
+	mission.pieces = kept
+
+
+## And off the "floor_cut" (no street there: the Silt's dust).
+static func _clear_cut(mission: Dictionary, first: int) -> void:
+	var c: Array = mission.get("floor_cut", [])
+	if c.size() < 4:
+		return
+	var hole := Rect2(Vector2(c[0], c[1]), Vector2(float(c[2]) - float(c[0]), float(c[3]) - float(c[1])))
+	var kept: Array = mission.pieces.slice(0, first)
+	for i in range(first, mission.pieces.size()):
+		var p: Dictionary = mission.pieces[i]
+		var at: Variant = p.get("at", p.get("fire", null)) if (p.has("prop") or p.has("fire")) else null
+		if at is Array and float(at[1]) < 1.0 and hole.has_point(Vector2(at[0], at[2])):
 			continue
 		kept.append(p)
 	mission.pieces = kept
