@@ -84,8 +84,15 @@
  "radio": [
   {
    "on": "start",
-   "who": "mags",
-   "line": "Old train line. Last straight road to the tower."
+   "who": "vell",
+   "line": "Host, you were paid to end this.",
+   "must": true
+  },
+  {
+   "on": "start",
+   "who": "host",
+   "line": "And I'm paid to make it a good show, Commander. I can do both.",
+   "must": true
   },
   {
    "on": "go",
@@ -94,15 +101,8 @@
   },
   {
    "on": "checkpoint:1",
-   "who": "vell",
-   "line": "Host, you were paid to end this.",
-   "must": true
-  },
-  {
-   "on": "checkpoint:1",
-   "who": "host",
-   "line": "And I'm paid to make it a good show, Commander. I can do both.",
-   "must": true
+   "who": "mags",
+   "line": "Old train line. Last straight road to the tower."
   },
   {
    "on": "set_piece:blast_nine",

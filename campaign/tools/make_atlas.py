@@ -119,7 +119,15 @@ def docks_landmarks():
 
 def other_landmarks():
     return [
-        {"id": "calder_house", "name": "Calder House", "boxes": [[150, 20, 60, 60, 0, 150]], "shade": 3},
+        # Calder House: the old radio company's block east of the tower, its
+        # wings the Stage 6 levels run through (6-1 Head Office, 6-2
+        # Skybridge; boxes round their floors, from campaign-tools/stage6).
+        {"id": "calder_house", "name": "Calder House", "boxes": [
+            [394, -200, 126, 26, 0, 15], [344, -272, 26, 122, 0, 12], [276, -320, 114, 26, 0, 12],
+            [224, -178, 38, 262, 0, 18], [194, -58, 58, 16, 0, 22.5], [173, 17, 26, 138, 0, 27],
+            [233, 73, 98, 14, 0, 27], [351, 73, 154, 26, 0, 36], [415, 125, 26, 82, 0, 36],
+            [295, 146, 218, 36, 0, 45], [197, 205, 22, 86, 0, 45], [88.5, 237, 199, 22, 0, 48],
+            [0, 196, 14, 64, 0, 45]], "shade": 3},
         {"id": "meridian_mall", "name": "Meridian Mall", "boxes": [[1290, 120, 190, 150, 0, 26], [1290, -60, 120, 70, 0, 34]], "shade": 1},
         # Westside (Stage 5, exact): the rail line's viaduct, north from the
         # sidings to West Central and west to the end of the line, plus its

@@ -49,7 +49,7 @@
    ]
   },
   {
-   "title": "Act 3: The Signal",
+   "title": "Stage 5: Westside",
    "missions": [
     {"id": "l5_1_storm_channels", "number": 8, "label": "5-1", "title": "Storm Channels", "place": "The Ward's storm channels, car park to the rail embankment",
      "beat": "The city starts rooting for Parker and he can see it: listeners wave from the walkways and one hauls a sluice open for him. The Ward hold the channels because the channels are the water.",
@@ -58,15 +58,20 @@
     {"id": "l5_2_rail_line", "number": 9, "label": "5-2", "title": "The Rail Line", "place": "The old rail line to the station under Calder House",
      "beat": "Told by the Ward to end it, the Host changes the course live: he blows the track ahead of Parker twice. Echo's second code picks the junction.",
      "moves": "Long speed run; down and back up the blown sections", "enemies": "Ward squads and gun drones, then the Static",
-     "file": "res://campaign/missions/l5_2_rail_line.json"},
-    {"id": "m09b_head_office", "number": 10, "title": "Head Office", "place": "Calder House, lobby to the executive floor",
-     "beat": "For the first time the Host is in the room. He comes down to deal with Parker himself, shoots from the balconies and runs every time Parker gets close.",
+     "file": "res://campaign/missions/l5_2_rail_line.json"}
+   ]
+  },
+  {
+   "title": "Stage 6: Calder House and the Tower",
+   "missions": [
+    {"id": "l6_1_head_office", "number": 10, "label": "6-1", "title": "Head Office", "place": "Calder House, lobby to the executive floor",
+     "beat": "Off the rail line and into Calder House. For the first time the Host is in the room: he shoots from the balconies and runs every time Parker gets close, and in his office there's a photo of him and Mags twenty years ago.",
      "moves": "Kick doors, jump the glass, slide the shutters", "enemies": "The Host (hit him for a bonus); the Static on the office floors, the Ward in the atrium",
-     "file": "res://campaign/missions/m09b_head_office.json"},
-    {"id": "m09c_skybridge", "number": 11, "title": "Skybridge", "place": "Calder House top floors and the bridge to the tower",
-     "beat": "Up through the tape archive to the roof. Parker reaches Echo on the skybridge, and for a few seconds they're face to face. Then the Ward drag her into the tower and blow the bridge.",
+     "file": "res://campaign/missions/l6_1_head_office.json"},
+    {"id": "l6_2_skybridge", "number": 11, "label": "6-2", "title": "Skybridge", "place": "Calder House top floors and the bridge to the tower",
+     "beat": "Up the Host's stairs and through the tape archive to the roof. Parker reaches Echo on the skybridge, and for a few seconds they're face to face. Then the Ward drag her into the tower and blow the bridge.",
      "moves": "Shaft wallruns, tank tops, the CALDER sign", "enemies": "Static hunters in the archive; Ward squads and rifles on the roof",
-     "file": "res://campaign/missions/m09c_skybridge.json"},
+     "file": "res://campaign/missions/l6_2_skybridge.json"},
     {"id": "m10_the_climb", "number": 12, "title": "The Climb", "place": "Broadcast tower exterior",
      "beat": "Straight up the tower while the Host counts down.",
      "moves": "Vertical wallrun chains", "enemies": "All types",

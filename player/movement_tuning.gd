@@ -113,7 +113,8 @@ extends Resource
 @export_range(0.0, 10.0, 0.1) var mantle_min_exit_speed := 3.5
 
 @export_group("Wallrun")
-@export_range(0.0, 15.0, 0.1) var wallrun_min_speed := 5.0
+## Slowest horizontal speed that still starts a wallrun.
+@export_range(0.0, 15.0, 0.1) var wallrun_min_speed := 3.0
 @export_range(0.0, 5.0, 0.05) var wallrun_max_time := 1.6
 ## Gravity multiplier while wallrunning.
 @export_range(0.0, 1.0, 0.01) var wallrun_gravity_scale := 0.15
@@ -121,7 +122,15 @@ extends Resource
 @export_range(0.0, 20.0, 0.1) var wallrun_speed := 8.5
 @export_range(0.0, 30.0, 0.1) var wallrun_accel := 6.0
 ## Max angle between your movement and the wall (degrees) to start a wallrun.
-@export_range(0.0, 90.0, 1.0) var wallrun_max_entry_angle := 60.0
+## Past wallrun_clean_entry_angle it still starts, but as short and sloppy as
+## a wallrun gets (and jump held there climbs instead, if it can).
+@export_range(0.0, 90.0, 1.0) var wallrun_max_entry_angle := 82.0
+## Entry angle (degrees) at which the angle stops adding to wallrun quality.
+@export_range(1.0, 90.0, 1.0) var wallrun_clean_entry_angle := 60.0
+## Fastest fall (m/s) that still starts a wallrun, and the most of your fall
+## speed that carries into it (falling faster adds no speed).
+@export_range(0.0, 60.0, 0.5) var wallrun_max_fall_speed := 25.0
+@export_range(0.0, 30.0, 0.5) var wallrun_fall_carry := 9.0
 
 @export_group("Ramps and loops")
 ## Steep ramps and loops (anything in the "runnable" group) can be run on.
