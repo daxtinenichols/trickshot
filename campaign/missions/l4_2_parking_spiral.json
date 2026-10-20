@@ -1952,6 +1952,7 @@
    "bare": true,
    "interior": 3.8,
    "open": 1,
+   "rail_inset": 0.65,
    "do": [
     {
      "slide": true,
@@ -2039,6 +2040,7 @@
    "bare": true,
    "interior": 3.8,
    "open": 1,
+   "rail_inset": 0.65,
    "do": [
     {
      "hurdles": true,

@@ -426,7 +426,7 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	# "indoors" when the mission builds its own walls and ceiling.
 	st.inside = float(seg.get("interior", seg.get("indoors", 0.0)))
 	if seg.has("interior"):
-		_interior(st, z0, length, w, float(seg.interior), float(seg.get("open", 0.0)))
+		_interior(st, z0, length, w, float(seg.interior), float(seg.get("open", 0.0)), float(seg.get("rail_inset", 0.6)))
 	var busy: Array = []
 	if st.chalk:
 		# Courier chalk where each roof starts: orange on the main line,
@@ -566,11 +566,11 @@ static func _bridge_breaks(seg: Dictionary) -> Array:
 ## of a building (a warehouse, an office floor). Gaps in the roof every
 ## 10 m are skylights. `open` 1 (right) or -1 (left) leaves that wall out
 ## for a balustrade over a void (a mall atrium the mission builds itself).
-static func _interior(st: Dictionary, z0: float, length: float, w: float, height: float, open := 0.0) -> void:
+static func _interior(st: Dictionary, z0: float, length: float, w: float, height: float, open := 0.0, inset := 0.6) -> void:
 	var y: float = st.y
 	for side: float in [-1.0, 1.0]:
 		if side == open:
-			_add(st, {"box": [side * (w * 0.5 - 0.6), y + RAIL_H * 0.5, z0 - length * 0.5], "size": [0.25, RAIL_H, length], "kind": "NEUTRAL", "look": "RUST"})
+			_add(st, {"box": [side * (w * 0.5 - inset), y + RAIL_H * 0.5, z0 - length * 0.5], "size": [0.2, RAIL_H, length], "kind": "NEUTRAL", "look": "RUST"})
 			continue
 		_add(st, {"box": [side * (w * 0.5 + 0.25), y + height * 0.5, z0 - length * 0.5], "size": [0.5, height, length], "kind": "NEUTRAL", "look": st.wall_look})
 	var d := 0.0
