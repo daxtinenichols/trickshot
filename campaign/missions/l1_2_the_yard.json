@@ -1,0 +1,73 @@
+{
+ "id": "l1_2_the_yard",
+ "title": "The Yard",
+ "runner": "",
+ "atlas": true,
+ "atlas_pieces": ["line_camp"],
+ "tower_views": [[2968, 0, 318]],
+ "city_open": [[2896, 300, 2968, 326]],
+ "par_seconds": 200,
+ "start": {"at": [3425, 12, 120], "yaw": 180},
+ "route_origin": {"at": [3425, 12, 120], "yaw": 180},
+ "chalk": true,
+ "clutter": ["debris_pile", "tire_stack", "barrel_rust", "street_sign", "dumpster", "crate_stack", "pallet"],
+ "objectives": [
+  {"type": "combo", "multiplier": 3, "text": "Chain three different moves before you land: a x3 combo"},
+  {"type": "shoot", "count": 3, "optional": false, "text": "Shoot three of Mags's dummies"},
+  {"type": "shoot", "count": 2, "headshots": true, "optional": false, "text": "Two headshots: aim for the dummies' heads"},
+  {"type": "score", "points": 6000, "text": "Score 6,000 points in the yard"},
+  {"type": "reach", "name": "the gate", "text": "Out through the south gate", "at": "end"}
+ ],
+ "radio": [
+  {"on": "start", "who": "mags", "line": "Juno used to beat you round this yard. Every time."},
+  {"on": "start", "who": "parker", "line": "Not every time."},
+  {"on": "start", "who": "mags", "line": "Every time, love."},
+  {"on": "go", "who": "mags", "line": "I know you want to go after her. You're running the yard first. Once. Humor me."},
+  {"on": "objective:0", "who": "mags", "line": "Chain three different moves before your feet settle. Vault, slide, flip, wall, whatever you like. Just don't stop."},
+  {"on": "done:0", "who": "mags", "line": "There it is. His listeners love that stuff, and right now you want them on your side."},
+  {"on": "set_piece:handoff", "who": "mags", "line": "Here. This was your granddad's. Older than you, and it still shoots better than you do.", "keep": true},
+  {"on": "objective:1", "who": "mags", "line": "Scrap dummies. Hit 'em while you're moving. Nobody out there's gonna stand still for you."},
+  {"on": "objective:2", "who": "mags", "line": "Now go for the heads. The Static plate their chests. Not their faces."},
+  {"on": "objective:3", "who": "mags", "line": "Last one. All of it at once. Shoot mid-combo and it counts for more."},
+  {"on": "done:3", "who": "mags", "line": "Alright. That's as ready as anybody gets for something this stupid."},
+  {"on": "objective:4", "who": "mags", "line": "South gate, then the warehouses. I'll be in your ear the whole way, okay?"},
+  {"on": "tape", "who": "host", "line": "...and that's the weather. Margaret, is it raining? Is that right?", "fx": "tape", "keep": true},
+  {"on": "tape", "who": "mags", "line": "Look out the window, Rook.", "fx": "tape", "keep": true},
+  {"on": "tape", "who": "host", "line": "I'm not paid to look out windows. I'm paid to talk.", "fx": "tape", "keep": true},
+  {"on": "complete", "who": "parker", "line": "Thanks, Mags."},
+  {"on": "complete", "who": "mags", "line": "Just come back. Both of you."},
+  {"on": "time:90", "who": "host", "line": "Still on the playground, Parker? Echo says you're always late. She's not wrong, is she?"}
+ ],
+ "chatter": {
+  "bail": [{"who": "mags", "line": "Up. Go again."}, {"who": "mags", "line": "You're thinking too much. Just run."}, {"who": "mags", "line": "Ouch. Right, again, and land it this time."}, {"who": "mags", "line": "Again. Smoother."}, {"who": "mags", "line": "Feet first, kid. Not face."}, {"who": "mags", "line": "Sloppy. The Static won't wait for you to get up."}],
+  "headshot": [{"who": "mags", "line": "There you go."}, {"who": "mags", "line": "Good. That's the one that counts."}, {"who": "mags", "line": "Oh, nice. Do that every time."}, {"who": "mags", "line": "Head. Good. Keep doing that."}, {"who": "mags", "line": "Clean."}, {"who": "mags", "line": "Ha! Right between the eyes."}],
+  "kill": [{"who": "mags", "line": "Down. Next."}, {"who": "mags", "line": "Good, now don't stop to admire it."}, {"who": "mags", "line": "That's one. Keep your feet moving."}, {"who": "mags", "line": "Okay. Don't stand there, go."}, {"who": "mags", "line": "Got him. Move."}, {"who": "mags", "line": "Good. Keep moving while you shoot."}],
+  "combo": [{"who": "mags", "line": "Yes! That. Do that."}, {"who": "mags", "line": "There it is. That's the run."}, {"who": "mags", "line": "Ha. Okay, kid, I see you."}, {"who": "mags", "line": "Good line. Hold onto it."}, {"who": "mags", "line": "Now that's a courier."}, {"who": "mags", "line": "Don't let it go to your head."}]
+ },
+ "pieces": [
+  {"set_piece": "camp", "state": "wrecked", "handoff": true, "at": [3401, 12, 121]}
+ ],
+ "route": [
+  {"roof": 36, "y": 12, "building": false, "bare": true},
+  {"ramp_down": 0, "length": 26},
+  {"roof": 70, "y": 0, "width": 24, "bare": true, "do": [{"checkpoint": "The yard", "at": 4, "objective": 0}, {"hurdles": true, "at": 16}, {"piece": {"target": [-8, 0, 0], "motion": "STATIC"}, "at": 10, "length": 0}, {"piece": {"target": [9, 0, 0], "motion": "STATIC"}, "at": 22, "length": 0}, {"slide": true, "at": 34}, {"piece": {"box": [-7.5, 1.3, -4], "size": [2.5, 2.6, 12.2], "kind": "NEUTRAL", "look": "RUST"}, "at": 44, "length": 0}, {"piece": {"box": [7.5, 1.3, -4], "size": [2.5, 2.6, 12.2], "kind": "NEUTRAL", "look": "RUST"}, "at": 44, "length": 0}, {"piece": {"target": [-9, 0, 0], "motion": "BOB"}, "at": 60, "length": 0}, {"piece": {"target": [8, 2.6, 0], "motion": "STATIC"}, "at": 50, "length": 0}, {"piece": {"box": [-13.6, 1.3, -6.1], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -6.1], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -6.1], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 1.3, -18.299999999999997], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -18.299999999999997], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -18.299999999999997], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 1.3, -30.5], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -30.5], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -30.5], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 1.3, -42.699999999999996], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -42.699999999999996], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -42.699999999999996], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 1.3, -54.9], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -54.9], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -54.9], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 1.3, -65.5], "size": [2.5, 2.6, 8.9], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -65.5], "size": [2.5, 2.6, 8.9], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -65.5], "size": [2.5, 2.6, 8.9], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}]},
+  {"roof": 60, "y": 0, "width": 24, "bare": true, "do": [{"hop": true, "side": 1, "at": 6}, {"piece": {"target": [-9, 0, 0], "motion": "STRAFE", "amplitude": 3.0, "speed": 3.0}, "at": 30, "length": 0}, {"piece": {"target": [9, 0, 0], "motion": "STATIC"}, "at": 40, "length": 0}, {"hurdles": true, "at": 46}, {"piece": {"target": [-6.5, 5.2, 0], "motion": "STATIC"}, "at": 56, "length": 0}, {"piece": {"box": [-6.5, 1.3, 0], "size": [2.5, 2.6, 12.2], "kind": "NEUTRAL", "look": "RUST"}, "at": 56, "length": 0}, {"piece": {"box": [-6.5, 3.9000000000000004, 0], "size": [2.5, 2.6, 12.2], "kind": "NEUTRAL", "look": "RUST"}, "at": 56, "length": 0}, {"piece": {"box": [-13.6, 1.3, -6.1], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -6.1], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -6.1], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 1.3, -18.299999999999997], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -18.299999999999997], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -18.299999999999997], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 1.3, -30.5], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -30.5], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -30.5], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 1.3, -42.699999999999996], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -42.699999999999996], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -42.699999999999996], "size": [2.5, 2.6, 12.1], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 1.3, -54.4], "size": [2.5, 2.6, 11.100000000000003], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 3.9000000000000004, -54.4], "size": [2.5, 2.6, 11.100000000000003], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}, {"piece": {"box": [-13.6, 6.5, -54.4], "size": [2.5, 2.6, 11.100000000000003], "kind": "NEUTRAL", "look": "RUST"}, "at": 0, "length": 0}]},
+  {"turn": "right", "size": 24},
+  {"roof": 40, "y": 0, "do": [{"checkpoint": "Terminal", "at": 4, "objective": 4}, {"prop": "crate_stack", "x": -4.6, "at": 20, "yaw": 90}]},
+  {"fork": [{"roof": 30, "y": 2.6, "look": "RUST", "bare": true}, {"gap": 5}, {"roof": 36, "y": 5.2, "look": "RUST", "bare": true, "do": [{"tape": "l1_2_tape_calder", "x": 0, "at": 20}]}, {"wallrun": 12, "side": -1}, {"roof": 30, "y": 5.2, "look": "RUST", "bare": true}, {"ramp_down": 0, "length": 18}], "side": -1},
+  {"roof": 80, "y": 0, "do": [{"hole": 0, "style": "wagon", "at": 30}, {"hurdles": true, "at": 62}]},
+  {"join": true},
+  {"roof": 10, "y": 0},
+  {"ramp_up": 3.5, "length": 10},
+  {"roof": 14, "y": 3.5, "do": [{"label": "LOADING DOCK", "at": 4, "size": 0.8}]},
+  {"gap": 3, "trick": "flip"},
+  {"roof": 14, "y": 3.5},
+  {"gap": 3, "trick": "spin"},
+  {"roof": 56, "y": 3.5},
+  {"gate": {"tier": 1}},
+  {"roof": 14, "y": 3.5},
+  {"ramp_down": 0, "length": 12},
+  {"roof": 7.32, "y": 0},
+  {"roof": 60, "y": 0, "bare": true, "do": [{"piece": {"row": "fence_chainlink", "from": [-14, 0, 0], "to": [-4.5, 0, 0], "count": 4}, "at": 40, "length": 0}, {"piece": {"row": "fence_chainlink", "from": [4.5, 0, 0], "to": [14, 0, 0], "count": 4}, "at": 40, "length": 0}, {"prop": "loudspeaker_pole", "x": -3.6, "at": 39, "yaw": 180}, {"prop": "loudspeaker_pole", "x": 3.6, "at": 39, "yaw": 160}, {"label": "SOUTH GATE · TO THE WAREHOUSES", "at": 40, "size": 1.0}, {"mark": "#f57320", "at": 41}]}
+ ]
+}

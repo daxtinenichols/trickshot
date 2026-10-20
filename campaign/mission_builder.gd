@@ -17,6 +17,9 @@ const FIRE_SHADER_PATH := "res://campaign/fire.gdshader"
 const FIGURE_SCRIPT_PATH := "res://art/characters/runner/runner_figure.gd"
 ## Scripted chase moments (falling beams, the Host's shortcuts, blasts).
 const SET_PIECE_SCRIPT_PATH := "res://campaign/set_piece.gd"
+const SKYLINE_SCRIPT_PATH := "res://campaign/atlas_skyline.gd"
+## The Line's camp (Stage 1): set piece "camp".
+const DOCKS_SCENE_PATH := "res://campaign/docks_scene.gd"
 # Enemies load by path, not class_name (a stale class cache has broken
 # scenes before).
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
@@ -196,6 +199,8 @@ func _piece(p: Dictionary) -> void:
 		_encounter(p)
 	elif p.has("set_piece"):
 		_set_piece(p)
+	elif p.has("skyline"):
+		_skyline(p)
 	elif p.has("figure"):
 		_figure(String(p.figure), Transform3D(basis, vec(p.get("at", [0, 0, 0]))), String(p.get("pose", "")))
 	else:
@@ -310,10 +315,23 @@ func _figure(runner: String, xf: Transform3D, pose: String) -> void:
 	_root.add_child(f)
 
 
-func _set_piece(p: Dictionary) -> void:
-	var script := load(SET_PIECE_SCRIPT_PATH) as Script if ResourceLoader.exists(SET_PIECE_SCRIPT_PATH) else null
+## The city past the level, from the atlas (campaign/atlas.gd): no
+## collision, built by path.
+func _skyline(p: Dictionary) -> void:
+	var script := load(SKYLINE_SCRIPT_PATH) as Script if ResourceLoader.exists(SKYLINE_SCRIPT_PATH) else null
 	if script == null or not script.can_instantiate():
-		push_warning("MissionBuilder: couldn't load %s, skipping a set piece" % SET_PIECE_SCRIPT_PATH)
+		push_warning("MissionBuilder: couldn't load %s, no skyline" % SKYLINE_SCRIPT_PATH)
+		return
+	var sky: Node3D = script.new()
+	sky.setup(p)
+	_root.add_child(sky)
+
+
+func _set_piece(p: Dictionary) -> void:
+	var path: String = DOCKS_SCENE_PATH if p.set_piece == "camp" else SET_PIECE_SCRIPT_PATH
+	var script := load(path) as Script if ResourceLoader.exists(path) else null
+	if script == null or not script.can_instantiate():
+		push_warning("MissionBuilder: couldn't load %s, skipping a set piece" % path)
 		return
 	var sp: Node3D = script.new()
 	sp.name = "SetPiece_%s_%d" % [p.set_piece, set_pieces.size()]
@@ -411,7 +429,8 @@ func _fire(pos: Vector3, size: Vector3) -> void:
 	var bm := BoxMesh.new()
 	bm.size = Vector3(size.x, 0.12, size.z)
 	embers.mesh = bm
-	embers.position = pos + Vector3(0, 0.06, 0)
+	# A centimeter proud of whatever it burns in (a barrel's rim), not flush.
+	embers.position = pos + Vector3(0, 0.07, 0)
 	var em := StandardMaterial3D.new()
 	em.albedo_color = Color(0.25, 0.08, 0.03)
 	em.emission_enabled = true

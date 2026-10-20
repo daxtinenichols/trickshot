@@ -109,13 +109,10 @@ func test_raider_head_and_body_zones() -> void:
 	await w.step(2)
 	await _shoot(r.global_position + Vector3(0, 1.0, 0))
 	check(hits.size() == 1 and hits[0].zone == &"body" and hits[0].target == r, "chest shot hits the body zone")
+	check(not r.is_dead, "a body shot doesn't kill (%.0f hp left)" % r.health)
 	await _shoot(r.head_position())
 	check(hits.size() == 2 and hits[1].zone == &"head", "head shot hits the head zone")
-	if hits.size() == 2:
-		check(hits[1].damage > hits[0].damage * 2.0, "headshots hit much harder")
-	check(not r.is_dead, "one head and one body shot don't kill (%.0f hp left)" % r.health)
-	await _shoot(r.head_position())
-	check(r.is_dead and hits.size() == 3 and hits[2].killed, "a second headshot kills")
+	check(r.is_dead and hits.size() == 2 and hits[1].killed, "one headshot kills")
 
 
 func test_mutant_head_is_readable_and_forward() -> void:
@@ -128,8 +125,7 @@ func test_mutant_head_is_readable_and_forward() -> void:
 	check((m.head_position() - m.global_position).dot(m.forward()) > 0.2, "head sits ahead of the body")
 	await _shoot(m.head_position())
 	check(hits.size() == 1 and hits[0].zone == &"head", "head zone hit")
-	await _shoot(m.head_position())
-	check(m.is_dead, "two headshots kill a mutant")
+	check(m.is_dead, "one headshot kills a mutant")
 
 
 func test_kill_finishes_the_combo_on_the_kill() -> void:
@@ -141,7 +137,7 @@ func test_kill_finishes_the_combo_on_the_kill() -> void:
 	c.finished.connect(func(s: Dictionary) -> void: summaries.append(s))
 	var r := _raider(Vector3(0, 0, -12), false)
 	await w.step(2)
-	await _shoot(r.head_position())
+	await _shoot(r.global_position + Vector3(0, 1.0, 0))
 	c.on_trick(&"slide", {})  # keep a combo going between the shots
 	await _shoot(r.head_position())
 	check(r.is_dead, "raider down")
@@ -194,13 +190,17 @@ func test_standing_still_gets_you_shot() -> void:
 func test_circle_strafing_dodges_the_shots() -> void:
 	await _setup(Vector3(0, 0.05, 0))
 	var r := _raider(Vector3(0, 0, -15))
+	var hits := [0]
+	_health().damaged.connect(func(_a: float, _f: Vector3, _k: StringName) -> void: hits[0] += 1)
 	var f := InputFrame.make(Vector2(1, 0))
 	for i in 420:
 		# Keep looking at the raider while running sideways around it.
 		_aim(r.global_position + Vector3(0, 1.4, 0))
 		await w.step(1, f)
 	check(r.shots_fired >= 3, "the raider kept shooting (%d shots)" % r.shots_fired)
-	check(_health().health >= _health().max_health - 0.01, "every shot missed a moving target (%.0f hp)" % _health().health)
+	# Combo armor: strafing at a run is no trick, so some shots land, but
+	# changing line keeps most of them off you.
+	check(hits[0] * 2 < r.shots_fired, "most shots missed a moving target (%d of %d hit)" % [hits[0], r.shots_fired])
 
 
 func test_raider_backs_off_when_you_close_in() -> void:
@@ -220,6 +220,8 @@ func test_raider_takes_cover_and_ducks_behind_it() -> void:
 	e.add_cover_wall(wall, 6, 0.5)
 	var r := Raider.new()
 	e.add_enemy(r, Transform3D(Basis.IDENTITY, Vector3(5, 0, -22)))
+	# Standing still you'd go down (and the fight reset) before it reloads.
+	_health().can_die = false
 	await w.step(2)
 	e.start()
 	var ducked_head := INF
@@ -244,6 +246,7 @@ func test_headshot_flinch_cancels_the_shot() -> void:
 	var r := _raider(Vector3(0, 0, -12))
 	r.max_health = 1000.0
 	r.health = 1000.0
+	r.one_shot_headshot = false
 	var ok := await w.step_until(func() -> bool: return r.is_aiming() and r.state_time > 0.2, 200)
 	check(ok, "raider started aiming")
 	await _shoot(r.head_position())
@@ -274,8 +277,10 @@ func test_only_a_few_raiders_aim_at_once() -> void:
 func test_mutant_runs_down_a_standing_player() -> void:
 	await _setup()
 	var m := _mutant(Vector3(0, 0, -12))
+	var hurt := [0.0]
+	_health().damaged.connect(func(a: float, _f: Vector3, _k: StringName) -> void: hurt[0] += a)
 	await w.step(300)
-	check(_health().health < _health().max_health, "it caught you (%.0f hp)" % _health().health)
+	check(hurt[0] > 0.0, "it caught you (%.0f damage)" % hurt[0])
 	check(m.leaps + m.swipes >= 1, "it attacked (%d leaps, %d swipes)" % [m.leaps, m.swipes])
 
 
@@ -477,6 +482,7 @@ func test_kick_hurts_and_knocks_a_raider_down() -> void:
 	check_near(r.health, r.max_health - r.kick_damage, 0.5, "kick damage")
 	check(r.is_knocked_down(), "knocked down")
 	r.health = 1000.0  # so the headshot below doesn't kill it
+	r.one_shot_headshot = false
 	await w.step(20)
 	check(r.global_position.z < -1.8, "sent flying back (%.2f)" % r.global_position.z)
 	check(r.head_position().y < standing_head - 1.0, "lying down: the head zone is on the floor (%.2f)" % r.head_position().y)
@@ -487,6 +493,17 @@ func test_kick_hurts_and_knocks_a_raider_down() -> void:
 	check(hits.size() == 1 and hits[0].zone == &"head", "headshot on the floor")
 	await w.step(int(60 * r.knockdown_time))
 	check(not r.is_knocked_down() and absf(r.head_position().y - standing_head) < 0.15, "back on its feet (%.2f vs %.2f)" % [r.head_position().y, standing_head])
+
+
+## Carrying instead of the gun (Dawn Run's parcel): kicks work the same.
+func test_kicks_work_while_carrying() -> void:
+	await _setup()
+	(w.player.weapon as Pistol).held = "parcel"
+	var r := _raider(Vector3(0, 0, -1.4), false)
+	await w.step(2)
+	await _kick_at(r.global_position + Vector3(0, 1.0, 0))
+	check_near(r.health, r.max_health - r.kick_damage, 0.5, "kick damage with the parcel in hand")
+	check(r.is_knocked_down(), "knocked down")
 
 
 func test_kick_damage_scales_with_the_combo() -> void:

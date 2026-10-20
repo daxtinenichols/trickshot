@@ -12,11 +12,16 @@ extends Node
 ## the chain reaches it, stays open until the next required objective is
 ## done, and pays BONUS_POINTS if you finish it in time.
 ##
-## Only reads the player, apart from respawning it at a checkpoint after a
-## fall or a catch. Story lines are not played here: it emits `event` and the
-## RadioFeed decides what to say.
+## Losing (going down to enemies, falling, being caught in the chase) ends
+## the attempt: the run stops (Phase.LOST) and emits `lost`, and MissionLevel
+## restarts the whole mission from its start. Backspace asks for a restart
+## the same way. Checkpoints are progress markers (radio cues, objective
+## steps, the dev practice start), not places you come back to.
+##
+## Only reads the player. Story lines are not played here: it emits `event`
+## and the RadioFeed decides what to say.
 
-enum Phase { READY, RUNNING, COMPLETE }
+enum Phase { READY, RUNNING, COMPLETE, LOST }
 
 ## A named moment the radio can react to: "start", "go", "objective:N"
 ## (objective N became active), "done:N", "checkpoint:N", "fall", "caught",
@@ -28,26 +33,41 @@ enum Phase { READY, RUNNING, COMPLETE }
 signal event(name: String)
 signal objective_changed(index: int)
 signal completed(result: Dictionary)
+## The attempt is over: "fall", "caught", "down", or "restart" (Backspace).
+signal lost(reason: String)
 
 ## Distance from the start that starts the clock.
 const START_DISTANCE := 1.5
 ## How close you need to get to a tape to pick it up.
 const TAPE_RADIUS := 1.4
+## The player respawns itself below y = -40 (Player._physics_process), so a
+## fall has to be noticed well above that (even falling a metre a tick).
+const LOWEST_FAIL_Y := -30.0
 ## A banked combo at this multiplier or more is worth a radio reaction.
 const COMBO_REACTION_MULTIPLIER := 4
 ## Points for each bonus goal finished.
 const BONUS_POINTS := 1000
+## A delivery's base points, into the running combo (so speed scales it).
+const DELIVERY_POINTS := 500
+const DROP_OFF_SCRIPT := "res://campaign/drop_off.gd"
 
 var phase := Phase.READY
 var ticks := 0
+## How this attempt was lost (each is 0 or 1: a loss ends the run).
 var falls := 0
 var catches := 0
 ## Times enemies took you down.
 var downs := 0
+## Attempts before this one (MissionLevel carries it across restarts).
+var restarts := 0
+## Why the run was lost ("" while it isn't).
+var lost_reason := ""
 ## Started from a checkpoint key, so the result isn't saved.
 var practice := false
 ## Index into builder.spawns: 0 is the start, then each checkpoint.
 var checkpoint := 0
+## The spawn this run started from (0, or a practice start).
+var start_index := 0
 ## Index of the active (required) objective in `objectives`.
 var objective := 0
 var objectives: Array = []
@@ -80,6 +100,8 @@ var _respawning := false
 const NEAR_GAP := 6.0
 var _host_near := false
 var _start_pos := Vector3.ZERO
+## "deliver" objective index -> its drop-off (campaign/drop_off.gd).
+var drop_offs := {}
 
 
 func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) -> void:
@@ -108,6 +130,7 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 				e.story_event.connect(_on_story_event)
 	var health := p.get_node_or_null("PlayerHealth")
 	if health != null:
+		health.respawn_on_down = false
 		health.died.connect(_on_player_down)
 	if mission.has("pursuer"):
 		pursuer = Pursuer.new()
@@ -120,8 +143,21 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 				event.emit("host_close")
 			else:
 				_on_story_event("set_piece:" + kind))
+	# Set pieces that wait for a mission event ("on") rather than a place.
+	event.connect(func(e: String) -> void:
+		for sp: Node3D in builder.set_pieces:
+			if sp.has_method("on_event"):
+				sp.on_event(e, self))
+	for i in objectives.size():
+		if String(objectives[i].get("type", "")) == "deliver":
+			var d: Node3D = (load(DROP_OFF_SCRIPT) as Script).new()
+			d.name = "DropOff_%d" % i
+			b.add_child(d)
+			d.setup(objectives[i], carry_object(), b)
+			drop_offs[i] = d
 	_start_pos = b.spawns[0].origin
 	event.connect(_save_choice)
+	event.connect(_carry_event)
 	_reset_run(0)
 
 
@@ -152,7 +188,7 @@ func seconds() -> float:
 
 
 func fail_y() -> float:
-	return mission.get("fail_y", -50.0)
+	return maxf(mission.get("fail_y", -50.0), LOWEST_FAIL_Y)
 
 
 ## Down off the course (low, and not on any of its streets): see "pits"
@@ -214,6 +250,9 @@ func bonus_text() -> String:
 
 ## What the HUD shows for the active objective, with progress.
 func objective_text() -> String:
+	if phase == Phase.COMPLETE:
+		# Not the last goal any more: you're there (the radio may still talk).
+		return "Level complete"
 	var o := current_objective()
 	if o.is_empty():
 		return ""
@@ -243,7 +282,13 @@ func total_tapes() -> int:
 
 
 func _physics_process(_delta: float) -> void:
-	if player == null or phase == Phase.COMPLETE:
+	if player != null and phase == Phase.COMPLETE:
+		# An ending set piece (the bridge going) plays out after the win.
+		for sp: Node3D in builder.set_pieces:
+			if sp.has_method("busy") and sp.busy():
+				sp.tick(player.global_position, self)
+		return
+	if player == null or phase == Phase.LOST:
 		return
 	var pos := player.global_position
 	if phase == Phase.READY:
@@ -254,8 +299,7 @@ func _physics_process(_delta: float) -> void:
 		ticks += 1
 	if pos.y < fail_y() or _in_pit(pos):
 		falls += 1
-		_back_to_checkpoint()
-		event.emit("fall")
+		_lose("fall")
 		return
 	_check_checkpoints(pos)
 	_check_tapes(pos)
@@ -263,8 +307,7 @@ func _physics_process(_delta: float) -> void:
 		pursuer.tick(pos, 1.0 / Engine.physics_ticks_per_second)
 		if pursuer.has_caught():
 			catches += 1
-			_back_to_checkpoint()
-			event.emit("caught")
+			_lose("caught")
 			return
 		# He's on your back: the radio can react (once until you pull away).
 		if not _host_near and pursuer.gap < NEAR_GAP:
@@ -298,12 +341,16 @@ func _begin_objective(i: int) -> void:
 
 func _check_objective(pos: Vector3) -> void:
 	var o := current_objective()
-	if o.is_empty() or phase == Phase.READY and o.get("type", "reach") == "reach":
+	if o.is_empty() or phase == Phase.READY and o.get("type", "reach") in ["reach", "deliver"]:
 		return
 	var done := false
 	match String(o.get("type", "reach")):
 		"reach":
 			done = inside(o, pos) or _reached_later(pos)
+		"deliver":
+			# Only by going through the drop-off: reaching a later goal
+			# never counts a delivery you ran past.
+			done = inside(o, pos)
 		"score":
 			done = _score() >= int(o.points)
 		"combo":
@@ -319,6 +366,8 @@ func _check_objective(pos: Vector3) -> void:
 		"event":
 			done = int(event_counts.get(String(o.get("event", "")), 0)) >= int(o.get("count", 1))
 	if done:
+		if drop_offs.has(objective):
+			_deliver(objective)
 		event.emit("done:%d" % objective)
 		_close_bonuses(objective)
 		if _next_required(objective + 1) >= objectives.size():
@@ -463,9 +512,7 @@ func _complete() -> void:
 		"seconds": seconds(),
 		"score": _score(),
 		"best_combo": best_combo,
-		"falls": falls,
-		"catches": catches,
-		"downs": downs,
+		"restarts": restarts,
 		"tapes": tapes_found.duplicate(),
 		"total_tapes": total_tapes(),
 		"bonuses": bonuses_done(),
@@ -488,7 +535,6 @@ func _check_checkpoints(pos: Vector3) -> void:
 	for i in range(checkpoint, cps.size()):
 		if inside(cps[i], pos):
 			checkpoint = i + 1
-			player.set_spawn(builder.spawns[checkpoint])
 			event.emit("checkpoint:%d" % i)
 			break
 
@@ -504,20 +550,24 @@ func _check_tapes(pos: Vector3) -> void:
 			event.emit("tape")
 
 
-func _back_to_checkpoint() -> void:
-	_respawning = true
-	player.respawn(builder.spawns[checkpoint])
-	_respawning = false
-	if pursuer != null:
-		pursuer.reset(builder.spawns[checkpoint].origin)
-		_reset_set_pieces()
+## Ends the attempt: the radio hears `reason` (as an event, except a
+## restart), and MissionLevel restarts the mission (see `lost`).
+func _lose(reason: String) -> void:
+	if phase == Phase.LOST or phase == Phase.COMPLETE:
+		return
+	phase = Phase.LOST
+	lost_reason = reason
+	if reason != "restart":
+		event.emit(reason)
+	lost.emit(reason)
 
 
 func _on_respawned() -> void:
-	if _respawning:
+	if phase == Phase.LOST or phase == Phase.COMPLETE:
 		return
-	# Backspace goes back to the last checkpoint: the run carries on. A zone
-	# key that lands somewhere else starts a practice run from there.
+	# Backspace (or the player's own fall respawn) lands on this run's start:
+	# restart the level. A zone key that lands on another spawn starts a
+	# practice run from there.
 	var index := 0
 	var best := INF
 	for i in builder.spawns.size():
@@ -525,15 +575,25 @@ func _on_respawned() -> void:
 		if d < best:
 			best = d
 			index = i
-	if index == checkpoint and phase != Phase.READY:
-		if pursuer != null:
-			pursuer.reset(builder.spawns[checkpoint].origin)
-		_reset_set_pieces()
+	if index == start_index:
+		if phase != Phase.READY:
+			_lose("restart")
 		return
+	start_practice(index)
+
+
+## Starts a run from spawn `index` (0: the real start; later: a practice
+## run that saves nothing), on that checkpoint's objective.
+func start_practice(index: int) -> void:
 	_reset_run(index)
 	if index > 0:
 		var cps: Array = mission.get("checkpoints", [])
 		_begin_objective(cps[index - 1].get("objective", objective) if index - 1 < cps.size() else objective)
+		# A practice start past a drop-off: already delivered.
+		for i: int in drop_offs:
+			if i < objective:
+				_set_held(carry_then())
+				drop_offs[i].show_delivered()
 	else:
 		_begin_objective(0)
 
@@ -545,7 +605,9 @@ func _reset_run(index: int) -> void:
 	catches = 0
 	downs = 0
 	checkpoint = index
+	start_index = index
 	practice = index != 0
+	lost_reason = ""
 	tapes_found.clear()
 	bonuses.clear()
 	event_counts.clear()
@@ -557,6 +619,9 @@ func _reset_run(index: int) -> void:
 	if pursuer != null:
 		pursuer.reset(_start_pos)
 	_reset_set_pieces()
+	_set_held(carry_object())
+	for i: int in drop_offs:
+		drop_offs[i].reset()
 	# A fresh run: everyone is back, even the ones killed last time.
 	for enc: Node3D in builder.encounters:
 		enc.reset(true)
@@ -582,12 +647,12 @@ func _on_target_killed(info: Dictionary, type := "") -> void:
 		event.emit("kill")
 
 
-## Going down to enemies sends you back to the last checkpoint (the
-## encounter has already reset), not to the encounter's entrance.
+## Going down to enemies loses the attempt; PlayerHealth leaves you where
+## you fell (respawn_on_down is off) while the level fades and restarts.
 func _on_encounter_started() -> void:
 	var health := player.get_node_or_null("PlayerHealth")
 	if health != null:
-		health.respawn_point = builder.spawns[checkpoint]
+		health.respawn_on_down = false
 
 
 ## An encounter's enemies came back: a shoot objective (or an open kill
@@ -606,15 +671,62 @@ func _on_encounter_reset(enc: Node3D) -> void:
 
 
 func _on_player_down() -> void:
+	if phase == Phase.LOST or phase == Phase.COMPLETE:
+		return
 	downs += 1
-	if pursuer != null:
-		pursuer.reset(builder.spawns[checkpoint].origin)
-		_reset_set_pieces()
-	event.emit("down")
+	_lose("down")
 
 
-## Set pieces play again after going back to a checkpoint.
+## Set pieces play again on a new run.
 func _reset_set_pieces() -> void:
 	_host_near = false
 	for sp: Node3D in builder.set_pieces:
 		sp.reset()
+
+
+# ---------------------------------------------------------------- carrying
+
+## What the mission has you carry instead of the gun: its "carry" key, a
+## kind ("parcel") or {"object", "until", "then"}. "gun" when there's none.
+func carry_object() -> String:
+	var c: Variant = mission.get("carry", "gun")
+	return String(c.get("object", "gun")) if c is Dictionary else String(c)
+
+
+## What the hands hold after a delivery or the "until" event: "hands"
+## (nothing; Dawn Run runs home empty-handed) unless "then" says ("gun").
+func carry_then() -> String:
+	var c: Variant = mission.get("carry", "gun")
+	return String(c.get("then", "hands")) if c is Dictionary else "hands"
+
+
+## What's in the player's hands now ("gun" without a weapon node).
+func held() -> String:
+	var w: Node = player.weapon if player != null else null
+	return String(w.held) if w != null and "held" in w else "gun"
+
+
+func _set_held(kind: String) -> void:
+	var w: Node = player.weapon if player != null else null
+	if w != null and "held" in w:
+		w.held = kind
+
+
+## The carry's "until" event (e.g. "set_piece:handoff") swaps to "then".
+func _carry_event(e: String) -> void:
+	var c: Variant = mission.get("carry", null)
+	if c is Dictionary and c.has("until") and e == String(c.until) and phase != Phase.READY:
+		_set_held(carry_then())
+
+
+## The object leaves your hands at drop-off `i`, tossed in on the run: you
+## keep every bit of speed, the combo gets DELIVERED, the radio "delivered".
+func _deliver(i: int) -> void:
+	var from := player.global_position + Vector3.UP * 1.2
+	if player.camera != null:
+		from = player.camera.global_position - player.camera.global_basis.z * 0.4 + Vector3.DOWN * 0.25
+	drop_offs[i].deliver(from, held())
+	_set_held(carry_then())
+	if combo != null:
+		combo.add(&"delivered", DELIVERY_POINTS, player.horizontal_speed())
+	event.emit("delivered")

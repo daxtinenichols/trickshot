@@ -13,6 +13,8 @@ const MISSION_SCENE := "res://campaign/mission.tscn"
 const MENU_SCENE := "res://campaign/campaign.tscn"
 const SAVE_PATH := "user://campaign.cfg"
 const Route := preload("res://campaign/route.gd")
+## Speed gates become sized gaps before the route is laid out.
+const SpeedGate := preload("res://campaign/speed_gate.gd")
 
 ## Set false in tests so they never touch the player's save.
 static var persist := true
@@ -80,7 +82,7 @@ static func load_mission_file(path: String) -> Dictionary:
 	if not (data is Dictionary):
 		push_error("Campaign: %s is not valid mission JSON" % path)
 		return {}
-	return Route.expand(data)
+	return Route.expand(SpeedGate.prepare(data))
 
 
 ## The mission index whose data file is `path`, or -1.

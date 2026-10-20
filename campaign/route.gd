@@ -20,6 +20,8 @@ extends RefCounted
 ## Loaded by path (no class_name).
 
 const City := preload("res://campaign/city.gd")
+const Atlas := preload("res://campaign/atlas.gd")
+const PROP_KIT := "res://art/props/prop_kit.gd"
 
 ## Roof width; the running lane is its middle.
 const WIDTH := 12.0
@@ -59,6 +61,13 @@ const DOORS_TOP := 2.2
 const KICK_AT := 1.9
 ## A wall across an open roof is this tall; indoors it meets the ceiling.
 const OUTDOOR_WALL := 3.5
+## The finish of a route that ends up high: a run-out this long past the
+## line, walls this tall either side of it and a building across its end
+## with a door in it, so nobody runs off the edge once the level is won.
+const FINISH_RUNOUT := 16.0
+const FINISH_WALL := 8.0
+## The finish walls start this far before the line (the end goal's depth).
+const FINISH_BEFORE := 8.0
 ## Enemy types that fight from behind cover: the route puts sandbags in
 ## front of them (any enemy can say "cover": true or false instead).
 const COVER_TYPES := ["raider", "trooper", "marksman"]
@@ -79,12 +88,14 @@ static func expand(mission: Dictionary) -> Dictionary:
 		"rng": RandomNumberGenerator.new(), "lowest": INF, "roof_end": 6.0, "lanes": [], "clutter": mission.get("clutter", CLUTTER),
 		# Legs: the frame each stretch between corners is laid out in.
 		"legs": [{"o": origin.origin, "yaw": origin.yaw, "z0": 0.0, "start": 6.0}],
-		"leg": 0, "dx": 0.0, "fork": null, "forks": [],
+		"leg": 0, "dx": 0.0, "fork": null, "forks": [], "ledges": [],
 		"chalk": mission.get("chalk", false),
 		"roof_look": mission.get("roof_look", "FACADE"),
 		# The roof being laid out: its width and how high its ceiling is
 		# (0 outdoors).
 		"roof_w": WIDTH, "inside": 0.0,
+		# The last roof laid out: {w, inside, bridge, look}.
+		"last": {},
 	}
 	if mission.has("route_origin") or mission.get("route_from", "") == "base_exit":
 		st.y = origin.origin.y
@@ -94,7 +105,10 @@ static func expand(mission: Dictionary) -> Dictionary:
 	if st.fork != null:
 		push_error("Route: a fork never joins (add {\"join\": true})")
 		_join(st, {})
-	st.legs[-1].end = st.z
+	var finish := _finish(st, mission)
+	if finish >= 0.0:
+		mission.route_finish = finish
+	st.legs[-1].end = st.z - maxf(finish, 0.0)
 	# Everything to world space.
 	var pieces: Array = mission.get("pieces", [])
 	for e: Array in st.out:
@@ -141,7 +155,15 @@ static func expand(mission: Dictionary) -> Dictionary:
 		var top := -0.02 if mission.has("base") else 0.0
 		pieces.push_front({"box": [ground.get_center().x, top - 0.5, ground.get_center().y], "size": [ground.size.x, 1, ground.size.y], "kind": "FLOOR"})
 	if mission.get("skyline", true) != false:
-		City.build(mission, _lane_areas(st), ground, String(mission.get("id", "route")))
+		var atlas: bool = mission.get("atlas", false)
+		if atlas:
+			Atlas.before_city(mission, ground)
+		var first: int = mission.pieces.size()
+		var lanes := _lane_areas(st)
+		City.build(mission, lanes, ground, String(mission.get("id", "route")))
+		_clear_streets(st, mission, first)
+		if atlas:
+			Atlas.after_city(mission, first, ground, bounds, lanes)
 	if not mission.has("fail_y"):
 		mission.fail_y = st.lowest - 5.5 if st.lowest > 6.0 else -20.0
 	if mission.get("skyline", true) != false:
@@ -185,10 +207,13 @@ static func _resolve(o: Dictionary, mission: Dictionary, st: Dictionary) -> void
 	var ref: String = o.at
 	if ref == "end":
 		var last: int = st.legs.size() - 1
-		var e := _world(st, last, 0.0, st.z + 4.0, st.y + 2.0)
+		# With a finish run-out the goal reaches on over it, so a jump
+		# across the line still counts the moment you're over it.
+		var deep: float = 8.0 + float(st.get("runout", 0.0)) * 0.5
+		var e := _world(st, last, 0.0, st.z + 8.0 - deep * 0.5, st.y + 2.0)
 		o.at = [e.x, e.y, e.z]
 		if not o.has("size") and not o.has("radius"):
-			o.size = [WIDTH + 2.0, 8.0, 8.0]
+			o.size = [WIDTH + 2.0, 8.0, deep]
 			_turn_region(o, st.legs[last].yaw)
 		return
 	for c: Dictionary in mission.checkpoints:
@@ -273,15 +298,26 @@ static func _add(st: Dictionary, p: Dictionary) -> void:
 
 # ---------------------------------------------------------------- segments
 
+## "trick": "flip" | "front" | "spin" on a gap or wallrun: the bot does it
+## in the air after the jump it just took.
+static func _trick(st: Dictionary, seg: Dictionary) -> void:
+	if seg.has("trick"):
+		st.bot.append([float(st.bot[-1][0]) - 0.01, String(seg.trick), NAN])
+
+
 static func _segment(st: Dictionary, seg: Dictionary) -> void:
 	if seg.has("roof"):
 		_roof(st, seg)
 	elif seg.has("gap"):
-		# A running jump: take off just before the edge.
-		st.bot.append([st.z + 1.2, "jump", NAN])
+		# A running jump: take off "takeoff" m before the edge (1.2 by default).
+		st.bot.append([st.z + float(seg.get("takeoff", 1.2)), "jump", NAN])
+		_trick(st, seg)
 		if seg.get("roll", false):
 			st.bot.append([st.z, "roll", NAN])
 		_lane(st, st.z, st.z - float(seg.gap), WIDTH)
+		if seg.has("gate") and seg.get("lower", "ledge") != "fall":
+			# A speed gate's miss lands on its ledge, not in a pit.
+			st.ledges.append([st.leg, st.dx, st.z, st.z - float(seg.gap)])
 		st.z -= float(seg.gap)
 	elif seg.has("wallrun"):
 		_wallrun_gap(st, seg)
@@ -317,7 +353,9 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 		var rise: float = float(seg.y) - st.y
 		if rise > 0.5 and is_equal_approx(st.z, st.roof_end):
 			# Straight on from a lower roof: a yellow face to climb (3 m max).
-			_add(st, {"box": [0, st.y + rise * 0.5, st.z - 0.15], "size": [WIDTH, rise, 0.3], "kind": "PARKOUR"})
+			# 2 cm proud of the wall and just inside its top and sides, so
+			# the two looks never share a plane (they flickered).
+			_add(st, {"box": [0, st.y + (rise - 0.02) * 0.5, st.z - 0.13], "size": [WIDTH - 0.04, rise - 0.02, 0.3], "kind": "PARKOUR"})
 			st.bot.append([st.z + 1.8, "jump", NAN])
 		var drop: float = st.y - float(seg.y)
 		if drop >= 3.5 and not st.bot.is_empty() and st.bot[-1][1] == "jump":
@@ -327,8 +365,10 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	var z0: float = st.z
 	var w: float = seg.get("width", WIDTH)
 	if seg.get("bridge", false):
-		_bridge(st, z0, length, w, float(seg.get("beyond", 0.0)))
-	elif st.y > 0.5:
+		_bridge(st, z0, length, w, float(seg.get("beyond", 0.0)), _bridge_breaks(seg))
+	elif st.y > 0.5 and seg.get("building", true):
+		# ("building": false: a roof of something already there, like an
+		# atlas landmark the level runs over.)
 		_add(st, {"building": [0, st.y, z0 - length * 0.5], "size": [w, length], "look": seg.get("look", st.roof_look)})
 	# (At street level, y 0, the street itself is the floor.)
 	_lane(st, z0, z0 - length, w)
@@ -355,23 +395,87 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 		busy.append(_feature(st, f, z0))
 	if not seg.get("bare", false) and not seg.get("bridge", false):
 		_clutter(st, z0, length, busy)
+	st.last = {"w": w, "inside": st.inside, "bridge": seg.get("bridge", false), "look": seg.get("look", st.roof_look)}
 	st.inside = 0.0
 	st.roof_w = WIDTH
 	st.z = z0 - length
 	st.roof_end = st.z
 
 
+## The finish line at the end of the route (the cursor). On a roof (not
+## a street, a bridge running on, or a mission with "finish": false; atlas
+## levels only with "finish": true, as the next level carries on from
+## their end) the roof runs on FINISH_RUNOUT m past the line between
+## walls, to a building across the end with a door in it: whatever speed
+## you arrive at, you stop on solid ground, not over the edge. Indoors
+## (the last roof has a ceiling) it's just the room's end wall. Returns
+## the run-out's length.
+static func _finish(st: Dictionary, mission: Dictionary) -> float:
+	var want: Variant = mission.get("finish", not mission.get("atlas", false))
+	var last: Dictionary = st.last
+	if want == false or last.is_empty() or last.bridge or st.y <= City.STREET_TOP or not is_equal_approx(st.z, st.roof_end):
+		return -1.0
+	var y: float = st.y
+	var w: float = last.w
+	var half := w * 0.5
+	var z: float = st.z
+	# The line itself.
+	_add(st, {"mark": [0, y + 0.004, z], "size": [w, 0.5], "color": "#e8e2d4"})
+	var inside: float = last.inside
+	if inside > 0.0:
+		# The room ends in a wall (up to its ceiling) with a door in it.
+		_add(st, {"box": [0, y + inside * 0.5, z - 0.25], "size": [w + 1.0, inside, 0.5], "kind": "NEUTRAL", "look": "TILE"})
+		_finish_door(st, y, z)
+		return 0.0
+	var runout := FINISH_RUNOUT
+	st.runout = runout
+	var end := z - runout
+	_add(st, {"building": [0, y, z - runout * 0.5], "size": [w, runout], "look": last.look})
+	_lane(st, z, end, w)
+	# Walls either side from the goal's start to the end building, too
+	# tall to climb or vault, and the building across the end.
+	# (In the level's own building look: on the tower, the tower.)
+	var from := z + FINISH_BEFORE
+	for side: float in [-1.0, 1.0]:
+		_add(st, {"box": [side * (half + 0.25), y + FINISH_WALL * 0.5, (from + end) * 0.5], "size": [0.5, FINISH_WALL, from - end], "kind": "NEUTRAL", "look": last.look})
+	_add(st, {"box": [0, y + (FINISH_WALL + 2.0) * 0.5, end - 2.0], "size": [w + 1.0, FINISH_WALL + 2.0, 4.0], "kind": "NEUTRAL", "look": last.look, "footprint": true})
+	_finish_door(st, y, end)
+	return runout
+
+
+## A shut steel door in its frame on the wall facing the run at z: the
+## way on, for the next level.
+static func _finish_door(st: Dictionary, y: float, z: float) -> void:
+	_add(st, {"box": [0, y + 1.5, z + 0.06], "size": [2.4, 3.0, 0.12], "kind": "NEUTRAL", "look": "RUST"})
+	_add(st, {"box": [0, y + 3.15, z + 0.1], "size": [3.0, 0.3, 0.2], "kind": "NEUTRAL", "look": "NEUTRAL"})
+	for side: float in [-1.0, 1.0]:
+		_add(st, {"box": [side * 1.35, y + 1.5, z + 0.1], "size": [0.3, 3.0, 0.2], "kind": "NEUTRAL", "look": "NEUTRAL"})
+
+
 ## A bridge deck instead of a building: a concrete slab on piers with
 ## steel girders under its edges and railings along them. `beyond` m more
 ## of the span carry on past the segment's end (the far side of the bridge,
 ## seen but not run).
-static func _bridge(st: Dictionary, z0: float, length: float, w: float, beyond: float) -> void:
+static func _bridge(st: Dictionary, z0: float, length: float, w: float, beyond: float, breaks: Array = []) -> void:
 	var y: float = st.y
 	var total := length + beyond
 	var mid := z0 - total * 0.5
-	_add(st, {"box": [0, y - BRIDGE_DECK * 0.5, mid], "size": [w, BRIDGE_DECK, total], "kind": "NEUTRAL", "footprint": true})
+	# The deck and girders come in pieces between the breaks, so a
+	# "bridge_collapse" set piece can drop each one on its own.
+	var cuts: Array = [0.0]
+	for b: float in breaks:
+		if b > 0.0 and b < total:
+			cuts.append(b)
+	cuts.append(total)
+	cuts.sort()
+	for i in cuts.size() - 1:
+		var a: float = cuts[i]
+		var l: float = cuts[i + 1] - a
+		var m := z0 - a - l * 0.5
+		_add(st, {"box": [0, y - BRIDGE_DECK * 0.5, m], "size": [w, BRIDGE_DECK, l], "kind": "NEUTRAL", "footprint": true})
+		for side: float in [-1.0, 1.0]:
+			_add(st, {"box": [side * (w * 0.5 - 0.8), y - BRIDGE_DECK - 0.6, m], "size": [0.6, 1.2, l], "kind": "NEUTRAL", "look": "RUST"})
 	for side: float in [-1.0, 1.0]:
-		_add(st, {"box": [side * (w * 0.5 - 0.8), y - BRIDGE_DECK - 0.6, mid], "size": [0.6, 1.2, total], "kind": "NEUTRAL", "look": "RUST"})
 		var x := side * (w * 0.5 - 0.3)
 		_add(st, {"row": "railing", "from": [x, y, z0 - 1.0], "to": [x, y, z0 - total + 1.0],
 			"count": maxi(int(total / 2.0), 2), "yaw": 90.0})
@@ -380,6 +484,15 @@ static func _bridge(st: Dictionary, z0: float, length: float, w: float, beyond: 
 	while d < total:
 		_add(st, {"box": [0, (y - BRIDGE_DECK - 1.2) * 0.5, z0 - d], "size": [w * 0.5, y - BRIDGE_DECK - 1.2, 2.4], "kind": "NEUTRAL"})
 		d += BRIDGE_SPAN
+
+
+## Where a bridge roof's deck breaks (m along it): the "breaks" of its
+## "bridge_collapse" set piece, if it has one.
+static func _bridge_breaks(seg: Dictionary) -> Array:
+	for f: Dictionary in seg.get("do", []):
+		if f.get("set_piece", "") == "bridge_collapse":
+			return f.get("breaks", [])
+	return []
 
 
 ## Walls and a roof over a roof's whole length, `height` m up: the inside
@@ -422,19 +535,24 @@ static func _turn(st: Dictionary, seg: Dictionary) -> void:
 	var z0: float = st.z
 	var pivot := z0 - size * 0.5
 	var turn := angle if left else -angle
+	# The near edge of a corner that isn't square (where the last roof
+	# ends) and its far edge (where the next one starts), turned by the
+	# corner.
+	var h := maxf(WIDTH, size) * 0.5
+	var b := Basis(Vector3.UP, turn)
+	var far_c := Vector3(0, 0, pivot) + b * Vector3(0, 0, -size * 0.5)
+	var far_r := b * Vector3(h, 0, 0)
+	var quad := [[-h, z0], [h, z0], [far_c.x + far_r.x, far_c.z + far_r.z], [far_c.x - far_r.x, far_c.z - far_r.z]]
+	var square := is_equal_approx(angle, PI * 0.5)
 	if st.y > 0.5:
-		if is_equal_approx(angle, PI * 0.5):
+		if square:
 			_add(st, {"building": [0, st.y, pivot], "size": [size, size], "look": seg.get("look", st.roof_look)})
 		else:
-			# The near edge of the corner (where the last roof ends) and its
-			# far edge (where the next one starts), turned by the corner.
-			var h := maxf(WIDTH, size) * 0.5
-			var b := Basis(Vector3.UP, turn)
-			var far_c := Vector3(0, 0, pivot) + b * Vector3(0, 0, -size * 0.5)
-			var far_r := b * Vector3(h, 0, 0)
-			_add(st, {"slab": [[-h, z0], [h, z0], [far_c.x + far_r.x, far_c.z + far_r.z], [far_c.x - far_r.x, far_c.z - far_r.z]],
-				"top": st.y, "look": seg.get("look", st.roof_look)})
+			_add(st, {"slab": quad, "top": st.y, "look": seg.get("look", st.roof_look)})
 	_lane(st, z0, z0 - size, maxf(WIDTH, size))
+	if not square:
+		# The city fits the corner's own outline, not a square round it.
+		st.lanes[-1].append(quad)
 	_set_low(st, st.y)
 	# The bot heads for the middle of the corner; it turns there.
 	st.bot.append([z0 + 6.0, "", 0.0])
@@ -553,8 +671,15 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 	var z := z0 - d
 	var y: float = st.y
 	if f.has("hurdles"):
-		_add(st, {"row": f.get("hurdles", "barricade_jersey") if f.hurdles is String else "barricade_jersey",
-			"from": [-5, y, z], "to": [5, y, z], "count": 6})
+		var hurdle: String = f.hurdles if f.hurdles is String else "barricade_jersey"
+		# Wall to wall; pieces too wide to sit side by side step back and
+		# forth instead of running into each other.
+		var size: Vector3 = load(PROP_KIT).size_of(hurdle)
+		var n := clampi(ceili(12.0 / size.x - 0.01), 2, 8)
+		var step := (12.0 - size.x) / (n - 1)
+		for i in n:
+			var stagger := 0.0 if step >= size.x - 0.01 else (size.z + 0.05 if i % 2 == 1 else 0.0)
+			_add(st, {"prop": hurdle, "at": [-6.0 + size.x * 0.5 + step * i, y, z - stagger]})
 		st.bot.append([z + 1.6, "jump", NAN])
 		return [d - 4.0, d + 3.0]
 	if f.has("slide"):
@@ -569,7 +694,8 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 		var side: float = f.get("side", -1.0)
 		_add(st, {"box": [side * 3.0, y + 3.0, z - 4.0], "size": [1, 6, 8], "kind": "WALLRUN"})
 		_add(st, {"box": [-side * 3.0, y + 3.0, z - 13.0], "size": [1, 6, 8], "kind": "WALLRUN"})
-		_add(st, {"mark": [0, y, z - 8.5], "size": [5, 18], "color": "#d94c40"})
+		# A hair over the city's road lines, which it would flicker with.
+		_add(st, {"mark": [0, y + 0.003, z - 8.5], "size": [5, 18], "color": "#d94c40"})
 		st.bot.append([z + 8.0, "", 0.0])
 		return [d - 2.0, d + 20.0]
 	if f.has("glass"):
@@ -588,7 +714,13 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 		# Double doors in a wall across the room: kick one and both swing
 		# open away from you. No slowing down if you kick in time.
 		var dx: float = f.door
-		_cross_wall(st, z, dx, DOORS_WIDTH, 0.0, DOORS_TOP, f.get("look", "FACADE"))
+		if f.has("glass"):
+			# And a window beside them in the same wall: kick the door or
+			# jump the glass.
+			_cross_wall2(st, z, [[dx, DOORS_WIDTH, 0.0, DOORS_TOP], [float(f.glass), GLASS_WIDTH, GLASS_SILL, GLASS_TOP]], f.get("look", "FACADE"))
+			_add(st, {"window": [float(f.glass), y + GLASS_SILL, z], "size": [GLASS_WIDTH, GLASS_TOP - GLASS_SILL]})
+		else:
+			_cross_wall(st, z, dx, DOORS_WIDTH, 0.0, DOORS_TOP, f.get("look", "FACADE"))
 		_add(st, {"doors": [dx, y, z]})
 		st.bot.append([z + 16.0, "", dx])
 		st.bot.append([z + KICK_AT, "kick", dx])
@@ -652,9 +784,10 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 
 ## A chase set piece (campaign/set_piece.gd) at `at` m along the roof, `x`
 ## across (`up` above it), fired when you reach `trigger` m along it: {"set_piece":
-## "debris", "as": "slide"}, "host" ("gap"), "blast" ("size") or "mast"
-## ("height", "fall_yaw"). A fallen beam is an obstacle, so the bot slides
-## under or jumps it.
+## "debris", "as": "slide"}, "host" ("gap"), "blast" ("size"), "mast"
+## ("height", "fall_yaw") or, on a bridge roof, "bridge_collapse"
+## ("breaks": m along the roof where the deck splits). A fallen beam is an
+## obstacle, so the bot slides under or jumps it.
 static func _set_piece(st: Dictionary, f: Dictionary, d: float, z: float, z0: float, y: float) -> Array:
 	var sp := {}
 	for k: String in f:
@@ -662,6 +795,14 @@ static func _set_piece(st: Dictionary, f: Dictionary, d: float, z: float, z0: fl
 			sp[k] = f[k]
 	sp.at = [float(f.get("x", 0.0)), y + float(f.get("up", 0.0)), z]
 	sp.trigger = [float(f.get("trigger_x", 0.0)), y + 1.0, z0 - float(f.get("trigger", d - 26.0))]
+	if f.set_piece == "bridge_collapse":
+		# Its breaks as distances ahead of it (local -Z), down to the street.
+		var ahead: Array = []
+		for b: float in f.get("breaks", []):
+			ahead.append(d - b)
+		sp.breaks = ahead
+		sp.drop = float(f.get("drop", y))
+		sp.width = float(f.get("width", st.roof_w))
 	_add(st, sp)
 	if f.set_piece == "debris":
 		if f.get("as", "hurdle") == "slide":
@@ -691,6 +832,27 @@ static func _cross_wall(st: Dictionary, z: float, x: float, width: float, lo: fl
 	var over := {"box": [x, y + (hi + h) * 0.5, z], "size": [width, h - hi, 0.3], "kind": "NEUTRAL", "look": look}
 	_add(st, over)
 	return over
+
+
+## A wall across the roof at z with several openings [x, width, lo, hi]
+## (left to right, not overlapping).
+static func _cross_wall2(st: Dictionary, z: float, openings: Array, look: String) -> void:
+	var y: float = st.y
+	var h: float = st.inside if st.inside > 0.0 else OUTDOOR_WALL
+	var half: float = st.roof_w * 0.5
+	openings.sort_custom(func(a: Array, b: Array) -> bool: return a[0] < b[0])
+	var left := -half
+	for o: Array in openings:
+		var a: float = float(o[0]) - float(o[1]) * 0.5
+		var b: float = float(o[0]) + float(o[1]) * 0.5
+		if a - left > 0.01:
+			_add(st, {"box": [(left + a) * 0.5, y + h * 0.5, z], "size": [a - left, h, 0.3], "kind": "NEUTRAL", "look": look})
+		if float(o[2]) > 0.01:
+			_add(st, {"box": [o[0], y + float(o[2]) * 0.5, z], "size": [o[1], o[2], 0.3], "kind": "NEUTRAL", "look": look})
+		_add(st, {"box": [o[0], y + (float(o[3]) + h) * 0.5, z], "size": [o[1], h - float(o[3]), 0.3], "kind": "NEUTRAL", "look": look})
+		left = b
+	if half - left > 0.01:
+		_add(st, {"box": [(left + half) * 0.5, y + h * 0.5, z], "size": [half - left, h, 0.3], "kind": "NEUTRAL", "look": look})
 
 
 ## A gap HOLE_TOP high to slide through at x, in one of these styles:
@@ -829,6 +991,7 @@ static func _wallrun_gap(st: Dictionary, seg: Dictionary) -> void:
 	st.bot.append([edge + 24.0, "", side * 3.3])
 	st.bot.append([edge + 10.0, "", side * 5.4])
 	st.bot.append([edge + 0.7, "jump", side * 7.0])
+	_trick(st, seg)
 	st.bot.append([edge - gap - 4.0, "", 0.0])
 	st.after_wallrun = true
 	_lane(st, edge, edge - gap, WIDTH)
@@ -935,6 +1098,11 @@ static func _pits(st: Dictionary, mission: Dictionary) -> void:
 		var r := {"at": [c.x, 0.0, c.z], "size": [float(l[4]) + City.STREET_MARGIN * 2.0, 6.0, absf(float(l[2]) - float(l[3])) + City.STREET_MARGIN * 2.0]}
 		_turn_region(r, st.legs[leg].yaw)
 		streets.append(r)
+	for l: Array in st.ledges:
+		var c := _world(st, l[0], l[1], (float(l[2]) + float(l[3])) * 0.5, 0.0)
+		var r := {"at": [c.x, 0.0, c.z], "size": [WIDTH, 6.0, absf(float(l[2]) - float(l[3]))]}
+		_turn_region(r, st.legs[l[0]].yaw)
+		streets.append(r)
 	if not high or fail > 0.0:
 		return
 	if mission.has("base"):
@@ -946,6 +1114,37 @@ static func _pits(st: Dictionary, mission: Dictionary) -> void:
 	mission.pits = {"y": pit_y, "streets": streets}
 
 
+## Takes the city's rubble, wrecks and fires (pieces from `first` on) off
+## the streets the course runs along: a piece high over a street (a dummy
+## on a container stack) reads to the city as a gap with ground under it.
+static func _clear_streets(st: Dictionary, mission: Dictionary, first: int) -> void:
+	var streets: Array = []
+	for l: Array in st.lanes:
+		if float(l[5]) <= City.STREET_TOP:
+			streets.append(l)
+	if streets.is_empty():
+		return
+	var kept: Array = mission.pieces.slice(0, first)
+	for i in range(first, mission.pieces.size()):
+		var p: Dictionary = mission.pieces[i]
+		var at: Variant = p.get("at", p.get("fire", null)) if (p.has("prop") or p.has("fire")) else null
+		if at is Array and _on_street(st, streets, Vector2(at[0], at[2])):
+			continue
+		kept.append(p)
+	mission.pieces = kept
+
+
+static func _on_street(st: Dictionary, streets: Array, p: Vector2) -> bool:
+	for l: Array in streets:
+		var leg: Dictionary = st.legs[int(l[0])]
+		# Into the leg's frame: x across, z along.
+		var v := Basis(Vector3.UP, -float(leg.yaw)) * Vector3(p.x - leg.o.x, 0.0, p.y - leg.o.z)
+		var z := v.z + float(leg.z0)
+		if absf(v.x - float(l[1])) <= float(l[4]) * 0.5 and z <= maxf(l[2], l[3]) and z >= minf(l[2], l[3]):
+			return true
+	return false
+
+
 ## The course's stretches as areas in the world, for the city.
 static func _lane_areas(st: Dictionary) -> Array:
 	var out: Array = []
@@ -953,6 +1152,14 @@ static func _lane_areas(st: Dictionary) -> Array:
 		var leg: int = l[0]
 		var c := _world(st, leg, l[1], (float(l[2]) + float(l[3])) * 0.5, 0.0)
 		var top: float = l[5]
-		out.append(City.area(Vector2(c.x, c.z), Vector2(float(l[4]) * 0.5, absf(float(l[2]) - float(l[3])) * 0.5),
-			st.legs[leg].yaw, top, City.STREET_MARGIN if top <= City.STREET_TOP else City.ROOF_MARGIN))
+		var a := City.area(Vector2(c.x, c.z), Vector2(float(l[4]) * 0.5, absf(float(l[2]) - float(l[3])) * 0.5),
+			st.legs[leg].yaw, top, City.STREET_MARGIN if top <= City.STREET_TOP else City.ROOF_MARGIN)
+		if l.size() > 7:
+			# An outline [[x, z], ...] in the leg's frame.
+			var poly: Array = []
+			for q: Array in l[7]:
+				var w := _world(st, leg, q[0], q[1], 0.0)
+				poly.append(Vector2(w.x, w.z))
+			a.poly = poly
+		out.append(a)
 	return out

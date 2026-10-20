@@ -28,6 +28,8 @@ const FALL_TIME := 0.18
 const GET_UP_TIME := 0.45
 const GRAVITY := 22.0
 const HEALTH_BAR_SHADER := preload("res://enemies/health_bar.gdshader")
+## Enemy shots roll against how exposed you are (combo_armor.gd).
+const ComboArmor := preload("res://enemies/combo_armor.gd")
 # By path, not class name (see the project rule on stale class caches).
 const BODY_SCRIPT := preload("res://enemies/enemy_body.gd")
 const Poses := preload("res://enemies/enemy_poses.gd")
@@ -48,6 +50,10 @@ static var use_models := true
 ## A kick knocks it flat on its back for this long (s), getting up at the
 ## end (the last GET_UP_TIME). 0: too heavy to knock over, it only staggers.
 @export var knockdown_time := 1.5
+## Any headshot kills outright, whatever the gun's damage, falloff, combo or
+## armor (Dax: every normal enemy dies to one headshot). Bosses and story
+## characters turn this off.
+@export var one_shot_headshot := true
 ## A headshot that doesn't kill makes it flinch for this long (s),
 ## interrupting whatever it was doing.
 @export var headshot_flinch := 0.45
@@ -294,6 +300,9 @@ func take_hit(info: Dictionary) -> bool:
 	if is_dead:
 		return false
 	hits_taken += 1
+	if one_shot_headshot and info.get("zone", &"body") == &"head" and float(info.get("damage", 0.0)) < health:
+		info = info.duplicate()
+		info.damage = health
 	health -= float(info.get("damage", 0.0))
 	_flash = 1.0
 	_bar_show = 3.0

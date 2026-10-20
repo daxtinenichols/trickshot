@@ -76,12 +76,18 @@ See `m03_glass_district.json`.
 | `{"roof": 26, "bridge": true, "beyond": 150}` | a bridge deck on piers instead of a building (railings, girders); `beyond` m more of the span carry on past its end, seen but not run (m03's Silt bridge) |
 | `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof |
 | `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
+| `{"gate": {"tier": 1}}` | a speed gate, straight after a roof (campaign/speed_gate.gd): a gap the best jump a tier slower (base top speed for tier 1) misses by 0.5 m and an ordinary edge jump at the tier's speed clears by 0.3 m. Tiers want 13.7 / 15.9 / 18.4 m/s at take-off (top speed 11.5 plus a varied combo's Flow); tier 3 needs a long varied combo, so keep it for high paths and late districts. Chalk at the edge (one dash per tier) and where you land; hurdles, a slide bar and a wall hop in the run-up unless `"tricks": false` or the roof already has features in its last 60 m. Miss it and you drop 3 m onto a ledge and climb a yellow face back up, slow and exposed (`"lower": "fall"`: no ledge, a miss is a fall). The landing roof must be at the same height |
 | `{"ramp_up": y}` / `{"ramp_down": y, "length": 22}` | a ramp to a new height (down is a slide ramp) |
 | `{"street": m}` | a stretch at street level (y 0) |
 | `{"skip": m}` | nothing for `m` m: the base map's own ground past its EXIT (a route from `base_exit` starts 6 m behind EXIT) |
 | `{"turn": "left", "size": 20, "angle": 90}` | a corner where the run turns left or right: 90° (a square roof `size` m across) or 45° (`"angle": 45`, a slab joining the roofs before and after) |
 | `{"fork": [segments], "side": 1, "spread": 18}` | the route splits on a wide roof: `fork` is a second line run beside the main one (right, or `-1` left), while the segments after it carry on the main line |
 | `{"join": true}` | the two lines meet again on a wide roof (the shorter one is lengthened); both must end at the same height |
+
+A mission with `"plain_runner": true` is checked by tests/test_speed_gates.gd:
+its bot line must get through every gate and encounter alive, and a plain
+runner (base speed, no Flow or combo) dropped in before each one must fail
+it. tests/fixtures/route_gates.json is the example.
 
 Features on a roof, `at` meters from its start:
 
@@ -102,6 +108,8 @@ Features on a roof, `at` meters from its start:
 | `{"prop": "car_wreck", "x": -4, "yaw": 80}`, `{"label": "text"}`, `{"mark": "#f57320"}` | dressing |
 | `{"lane": x}` | where the test bot runs from here |
 | `{"set_piece": "debris", "as": "slide", "at": 46, "trigger": 20}` | a chase set piece (see The chase) |
+
+**Finish.** A route that ends up high (not on a street or a bridge) ends in a finish you can't run off: a white line, then the roof runs on 16 m between 8 m walls to a building across the end with a shut door in it, all in the last roof's look. If the last roof is indoors (`interior`/`indoors`) it's just the room's end wall with a door. The `"at": "end"` goal reaches over the run-out, so you win the moment you cross the line. `"finish": false` leaves it out (a set piece ending); atlas levels leave it out unless `"finish": true`, as the next level carries on from their end.
 
 Everything after a corner is laid out turned with the run (checkpoints
 face along it). Two 45° corners make a 90° turn with a diagonal stretch
@@ -197,9 +205,23 @@ has to do it to go on.
 | `event` | `event` (an enemy's story event, like `host:hit`, or a set piece's, like `set_piece:skybridge_down`), `count` | as a bonus goal (`"optional": true`): it happened that many times since the goal opened; as a required goal: that many times this run (Skybridge ends on its bridge falling) |
 | `clear` | `encounter` (its id) | that encounter is cleared: every enemy down, or out of the fight like a spared Juno |
 | `duel` | `encounter` (its id), `radius` (4 m) | its boss (Juno) is shot down, or you get within `radius` of her and she concedes; then you spare her or not |
+| `deliver` | like `reach`, plus `drop` (`"crate"` or `"hatch"`), `drop_at` [x, y, z] for the receptacle (default the region's centre), `drop_yaw` (degrees the floor chalk faces; 0 reads heading -Z) | you run through the region: the carried object is tossed in on the move (no stop, speed kept), +500 DELIVERED into the combo, radio `delivered`. Only going through counts: a later `reach` goal never credits it |
 
 Reaching a later `reach` goal counts the `reach` goals before it (a high
 line or a shortcut that runs past one region never sends you back for it).
+
+### Carrying instead of the gun
+
+`"carry": "parcel"` (or `{"object": "parcel", "until": "<event>", "then":
+"hands"}`) puts an object in the runner's hand instead of the pistol: no
+fire, aim or reload; kicks and every move work as normal and enemies still
+fight. Objects (weapons/carry_models.gd): `parcel`, `jerry_can`, `relay`,
+`tape`; `"hands"` is nothing at all. A `deliver` objective takes the object
+and leaves the hands holding `then` (default `"hands"`; `"gun"` hands the
+pistol back); `until` swaps to `then` on a radio event instead (like
+`set_piece:handoff`). A bail or a hard landing never drops it, and a loss
+restarts the level holding it again. Every carry level needs a `deliver`
+on its route (Dax 2026-10-20).
 
 `text` is what the HUD shows; without it a default is written. Keep it
 short (the tests hold the mall's to 56 characters) and name what the

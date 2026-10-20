@@ -15,6 +15,9 @@ render_mode specular_disabled;
 uniform vec4 base_color : source_color = vec4(0.8, 0.8, 0.82, 1.0);
 uniform bool use_vertex_color = false;
 uniform float grid_strength = 0.0;
+// Below 1 squeezes depth toward the near plane: the first-person gun uses it
+// so it draws over a wall you stand against instead of poking through it.
+uniform float depth_scale = 1.0;
 
 varying vec3 world_pos;
 varying vec3 world_normal;
@@ -22,6 +25,8 @@ varying vec3 world_normal;
 void vertex() {
 	world_pos = (MODEL_MATRIX * vec4(VERTEX, 1.0)).xyz;
 	world_normal = normalize((MODEL_MATRIX * vec4(NORMAL, 0.0)).xyz);
+	POSITION = PROJECTION_MATRIX * (MODELVIEW_MATRIX * vec4(VERTEX, 1.0));
+	POSITION.z = mix(POSITION.w, POSITION.z, depth_scale);
 }
 
 float grid(vec2 p, float spacing, float width) {

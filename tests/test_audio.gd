@@ -307,7 +307,7 @@ func test_each_enemy_shouts_its_own_factions_taunts() -> void:
 
 func test_radio_feed_speaks_and_holds_the_line_until_said() -> void:
 	var line := ""
-	var m: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/missions/m00_dawn_run.json"))
+	var m: Dictionary = JSON.parse_string(FileAccess.get_file_as_string("res://campaign/missions/l1_1_dawn_run.json"))
 	for r: Dictionary in m.radio:
 		if r.who == "mags" and Voices.stream_for("mags", r.line) != null:
 			line = r.line

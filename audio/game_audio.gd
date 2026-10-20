@@ -101,6 +101,7 @@ var _air_lp: AudioEffectLowPassFilter
 var _crackle: AudioStreamPlayer
 var _radio: AudioStreamPlayer
 var _radio_bus := -1
+var _tape_bus := -1
 var _milestone := 0
 var _voice_duck := 0.0
 var _reverb: AudioEffectReverb
@@ -188,6 +189,25 @@ func _setup_buses() -> void:
 	drive.post_gain = -4.0
 	for fx: AudioEffect in [hp, lp, drive]:
 		AudioServer.add_bus_effect(_radio_bus, fx)
+	# Old tapes (RadioFeed "fx": "tape"): a narrower band, more hiss and
+	# drive, and a slow wobble like a stretched reel.
+	_tape_bus = _ensure_bus(&"RadioTape")
+	var thp := AudioEffectHighPassFilter.new()
+	thp.cutoff_hz = 700.0
+	var tlp := AudioEffectLowPassFilter.new()
+	tlp.cutoff_hz = 2300.0
+	var tdrive := AudioEffectDistortion.new()
+	tdrive.mode = AudioEffectDistortion.MODE_OVERDRIVE
+	tdrive.drive = 0.5
+	tdrive.post_gain = -5.0
+	var wow := AudioEffectChorus.new()
+	wow.voice_count = 1
+	wow.dry = 0.4
+	wow.wet = 0.6
+	wow.set_voice_rate_hz(0, 0.6)
+	wow.set_voice_depth_ms(0, 3.0)
+	for fx: AudioEffect in [thp, tlp, tdrive, wow]:
+		AudioServer.add_bus_effect(_tape_bus, fx)
 	_reverb = AudioEffectReverb.new()
 	_reverb.room_size = 0.7
 	_reverb.damping = 0.6
@@ -216,7 +236,7 @@ func set_music_volume(v: float) -> void:
 
 func set_sfx_volume(v: float) -> void:
 	sfx_volume = clampf(v, 0.0, 1.0)
-	for bus in [_sfx_bus, _radio_bus]:
+	for bus in [_sfx_bus, _radio_bus, _tape_bus]:
 		if bus >= 0:
 			AudioServer.set_bus_volume_db(bus, linear_to_db(maxf(sfx_volume, 0.0001)))
 			AudioServer.set_bus_mute(bus, sfx_volume <= 0.0)
@@ -386,10 +406,12 @@ static func layer_targets(tricks: int) -> PackedFloat32Array:
 ## Puts a sound (a voice line) out on the warlord's radio: keyed on and off
 ## with static, with the music ducked under it. `interference` breaks it up
 ## with extra bursts of static, for Echo's coded messages slipping through.
-func play_radio(stream: AudioStream, volume_db := 0.0, interference := false) -> void:
+func play_radio(stream: AudioStream, volume_db := 0.0, interference := false, fx := "") -> void:
 	if not enabled or stream == null:
 		return
 	_on_radio_done()
+	# An old tape: thinner and wobblier than the live radio.
+	_radio.bus = &"RadioTape" if fx == "tape" else &"Radio"
 	if interference:
 		for k in 3:
 			get_tree().create_timer(randf_range(0.2, maxf(stream.get_length(), 0.3)), true, false, true).timeout.connect(_on_radio_done)

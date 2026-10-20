@@ -28,6 +28,8 @@ const MODEL := preload("res://art/characters/runner/runner.glb")
 const MODELS := {
 	"parker": "res://art/characters/runner/runner.glb",
 	"echo": "res://art/characters/runner/echo.glb",
+	# Not playable: Mags, the Line's dispatcher (art/characters/runner/runner_figure.gd).
+	"mags": "res://art/characters/runner/mags.glb",
 	# Not a runner: the Host in the chase (art/characters/host/host_body.gd).
 	"host": "res://art/characters/host/host.glb",
 }
@@ -437,6 +439,10 @@ func _add_aim(pose: Dictionary) -> void:
 ## How much of the gun-arm pose applies: full when running, standing or in
 ## the air; less while the hands are busy (climbing, mantling, vaulting).
 func _gun_hold_weight() -> float:
+	# Empty hands (Pistol.held "hands") swing free.
+	var gun: Node = player.get("weapon")
+	if gun != null and gun.get("held") == "hands":
+		return 0.0
 	var busy := weight("climb") + weight("mantle_hang") + weight("mantle_push") + weight("vault") * 0.7 \
 		+ weight("stun") + weight("tuck") * 0.4 + weight("wallrun") * 0.3
 	return clampf(1.0 - busy, 0.0, 1.0)

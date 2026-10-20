@@ -19,6 +19,8 @@ var _value_rows := {}
 ## Rebinding in progress: [action, pad] or empty.
 var _waiting: Array = []
 var _bind_buttons := {}
+var _header: HBoxContainer
+var _resume: Button
 
 
 func _ready() -> void:
@@ -143,6 +145,8 @@ func _build() -> void:
 	resume.text = "Resume (Esc)"
 	resume.pressed.connect(close)
 	header.add_child(resume)
+	_header = header
+	_resume = resume
 
 	_tabs = TabContainer.new()
 	_tabs.size_flags_vertical = Control.SIZE_EXPAND_FILL
@@ -150,6 +154,19 @@ func _build() -> void:
 	_tabs.add_child(_build_moves())
 	_tabs.add_child(_build_settings())
 	_tabs.add_child(_build_controls())
+
+
+## A level's own button left of Resume, like a mission's "Restart level":
+## closes the menu, then calls `action`.
+func add_action(text: String, action: Callable) -> Button:
+	var b := Button.new()
+	b.text = text
+	b.pressed.connect(func() -> void:
+		close()
+		action.call())
+	_header.add_child(b)
+	_header.move_child(b, _resume.get_index())
+	return b
 
 
 ## One button per playable map (from the Levels autoload, when present).

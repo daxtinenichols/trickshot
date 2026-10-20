@@ -20,6 +20,9 @@ const EYE_OFFSET := 0.14
 const WALL_PROBE := 0.35
 ## How far around the kick's landing spot an enemy still gets kicked (m).
 const KICK_REACH_RADIUS := 0.6
+## How far either side of the look ray a kick tries when the ray itself
+## slips through a gap (the seam of double doors).
+const KICK_SEAM := 0.1
 
 @export var tuning: MovementTuning
 ## Off for players driven by tests or replays.
@@ -33,6 +36,9 @@ var flow_source := Callable()
 ## repeat_scale_source(names: Array, n: int) -> float: what the last `n` of
 ## those tricks are worth after the combo's repeat decay (n with no decay).
 var repeat_scale_source := Callable()
+## combo_source() -> int: the live combo's multiplier (enemies' combo armor
+## reads it; 0 with no scoring).
+var combo_source := Callable()
 
 ## Set by tests or replays: the frame to use for the next tick.
 var scripted_input: InputFrame = null
@@ -67,6 +73,12 @@ var _climb_start_speed := 0.0
 var _climb_entry_speed := 0.0
 var _climb_quality := 0.0
 var _ground_time := 0.0
+## After a rough or hard landing: how long ago you touched down, the speed
+## you came in with and how hard you hit, so a late crouch still rolls.
+## -1 when there's no landing to roll out of.
+var _late_roll_age := -1.0
+var _late_roll_h := Vector3.ZERO
+var _late_roll_fall := 0.0
 ## Highest horizontal speed in the last moment (RECENT_SPEED_TIME), so a
 ## vault or mantle caught a tick after brushing the wall keeps your run.
 var _recent_speed := 0.0
@@ -413,6 +425,7 @@ func simulate(f: InputFrame, delta: float) -> void:
 		pitch = 0.0
 		_start_roll(1.0, &"ground_roll", deg_to_rad(-89.0), MovementMath.horizontal(velocity), 0.0)
 	_ground_flick = maxf(_ground_flick - tuning.ground_roll_flick_decay * delta, 0.0)
+	_tick_late_roll(f, delta)
 	if _crouch_double and state in [State.GROUND, State.CROUCH, State.SLIDE] and horizontal_speed() > 2.0:
 		# Double-tap crouch while running: a forward roll.
 		_since_crouch_press = 999.0
@@ -478,6 +491,18 @@ func horizontal_speed() -> float:
 ## Extra ground cruise speed from the live combo's style (0 with no scoring).
 func flow() -> float:
 	return maxf(float(flow_source.call()), 0.0) if flow_source.is_valid() else 0.0
+
+
+## The live combo's multiplier (0 with no scoring or no combo).
+func combo_multiplier() -> int:
+	return int(combo_source.call()) if combo_source.is_valid() else 0
+
+
+## In the air and part way round a flip, spin or side flip (45 degrees or
+## more), so enemies find you harder to hit.
+func is_tricking_in_air() -> bool:
+	const TURNED := PI * 0.25
+	return state == State.AIR and (absf(_air_pitch) >= TURNED or absf(_air_yaw) >= TURNED or absf(_air_roll) >= TURNED)
 
 
 ## Ground speed running holds at full momentum without bleeding.
@@ -950,7 +975,9 @@ func _land(f: InputFrame) -> void:
 ## Lands and picks how: a roll, a slide, a crash... Returns how clean the
 ## landing was (0..1), or -1 for a crash or a hard landing.
 func _land_on(f: InputFrame) -> float:
-	var fall := -_pre_move_velocity.y
+	# How hard you hit: your speed into the ground. On flat ground that's the
+	# fall speed; on a ramp running away from you it's much less.
+	var fall := maxf(-_pre_move_velocity.dot(get_floor_normal()), 0.0)
 	_touch_ground()
 	_ground_time = 0.0
 	_land_press_age = _jump_buffer if _jump_buffer <= tuning.jump_buffer else -1.0
@@ -981,12 +1008,26 @@ func _land_on(f: InputFrame) -> float:
 		_start_roll(q, &"flip_roll", p, MovementMath.horizontal(_pre_move_velocity), fall)
 		return q
 	if fall >= tuning.hard_landing_speed:
+		var h_in := MovementMath.horizontal(_pre_move_velocity)
 		if crouch_age <= tuning.roll_window:
 			var roll_q := timing_quality(crouch_age, 0.05, tuning.roll_window)
-			_start_roll(roll_q, &"landing_roll", 0.0, MovementMath.horizontal(_pre_move_velocity), fall)
+			_start_roll(roll_q, &"landing_roll", 0.0, h_in, fall)
 			return roll_q
-		_start_stun()
-		return -1.0
+		if f.crouch_held:
+			# Still holding crouch from a slide (it isn't a tuck): roll anyway.
+			_start_roll(0.5, &"landing_roll", 0.0, h_in, fall)
+			return 0.5
+		_late_roll_age = 0.0
+		_late_roll_h = h_in
+		_late_roll_fall = fall
+		if fall >= tuning.stun_landing_speed:
+			# The bail waits for the late-roll window (_tick_late_roll).
+			_start_stun(false)
+			return -1.0
+		# A rough landing: no stun, a little speed lost (more the harder).
+		var t := inverse_lerp(tuning.hard_landing_speed, tuning.stun_landing_speed, fall)
+		var h := MovementMath.horizontal(velocity) * lerpf(1.0, tuning.rough_landing_keep, t)
+		velocity = Vector3(h.x, velocity.y, h.z)
 	if f.crouch_held and crouch_age <= tuning.slide_land_window and fall > 3.0:
 		# Slide landing: a well-timed crouch turns some fall speed into speed.
 		var q := timing_quality(crouch_age, 0.05, tuning.slide_land_window)
@@ -1162,12 +1203,35 @@ func _tick_roll(f: InputFrame, wish: Vector3, delta: float) -> void:
 			_change_state(State.CROUCH)  # rolled under something low
 
 
-func _start_stun() -> void:
+## `announce` false leaves the hard_landing trick (a bail) to the caller.
+func _start_stun(announce := true) -> void:
 	var h := MovementMath.horizontal(velocity) * tuning.hard_landing_keep
 	velocity = Vector3(h.x, 0.0, h.z)
 	momentum = maxf(momentum - 0.5, 0.0)
 	_change_state(State.STUN)
-	trick.emit(&"hard_landing", {"fall_speed": -_pre_move_velocity.y})
+	if announce:
+		trick.emit(&"hard_landing", {"fall_speed": -_pre_move_velocity.y})
+
+
+## Crouch just after a rough or hard landing (within roll_late_window) still
+## rolls you out with the speed you came in with. A missed stun becomes a
+## hard landing (a bail) once the window has passed.
+func _tick_late_roll(f: InputFrame, delta: float) -> void:
+	if _late_roll_age < 0.0:
+		return
+	var bail := _late_roll_fall >= tuning.stun_landing_speed
+	var can_roll := state in [State.GROUND, State.CROUCH, State.STUN]
+	if f.crouch_pressed and can_roll and _late_roll_age <= tuning.roll_late_window:
+		var q := lerpf(0.6, 0.3, _late_roll_age / maxf(tuning.roll_late_window, 0.001))
+		_late_roll_age = -1.0
+		_since_crouch_press = 999.0
+		_start_roll(q, &"landing_roll", 0.0, _late_roll_h, _late_roll_fall)
+		return
+	_late_roll_age += delta
+	if _late_roll_age > tuning.roll_late_window or not can_roll:
+		_late_roll_age = -1.0
+		if bail:
+			trick.emit(&"hard_landing", {"fall_speed": _late_roll_fall})
 
 
 func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
@@ -1185,9 +1249,13 @@ func _tick_stun(_f: InputFrame, _wish: Vector3, delta: float) -> void:
 func _ground_kick() -> void:
 	var eye := global_position + Vector3.UP * (_height - EYE_OFFSET)
 	var look := look_direction()
-	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * (tuning.kick_range + 0.3), 1 | 4)
-	q.exclude = [get_rid()]
-	var hit := get_world_3d().direct_space_state.intersect_ray(q)
+	var hit := _kick_ray(eye, look)
+	if hit.is_empty():
+		# Straight down the seam of double doors: try just either side.
+		var side := look.cross(Vector3.UP).normalized() * KICK_SEAM
+		hit = _kick_ray(eye + side, look)
+		if hit.is_empty():
+			hit = _kick_ray(eye - side, look)
 	var collider: Object = hit.get("collider")
 	if collider == null or not collider.is_in_group("hitboxes"):
 		# An enemy just off the look ray still takes the kick.
@@ -1204,6 +1272,12 @@ func _ground_kick() -> void:
 	elif collider.has_method("on_kicked"):
 		collider.on_kicked(self, look)
 		_trick(&"door_kick" if collider.is_in_group("doors") else &"kick")
+
+
+func _kick_ray(eye: Vector3, look: Vector3) -> Dictionary:
+	var q := PhysicsRayQueryParameters3D.create(eye, eye + look * (tuning.kick_range + 0.3), 1 | 4)
+	q.exclude = [get_rid()]
+	return get_world_3d().direct_space_state.intersect_ray(q)
 
 
 ## Kicks an enemy's hit zone: "kick", plus "kick_kill" if it finished it.
@@ -2396,6 +2470,12 @@ func air_rotation() -> Vector2:
 
 func view_kick() -> Vector2:
 	return Vector2(_kick_pitch, _kick_yaw)
+
+
+## Where a shot goes: the first-person head ray without the recoil kick
+## (the kick is camera feel only), so held fire never drifts off target.
+func shot_direction() -> Vector3:
+	return (head.global_basis.orthonormalized() * Basis(Vector3.RIGHT, -_kick_pitch) * Vector3.FORWARD).normalized()
 
 
 ## What the player is doing right now, for style bonuses on shots

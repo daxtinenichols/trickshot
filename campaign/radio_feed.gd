@@ -18,6 +18,8 @@ extends CanvasLayer
 ##              food court on the far walkway only confuses. Lines queued
 ##              together (a conversation) wait for each other, and a
 ##              story beat that must be heard says "keep": true.
+##              "fx": "tape" plays a line as an old reel (Calder Radio,
+##              twenty years ago): a thinner, warbling band.
 ##   "chatter": reactions to how you play, by event ("bail", "combo",
 ##              "fall", "kill", "headshot", "caught", "tape"): lists of
 ##              {"who", "line"}, dealt out in a shuffled order (every line
@@ -106,7 +108,7 @@ func notify(event_name: String) -> void:
 		var s: Dictionary = _story[i]
 		if s.get("on", "") == event_name and not _played.has(i) and _allowed(s):
 			_played[i] = true
-			say(s.get("who", "mags"), s.get("line", ""), s.get("cue", false), event_name.begins_with("checkpoint:") and not s.get("keep", false))
+			say(s.get("who", "mags"), s.get("line", ""), s.get("cue", false), event_name.begins_with("checkpoint:") and not s.get("keep", false), s.get("fx", ""))
 			story_found = true
 	if not story_found and _chatter.has(event_name):
 		_chat(event_name)
@@ -124,10 +126,12 @@ static func _allowed(s: Dictionary) -> bool:
 
 ## Queues a line; a cue (the way on) goes ahead of the lines waiting. A
 ## `local` line (about where you are) is dropped if it waits too long.
-func say(who: String, line: String, cue := false, local := false) -> void:
+func say(who: String, line: String, cue := false, local := false, fx := "") -> void:
 	if line == "":
 		return
 	var l := {"who": who, "line": line, "queued_at": _clock}
+	if fx != "":
+		l["fx"] = fx
 	if local:
 		l["stale_at"] = _clock + STALE_AFTER
 		# The next line of a conversation queued at the same moment can
@@ -225,6 +229,11 @@ func _process(_delta: float) -> void:
 	advance(dt)
 
 
+## True while a line is up or waiting (the results card waits for it).
+func busy() -> bool:
+	return not current.is_empty() or not queue.is_empty()
+
+
 ## Moves the radio on by `dt` real seconds (also used by tests).
 func advance(dt: float) -> void:
 	_clock += dt
@@ -251,10 +260,10 @@ func _check_triggers() -> void:
 		var on: String = s.get("on", "")
 		if on.begins_with("time:") and run.phase == MissionRun.Phase.RUNNING and t >= on.substr(5).to_float():
 			_played[i] = true
-			say(s.get("who", "mags"), s.get("line", ""), s.get("cue", false))
+			say(s.get("who", "mags"), s.get("line", ""), s.get("cue", false), false, s.get("fx", ""))
 		elif s.has("at") and MissionRun.inside(s, pos):
 			_played[i] = true
-			say(s.get("who", "mags"), s.get("line", ""), s.get("cue", false), not s.get("keep", false))
+			say(s.get("who", "mags"), s.get("line", ""), s.get("cue", false), not s.get("keep", false), s.get("fx", ""))
 
 
 func _show(l: Dictionary) -> void:
@@ -271,7 +280,7 @@ func _show(l: Dictionary) -> void:
 		var audio := get_node_or_null(^"/root/GameAudio")
 		if audio != null:
 			# Echo's coded messages break up as they slip through.
-			audio.play_radio(voice, 0.0, l.who == "echo")
+			audio.play_radio(voice, 0.0, l.who == "echo", String(l.get("fx", "")))
 
 
 func _exit_tree() -> void:
@@ -320,6 +329,8 @@ func _refresh() -> void:
 		return
 	var spk: Array = SPEAKERS.get(current.who, [String(current.who).to_upper(), Color.WHITE])
 	_who.text = "◉ " + spk[0] if current.who == "host" else spk[0]
+	if current.get("fx", "") == "tape":
+		_who.text = spk[0] + "  ·  OLD TAPE"
 	_who.add_theme_color_override("font_color", spk[1])
 	_text.text = current.line
 	# Fade out over the last half second.

@@ -94,7 +94,7 @@ func _fill_list() -> void:
 		b.custom_minimum_size = Vector2(0, 40)
 		b.add_theme_font_size_override("font_size", 20)
 		var mark := "✓ " if Campaign.is_complete(i) else ("   " if Campaign.is_built(i) else "· ")
-		b.text = "%s%2d  %s%s" % [mark, int(m.get("number", i)), m.title, "" if Campaign.is_built(i) else "   (coming later)"]
+		b.text = "%s%s  %s%s" % [mark, _number(m, i), m.title, "" if Campaign.is_built(i) else "   (coming later)"]
 		if not Campaign.is_unlocked(i):
 			b.add_theme_color_override("font_color", DIM)
 		b.focus_entered.connect(_select.bind(i))
@@ -108,7 +108,7 @@ func _fill_list() -> void:
 func _select(i: int) -> void:
 	selected = i
 	var m := Campaign.entry(i)
-	_title.text = "%d  %s" % [int(m.get("number", i)), m.get("title", "")]
+	_title.text = "%s  %s" % [_number(m, i).strip_edges(), m.get("title", "")]
 	_place.text = "%s  ·  %s" % [m.get("act", ""), m.get("place", "")]
 	_beat.text = m.get("beat", "")
 	_teaches.text = "New moves: %s\nEnemies and shooting: %s" % [m.get("moves", ""), m.get("enemies", "")]
@@ -164,3 +164,9 @@ func _button(t: String, on_press: Callable) -> Button:
 	b.add_theme_font_size_override("font_size", 18)
 	b.pressed.connect(on_press)
 	return b
+
+
+## A mission's number in the list: its "label" ("1-1", stage and level)
+## when it has one.
+static func _number(m: Dictionary, i: int) -> String:
+	return String(m["label"]) if m.has("label") else "%2d" % int(m.get("number", i))
