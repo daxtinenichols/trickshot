@@ -192,8 +192,11 @@ func _trick_run(path: String) -> Dictionary:
 	health.can_die = true
 	var entered: Array = []
 	var taken := [0.0]
-	health.damaged.connect(func(a: float, _f: Vector3, _k: StringName) -> void: taken[0] += a)
 	var p: Player = c.player
+	health.damaged.connect(func(a: float, from: Vector3, k: StringName) -> void:
+		taken[0] += a
+		if OS.has_environment("PLAIN_LOG"):
+			print("    trick line hit: %.0f %s at %.1f m, %.1f m/s" % [a, k, PlainRunner.along(p.global_position, legs), p.horizontal_speed()]))
 	var watch := func() -> void:
 		if entered.size() < sections.size() and PlainRunner.along(p.global_position, legs) < float(sections[entered.size()][0]):
 			entered.append([p.global_position, p.yaw, PlainRunner.across(p.global_position, legs)])
@@ -231,7 +234,10 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 	p.momentum = 1.0
 	var start_y: float = p.global_position.y
 	var taken := [0.0]
-	health.damaged.connect(func(a: float, _f: Vector3, _k: StringName) -> void: taken[0] += a)
+	health.damaged.connect(func(a: float, _f: Vector3, k: StringName) -> void:
+		taken[0] += a
+		if OS.has_environment("PLAIN_LOG"):
+			print("    plain hit: %.0f %s at %.1f m" % [a, k, PlainRunner.along(p.global_position, legs)]))
 	var low := [INF]
 	var watch := func() -> void: low[0] = minf(low[0], p.global_position.y)
 	tree.physics_frame.connect(watch)

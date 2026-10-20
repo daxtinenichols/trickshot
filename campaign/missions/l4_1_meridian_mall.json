@@ -1318,14 +1318,14 @@
      "at": 8,
      "length": 42,
      "hear_shots": true,
-     "wake_distance": 6.0,
+     "wake_distance": 7.5,
      "enemies": [
       {
        "type": "crawler",
        "x": -5.4,
        "d": 3,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1336,7 +1336,7 @@
        "x": 5.4,
        "d": 3,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1347,7 +1347,7 @@
        "x": -5.4,
        "d": 8,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1358,7 +1358,7 @@
        "x": 5.4,
        "d": 8,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1369,7 +1369,7 @@
        "x": -5.4,
        "d": 13,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1380,7 +1380,7 @@
        "x": 5.4,
        "d": 13,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1391,7 +1391,7 @@
        "x": -5.4,
        "d": 21,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1402,7 +1402,7 @@
        "x": 5.4,
        "d": 21,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1413,7 +1413,7 @@
        "x": -5.4,
        "d": 30,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1424,7 +1424,7 @@
        "x": 5.4,
        "d": 30,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1435,7 +1435,7 @@
        "x": -5.4,
        "d": 35,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1446,7 +1446,7 @@
        "x": 5.4,
        "d": 35,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1457,7 +1457,7 @@
        "x": -5.4,
        "d": 39,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -1468,7 +1468,7 @@
        "x": 5.4,
        "d": 39,
        "sleeper": true,
-       "run_speed": 12.8,
+       "run_speed": 13.2,
        "leap_min": 50.0,
        "leash_radius": 40,
        "aggro_radius": 20,
@@ -3149,12 +3149,6 @@
      "objective": 5
     },
     {
-     "hole": 0,
-     "style": "shutter",
-     "look": "BRICK",
-     "at": 10
-    },
-    {
      "label": "HARGROVE AND SONS",
      "at": 9,
      "size": 1.0
@@ -3171,13 +3165,25 @@
      "encounter": "store",
      "at": 24,
      "length": 40,
-     "max_aiming": 5,
+     "max_aiming": 8,
      "enemies": [
       {
        "type": "spotter_drone",
        "x": 0,
        "d": 16,
        "height": 4.0
+      },
+      {
+       "type": "bruiser",
+       "x": 4.5,
+       "d": 31,
+       "move_speed": 0.0
+      },
+      {
+       "type": "bruiser",
+       "x": -4.5,
+       "d": 35,
+       "move_speed": 0.0
       },
       {
        "type": "raider",
@@ -3196,15 +3202,17 @@
        "aim_lead": 1.0
       },
       {
-       "type": "bruiser",
-       "x": 4.5,
-       "d": 31,
-       "move_speed": 0.0
-      },
-      {
        "type": "raider",
        "x": 3.0,
        "d": 32,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 33,
        "move_speed": 0.0,
        "cover": false,
        "aim_lead": 1.0
@@ -3218,12 +3226,6 @@
        "aim_lead": 1.0
       },
       {
-       "type": "bruiser",
-       "x": -4.5,
-       "d": 35,
-       "move_speed": 0.0
-      },
-      {
        "type": "raider",
        "x": 2.5,
        "d": 36,
@@ -3235,6 +3237,14 @@
        "type": "raider",
        "x": -4.0,
        "d": 37,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 35,
        "move_speed": 0.0,
        "cover": false,
        "aim_lead": 1.0
