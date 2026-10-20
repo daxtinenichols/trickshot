@@ -63,6 +63,8 @@ const HOLE_TOP := 1.3
 const DOORS_WIDTH := 2.2
 const DOORS_TOP := 2.2
 const KICK_AT := 1.9
+## A balustrade along a void indoors ("open" on an interior roof).
+const RAIL_H := 1.1
 ## A wall across an open roof is this tall; indoors it meets the ceiling.
 const OUTDOOR_WALL := 3.5
 ## The finish of a route that ends up high: a run-out this long past the
@@ -95,6 +97,9 @@ static func expand(mission: Dictionary) -> Dictionary:
 		"leg": 0, "dx": 0.0, "fork": null, "forks": [], "ledges": [],
 		"chalk": mission.get("chalk", false),
 		"roof_look": mission.get("roof_look", "FACADE"),
+		# The walls of interiors ("interior_look": a mall's plastered
+		# concourses want NEUTRAL, a warehouse the default).
+		"wall_look": mission.get("interior_look", "FACADE"),
 		# The roof being laid out: its width and how high its ceiling is
 		# (0 outdoors).
 		"roof_w": WIDTH, "inside": 0.0,
@@ -348,6 +353,13 @@ static func _segment(st: Dictionary, seg: Dictionary) -> void:
 		if seg.get("roll", false):
 			st.bot.append([st.z, "roll", NAN])
 		_lane(st, st.z, st.z - float(seg.gap), WIDTH)
+		if seg.has("interior"):
+			# Indoors: walls and ceiling carry on over the hole in the floor.
+			var h := float(seg.interior)
+			var gz: float = st.z - float(seg.gap) * 0.5
+			_add(st, {"box": [0, st.y + h + 0.25, gz], "size": [WIDTH + 1.0, 0.5, float(seg.gap)], "kind": "NEUTRAL", "look": "RUST"})
+			for side: float in [-1.0, 1.0]:
+				_add(st, {"box": [side * (WIDTH * 0.5 + 0.25), st.y + h * 0.5, gz], "size": [0.5, h, float(seg.gap)], "kind": "NEUTRAL", "look": st.wall_look})
 		if seg.has("gate") and seg.get("lower", "ledge") != "fall":
 			# A speed gate's miss lands on its ledge, not in a pit.
 			st.ledges.append([st.leg, st.dx, st.z, st.z - float(seg.gap)])
@@ -414,7 +426,7 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	# "indoors" when the mission builds its own walls and ceiling.
 	st.inside = float(seg.get("interior", seg.get("indoors", 0.0)))
 	if seg.has("interior"):
-		_interior(st, z0, length, w, float(seg.interior))
+		_interior(st, z0, length, w, float(seg.interior), float(seg.get("open", 0.0)), float(seg.get("rail_inset", 0.6)))
 	var busy: Array = []
 	if st.chalk:
 		# Courier chalk where each roof starts: orange on the main line,
@@ -552,11 +564,15 @@ static func _bridge_breaks(seg: Dictionary) -> Array:
 
 ## Walls and a roof over a roof's whole length, `height` m up: the inside
 ## of a building (a warehouse, an office floor). Gaps in the roof every
-## 10 m are skylights.
-static func _interior(st: Dictionary, z0: float, length: float, w: float, height: float) -> void:
+## 10 m are skylights. `open` 1 (right) or -1 (left) leaves that wall out
+## for a balustrade over a void (a mall atrium the mission builds itself).
+static func _interior(st: Dictionary, z0: float, length: float, w: float, height: float, open := 0.0, inset := 0.6) -> void:
 	var y: float = st.y
 	for side: float in [-1.0, 1.0]:
-		_add(st, {"box": [side * (w * 0.5 + 0.25), y + height * 0.5, z0 - length * 0.5], "size": [0.5, height, length], "kind": "NEUTRAL", "look": "FACADE"})
+		if side == open:
+			_add(st, {"box": [side * (w * 0.5 - inset), y + RAIL_H * 0.5, z0 - length * 0.5], "size": [0.2, RAIL_H, length], "kind": "NEUTRAL", "look": "RUST"})
+			continue
+		_add(st, {"box": [side * (w * 0.5 + 0.25), y + height * 0.5, z0 - length * 0.5], "size": [0.5, height, length], "kind": "NEUTRAL", "look": st.wall_look})
 	var d := 0.0
 	while d < length - 0.5:
 		var l := minf(8.0, length - d)
@@ -618,6 +634,8 @@ static func _turn(st: Dictionary, seg: Dictionary) -> void:
 		# The city fits the corner's own outline, not a square round it.
 		st.lanes[-1].append(quad)
 	_set_low(st, st.y)
+	if seg.has("interior"):
+		_corner_interior(st, quad, pivot, turn, h, float(seg.interior), square, left)
 	# The bot heads for the middle of the corner; it turns there.
 	st.bot.append([z0 + 6.0, "", 0.0])
 	var o := _world(st, st.leg, 0.0, pivot, 0.0)
@@ -626,6 +644,39 @@ static func _turn(st: Dictionary, seg: Dictionary) -> void:
 	st.leg += 1
 	st.z = z0 - size
 	st.roof_end = st.z
+
+
+## Walls and a ceiling `height` m up over a corner indoors: the outside of
+## the bend is walled (the far side and the side turned away from), the
+## ceiling a box turned half way round the bend, wide enough to meet the
+## walls of the roofs either side.
+static func _corner_interior(st: Dictionary, quad: Array, pivot: float, turn: float, h: float, height: float, square: bool, left: bool) -> void:
+	var y: float = st.y
+	var top := y + height + 0.25
+	var walls: Array = []
+	if square:
+		var s := 1.0 if left else -1.0
+		walls.append([[-h, pivot - h], [h, pivot - h]])
+		walls.append([[s * h, pivot + h], [s * h, pivot - h]])
+	else:
+		# The outer edge of the bend and the short inner one.
+		var outer := 0 if left else 1
+		walls.append([quad[outer], quad[3 - outer]])
+		walls.append([quad[1 - outer], quad[2 + outer]])
+	for wl: Array in walls:
+		var a := Vector2(wl[0][0], wl[0][1])
+		var b := Vector2(wl[1][0], wl[1][1])
+		var n := (b - a).orthogonal().normalized() * 0.25
+		# Push each wall out of the floor's edge, away from its middle.
+		var mid := (a + b) * 0.5
+		if (mid + n - Vector2(0, pivot)).length() < (mid - Vector2(0, pivot)).length():
+			n = -n
+		var c := mid + n
+		if (b - a).length() > 0.5:
+			_add(st, {"box": [c.x, y + height * 0.5, c.y], "size": [0.5, height, (b - a).length() + 0.5],
+				"yaw": rad_to_deg(atan2(b.x - a.x, b.y - a.y)), "kind": "NEUTRAL", "look": st.wall_look})
+	_add(st, {"box": [0, top, pivot], "size": [h * 2.0 + 4.0, 0.5, h * 2.0 + 4.0],
+		"yaw": rad_to_deg(turn * 0.5), "kind": "NEUTRAL", "look": "RUST"})
 
 
 ## A fork: a wide roof where the route splits, then `fork` (a list of
@@ -639,6 +690,7 @@ static func _fork(st: Dictionary, seg: Dictionary) -> void:
 	var off: float = float(seg.get("spread", FORK_SPREAD)) * float(seg.get("side", 1.0))
 	var plaza: float = seg.get("plaza", PLAZA)
 	var start: float = st.z
+	st.hall = float(seg.get("interior", 0.0))
 	_plaza(st, off, plaza, seg.get("deck", false), seg.get("building", true))
 	var split: float = st.z
 	var main_y: float = st.y
@@ -691,6 +743,7 @@ static func _join(st: Dictionary, seg: Dictionary) -> void:
 	alt.append([end - 2.0, "veer", 0.0])
 	st.forks.append({"from": f.start, "to": end, "bot": alt})
 	st.fork = null
+	st.hall = 0.0
 
 
 ## A plain roof on one line of a fork from z `from` to `to`, so both lines
@@ -698,6 +751,9 @@ static func _join(st: Dictionary, seg: Dictionary) -> void:
 static func _filler(st: Dictionary, from: float, to: float, dx: float) -> void:
 	if st.y > 0.5:
 		st.out.append([{"building": [0, st.y, (from + to) * 0.5], "size": [WIDTH, from - to], "look": st.roof_look}, st.leg, dx])
+	var hall: float = st.get("hall", 0.0)
+	if hall > 0.0:
+		st.out.append([{"box": [0, st.y + hall + 0.25, (from + to) * 0.5], "size": [WIDTH + 1.0, 0.5, from - to], "kind": "NEUTRAL", "look": "RUST"}, st.leg, dx])
 	_lane(st, from, to, WIDTH, 0.0, dx)
 
 
@@ -713,6 +769,14 @@ static func _plaza(st: Dictionary, off: float, length: float, deck := false, bui
 		_add(st, {"row": "railing", "from": [x, st.y, z0 - 1.0], "to": [x, st.y, z0 - length + 1.0], "count": maxi(int(length / 2.0), 2), "yaw": 90.0})
 	elif st.y > 0.5 and building:
 		_add(st, {"building": [off * 0.5, st.y, z0 - length * 0.5], "size": [absf(off) + WIDTH, length], "look": st.roof_look})
+	var hall: float = st.get("hall", 0.0)
+	if hall > 0.0:
+		# A fork indoors ("interior" on the fork): walls round the wide
+		# floor and a ceiling over it.
+		var w := absf(off) + WIDTH
+		for side: float in [-1.0, 1.0]:
+			_add(st, {"box": [off * 0.5 + side * (w * 0.5 + 0.25), st.y + hall * 0.5, z0 - length * 0.5], "size": [0.5, hall, length], "kind": "NEUTRAL", "look": st.wall_look})
+		_add(st, {"box": [off * 0.5, st.y + hall + 0.25, z0 - length * 0.5], "size": [w + 1.0, 0.5, length], "kind": "NEUTRAL", "look": "RUST"})
 	_lane(st, z0, z0 - length, absf(off) + WIDTH, off * 0.5)
 	_set_low(st, st.y)
 	st.z = z0 - length
@@ -752,9 +816,10 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 		for i in n:
 			var stagger := 0.0 if step >= size.x - 0.01 else (size.z + 0.05 if i % 2 == 1 else 0.0)
 			_add(st, {"prop": hurdle, "at": [-6.0 + size.x * 0.5 + step * i, y, z - stagger]})
+		# "lead": how far before them the bot jumps (further when it's fast);
 		# "trick": the bot flips or spins over them (a run of them builds
 		# Flow), taking off early enough to be high over them.
-		st.bot.append([z + (3.2 if f.has("trick") else 1.6), "jump", NAN])
+		st.bot.append([z + float(f.get("lead", 3.2 if f.has("trick") else 1.6)), "jump", NAN])
 		_trick(st, f)
 		return [d - 4.0, d + 3.0]
 	if f.has("slide"):
@@ -1051,9 +1116,9 @@ static func _encounter(st: Dictionary, f: Dictionary, d: float, z: float, y: flo
 		"raiders": raiders, "mutants": mutants, "cover": cover}
 	if not others.is_empty():
 		piece.enemies = others
-	if f.has("max_aiming"):
-		# How many may aim at you at once (EnemyEncounter's default is 3).
-		piece.max_aiming = f.max_aiming
+	for k: String in ["hear_shots", "hearing_radius", "max_aiming", "wake_distance"]:
+		if f.has(k):
+			piece[k] = f[k]
 	_add(st, piece)
 	return [d, d + length]
 
@@ -1091,6 +1156,13 @@ static func _ramp(st: Dictionary, seg: Dictionary) -> void:
 	var bottom_z: float = st.z - length if down else st.z
 	_add(st, {"ramp": [0, top_y, top_z], "to": [0, bottom_y, bottom_z], "width": seg.get("width", 6.0),
 		"kind": "SLIDE" if down else "SURFACE"})
+	if seg.has("interior"):
+		# Indoors (an escalator hall): walls up both sides to a ceiling
+		# `interior` m over the top of the ramp.
+		var top: float = top_y + float(seg.interior)
+		for side: float in [-1.0, 1.0]:
+			_add(st, {"box": [side * (WIDTH * 0.5 + 0.25), (bottom_y + top) * 0.5, st.z - length * 0.5], "size": [0.5, top - bottom_y, length], "kind": "NEUTRAL", "look": st.wall_look})
+		_add(st, {"box": [0, top + 0.25, st.z - length * 0.5], "size": [WIDTH + 1.0, 0.5, length], "kind": "NEUTRAL", "look": "RUST"})
 	if down and seg.get("slide", false):
 		# The bot slides all the way down (crouch held 4 m past each press).
 		var s := 0.5

@@ -110,6 +110,15 @@ Encounters (`enemies/enemy_encounter.gd`) start when you step into their
   for `spare_time` (8 s) or walk `spare_distance` (25 m) away and `fate` is
   `"spared"` (she leaves and the encounter clears). `fate_decided(fate)`
   fires once either way.
+- Juno with `phases` (4-2 Parking Spiral): a fight in stages. Her guard
+  shrugs off ordinary hits and breaks only to a kick ending a combo of 3+
+  tricks or a headshot while you're in the air or on a wall;
+  `breaks_per_phase` (2) breaks end a phase (story event `juno:phase`, so
+  `juno:phase:1`...), and she runs on to the next phase's `spot`. Reach a
+  phase's `until` point and she goes on ahead unbroken. The last phase's
+  breaks beat her. Under base top speed (`SLOW_SPEED`, 12 m/s) for 0.4 s
+  within 18 m of her and she runs you down and kicks (`strike_damage`); she
+  hops holes and isn't bowled over by running into her.
 
 ## Models
 

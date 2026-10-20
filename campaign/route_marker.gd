@@ -128,6 +128,8 @@ func _draw() -> void:
 	var on_screen := not cam.is_position_behind(world)
 	var at := cam.unproject_position(world) if on_screen else Vector2.ZERO
 	var rect := Rect2(Vector2(MARGIN, MARGIN), size - Vector2(MARGIN, MARGIN) * 2.0)
+	if rect.size.x <= 0.0 or rect.size.y <= 0.0:
+		return  # no room to draw (a headless or tiny window)
 	if on_screen and rect.has_point(at):
 		_mark(at, dist)
 		return

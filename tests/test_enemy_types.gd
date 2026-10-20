@@ -438,6 +438,43 @@ func test_juno_not_spared_if_you_shoot_her_down() -> void:
 	check(fates == ["not_spared"] and j.is_dead, "shooting her while she's down decides it")
 
 
+## 4-2's Juno: her guard shrugs off ordinary hits and breaks to a combo
+## kick or a headshot from the air; two breaks end a phase, and she runs on
+## to the next spot (a story event for the radio) and fights from there.
+func test_juno_guard_breaks_and_phases() -> void:
+	await _setup()
+	var e := _encounter()
+	var spec := {"breaks_per_phase": 2, "phases": [
+		{"spot": [0, 0, -12], "area": [-5, -16, 5, -8]},
+		{"spot": [0, 0, -30], "area": [-5, -34, 5, -26], "path": [[0, 0, -20]]},
+		{"spot": [0, 0, -40], "area": [-4, -44, 4, -36]},
+	]}
+	var j := e.add_from_spec("juno", spec, Transform3D(Basis.IDENTITY, Vector3(0, 0, -12)))
+	var events: Array[String] = []
+	j.story_event.connect(func(ev: String) -> void: events.append(ev))
+	await w.step(2)
+	e.start()
+	j.take_hit({"damage": 500.0, "zone": &"head", "tags": [], "position": j.global_position})
+	j.take_hit({"damage": 500.0, "zone": &"body", "tags": [&"airborne"], "position": j.global_position})
+	w.player.combo_source = func() -> int: return 2
+	j.on_kicked(w.player, Vector3.FORWARD)
+	check(j.guard_breaks == 0 and not j.is_beaten, "a grounded headshot, a body shot from the air and a short-combo kick don't break her guard")
+	w.player.combo_source = func() -> int: return 3
+	j.on_kicked(w.player, Vector3.FORWARD)
+	check(j.guard_breaks == 1, "a kick at the end of a 3-trick combo breaks it")
+	j.take_hit({"damage": 50.0, "zone": &"head", "tags": [&"airborne"], "position": j.global_position})
+	check(j.phase == 1 and events == ["juno:phase"], "a headshot from the air breaks it again, and that's phase 1 over (%d, %s)" % [j.phase, events])
+	await w.step(150)
+	check(j.global_position.distance_to(Vector3(0, 0, -30)) < 6.0, "she ran on to the next spot (%s)" % j.global_position)
+	j.take_hit({"damage": 50.0, "zone": &"head", "tags": [&"wallrun"], "position": j.global_position})
+	check(j.guard_breaks == 1, "and fights from there")
+	j._enter_phase(2)
+	for k in 2:
+		j.take_hit({"damage": 50.0, "zone": &"head", "tags": [&"airborne"], "position": j.global_position})
+	check(j.is_beaten and not j.is_dead, "the last phase's breaks beat her")
+	w.player.combo_source = Callable()
+
+
 # ------------------------------------------------------------------ hooks
 
 func test_types_by_name() -> void:

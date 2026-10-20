@@ -1,0 +1,2673 @@
+{
+ "id": "l4_2_parking_spiral",
+ "title": "Parking Spiral",
+ "runner": "parker",
+ "atlas": true,
+ "par_seconds": 150,
+ "start": {
+  "at": [
+   1494.6,
+   18,
+   -127.7
+  ],
+  "yaw": 90
+ },
+ "route_origin": {
+  "at": [
+   1494.6,
+   18,
+   -127.7
+  ],
+  "yaw": 90
+ },
+ "chalk": true,
+ "plain_runner": true,
+ "interior_look": "NEUTRAL",
+ "objectives": [
+  {
+   "type": "reach",
+   "name": "the car park",
+   "text": "Over the skybridge to the car park",
+   "at": "@Car park"
+  },
+  {
+   "type": "reach",
+   "name": "the ramps",
+   "text": "Through level 4 to the ramps",
+   "at": "@The ramps"
+  },
+  {
+   "type": "reach",
+   "name": "the core",
+   "text": "Up the ramps after Juno",
+   "at": "@The core"
+  },
+  {
+   "type": "reach",
+   "name": "the top deck",
+   "text": "Up the core after her",
+   "at": "@Top deck"
+  },
+  {
+   "type": "duel",
+   "encounter": "Juno",
+   "radius": 8,
+   "text": "Get to Juno. Break her guard if you can"
+  },
+  {
+   "type": "reach",
+   "name": "the west ramps",
+   "text": "Down the west ramps",
+   "at": "@Down ramps"
+  },
+  {
+   "type": "reach",
+   "name": "the west wall",
+   "text": "To the west wall",
+   "at": "@West wall"
+  },
+  {
+   "type": "reach",
+   "name": "Westside",
+   "text": "Look out over Westside",
+   "at": "end"
+  }
+ ],
+ "tower_views": [],
+ "road_lines": false,
+ "radio": [
+  {
+   "on": "start",
+   "who": "mags",
+   "line": "That's Juno. She ran the Line with you, Parker. She knows all your tricks."
+  },
+  {
+   "on": "start",
+   "who": "juno",
+   "line": "Hey, Parker. Long time. Still running for other people?",
+   "must": true
+  },
+  {
+   "on": "go",
+   "who": "parker",
+   "line": "Still running.",
+   "must": true
+  },
+  {
+   "on": "checkpoint:1",
+   "who": "host",
+   "line": "Folks, it's a rematch! Nobody asked for it, and you're all gonna love it."
+  },
+  {
+   "on": "juno:phase:1",
+   "who": "juno",
+   "line": "You were always faster. I'm the one getting paid, though."
+  },
+  {
+   "on": "checkpoint:3",
+   "who": "juno",
+   "line": "You want to know how they found your camp? I drew them the routes. All of them.",
+   "must": true
+  },
+  {
+   "on": "checkpoint:3",
+   "who": "parker",
+   "line": "Why?",
+   "must": true
+  },
+  {
+   "on": "checkpoint:3",
+   "who": "juno",
+   "line": "Kettle Row's had no water for two years, Parker. My brother's eleven. Work it out.",
+   "must": true
+  },
+  {
+   "on": "juno:phase:2",
+   "who": "mags",
+   "line": "She's not lying. Doesn't make it alright.",
+   "must": true
+  },
+  {
+   "on": "checkpoint:4",
+   "who": "juno",
+   "line": "Come on, then. Show the city."
+  },
+  {
+   "on": "fate:spared",
+   "who": "juno",
+   "line": "Go on. Get her. Before I change my mind.",
+   "must": true
+  },
+  {
+   "on": "fate:not_spared",
+   "who": "mags",
+   "line": "...She was one of ours, once. Keep going.",
+   "must": true
+  },
+  {
+   "on": "complete",
+   "who": "host",
+   "line": "Well. Ratings are through the roof. And you're all cheering for the wrong guy. Every one of you.",
+   "must": true
+  },
+  {
+   "on": "complete",
+   "who": "host",
+   "line": "Let's, uh... let's take a quick break. Word from our sponsor.",
+   "must": true
+  },
+  {
+   "on": "complete",
+   "who": "vell",
+   "line": "Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it.",
+   "must": true
+  },
+  {
+   "on": "complete",
+   "who": "mags",
+   "line": "Parker. Those aren't raiders.",
+   "must": true
+  }
+ ],
+ "chatter": {
+  "kill": [
+   {
+    "who": "juno",
+    "line": "Wow. Okay. You're gonna owe me a crew."
+   },
+   {
+    "who": "host",
+    "line": "Juno, sweetheart, these are your people! Do something!"
+   },
+   {
+    "who": "juno",
+    "line": "Huh. Didn't like him anyway."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Watch the ramps, they come round fast."
+   },
+   {
+    "who": "host",
+    "line": "Another hunter down! I'm docking their pay. Posthumously."
+   },
+   {
+    "who": "juno",
+    "line": "That one owed me money. Thanks, I guess."
+   }
+  ],
+  "headshot": [
+   {
+    "who": "juno",
+    "line": "Hm. Lucky."
+   },
+   {
+    "who": "host",
+    "line": "Ooh, right between the eyes! In my car park!"
+   },
+   {
+    "who": "mags",
+    "line": "Good. Keep moving."
+   },
+   {
+    "who": "juno",
+    "line": "Okay, that one was actually nice."
+   },
+   {
+    "who": "juno",
+    "line": "Clean. Mags teach you that?"
+   }
+  ],
+  "down": [
+   {
+    "who": "juno",
+    "line": "That's it? Get up, you're embarrassing both of us."
+   },
+   {
+    "who": "host",
+    "line": "Courier down on level... what level is this? Somebody count."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Keep going round, don't let them pin you."
+   },
+   {
+    "who": "juno",
+    "line": "Up you get, courier. I'm not done with you."
+   },
+   {
+    "who": "mags",
+    "line": "Up. She wants you to stop. Don't."
+   }
+  ],
+  "bail": [
+   {
+    "who": "juno",
+    "line": "Ha! Oh, that was beautiful."
+   },
+   {
+    "who": "host",
+    "line": "Ooh, tyre marks! On his face."
+   },
+   {
+    "who": "mags",
+    "line": "Up, kid."
+   },
+   {
+    "who": "juno",
+    "line": "You used to be better at this."
+   },
+   {
+    "who": "host",
+    "line": "Oh, he's eaten the concrete! Somebody park on him."
+   }
+  ],
+  "combo": [
+   {
+    "who": "juno",
+    "line": "Fine. That was good. Don't make it weird."
+   },
+   {
+    "who": "mags",
+    "line": "Lovely. Keep spinning up."
+   },
+   {
+    "who": "juno",
+    "line": "Show-off. You haven't changed."
+   },
+   {
+    "who": "host",
+    "line": "Look at those lines! Somebody stop him, he's making me look bad."
+   }
+  ],
+  "tape": [
+   {
+    "who": "echo",
+    "line": "...Juno never took his money till her block's taps ran dry. Somebody shut them off. Remember that before you judge her."
+   },
+   {
+    "who": "echo",
+    "line": "...Juno ran a parcel through a fire for us once. Ask her about it sometime."
+   }
+  ]
+ },
+ "route": [
+  {
+   "roof": 16,
+   "y": 18,
+   "look": "TILE",
+   "bare": true,
+   "interior": 4.5,
+   "do": [
+    {
+     "checkpoint": "Skybridge",
+     "at": 2,
+     "objective": 0
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Skybridge to the car park. It goes uphill. Slide it if you've got the speed."
+     },
+     "at": 3,
+     "radius": 8
+    },
+    {
+     "hurdles": true,
+     "at": 10,
+     "lead": 2.8
+    }
+   ]
+  },
+  {
+   "ramp_up": 21,
+   "length": 22,
+   "interior": 4.5
+  },
+  {
+   "roof": 50,
+   "y": 21,
+   "look": "TILE",
+   "bare": true,
+   "interior": 4.5,
+   "do": [
+    {
+     "slide": true,
+     "at": 20
+    },
+    {
+     "glass": 0,
+     "look": "TILE",
+     "at": 44
+    }
+   ]
+  },
+  {
+   "roof": 44,
+   "y": 21,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "do": [
+    {
+     "checkpoint": "Car park",
+     "at": 2,
+     "objective": 1
+    },
+    {
+     "label": "MERIDIAN PARKING",
+     "at": 4,
+     "size": 1.2
+    },
+    {
+     "hurdles": true,
+     "at": 18,
+     "lead": 2.8
+    },
+    {
+     "slide": true,
+     "at": 34
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 4.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 11.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 14.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 21.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 28.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 35.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 42.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "spin",
+   "interior": 3.8
+  },
+  {
+   "roof": 14,
+   "y": 21,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "do": [
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 4.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 11.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "turn": "left",
+   "size": 16,
+   "interior": 3.8,
+   "look": "NEUTRAL"
+  },
+  {
+   "roof": 10,
+   "y": 21,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "do": [
+    {
+     "checkpoint": "The ramps",
+     "at": 2,
+     "objective": 2
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "These ones run like you. They'll come at you from the side. Don't stop."
+     },
+     "at": 2,
+     "radius": 8
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "spin",
+   "interior": 3.8
+  },
+  {
+   "roof": 10,
+   "y": 21,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "front",
+   "interior": 3.8
+  },
+  {
+   "roof": 12,
+   "y": 21,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "do": [
+    {
+     "encounter": "ramps",
+     "at": 0,
+     "length": 84,
+     "max_aiming": 4,
+     "hear_shots": true,
+     "wake_distance": 8.0,
+     "enemies": [
+      {
+       "type": "crawler",
+       "x": -4.0,
+       "d": 4,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 0
+      },
+      {
+       "type": "crawler",
+       "x": 4.0,
+       "d": 4,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 0
+      },
+      {
+       "type": "crawler",
+       "x": -4.0,
+       "d": 9,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 0
+      },
+      {
+       "type": "crawler",
+       "x": 4.0,
+       "d": 9,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 0
+      },
+      {
+       "type": "crawler",
+       "x": -4.0,
+       "d": 16,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 0.6
+      },
+      {
+       "type": "crawler",
+       "x": 4.0,
+       "d": 16,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 0.6
+      },
+      {
+       "type": "crawler",
+       "x": -4.0,
+       "d": 22,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 1.4
+      },
+      {
+       "type": "crawler",
+       "x": 4.0,
+       "d": 22,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 1.4
+      },
+      {
+       "type": "crawler",
+       "x": -4.0,
+       "d": 30,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 2.4
+      },
+      {
+       "type": "crawler",
+       "x": 4.0,
+       "d": 30,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 2.4
+      },
+      {
+       "type": "crawler",
+       "x": -4.0,
+       "d": 40,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 3.5
+      },
+      {
+       "type": "crawler",
+       "x": 4.0,
+       "d": 40,
+       "sleeper": true,
+       "run_speed": 13.3,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 8.0,
+       "elevation": 3.5
+      },
+      {
+       "type": "hunter",
+       "x": 3.0,
+       "d": 46,
+       "elevation": 3.5,
+       "wake": 0.5,
+       "bullet_damage": 10.0
+      },
+      {
+       "type": "hunter",
+       "x": -3.0,
+       "d": 58,
+       "elevation": 3.5,
+       "wake": 1.0,
+       "bullet_damage": 10.0
+      }
+     ]
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "ramp_up": 24.5,
+   "length": 24,
+   "interior": 3.8
+  },
+  {
+   "roof": 30,
+   "y": 24.5,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 8,
+     "lead": 2.8
+    },
+    {
+     "tape": "l4_2_tape_ledges",
+     "x": -4.6,
+     "at": 26
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": 2
+     },
+     "at": 25.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 14.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 21.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 28.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "front",
+   "interior": 3.8
+  },
+  {
+   "roof": 12,
+   "y": 24.5,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "ramp_up": 28,
+   "length": 24,
+   "interior": 3.8
+  },
+  {
+   "roof": 6,
+   "y": 28,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "do": []
+  },
+  {
+   "gap": 3,
+   "trick": "spin",
+   "interior": 3.8
+  },
+  {
+   "roof": 7,
+   "y": 28,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "do": []
+  },
+  {
+   "turn": "right",
+   "size": 16,
+   "interior": 3.8,
+   "look": "NEUTRAL"
+  },
+  {
+   "roof": 10,
+   "y": 28,
+   "look": "BRICK",
+   "bare": true,
+   "interior": 3.8,
+   "do": [
+    {
+     "checkpoint": "The core",
+     "at": 2,
+     "objective": 3
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "spin",
+   "interior": 3.8
+  },
+  {
+   "roof": 10,
+   "y": 28,
+   "look": "BRICK",
+   "bare": true,
+   "interior": 3.8,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "ramp_up": 31.5,
+   "length": 16,
+   "interior": 4.0
+  },
+  {
+   "roof": 18,
+   "y": 31.5,
+   "look": "BRICK",
+   "bare": true,
+   "interior": 4.0,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 6,
+     "lead": 2.8
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "front",
+   "interior": 4.0
+  },
+  {
+   "roof": 15,
+   "y": 31.5,
+   "look": "BRICK",
+   "bare": true,
+   "interior": 4.0
+  },
+  {
+   "gap": 3,
+   "trick": "spin",
+   "interior": 4.0
+  },
+  {
+   "roof": 16,
+   "y": 31.5,
+   "look": "BRICK",
+   "bare": true,
+   "interior": 4.0,
+   "do": [
+    {
+     "tape": "l4_2_tape_lift",
+     "x": 4.6,
+     "at": 6
+    }
+   ]
+  },
+  {
+   "turn": "right",
+   "size": 16,
+   "interior": 4.0,
+   "look": "NEUTRAL"
+  },
+  {
+   "ramp_up": 35,
+   "length": 14
+  },
+  {
+   "roof": 14,
+   "y": 35,
+   "look": "NEUTRAL",
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "Top deck",
+     "at": 2,
+     "objective": 4
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 4.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       4.6,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 4.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 11.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       -13.03,
+       0,
+       -7.0
+      ],
+      "size": [
+       14,
+       14
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -19.8,
+       0.55,
+       -7.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       14
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       13.03,
+       0,
+       -7.0
+      ],
+      "size": [
+       14,
+       14
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       19.8,
+       0.55,
+       -7.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       14
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       10.5,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 10.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       16.0,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 5.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 18,
+   "y": 35,
+   "look": "NEUTRAL",
+   "bare": true,
+   "do": [
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       4.6,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       -13.03,
+       0,
+       -9.0
+      ],
+      "size": [
+       14,
+       18
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -19.8,
+       0.55,
+       -9.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       18
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       13.03,
+       0,
+       -9.0
+      ],
+      "size": [
+       14,
+       18
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       19.8,
+       0.55,
+       -9.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       18
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       10.5,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 10.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       16.0,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 12.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "front"
+  },
+  {
+   "roof": 18,
+   "y": 35,
+   "look": "NEUTRAL",
+   "bare": true,
+   "do": [
+    {
+     "piece": {
+      "building": [
+       -13.03,
+       0,
+       -9.0
+      ],
+      "size": [
+       14,
+       18
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -19.8,
+       0.55,
+       -9.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       18
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       13.03,
+       0,
+       -9.0
+      ],
+      "size": [
+       14,
+       18
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       19.8,
+       0.55,
+       -9.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       18
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       10.5,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 10.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       16.0,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 12.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 14.299999999999997,
+   "y": 35,
+   "look": "NEUTRAL",
+   "bare": true,
+   "do": [
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       4.6,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       -13.03,
+       0,
+       -7.149999999999999
+      ],
+      "size": [
+       14,
+       14.299999999999997
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -19.8,
+       0.55,
+       -7.149999999999999
+      ],
+      "size": [
+       0.4,
+       1.1,
+       14.299999999999997
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       13.03,
+       0,
+       -7.149999999999999
+      ],
+      "size": [
+       14,
+       14.299999999999997
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       19.8,
+       0.55,
+       -7.149999999999999
+      ],
+      "size": [
+       0.4,
+       1.1,
+       14.299999999999997
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       10.5,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 10.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       16.0,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 5.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "ramp_down": 28,
+   "length": 28,
+   "slide": true
+  },
+  {
+   "roof": 14,
+   "y": 28,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": -1,
+   "do": [
+    {
+     "checkpoint": "Down ramps",
+     "at": 2,
+     "objective": 5
+    },
+    {
+     "piece": {
+      "box": [
+       5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "turn": "left",
+   "size": 16,
+   "interior": 3.8,
+   "look": "NEUTRAL"
+  },
+  {
+   "ramp_down": 21,
+   "length": 28,
+   "slide": true,
+   "interior": 3.8
+  },
+  {
+   "roof": 26,
+   "y": 21,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "rail_inset": 0.65,
+   "do": [
+    {
+     "slide": true,
+     "at": 12
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 4.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 14.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 21.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "ramp_down": 14,
+   "length": 28,
+   "slide": true,
+   "interior": 3.8
+  },
+  {
+   "roof": 65.6,
+   "y": 14,
+   "look": "NEUTRAL",
+   "bare": true,
+   "interior": 3.8,
+   "open": 1,
+   "rail_inset": 0.65,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 14,
+     "lead": 2.8
+    },
+    {
+     "slide": true,
+     "at": 34
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 4.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": -4
+     },
+     "at": 46.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": 4
+     },
+     "at": 53.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 14.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 21.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 28.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 35.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 42.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 49.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 56.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 63.5,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "ramp_down": 12,
+   "length": 8,
+   "interior": 3.8
+  },
+  {
+   "roof": 60.0,
+   "y": 12,
+   "look": "NEUTRAL",
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "West wall",
+     "at": 2,
+     "objective": 6
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 4.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       4.6,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 4.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 13.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       4.6,
+       0,
+       0
+      ],
+      "yaw": 174
+     },
+     "at": 22.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -4.6,
+       0,
+       0
+      ],
+      "yaw": 2
+     },
+     "at": 31.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       4.6,
+       0,
+       0
+      ],
+      "yaw": 182
+     },
+     "at": 31.0,
+     "length": 0
+    }
+   ]
+  }
+ ],
+ "pieces": [
+  {
+   "chalk": [
+    1335.9,
+    23.4,
+    -127.7
+   ],
+   "point": "left",
+   "size": 2.4,
+   "yaw": 90.0
+  },
+  {
+   "light": [
+    1343.6,
+    24.4,
+    -127.7
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1343.6,
+    30.4,
+    43.0
+   ],
+   "point": "right",
+   "size": 2.4,
+   "yaw": -180.0
+  },
+  {
+   "light": [
+    1343.6,
+    31.4,
+    35.3
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1225.9,
+    33.9,
+    35.3
+   ],
+   "point": "right",
+   "size": 2.4,
+   "yaw": 90.0
+  },
+  {
+   "light": [
+    1233.6,
+    34.9,
+    35.3
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1233.6,
+    30.4,
+    -117.7
+   ],
+   "point": "left",
+   "size": 2.4,
+   "yaw": 0.0
+  },
+  {
+   "light": [
+    1233.6,
+    31.4,
+    -110.0
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "encounter": "Juno",
+   "route_span": [
+    -249.0,
+    -519.3
+   ],
+   "area": {
+    "at": [
+     1288.85,
+     30.0,
+     -0.95
+    ],
+    "size": [
+     124.5,
+     18.0,
+     87.5
+    ]
+   },
+   "raiders": [],
+   "cover": [],
+   "enemies": [
+    {
+     "type": "juno",
+     "at": [
+      1343.6,
+      28,
+      24.3
+     ],
+     "yaw": 0.0,
+     "phases": [
+      {
+       "spot": [
+        1343.6,
+        28,
+        24.3
+       ],
+       "area": [
+        1339.1,
+        -24.7,
+        1348.1,
+        26.3
+       ],
+       "until": [
+        1343.6,
+        28,
+        35.3
+       ],
+       "range": [
+        8.0,
+        14.0,
+        30.0
+       ]
+      },
+      {
+       "spot": [
+        1246.6,
+        31.5,
+        35.3
+       ],
+       "area": [
+        1242.6,
+        30.8,
+        1256.6,
+        39.8
+       ],
+       "until": [
+        1233.6,
+        31.5,
+        35.3
+       ],
+       "range": [
+        6.0,
+        11.0,
+        24.0
+       ],
+       "path": [
+        [
+         1343.6,
+         28,
+         35.3
+        ],
+        [
+         1312.6,
+         28,
+         35.3
+        ],
+        [
+         1296.6,
+         31.5,
+         35.3
+        ]
+       ]
+      },
+      {
+       "spot": [
+        1233.6,
+        35,
+        -34.7
+       ],
+       "area": [
+        1229.6,
+        -41.7,
+        1237.6,
+        -25.7
+       ],
+       "until": [
+        1233.6,
+        35,
+        -60.0
+       ],
+       "range": [
+        2.5,
+        5.0,
+        14.0
+       ],
+       "path": [
+        [
+         1233.6,
+         31.5,
+         35.3
+        ],
+        [
+         1233.6,
+         31.5,
+         27.3
+        ],
+        [
+         1233.6,
+         35,
+         13.3
+        ]
+       ]
+      }
+     ],
+     "breaks_per_phase": 2
+    }
+   ]
+  },
+  {
+   "prop": "barricade_jersey",
+   "at": [
+    1347.2,
+    28,
+    14.3
+   ],
+   "yaw": -180.0
+  },
+  {
+   "prop": "barricade_jersey",
+   "at": [
+    1340.0,
+    28,
+    24.3
+   ],
+   "yaw": -180.0
+  },
+  {
+   "prop": "barricade_jersey",
+   "at": [
+    1237.2,
+    35,
+    -27.7
+   ],
+   "yaw": 0.0
+  },
+  {
+   "prop": "barricade_jersey",
+   "at": [
+    1230.0,
+    35,
+    -39.7
+   ],
+   "yaw": 0.0
+  },
+  {
+   "set_piece": "convoy",
+   "at": [
+    1010.0,
+    0.0,
+    -110.0
+   ],
+   "yaw": 90.0,
+   "trigger": [
+    1028.0,
+    12,
+    -110.0
+   ],
+   "radius": 9,
+   "count": 9,
+   "spacing": 24,
+   "channel_x": 16,
+   "road_x": -30,
+   "trucks": 6
+  }
+ ],
+ "guide": [
+  [
+   1494.6,
+   18,
+   -127.7
+  ],
+  [
+   1343.6,
+   21.0,
+   -127.7
+  ],
+  [
+   1343.6,
+   28,
+   24.3
+  ],
+  [
+   1343.6,
+   28.0,
+   35.3
+  ],
+  [
+   1246.6,
+   31.5,
+   35.3
+  ],
+  [
+   1233.6,
+   31.5,
+   35.3
+  ],
+  [
+   1233.6,
+   35,
+   -34.7
+  ],
+  [
+   1233.6,
+   28.0,
+   -110.0
+  ],
+  [
+   1010.0,
+   12.0,
+   -110.0
+  ]
+ ]
+}

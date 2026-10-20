@@ -74,15 +74,26 @@ See `l2_2_glass_district.json`.
 | `{"roof": length, "y": h, "width": 12, "do": [...]}` | a roof (y 0 is the street). Higher than the roof before and straight on: a yellow face to climb (3 m max). Lower after a gap: a drop (roll from 3.5 m) |
 | `{"roof": 80, "y": 1, "interior": 6}` | the inside of a building: walls and a roof `interior` m over the floor, with skylights every 10 m (a warehouse, an office floor). Enter by ramp or straight on; climb out to a higher roof at its end. `"indoors": h` instead tells `glass`, `door` and `hole` walls how high the ceiling is when the mission builds its own walls (m11) |
 | `{"roof": 26, "bridge": true, "beyond": 150}` | a bridge deck on piers instead of a building (railings, girders); `beyond` m more of the span carry on past its end, seen but not run (2-3 The Toll's Silt bridge) |
-| `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof |
+| `{"gap": m}` | a running jump: 4–7 m level, up to 9 m onto a lower roof. `"interior": h` (indoors) carries the walls and ceiling over the hole; a gate after an indoor roof does this itself |
 | `{"wallrun": 12, "side": 1}` | a gap with a blue wall on the right (-1 left) |
 | `{"gate": {"tier": 1}}` | a speed gate, straight after a roof (campaign/speed_gate.gd): a gap the best jump a tier slower (base top speed for tier 1) misses by 0.5 m and an ordinary edge jump at the tier's speed clears by 0.3 m. Tiers want 13.7 / 15.9 / 18.4 m/s at take-off (top speed 11.5 plus a varied combo's Flow); tier 3 needs a long varied combo, so keep it for high paths and late districts. Chalk at the edge (one dash per tier) and where you land; hurdles, a slide bar and a wall hop in the run-up unless `"tricks": false` or the roof already has features in its last 60 m. Miss it and you drop 3 m onto a ledge and climb a yellow face back up, slow and exposed (`"lower": "fall"`: no ledge, a miss is a fall). The landing roof must be at the same height |
-| `{"ramp_up": y}` / `{"ramp_down": y, "length": 22}` | a ramp to a new height (down is a slide ramp) |
+| `{"ramp_up": y}` / `{"ramp_down": y, "length": 22}` | a ramp to a new height (down is a slide ramp); `"interior": h` walls it in with a ceiling h m over its top (an escalator inside) |
 | `{"street": m}` | a stretch at street level (y 0) |
 | `{"skip": m}` | nothing for `m` m: the base map's own ground past its EXIT (a route from `base_exit` starts 6 m behind EXIT) |
-| `{"turn": "left", "size": 20, "angle": 90}` | a corner where the run turns left or right: 90° (a square roof `size` m across) or 45° (`"angle": 45`, a slab joining the roofs before and after) |
+| `{"turn": "left", "size": 20, "angle": 90}` | a corner where the run turns left or right: 90° (a square roof `size` m across) or 45° (`"angle": 45`, a slab joining the roofs before and after); `"interior": h` walls the corner in and roofs it |
 | `{"fork": [segments], "side": 1, "spread": 18}` | the route splits on a wide roof: `fork` is a second line run beside the main one (right, or `-1` left), while the segments after it carry on the main line |
-| `{"join": true}` | the two lines meet again on a wide roof (the shorter one is lengthened); both must end at the same height |
+| `{"join": true}` | the two lines meet again on a wide roof (the shorter one is lengthened); both must end at the same height. A fork with `"interior": h` walls and roofs the split and join roofs and the filler too |
+
+On an indoor roof, `"open": 1` (or `-1`) puts a 1.1 m balustrade on that
+side instead of a wall: a walkway over a void the mission builds itself
+(4-1's atrium); `"rail_inset"` (default 0.6) is how far in from the
+roof's edge it stands. A mission's `"interior_look"` (default `FACADE`) dresses
+every indoor wall. Hurdles take `"lead"`: how far before them the bot jumps
+(2.8 for a fast line; 1.6 by default). Encounters take `"wake_distance"`
+(how close you get before a sleeper wakes) as well as `hear_shots`,
+`hearing_radius` and `max_aiming`, and enemy specs take any of the enemy's
+settings (`"run_speed"`, `"move_speed": 0` to hold a spot, `"aim_lead"`,
+`"cover": false` for no sandbags).
 
 A mission with `"plain_runner": true` is checked by tests/test_speed_gates.gd:
 its bot line must get through every gate and encounter alive, and a plain
@@ -411,23 +422,54 @@ you finish her, so her fight is a `duel` objective (reaching her ends it,
 since fighting is never required to win), and the radio
 events `fate:spared` / `fate:not_spared` for the line that follows.
 
+## The mall set pieces
+
+4-1 Meridian Mall (l4_1_meridian_mall) is one route through the whole
+mall. Its set pieces come from campaign/mall_scene.gd (route feature
+`{"set_piece": kind, "at": d, "trigger": d}`), each firing a radio event
+`set_piece:<event>`:
+
+- `shutters` (`sides`, `length`): shop shutters roll up along the walls;
+  event `gates`.
+- `billboard` (`hold`, `hang`, `x`, `up`, `yaw`): the Ward's screen
+  stutters on over the void and holds its logo; event `billboard`.
+- `juno` (`line_x`, `length`): Juno runs the far walkway beside you,
+  salutes half way and drops out of sight; events `juno`, `juno_gone`.
+- `tvs` (`length`, `hold`): the electronics floor's TVs go to static,
+  then all show a porch light; event `tvs`.
+- `convoy` (4-2, a world-space mission piece at the street under the end:
+  `count`, `spacing`, `channel_x`, `road_x`, `trucks`): Ward floodlights
+  come on pair by pair down the storm channels and white Ward trucks roll
+  out along the channel road; event `convoy`.
+
+4-2 Parking Spiral (l4_2_parking_spiral) starts at 4-1's skybridge door
+and ends on Westside's start. Juno's fight is one encounter over three
+legs of the car park (the ramps, the core, the top deck) with `phases`
+(docs/enemies.md) and a `route_span` (the stretch of the route it covers,
+for the plain-runner check). Both are made by the generator in
+/mnt/project-files/design/meridian-wip/ (car_park.py, then
+car_park_finalize.py; regen2.sh runs both): edit those, not the JSON.
+
+Its fights sit on the fast stretches: Hollows asleep in doorways that wake
+as you pass and run down anyone slower than they are (walkway, north
+wing), and the Host's crew dug in at the far end of the store, past two
+holes in the floor. The level is generated: the scripts live in
+/mnt/project-files/design/meridian-wip/ (meridian.py, then
+tools_dump_tmp.gd, then finalize.py; see regen.sh).
+
 ## Hand-made missions on a base map
 
-The Meridian Mall missions (m05-m07) are laid out by hand on the mall
+m07 Parking Spiral is laid out by hand on the mall
 (`"base": "res://maps/mall_builder.gd"`): the building is the level, and
 the mission adds its dressing, gates, enemies and radio as ordinary
-pieces. Each one runs between two of the mall's hand-off points, in order:
-m05 Atrium from `ENTRY` to `ANCHOR_ENTRY`, m06 Anchor Store from
-`ANCHOR_ENTRY` to `ANCHOR_EXIT` (the skybridge door at the back corner of
-the store's top floor), and m07 Parking Spiral from `ANCHOR_EXIT` along the
-covered skybridge to a walled car park past the mall's `EXIT`. The whole
+pieces. It runs from `ANCHOR_EXIT` along the covered skybridge to a
+walled car park past the mall's `EXIT`. The whole
 run stays indoors: the mall's roofs can't be reached, the dock doors are
 shuttered, and burnt-out shops close the lot off from the ground round the
-building. m06 and m07 set `"base_set": {"skybridge": true}`.
+building. m07 sets `"base_set": {"skybridge": true}`.
 
-- `"pits": {"y": 3, "streets": [regions]}` works here too: m05 makes the
-  wing's concourse floor a pit (anywhere below 3 m outside its one region),
-  so the run stays on the walkways, crossing at every bridge.
+- `"pits": {"y": 3, "streets": [regions]}` works here too: everywhere
+  below 3 m outside the regions is a pit.
 - `campaign/tools/reach_probe.gd` floods a mission (or map scene) from its
   start with generous movement limits and prints where a runner could get
   to above a height or past a z: run it after changing a layout to find

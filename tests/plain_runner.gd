@@ -69,32 +69,48 @@ static func across(pos: Vector3, legs: Array) -> float:
 	return _local(pos, legs).x
 
 
-## (across, along) in the frame of the leg the point is on: of the legs
-## whose stretch of the route it lies beside, the nearest across. (A route
-## can double back, so the latest leg in reach isn't always the one.)
+## (across, along) in the frame of the leg the point is on (leg_index).
 static func _local(pos: Vector3, legs: Array) -> Vector2:
-	if legs.is_empty():
+	var i := leg_index(pos, legs)
+	if i < 0:
 		return Vector2(pos.x, pos.z)
-	var best := Vector2(INF, 0.0)
+	var l: Array = legs[i]
+	var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
+	return Vector2(v.x, v.z + float(l[3]))
+
+
+## The route's heading (yaw) on the leg a point is on.
+static func heading(pos: Vector3, legs: Array) -> float:
+	var i := leg_index(pos, legs)
+	return float(legs[i][2]) if i >= 0 else 0.0
+
+
+## Which leg a point is on, or -1 with no legs: of the legs whose stretch
+## of the route it lies beside, the nearest across (the last leg if none).
+## (A route can double back, so the latest leg in reach isn't always the one.)
+static func leg_index(pos: Vector3, legs: Array) -> int:
+	if legs.is_empty():
+		return -1
+	var best := legs.size() - 1
+	var best_x := INF
 	for i in legs.size():
 		var l: Array = legs[i]
 		var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
 		var z := v.z + float(l[3])
 		var start := INF if i == 0 else float(l[3]) + 0.5
 		var end := -INF if i == legs.size() - 1 else float(legs[i + 1][3]) - 0.5
-		if z <= start and z >= end and absf(v.x) < absf(best.x):
-			best = Vector2(v.x, z)
-	if is_inf(best.x):
-		var l: Array = legs[-1]
-		var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
-		return Vector2(v.x, v.z + float(l[3]))
+		if z <= start and z >= end and absf(v.x) < best_x:
+			best = i
+			best_x = absf(v.x)
 	return best
 
 
 ## [start, end, label] along the route for every gate and encounter,
 ## nearest first. A gate runs from 20 m before its edge to 6 m past the
-## far side; an encounter is its area. An unarmed one (only the Host's
-## camera drones filming you) is no fight, so it isn't a section.
+## far side; an encounter is its area, or its "route_span" [from, to]
+## along the route when it spans corners (4-2's Juno, up three legs of the
+## car park). An unarmed one (only the Host's camera drones filming you) is
+## no fight, so it isn't a section.
 static func sections(mission: Dictionary) -> Array:
 	var legs: Array = mission.get("route_legs", [])
 	var out: Array = []
@@ -102,10 +118,15 @@ static func sections(mission: Dictionary) -> Array:
 		# Only the main line's: a fork's other line (a high path) isn't
 		# where the bot or the plain runner run.
 		var on: Variant = p.get("mark", p.area.at if p.has("encounter") else null)
+		if p.has("route_span") and armed(p):
+			out.append([float(p.route_span[0]), float(p.route_span[1]), "encounter %s" % p.encounter])
+			continue
 		if on is Array and absf(across(Vector3(on[0], on[1], on[2]), legs)) > OFF_LINE:
 			continue
 		if p.has("gate") and p.has("mark"):
 			var a: Array = p.mark
+			if absf(across(Vector3(a[0], a[1], a[2]), legs)) > 3.0:
+				continue  # on the other line of a fork: the trick line never meets it
 			var edge := along(Vector3(a[0], a[1], a[2]), legs) - EDGE_MARK
 			out.append([edge + 20.0, edge - float(p.get("gap", 15.0)) - 6.0, "tier %d gate" % int(p.gate)])
 		elif p.has("encounter") and armed(p):

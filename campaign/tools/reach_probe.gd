@@ -29,7 +29,7 @@ func _initialize() -> void:
 
 func _run() -> void:
 	var args := OS.get_cmdline_user_args()
-	var id: String = args[0] if args.size() > 0 else "m05_atrium"
+	var id: String = args[0] if args.size() > 0 else "l4_1_meridian_mall"
 	var min_y := float(args[1]) if args.size() > 1 else 12.6
 	var max_z := float(args[2]) if args.size() > 2 else -INF
 	var level := await _load(id)

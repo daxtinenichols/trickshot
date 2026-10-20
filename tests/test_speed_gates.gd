@@ -233,8 +233,10 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 	health.can_die = true
 	await c._step(2)
 	p.global_position = entry[0]
-	p.basis = Basis(Vector3.UP, float(entry[1]))
-	p.yaw = float(entry[1])
+	# Facing along the route: the trick line may be part way round a spin.
+	var yaw := float(entry[1]) if legs.is_empty() else PlainRunner.heading(entry[0], legs)
+	p.basis = Basis(Vector3.UP, yaw)
+	p.yaw = yaw
 	p.velocity = p.forward() * p.tuning.top_speed
 	p.momentum = 1.0
 	var start_y: float = p.global_position.y
@@ -247,7 +249,10 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 		if not under.is_empty():
 			start_y = minf(start_y, under.position.y)
 	var taken := [0.0]
-	health.damaged.connect(func(a: float, _f: Vector3, _k: StringName) -> void: taken[0] += a)
+	health.damaged.connect(func(a: float, _f: Vector3, k: StringName) -> void:
+		taken[0] += a
+		if OS.has_environment("PLAIN_LOG"):
+			print("    plain hit: %.0f %s at %.1f m" % [a, k, PlainRunner.along(p.global_position, legs)]))
 	var low := [INF]
 	var watch := func() -> void: low[0] = minf(low[0], p.global_position.y)
 	tree.physics_frame.connect(watch)
@@ -256,7 +261,7 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 		if float(s[0]) < float(section[0]):
 			steps.append(s)
 	var frames := int((float(section[0]) - float(section[1])) / 8.0 * 60.0) + 240
-	await c._run_route(steps, frames, float(section[1]), legs, m.get("bot_steady", false))
+	await c._run_route(steps, frames, float(section[1]), legs, m.get("bot_steady", false), maxi(PlainRunner.leg_index(entry[0], legs), 0))
 	tree.physics_frame.disconnect(watch)
 	var past := PlainRunner.along(p.global_position, legs) < float(section[1])
 	var out := "through"

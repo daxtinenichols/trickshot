@@ -139,7 +139,7 @@
   {"on": "complete", "who": "mags", "line": "Line camp to anyone out there. They made it. Both of them.", "must": true},
   {"on": "complete", "who": "echo", "line": "Port Calder, it's Echo. And Parker. The show's over.", "must": true},
   {"on": "complete", "who": "parker", "line": "Go outside. It's a nice day.", "must": true},
-  {"on": "complete", "if": "m07_parking_spiral.fate=spared", "who": "juno", "line": "Not bad, courier. Not bad.", "must": true}
+  {"on": "complete", "if": "l4_2_parking_spiral.fate=spared", "who": "juno", "line": "Not bad, courier. Not bad.", "must": true}
  ],
  "chatter": {
   "caught": [

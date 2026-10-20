@@ -10,7 +10,7 @@ const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "doors", "window", "target", "ramp", "loop",
 	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure", "set_piece", "chalk", "light", "skyline"]
 const RouteMarker := preload("res://campaign/route_marker.gd")
-const MALL := ["m05_atrium", "m06_anchor_store", "m07_parking_spiral"]
+const MALL := ["l4_1_meridian_mall", "l4_2_parking_spiral"]
 
 var level: Node3D
 var player: Player
@@ -100,8 +100,8 @@ func _index(id: String) -> int:
 
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
-	check(all.size() == 17, "17 missions (%d)" % all.size())
-	check(Campaign.acts().size() == 7, "the Docks, Stages 2 and 3, the Mall and Stages 5, 6 and 7")
+	check(all.size() == 16, "16 missions (%d)" % all.size())
+	check(Campaign.acts().size() == 7, "the Docks, Stages 2 and 3, Meridian and Stages 5, 6 and 7")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
@@ -470,7 +470,7 @@ func test_juno_fate_carries_to_the_ending() -> void:
 	for spared: bool in [false, true]:
 		Campaign.reset_progress()
 		if spared:
-			Campaign.save().set_value("m07_parking_spiral", "fate", "spared")
+			Campaign.save().set_value("l4_2_parking_spiral", "fate", "spared")
 		await _load(_index("l7_1_signal_out"))
 		var radio: RadioFeed = level.radio
 		radio.notify("complete")
@@ -825,9 +825,11 @@ func _steer(x: float, veer: bool) -> InputFrame:
 ## over in the air after the next take-off). Returns true once
 ## the mission is complete; false if it runs out of time or passes stop_z
 ## first.
-func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = [], steady := false) -> bool:
+## `first_leg`: the leg the player starts on, for a run dropped in part way
+## along a route that winds back on itself.
+func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = [], steady := false, first_leg := 0) -> bool:
 	_legs = legs if not legs.is_empty() else [[0.0, 0.0, 0.0, 0.0]]
-	_leg = 0
+	_leg = first_leg
 	var lane: float = route[0][2] if route[0][1] == "" and not is_nan(route[0][2]) else _local(player.global_position, 0).x
 	var veer := false
 	var next := 0
@@ -2033,7 +2035,9 @@ func test_hand_made_missions_can_be_finished() -> void:
 			level = null
 			await tree.process_frame
 			ran += 1
-	check(ran >= 1, "hand-made missions were run (%d)" % ran)
+	# Every campaign level is a route now; this stays for hand-made ones.
+	if ran == 0:
+		print("    no hand-made missions in the campaign")
 
 
 func _auto_shoot_objectives() -> void:
@@ -2113,10 +2117,10 @@ func _run_path(path: Array, max_frames := 6000) -> bool:
 	return false
 
 
-## m07: Juno can't be killed outright, so her fight is a `clear` objective;
-## sparing her or not plays a different line.
+## 4-2: Juno can't be killed outright; breaking her guard in the last
+## phase beats her, and sparing her or not plays a different line.
 func test_juno_fate_picks_the_line() -> void:
-	var i := _index_of("m07_parking_spiral")
+	var i := _index_of("l4_2_parking_spiral")
 	for choice: String in ["spared", "not_spared"]:
 		await _load(i)
 		var events: Array[String] = []
@@ -2125,7 +2129,7 @@ func test_juno_fate_picks_the_line() -> void:
 		for e: Node3D in level.builder.encounters:
 			if e.get_meta("id", "") == "Juno":
 				enc = e
-		check(enc != null, "m07 has Juno's encounter")
+		check(enc != null, "4-2 has Juno's encounter")
 		if enc == null:
 			return
 		var juno: Node = null
@@ -2141,7 +2145,11 @@ func test_juno_fate_picks_the_line() -> void:
 			if en != juno:
 				en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position})
 		juno.take_hit({"damage": 1000.0, "zone": &"body", "position": juno.global_position})
-		check(juno.is_beaten and juno.fate == "", "a big hit beats Juno without killing her")
+		check(not juno.is_beaten, "a body shot doesn't get through her guard")
+		juno._enter_phase(juno.phases.size() - 1)
+		for k in juno.breaks_per_phase:
+			juno.take_hit({"damage": 50.0, "zone": &"head", "tags": [&"airborne"], "position": juno.global_position})
+		check(juno.is_beaten and juno.fate == "", "breaking her guard in the last phase beats her without killing her")
 		if choice == "not_spared":
 			juno.take_hit({"damage": 10.0, "zone": &"body", "position": juno.global_position})
 		else:
@@ -2150,21 +2158,21 @@ func test_juno_fate_picks_the_line() -> void:
 		check(("fate:" + choice) in events, "%s: the radio hears fate:%s (%s)" % [choice, choice, events])
 		check(run.encounter_cleared("Juno"), "%s: Juno's fight is cleared" % choice)
 		var lines: Array = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.get("on", "") == "fate:" + choice)
-		check(lines.size() == 1, "%s: m07 has one line for it" % choice)
+		check(lines.size() == 1, "%s: 4-2 has one line for it" % choice)
 		level.queue_free()
 		level = null
 		await tree.process_frame
 
 
-## m07: fighting is never required. Running up to Juno ends the duel without
+## 4-2: fighting is never required. Running up to Juno ends the duel without
 ## a shot fired, and she's left kneeling for the spare-or-not choice.
 func test_reaching_juno_ends_the_duel() -> void:
-	await _load(_index_of("m07_parking_spiral"))
+	await _load(_index_of("l4_2_parking_spiral"))
 	var duel := -1
 	for k in run.objectives.size():
 		if run.objectives[k].get("type", "") == "duel":
 			duel = k
-	check(duel >= 0, "m07 has a duel objective")
+	check(duel >= 0, "4-2 has a duel objective")
 	var juno: Node3D = run.duel_boss("Juno")
 	check(juno != null, "the duel's boss is Juno")
 	if duel < 0 or juno == null:
@@ -2182,19 +2190,95 @@ func test_reaching_juno_ends_the_duel() -> void:
 	await tree.process_frame
 
 
-## m05: the arena's shots wake its sleeping Hollows.
-func test_atrium_shots_wake_sleepers() -> void:
-	await _load(_index_of("m05_atrium"))
-	var arena: Node3D = null
+## 4-1: the north wing's shots wake its sleeping Hollows.
+func test_mall_shots_wake_sleepers() -> void:
+	await _load(_index_of("l4_1_meridian_mall"))
+	var wing: Node3D = null
 	for e: Node3D in level.builder.encounters:
-		if e.get_meta("id", "") == "arena":
-			arena = e
-	check(arena != null and arena.hear_shots, "m05's arena hears shots")
-	var sleepers: Array = arena.enemies.filter(func(e: Node) -> bool: return e.sleeper)
-	check(sleepers.size() >= 4, "the arena has sleeping Hollows (%d)" % sleepers.size())
+		if e.get_meta("id", "") == "wing":
+			wing = e
+	check(wing != null and wing.hear_shots, "the wing hears shots")
+	var sleepers: Array = wing.enemies.filter(func(e: Node) -> bool: return e.sleeper)
+	check(sleepers.size() >= 4, "the wing has sleeping Hollows (%d)" % sleepers.size())
 	level.queue_free()
 	level = null
 	await tree.process_frame
+
+
+## 4-1 is the whole mall in one run: the atrium, the north wing and the
+## department store with no load, turning both ways (square and 45), over
+## three floors and more, under a roof the whole way, with a speed gate on
+## the main line, a high line and the mall's set pieces.
+func test_meridian_mall_is_one_indoor_run() -> void:
+	var m := Campaign.load_mission_file("res://campaign/missions/l4_1_meridian_mall.json")
+	check(m.route_length > 800.0 and m.route_length < 950.0, "800 to 950 m (%d)" % int(m.route_length))
+	var turns := 0
+	var slabs := 0
+	var floors := {}
+	var kinds := {}
+	for seg: Dictionary in m.route:
+		if seg.has("turn"):
+			turns += 1
+			if float(seg.get("angle", 90.0)) == 45.0:
+				slabs += 1
+		if seg.has("roof"):
+			floors[float(seg.y)] = true
+			check(float(seg.get("interior", 0.0)) > 0.0, "every roof is indoors (%s)" % seg.roof)
+		if seg.has("fork"):
+			for f: Dictionary in seg.fork:
+				if f.has("roof"):
+					check(float(f.get("interior", 0.0)) > 0.0, "the high line is indoors too")
+		for f: Dictionary in seg.get("do", []):
+			if f.has("set_piece"):
+				kinds[f.set_piece] = true
+	check(turns >= 5 and slabs >= 2, "turns (%d), 45s among them (%d)" % [turns, slabs])
+	check(floors.size() >= 3, "on three floors or more (%s)" % [floors.keys()])
+	for k: String in ["shutters", "billboard", "juno", "tvs"]:
+		check(kinds.has(k), "the %s set piece" % k)
+	check(m.has("bot_alt"), "a high line")
+	var gates: Array = m.pieces.filter(func(p: Dictionary) -> bool: return p.has("gate") and p.has("mark"))
+	check(gates.size() >= 2, "a gate on each line (%d)" % gates.size())
+	check(MissionBuilder.vec(m.route_origin.at).distance_to(Vector3(1500, 0, 380)) < 0.05, "starts where the Silt ends")
+	# A roof overhead all along the run: straight down from high above,
+	# the first thing hit is a ceiling, never one of the run's floors.
+	await _load(_index_of("l4_1_meridian_mall"))
+	var space := player.get_world_3d().direct_space_state
+	var path := _run_line(run.mission)
+	var open := 0
+	var samples := 0
+	for j in range(1, path.size()):
+		var a := Vector2(path[j - 1][0], path[j - 1][1])
+		var b := Vector2(path[j][0], path[j][1])
+		for k in int(a.distance_to(b) / 6.0):
+			var q := a.lerp(b, (k + 0.5) * 6.0 / a.distance_to(b))
+			samples += 1
+			# The ceiling's skylight slots are 2 m: a step either way is roof.
+			var roofed := false
+			for o: float in [0.0, 1.5, -1.5]:
+				var at := q + (b - a).normalized() * o
+				var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(at.x, 60.0, at.y), Vector3(at.x, -2.0, at.y), 1))
+				if not hit.is_empty() and not floors.keys().any(func(y: float) -> bool: return absf(hit.position.y - y) < 0.05):
+					roofed = true
+			if not roofed:
+				open += 1
+				if OS.has_environment("ROOF_LOG"):
+					print("open at ", q)
+	check(samples > 100 and open == 0, "a roof over the whole run (%d of %d points open to the sky)" % [open, samples])
+	level.queue_free()
+	level = null
+	await tree.process_frame
+
+
+## The run's center line as [x, z] points: the bot path of a hand-laid
+## mission, or a route's corners and its end.
+func _run_line(m: Dictionary) -> Array:
+	if m.has("bot_path"):
+		return m.bot_path
+	var out: Array = []
+	for l: Array in m.get("route_legs", []):
+		out.append([l[0], l[1]])
+	out.append([m.route_end[0], m.route_end[2]])
+	return out
 
 
 func _index_of(id: String) -> int:
@@ -2246,7 +2330,7 @@ func test_mall_guides_lead_to_the_goal() -> void:
 				t = nt
 				highest = maxi(highest, t)
 		check(not back and t == pts.size(), "%s: the mark runs the whole line in order (ended on %d of %d)" % [id, t, pts.size()])
-		var path: Array = run.mission.bot_path
+		var path := _run_line(run.mission)
 		var space := player.get_world_3d().direct_space_state
 		for p in pts:
 			var near := INF
@@ -2270,25 +2354,29 @@ func test_mall_guides_lead_to_the_goal() -> void:
 		await tree.process_frame
 
 
-## The high line in the car park skips the second lap's corner: reaching a
-## later "reach" goal counts the ones before it, so nobody is sent back.
+## Reaching a later "reach" goal counts the ones before it, so nobody is
+## sent back (a respawn or a fall that skips a goal's spot).
 func test_reaching_a_later_goal_counts_the_ones_before() -> void:
-	await _load(_index("m07_parking_spiral"))
+	await _load(_index("l4_2_parking_spiral"))
 	run.phase = MissionRun.Phase.RUNNING
 	run._begin_objective(1)
-	check(run.current_objective().get("name", "") == "level 2", "heading for level 2")
-	# Straight onto the third lap's corner (level 1's start).
-	run._check_objective(Vector3(-15.5, 7.0, -474.5))
-	check(run.objective == 2, "level 2 counted on reaching level 1's corner (%d)" % run.objective)
-	run._check_objective(Vector3(-15.5, 7.0, -474.5))
-	check(run.objective == 3, "and level 1 itself (%d)" % run.objective)
+	check(run.current_objective().get("name", "") == "the ramps", "heading for the ramps")
+	# Straight onto the core's goal.
+	var core := Vector3.ZERO
+	for c: Dictionary in run.mission.checkpoints:
+		if c.name == "The core":
+			core = MissionBuilder.vec(c.at)
+	run._check_objective(core)
+	check(run.objective == 2, "the ramps counted on reaching the core (%d)" % run.objective)
+	run._check_objective(core)
+	check(run.objective == 3, "and the core itself (%d)" % run.objective)
 
 
 ## A line that tells you the way jumps the queue; a line about a place that
 ## waited too long is dropped; a conversation queued together waits for
 ## its own lines.
 func test_radio_cues_jump_the_queue_and_stale_lines_drop() -> void:
-	await _load(_index("m05_atrium"))
+	await _load(_index("l4_1_meridian_mall"))
 	var radio: RadioFeed = level.radio
 	radio.queue.clear()
 	radio.current = {}
@@ -2318,7 +2406,7 @@ func test_radio_cues_jump_the_queue_and_stale_lines_drop() -> void:
 ## A line the story needs goes ahead of every other line waiting and is
 ## never dropped; the lines of one conversation stay together.
 func test_radio_must_lines_go_first_and_never_drop() -> void:
-	await _load(_index("m05_atrium"))
+	await _load(_index("l4_1_meridian_mall"))
 	var radio: RadioFeed = level.radio
 	radio.queue.clear()
 	radio.current = {}
@@ -2341,15 +2429,18 @@ func test_radio_must_lines_go_first_and_never_drop() -> void:
 ## now when it's within that, worked out at a run at least when you're
 ## slow, and never for a spot behind you.
 func test_radio_spot_lines_start_early() -> void:
-	await _load(_index("m05_atrium"))
+	await _load(_index("l4_1_meridian_mall"))
 	var radio: RadioFeed = level.radio
 	var s: Dictionary = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.has("at"))[0]
 	var key := "at:%s" % str(s.at)
 	var at := MissionBuilder.vec(s.at)
-	var half := MissionBuilder.vec(s.size) * 0.5
-	var reach := minf(half.x, half.z)
+	var half := MissionBuilder.vec(s.get("size", [0, 0, 0])) * 0.5
+	var reach := float(s.radius) if s.has("radius") else minf(half.x, half.z)
 	var lead := radio._lead(key)
 	check(lead >= RadioFeed.clip_length(s.who, s.line) + RadioFeed.LEAD - 0.01, "the lead covers the clip (%.1fs)" % lead)
+	# Straight-line distance and heading, as on a level with no route (on a
+	# route level it's measured along the route).
+	run.mission.erase("route_legs")
 	var toward := Vector3(0, 0, -15)
 	check(not radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * 15.0 + 5.0), toward), "too far at 15 m/s: not yet")
 	check(radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * 15.0 - 2.0), toward), "close enough at 15 m/s: now")
