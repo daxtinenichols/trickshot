@@ -626,7 +626,7 @@
   {"on": "go", "who": "host", "line": "Folks, small update. I'm bleeding a bit. Show goes on.", "if": "l6_1_head_office.host_hit=yes"},
   {"on": "go", "who": "host", "line": "Folks, small update. He's still coming. Show goes on.", "if": "l6_1_head_office.host_hit=no"},
   {"on": "checkpoint:0", "who": "host", "line": "Careful in here! Twenty years of my best work. Don't you touch it."},
-  {"on": "checkpoint:2", "who": "vell", "line": "Prepare the transfer. Nobody crosses that bridge after her."},
+  {"on": "checkpoint:1", "who": "vell", "line": "Prepare the transfer. Nobody crosses that bridge after her."},
   {"on": "checkpoint:3", "who": "mags", "line": "Parker. I see her. On the bridge. Go!", "must": true},
   {"on": "set_piece:skybridge", "who": "echo", "line": "Parker? Oh my god. Parker.", "must": true},
   {"on": "set_piece:skybridge", "who": "parker", "line": "Hey. Hey, I've got you.", "must": true},
