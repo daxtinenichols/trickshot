@@ -208,7 +208,7 @@ func _trick_run(path: String) -> Dictionary:
 		ct.added.connect(func(n: StringName, _pts: int) -> void: print("    + %s at %.1f speed %.1f flow %.1f" % [n, PlainRunner.along(p.global_position, legs), p.horizontal_speed(), ct.flow()]))
 		ct.bailed.connect(func(_pts: int, why: StringName) -> void: print("    BAIL %s at %.1f" % [why, PlainRunner.along(p.global_position, legs)]))
 		ct.finished.connect(func(sm: Dictionary) -> void: print("    banked (%s) at %.1f" % [sm.reason, PlainRunner.along(p.global_position, legs)]))
-	var done: bool = await c._run_route(m.bot, int(m.route_length / 6.0 * 60.0) + 600, -INF, legs)
+	var done: bool = await c._run_route(m.bot, int(m.route_length / 6.0 * 60.0) + 600, -INF, legs, m.get("bot_steady", false))
 	tree.physics_frame.disconnect(watch)
 	if OS.has_environment("PLAIN_LOG"):
 		print("  trick line: done %s falls %d downs %d damage taken %.0f" % [done, c.run.falls, health.deaths, taken[0]])
@@ -255,7 +255,7 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 		if float(s[0]) < float(section[0]):
 			steps.append(s)
 	var frames := int((float(section[0]) - float(section[1])) / 8.0 * 60.0) + 240
-	await c._run_route(steps, frames, float(section[1]), legs)
+	await c._run_route(steps, frames, float(section[1]), legs, m.get("bot_steady", false))
 	tree.physics_frame.disconnect(watch)
 	var past := PlainRunner.along(p.global_position, legs) < float(section[1])
 	var out := "through"

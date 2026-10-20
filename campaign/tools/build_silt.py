@@ -347,6 +347,8 @@ def the_silt():
         "runner": "",
         "atlas": True,
         "plain_runner": True,
+        # The test bots ride its trick lines steady (tests/test_campaign.gd).
+        "bot_steady": True,
         "par_seconds": 150,
         "start": {"at": START, "yaw": 90},
         # The tower from the bridge, and down the outfall channel (it ends
@@ -551,6 +553,8 @@ def the_drain(start, a1, a2):
         "runner": "",
         "atlas": True,
         "plain_runner": True,
+        # The test bots ride its trick lines steady (tests/test_campaign.gd).
+        "bot_steady": True,
         "par_seconds": 170,
         "start": {"at": start["at"], "yaw": start["yaw"]},
         "route_origin": {"at": start["at"], "yaw": start["yaw"]},

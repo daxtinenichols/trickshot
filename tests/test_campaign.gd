@@ -822,7 +822,7 @@ func _steer(x: float, veer: bool) -> InputFrame:
 ## over in the air after the next take-off). Returns true once
 ## the mission is complete; false if it runs out of time or passes stop_z
 ## first.
-func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = []) -> bool:
+func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = [], steady := false) -> bool:
 	_legs = legs if not legs.is_empty() else [[0.0, 0.0, 0.0, 0.0]]
 	_leg = 0
 	var lane: float = route[0][2] if route[0][1] == "" and not is_nan(route[0][2]) else _local(player.global_position, 0).x
@@ -832,8 +832,9 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 	# "flip" (back), "front" or "spin": done in the air after the next take-off.
 	var trick := ""
 	var trick_left := 0
-	# Still in the air from the last jump when the trick came up: wait for
-	# the landing, so it goes into the next take-off.
+	# A level's "bot_steady" (its line built for it): a trick that comes up
+	# while still in the air from the last jump waits for the landing and
+	# goes into the next take-off, and eyes come back level once down.
 	var trick_wait := false
 	# Stopped dead against a wall (a speed gate's climb face after a miss):
 	# jump to climb it.
@@ -874,12 +875,13 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 				"flip", "front", "spin":
 					trick = step[1]
 					trick_left = 24
-					trick_wait = player.state == Player.State.AIR
-					# Eyes level first, as a runner would after the last
-					# landing (a flip lands looking up: flip_look_gain).
-					player.pitch = 0.0
+					if steady:
+						trick_wait = player.state == Player.State.AIR
+						# Eyes level first, as a runner would after the last
+						# landing (a flip lands looking up: flip_look_gain).
+						player.pitch = 0.0
 			next += 1
-		if trick == "" and player.state == Player.State.GROUND:
+		if steady and trick == "" and player.state == Player.State.GROUND:
 			# Eyes back to the line once down (a flip lands looking up).
 			player.pitch = 0.0
 		if trick_wait and player.state != Player.State.AIR:
@@ -1502,7 +1504,7 @@ func test_signal_out_can_be_escaped() -> void:
 	await _load(_index("m12_signal_out"))
 	await _step(10)
 	var frames := int(run.mission.route_length / 6.0 * 60.0) + 600
-	var done := await _run_route(run.mission.bot, frames, -INF, run.mission.route_legs)
+	var done := await _run_route(run.mission.bot, frames, -INF, run.mission.route_legs, run.mission.get("bot_steady", false))
 	check(done, "a scripted run outruns the Host (stopped at %s)" % player.global_position)
 	check(run.mission.route_length >= 900.0, "a long chase (%d m)" % int(run.mission.route_length))
 	check(run.catches == 0, "without being caught (%d)" % run.catches)
@@ -1600,7 +1602,7 @@ func _bot_run(label: String, alt := false) -> void:
 		print("  %s: %d m, %d legs, %d checkpoints, %d encounters, %d enemies, legs %s" % [label, int(run.mission.route_length),
 			run.mission.route_legs.size(), level.builder.spawns.size() - 1, level.builder.encounters.size(),
 			level.builder.encounters.reduce(func(n: int, e: Node) -> int: return n + e.enemies.size(), 0), run.mission.route_legs])
-	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []))
+	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []), run.mission.get("bot_steady", false))
 	_check_radio_pacing(label)
 	check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [label, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
 	check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])
