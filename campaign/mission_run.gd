@@ -161,7 +161,7 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 	_reset_run(0)
 
 
-## An enemy's own story moment, like the Host's "host:hit" (m09b): played
+## An enemy's own story moment, like the Host's "host:hit" (Head Office): played
 ## as is and numbered across the run ("host:hit:1", "host:hit:2"), so the
 ## radio can answer the first and the second differently.
 func _on_story_event(e: String) -> void:
@@ -171,10 +171,19 @@ func _on_story_event(e: String) -> void:
 
 
 ## A boss's fate ("fate:spared") is a story choice later missions remember
-## (not from a practice run).
+## (not from a practice run). So is whatever the mission's "remember" names
+## ({"host:hit": "host_hit"}): "yes" once it happens, "no" from the start.
 func _save_choice(e: String) -> void:
-	if e.begins_with("fate:") and not practice and mission_index >= 0:
+	if practice or mission_index < 0:
+		return
+	if e.begins_with("fate:"):
 		Campaign.set_choice(mission_index, "fate", e.substr(5))
+	var remember: Dictionary = mission.get("remember", {})
+	if e == "start":
+		for k: String in remember:
+			Campaign.set_choice(mission_index, String(remember[k]), "no")
+	elif remember.has(e):
+		Campaign.set_choice(mission_index, String(remember[e]), "yes")
 
 
 ## Starts the mission: call after connecting to `event` (the radio).
