@@ -130,7 +130,7 @@
   {
    "on": "set_piece:blast_four",
    "who": "host",
-   "line": "Oh no. Section four's gone. Oh well.",
+   "line": "There goes section four. Folks, I am running out of bridge.",
    "must": true
   },
   {
