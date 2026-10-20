@@ -438,7 +438,7 @@ func test_chatter_deals_every_line_before_repeating() -> void:
 
 
 func test_echo_chatter_waits_for_the_uplink() -> void:
-	await _load(_index("m10_the_climb"))
+	await _load(_index("l6_3_the_climb"))
 	var radio: RadioFeed = level.radio
 	RadioFeed.reset_chatter()
 	var echo := func() -> bool: return radio.queue.any(func(l: Dictionary) -> bool: return l.who == "echo")
@@ -731,7 +731,7 @@ func test_beating_the_finale_unlocks_echo() -> void:
 
 
 func test_echo_waits_in_the_studio_and_runs_the_finale() -> void:
-	await _load(_index("m11_dead_air"))
+	await _load(_index("l6_4_dead_air"))
 	var echo: Node3D = level.find_child("Figure_echo", true, false)
 	check(echo != null, "Echo stands in the Dead Air studio")
 	if echo != null:
@@ -1573,7 +1573,7 @@ func test_route_finishes_keep_you_on_the_roof() -> void:
 		level = null
 		await tree.physics_frame
 	# (Stages 5 and 6 are atlas levels now: they run on, no finish.)
-	check(ran >= 4, "route finishes were tried (%d)" % ran)
+	check(ran >= 2, "route finishes were tried (%d)" % ran)
 
 
 ## Runs the loaded mission's route bot (or its fork lines) to the end.
