@@ -151,7 +151,6 @@
   }
  ],
  "radio": [
-  {"on": "start", "who": "host", "line": "Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker."},
   {"on": "go", "who": "mags", "line": "You're alive. Okay. Okay, good. Run. It's not the dust you need to worry about."},
   {"on": "objective:2", "who": "mags", "line": "Get up on the overpass. Runs straight to the mall, and the mall's the only way through the center."},
   {"on": "complete", "who": "host", "line": "Meridian Mall, folks! The arena! Parker, darling, you just walked into the main event."}

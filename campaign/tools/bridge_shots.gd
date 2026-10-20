@@ -1,7 +1,7 @@
 extends SceneTree
 ## Renders Glass District's Silt bridge going down, frame by frame, from the
 ## side and over Parker's shoulder (first person), for review:
-##   xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/bridge_shots.gd -- <out_dir> [mission id]
+##   xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/bridge_shots.gd -- <out_dir> [mission id] [side|fp]
 ## Writes side_NNNN.png and fp_NNNN.png (every third tick); join them with
 ##   ffmpeg -framerate 20 -i side_%04d.png -pix_fmt yuv420p side.mp4
 ## Scripts run with -s load before the autoloads, so nothing here is typed
@@ -27,7 +27,8 @@ func _run() -> void:
 	root.size = Vector2i(1280, 720)
 	var campaign: Script = load("res://campaign/campaign.gd")
 	campaign.persist = false
-	for view: String in ["side", "fp"]:
+	var views: Array = [args[2]] if args.size() > 2 else ["side", "fp"]
+	for view: String in views:
 		await _film(campaign, view)
 	quit()
 

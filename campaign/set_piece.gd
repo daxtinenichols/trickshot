@@ -37,7 +37,8 @@ extends Node3D
 ##             "near", "far" or "none" says which ends hinge). Anyone on it
 ##             falls with it. "on": "complete" fires it on that mission event instead of
 ##             the trigger; the charge goes when the radio has finished the
-##             "cue" line (MissionLevel tells it what's on air), or
+##             "cue" line (MissionLevel tells it what's on air; if the line
+##             was over before it fired, it goes straight away), or
 ##             "blast_after" s after it fired, whichever is first. Emits
 ##             went("bridge_collapse") when it fires, "bridge_collapse_blast"
 ##             when it blows and "bridge_collapse_down" once it has landed.
@@ -109,6 +110,7 @@ var _poses: Script
 ## local transform]], hinge: Vector3, len, mode}] and the blown piers.
 var _blast_tick := -1
 var _cue_on := false
+var _cue_done := false
 var _spans: Array = []
 var _blown: Array[Node3D] = []
 var _bridge_down := false
@@ -216,11 +218,15 @@ func busy() -> bool:
 ## once its cue line has been and gone. Timing only: what falls and when is
 ## still counted in physics ticks.
 func hear(line: String) -> void:
-	if not fired or _blast_tick >= 0 or not spec.has("cue"):
+	if _blast_tick >= 0 or not spec.has("cue"):
 		return
 	if line == String(spec.cue):
 		_cue_on = true
 	elif _cue_on:
+		# (Heard before it fired, too: then it goes as soon as it fires.)
+		_cue_on = false
+		_cue_done = true
+	if fired and _cue_done:
 		_blast_tick = ticks + BRIDGE_CUE_DELAY
 
 

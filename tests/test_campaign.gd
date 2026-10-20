@@ -1212,6 +1212,8 @@ func test_glass_district_bridge_falls_into_the_silt() -> void:
 	bridge.hear("")
 	await _step(bridge.BRIDGE_CUE_DELAY + 2)
 	check(heard.has("set_piece:bridge_collapse_blast"), "it blows after the line (%s)" % [heard])
+	var lines: Array = level.radio.queue.map(func(l: Dictionary) -> String: return l.line) + [level.radio.current.get("line", "")]
+	check(lines.any(func(l: String) -> bool: return l.begins_with("Whoops. Did the bridge")), "the Host's \"Whoops\" goes with it (%s)" % [lines])
 	check(level._set_piece_busy(), "the results wait while it falls")
 	await _step(bridge.BRIDGE_FALL_TICKS + 2)
 	check(heard.has("set_piece:bridge_collapse_down"), "the spans come down")
