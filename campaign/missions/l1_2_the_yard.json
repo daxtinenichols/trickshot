@@ -19,9 +19,6 @@
   {"type": "reach", "name": "the gate", "text": "Out through the south gate", "at": "end"}
  ],
  "radio": [
-  {"on": "start", "who": "mags", "line": "Juno used to beat you round this yard. Every time.", "must": true},
-  {"on": "start", "who": "parker", "line": "Not every time.", "must": true},
-  {"on": "start", "who": "mags", "line": "Every time, love.", "must": true},
   {"on": "start", "who": "mags", "line": "I know you want to go after her. You're running the yard first. Once. Humor me."},
   {"on": "objective:0", "who": "mags", "line": "Chain three different moves before your feet settle. Vault, slide, flip, wall, whatever you like. Just don't stop."},
   {"on": "done:0", "who": "mags", "line": "There it is. His listeners love that stuff, and right now you want them on your side."},
@@ -57,7 +54,10 @@
   {"fork": [{"roof": 30, "y": 2.6, "look": "RUST", "bare": true}, {"gap": 5}, {"roof": 36, "y": 5.2, "look": "RUST", "bare": true, "do": [{"tape": "l1_2_tape_calder", "x": 0, "at": 20}]}, {"wallrun": 12, "side": -1}, {"roof": 30, "y": 5.2, "look": "RUST", "bare": true}, {"ramp_down": 0, "length": 18}], "side": -1},
   {"roof": 80, "y": 0, "do": [{"hole": 0, "style": "wagon", "at": 30}, {"hurdles": true, "at": 62}]},
   {"join": true},
-  {"roof": 10, "y": 0},
+  {"roof": 10, "y": 0, "do": [
+    {"radio": {"who": "mags", "line": "Juno used to beat you round this yard. Every time.", "must": true}, "at": 0, "radius": 8},
+    {"radio": {"who": "parker", "line": "Not every time.", "must": true}, "at": 0, "radius": 8},
+    {"radio": {"who": "mags", "line": "Every time, love.", "must": true}, "at": 0, "radius": 8}]},
   {"ramp_up": 3.5, "length": 10},
   {"roof": 14, "y": 3.5, "do": [{"label": "LOADING DOCK", "at": 4, "size": 0.8}]},
   {"gap": 3, "trick": "flip"},

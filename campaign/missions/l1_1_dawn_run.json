@@ -14,10 +14,10 @@
   {"type": "reach", "name": "camp", "text": "Get back to camp", "at": "end"}
  ],
  "radio": [
-  {"on": "start", "who": "echo", "line": "Don't drop this one. It's insulin, for the Okafor kid.", "must": true},
-  {"on": "start", "who": "parker", "line": "When have I ever dropped one?", "must": true},
+  {"on": "start", "who": "echo", "line": "Don't drop this one.", "must": true},
+  {"on": "start", "who": "parker", "line": "When have I ever?", "must": true},
   {"on": "start", "who": "echo", "line": "Tuesday.", "must": true},
-  {"on": "start", "who": "mags", "line": "High roof past the fish market. And back for breakfast. I'm not keeping it warm.", "must": true},
+  {"on": "start", "who": "mags", "line": "Fish market, high roof. Back for breakfast.", "must": true},
   {"on": "go", "who": "echo", "line": "Hey. Porch light's on.", "must": true},
   {"on": "done:0", "who": "mags", "line": "Parcel's in. Good. Come on home, kid."},
   {"on": "complete", "who": "host", "line": "Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you.", "must": true},
