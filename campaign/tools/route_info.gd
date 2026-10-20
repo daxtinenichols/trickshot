@@ -10,7 +10,8 @@ func _init() -> void:
 	var t := Time.get_ticks_msec()
 	var f := FileAccess.open(args[0], FileAccess.READ)
 	var m: Dictionary = JSON.parse_string(f.get_as_text())
-	load("res://campaign/route.gd").expand(m)
+	# Speed gates first, as Campaign.load_mission_file does.
+	load("res://campaign/route.gd").expand(load("res://campaign/speed_gate.gd").prepare(m))
 	print("%s: %d m, expanded in %d ms" % [m.id, int(m.route_length), Time.get_ticks_msec() - t])
 	print("start %s  end %s yaw %s" % [m.get("route_origin", {}), m.route_end, m.route_end_yaw])
 	for l: Array in m.route_legs:

@@ -1,0 +1,1686 @@
+{
+ "id": "l3_1_the_silt",
+ "title": "The Silt",
+ "runner": "",
+ "atlas": true,
+ "plain_runner": true,
+ "bot_steady": true,
+ "par_seconds": 150,
+ "start": {
+  "at": [
+   1790,
+   8,
+   40
+  ],
+  "yaw": 90
+ },
+ "tower_views": [
+  [
+   1790,
+   8,
+   40
+  ],
+  [
+   1690,
+   6,
+   -360.0
+  ]
+ ],
+ "route_origin": {
+  "at": [
+   1790,
+   8,
+   40
+  ],
+  "yaw": 90
+ },
+ "chalk": true,
+ "road_lines": false,
+ "clutter": [
+  "debris_pile",
+  "tire_stack",
+  "barrel_rust",
+  "car_wreck",
+  "crate_wood",
+  "pallet"
+ ],
+ "city_open": [
+  [
+   1700,
+   -10,
+   1800,
+   80
+  ],
+  [
+   1712,
+   -382.0,
+   1792,
+   28
+  ],
+  [
+   1550.0,
+   -390.0,
+   1744,
+   -330.0
+  ]
+ ],
+ "objectives": [
+  {
+   "type": "reach",
+   "name": "the pens",
+   "text": "Up the Silt. Don't stop",
+   "at": "@The pens"
+  },
+  {
+   "type": "reach",
+   "name": "the outfall",
+   "text": "Past the pens to the outfall",
+   "at": "@Outfall"
+  },
+  {
+   "type": "reach",
+   "name": "the storm drain",
+   "text": "Up the outfall to the storm drain",
+   "at": "end"
+  }
+ ],
+ "radio": [
+  {
+   "on": "start",
+   "who": "mags",
+   "line": "You're alive. Okay. Okay, good. Run. It's not the dust you need to worry about."
+  },
+  {
+   "on": "tape",
+   "fx": "tape",
+   "keep": true,
+   "who": "echo",
+   "line": "...the Silt's not empty. The Hollows used to be people. Whatever he says."
+  }
+ ],
+ "chatter": {
+  "bail": [
+   {
+    "who": "host",
+    "line": "Splat! Don't swallow any of that, Parker."
+   },
+   {
+    "who": "mags",
+    "line": "Up! Up, they're coming."
+   },
+   {
+    "who": "host",
+    "line": "Oh, he's in it now. Literally."
+   },
+   {
+    "who": "mags",
+    "line": "Don't lie there. Move."
+   },
+   {
+    "who": "host",
+    "line": "Face first in the Silt! That'll stain."
+   }
+  ],
+  "combo": [
+   {
+    "who": "mags",
+    "line": "Good. Faster than them, that's all you need."
+   },
+   {
+    "who": "host",
+    "line": "Oh, he's making them look slow. They're not slow!"
+   },
+   {
+    "who": "mags",
+    "line": "That's it. Keep your feet out of the muck."
+   },
+   {
+    "who": "host",
+    "line": "Folks, he's dancing with the Hollows. Don't try this at home. You don't have a home."
+   },
+   {
+    "who": "mags",
+    "line": "That's how you outrun them. Don't stop."
+   },
+   {
+    "who": "host",
+    "line": "Look at him dance down there! Come on, crawlers, keep up."
+   }
+  ],
+  "kill": [
+   {
+    "who": "mags",
+    "line": "Okay, but don't stop for them."
+   },
+   {
+    "who": "host",
+    "line": "Ooh, he's swatting crawlers! Plenty more where that came from."
+   },
+   {
+    "who": "mags",
+    "line": "Leave the rest. Go."
+   },
+   {
+    "who": "host",
+    "line": "One down! Out of... yeah, I don't know. Lots."
+   },
+   {
+    "who": "mags",
+    "line": "Don't fight them all. Run."
+   }
+  ],
+  "down": [
+   {
+    "who": "host",
+    "line": "Dinner's... oh, he's up again. Well, they'll keep."
+   },
+   {
+    "who": "mags",
+    "line": "Up. They're slow, you're not. Act like it."
+   },
+   {
+    "who": "host",
+    "line": "Down in the Silt! Folks, I'm not going down there to check."
+   },
+   {
+    "who": "host",
+    "line": "Dinner's served!"
+   },
+   {
+    "who": "mags",
+    "line": "You stopped. Never stop down there."
+   }
+  ]
+ },
+ "pieces": [
+  {
+   "box": [
+    1757.5,
+    3.5,
+    -170.5
+   ],
+   "size": [
+    3.0,
+    7.0,
+    397.0
+   ],
+   "kind": "NEUTRAL"
+  },
+  {
+   "box": [
+    1750.0,
+    3.5,
+    53.5
+   ],
+   "size": [
+    24.0,
+    7.0,
+    3.0
+   ],
+   "kind": "NEUTRAL"
+  },
+  {
+   "box": [
+    1736.5,
+    3.5,
+    40.0
+   ],
+   "size": [
+    3.0,
+    7.0,
+    24.0
+   ],
+   "kind": "NEUTRAL"
+  },
+  {
+   "box": [
+    1742.5,
+    3.5,
+    -12.0
+   ],
+   "size": [
+    3.0,
+    7.0,
+    80.0
+   ],
+   "kind": "NEUTRAL"
+  },
+  {
+   "box": [
+    1735.0,
+    3.5,
+    -50.5
+   ],
+   "size": [
+    18.0,
+    7.0,
+    3.0
+   ],
+   "kind": "NEUTRAL"
+  },
+  {
+   "box": [
+    1727.5,
+    3.5,
+    -145.0
+   ],
+   "size": [
+    3.0,
+    7.0,
+    186.0
+   ],
+   "kind": "NEUTRAL"
+  },
+  {
+   "box": [
+    1735.0,
+    3.5,
+    -239.5
+   ],
+   "size": [
+    18.0,
+    7.0,
+    3.0
+   ],
+   "kind": "NEUTRAL"
+  },
+  {
+   "box": [
+    1742.5,
+    3.5,
+    -296.0
+   ],
+   "size": [
+    3.0,
+    7.0,
+    116.0
+   ],
+   "kind": "NEUTRAL"
+  },
+  {
+   "box": [
+    1650.5,
+    6.5,
+    -352.5
+   ],
+   "size": [
+    193.0,
+    13.0,
+    3.0
+   ],
+   "kind": "NEUTRAL"
+  },
+  {
+   "box": [
+    1656.5,
+    6.5,
+    -367.5
+   ],
+   "size": [
+    205.0,
+    13.0,
+    3.0
+   ],
+   "kind": "NEUTRAL"
+  }
+ ],
+ "route": [
+  {
+   "roof": 10,
+   "y": 8,
+   "bridge": true,
+   "do": [
+    {
+     "set_piece": "silt_wreck",
+     "at": 6,
+     "trigger": 0,
+     "radius": 40
+    }
+   ]
+  },
+  {
+   "ramp_down": 0,
+   "length": 24,
+   "width": 12
+  },
+  {
+   "turn": "right",
+   "size": 24
+  },
+  {
+   "roof": 80.0,
+   "y": 0,
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "The Silt",
+     "at": 4,
+     "objective": 0
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "They were people, Parker. Stayed in the dust too long. Don't let them get hold of you.",
+      "must": true,
+      "keep": true
+     },
+     "at": 8,
+     "radius": 9
+    },
+    {
+     "encounter": "first hollows",
+     "max_aiming": 7,
+     "at": 30,
+     "length": 48,
+     "enemies": [
+      {
+       "type": "crawler",
+       "x": -3.5,
+       "d": 16,
+       "wake": 0.0
+      },
+      {
+       "type": "crawler",
+       "x": 3.5,
+       "d": 26,
+       "wake": 0.4
+      },
+      {
+       "type": "leaper",
+       "x": 0,
+       "d": 38,
+       "wake": 0.8
+      },
+      {
+       "type": "raider",
+       "x": 5.0,
+       "d": 4.0,
+       "wake": 0.0,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -5.0,
+       "d": 16.0,
+       "wake": 0.2,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 5.0,
+       "d": 28.0,
+       "wake": 0.4,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -5.0,
+       "d": 40.0,
+       "wake": 0.6000000000000001,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 22,
+       "wake": 0.0,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -1.5,
+       "d": 22,
+       "wake": 0.2,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 1.5,
+       "d": 22,
+       "wake": 0.4,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 22,
+       "wake": 0.6000000000000001,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 38,
+       "wake": 0.0,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -1.5,
+       "d": 38,
+       "wake": 0.2,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 1.5,
+       "d": 38,
+       "wake": 0.4,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 38,
+       "wake": 0.6000000000000001,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      }
+     ]
+    },
+    {
+     "prop": "car_wreck",
+     "x": 4.2,
+     "at": 74,
+     "yaw": 20
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       3.8,
+       -52
+      ],
+      "size": [
+       12,
+       0.3,
+       1.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 0.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       4.35,
+       -52.75
+      ],
+      "size": [
+       12,
+       0.08,
+       0.08
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 0.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       3.8,
+       -68
+      ],
+      "size": [
+       12,
+       0.3,
+       1.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "RUST"
+     },
+     "at": 0.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       4.35,
+       -68.75
+      ],
+      "size": [
+       12,
+       0.08,
+       0.08
+      ],
+      "kind": "NEUTRAL",
+      "look": "RUST"
+     },
+     "at": 0.0,
+     "length": 0
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 12,
+     "trick": "flip"
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 28.0,
+     "trick": "spin"
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 44.0,
+     "trick": "front"
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 60.0,
+     "trick": "flip"
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 76.0,
+     "trick": "spin"
+    },
+    {
+     "piece": {
+      "mark": [
+       0,
+       0.004,
+       -40.0
+      ],
+      "size": [
+       12.0,
+       80.0
+      ],
+      "color": "#a08a68"
+     },
+     "at": 0.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "fork": [
+    {
+     "roof": 6,
+     "y": 0,
+     "bare": true
+    },
+    {
+     "ramp_up": 3,
+     "length": 8,
+     "width": 3.2
+    },
+    {
+     "roof": 13,
+     "y": 3,
+     "width": 3.2,
+     "look": "RUST",
+     "bare": true,
+     "do": [
+      {
+       "piece": {
+        "box": [
+         -1.62,
+         -1.05,
+         -6.5
+        ],
+        "size": [
+         0.06,
+         0.8,
+         11.4
+        ],
+        "kind": "FLOOR"
+       },
+       "at": 0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         1.62,
+         -1.05,
+         -6.5
+        ],
+        "size": [
+         0.06,
+         0.8,
+         11.4
+        ],
+        "kind": "FLOOR"
+       },
+       "at": 0,
+       "length": 0
+      }
+     ]
+    },
+    {
+     "gap": 4,
+     "trick": "spin"
+    },
+    {
+     "roof": 13,
+     "y": 3,
+     "width": 3.2,
+     "look": "RUST",
+     "bare": true,
+     "do": [
+      {
+       "piece": {
+        "box": [
+         -1.62,
+         -1.05,
+         -6.5
+        ],
+        "size": [
+         0.06,
+         0.8,
+         11.4
+        ],
+        "kind": "FLOOR"
+       },
+       "at": 0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         1.62,
+         -1.05,
+         -6.5
+        ],
+        "size": [
+         0.06,
+         0.8,
+         11.4
+        ],
+        "kind": "FLOOR"
+       },
+       "at": 0,
+       "length": 0
+      }
+     ]
+    },
+    {
+     "gap": 4,
+     "trick": "flip"
+    },
+    {
+     "roof": 13,
+     "y": 3,
+     "width": 3.2,
+     "look": "RUST",
+     "bare": true,
+     "do": [
+      {
+       "piece": {
+        "box": [
+         -1.62,
+         -1.05,
+         -6.5
+        ],
+        "size": [
+         0.06,
+         0.8,
+         11.4
+        ],
+        "kind": "FLOOR"
+       },
+       "at": 0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         1.62,
+         -1.05,
+         -6.5
+        ],
+        "size": [
+         0.06,
+         0.8,
+         11.4
+        ],
+        "kind": "FLOOR"
+       },
+       "at": 0,
+       "length": 0
+      }
+     ]
+    },
+    {
+     "roof": 28,
+     "y": 3,
+     "look": "CORRUGATED",
+     "bare": true
+    },
+    {
+     "wallrun": 12,
+     "side": -1
+    },
+    {
+     "roof": 16,
+     "y": 3,
+     "look": "CORRUGATED",
+     "bare": true,
+     "do": [
+      {
+       "tape": "l3_1_tape_hollows",
+       "x": 0,
+       "at": 9
+      }
+     ]
+    },
+    {
+     "roof": 13,
+     "y": 0,
+     "bare": true
+    }
+   ],
+   "side": -1,
+   "spread": 14.0
+  },
+  {
+   "roof": 130.0,
+   "y": 0,
+   "bare": true,
+   "do": [
+    {
+     "radio": {
+      "who": "mags",
+      "line": "See that box on the lamppost? That's one of Echo's. She put one on every block that'd let her.",
+      "must": true,
+      "keep": true
+     },
+     "at": 34,
+     "radius": 10
+    },
+    {
+     "radio": {
+      "who": "parker",
+      "line": "Even down here?",
+      "must": true,
+      "keep": true
+     },
+     "at": 34,
+     "radius": 10
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Especially down here. Nobody else was going to.",
+      "must": true,
+      "keep": true
+     },
+     "at": 34,
+     "radius": 10
+    },
+    {
+     "set_piece": "relay_box",
+     "at": 34,
+     "x": 5.4,
+     "trigger": 14,
+     "radius": 10
+    },
+    {
+     "encounter": "dust pack",
+     "max_aiming": 5,
+     "at": 56,
+     "length": 60,
+     "enemies": [
+      {
+       "type": "crawler",
+       "x": -3.5,
+       "d": 10,
+       "wake": 0.0
+      },
+      {
+       "type": "crawler",
+       "x": 3.5,
+       "d": 18,
+       "wake": 0.3
+      },
+      {
+       "type": "leaper",
+       "x": -2,
+       "d": 28,
+       "wake": 0.6
+      },
+      {
+       "type": "crawler",
+       "x": 2.5,
+       "d": 36,
+       "wake": 0.9
+      },
+      {
+       "type": "brute",
+       "x": 0,
+       "d": 48,
+       "wake": 1.2
+      },
+      {
+       "type": "raider",
+       "x": 5.0,
+       "d": 6.0,
+       "wake": 0.0,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -5.0,
+       "d": 16.0,
+       "wake": 0.2,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 5.0,
+       "d": 26.0,
+       "wake": 0.4,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -5.0,
+       "d": 36.0,
+       "wake": 0.6000000000000001,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 5.0,
+       "d": 46.0,
+       "wake": 0.8,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -5.0,
+       "d": 56.0,
+       "wake": 1.0,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      }
+     ]
+    },
+    {
+     "hurdles": true,
+     "at": 8,
+     "trick": "spin"
+    },
+    {
+     "hurdles": true,
+     "at": 24.0,
+     "trick": "front"
+    },
+    {
+     "hurdles": true,
+     "at": 40.0,
+     "trick": "flip"
+    },
+    {
+     "hurdles": true,
+     "at": 56.0,
+     "trick": "spin"
+    },
+    {
+     "hurdles": true,
+     "at": 72.0,
+     "trick": "front"
+    },
+    {
+     "hurdles": true,
+     "at": 88.0,
+     "trick": "flip"
+    },
+    {
+     "hurdles": true,
+     "at": 104.0,
+     "trick": "spin"
+    },
+    {
+     "hurdles": true,
+     "at": 120.0,
+     "trick": "front"
+    },
+    {
+     "piece": {
+      "mark": [
+       0,
+       0.004,
+       -65.0
+      ],
+      "size": [
+       12.0,
+       130.0
+      ],
+      "color": "#a08a68"
+     },
+     "at": 0.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "join": true
+  },
+  {
+   "roof": 110.0,
+   "y": 0,
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "The pens",
+     "at": 4,
+     "objective": 1
+    },
+    {
+     "radio": {
+      "who": "host",
+      "line": "Feeding time! I do love a nature segment."
+     },
+     "at": 30,
+     "radius": 9
+    },
+    {
+     "set_piece": "hollows_cage",
+     "at": 34,
+     "x": 3.6,
+     "trigger": 12,
+     "radius": 12
+    },
+    {
+     "encounter": "the pens",
+     "max_aiming": 5,
+     "at": 18,
+     "length": 62,
+     "enemies": [
+      {
+       "type": "raider",
+       "x": 7.4,
+       "d": 18,
+       "wake": 0.0,
+       "elevation": 7.0,
+       "cover": false
+      },
+      {
+       "type": "raider",
+       "x": 7.4,
+       "d": 40,
+       "wake": 0.6,
+       "elevation": 7.0,
+       "cover": false
+      },
+      {
+       "type": "crawler",
+       "x": 3.6,
+       "d": 14,
+       "wake": 0.9,
+       "leash_radius": 34,
+       "aggro_radius": 30
+      },
+      {
+       "type": "crawler",
+       "x": 4.4,
+       "d": 16,
+       "wake": 1.1,
+       "leash_radius": 34,
+       "aggro_radius": 30
+      },
+      {
+       "type": "leaper",
+       "x": 3.0,
+       "d": 18,
+       "wake": 1.3,
+       "leash_radius": 34,
+       "aggro_radius": 30
+      },
+      {
+       "type": "crawler",
+       "x": 4.0,
+       "d": 19,
+       "wake": 1.5,
+       "leash_radius": 34,
+       "aggro_radius": 30
+      },
+      {
+       "type": "brute",
+       "x": -2.5,
+       "d": 50,
+       "wake": 0.4
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 20.0,
+       "wake": 0.0,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 26.9,
+       "wake": 0.2,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 33.7,
+       "wake": 0.4,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 40.6,
+       "wake": 0.6000000000000001,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 47.4,
+       "wake": 0.8,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 54.3,
+       "wake": 1.0,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 61.1,
+       "wake": 1.2000000000000002,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 68.0,
+       "wake": 1.4000000000000001,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      }
+     ]
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 10,
+     "trick": "front"
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 26.0,
+     "trick": "flip"
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 42.0,
+     "trick": "spin"
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 58.0,
+     "trick": "front"
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 74.0,
+     "trick": "flip"
+    },
+    {
+     "hurdles": "tire_stack",
+     "at": 90.0,
+     "trick": "spin"
+    },
+    {
+     "piece": {
+      "mark": [
+       0,
+       0.004,
+       -55.0
+      ],
+      "size": [
+       12.0,
+       110.0
+      ],
+      "color": "#a08a68"
+     },
+     "at": 0.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "turn": "left",
+   "size": 24
+  },
+  {
+   "roof": 8,
+   "y": 0,
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "Outfall",
+     "at": 3,
+     "objective": 2
+    },
+    {
+     "label": "OUTFALL 7 \u00b7 NO ENTRY",
+     "at": 5,
+     "size": 0.9
+    },
+    {
+     "piece": {
+      "mark": [
+       0,
+       0.004,
+       -4.0
+      ],
+      "size": [
+       12.0,
+       8
+      ],
+      "color": "#a08a68"
+     },
+     "at": 0.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "ramp_up": 3,
+   "length": 8,
+   "width": 12
+  },
+  {
+   "roof": 2,
+   "y": 3,
+   "bare": true,
+   "look": "NEUTRAL"
+  },
+  {
+   "ramp_up": 6,
+   "length": 8,
+   "width": 12
+  },
+  {
+   "roof": 2,
+   "y": 6,
+   "bare": true,
+   "look": "NEUTRAL"
+  },
+  {
+   "gap": 3,
+   "trick": "flip"
+  },
+  {
+   "roof": 14,
+   "y": 6,
+   "bare": true,
+   "look": "NEUTRAL"
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 14,
+   "y": 6,
+   "bare": true,
+   "look": "NEUTRAL"
+  },
+  {
+   "gap": 3,
+   "trick": "front"
+  },
+  {
+   "roof": 14,
+   "y": 6,
+   "bare": true,
+   "look": "NEUTRAL"
+  },
+  {
+   "roof": 56,
+   "y": 6,
+   "bare": true,
+   "look": "NEUTRAL",
+   "do": [
+    {
+     "encounter": "outfall",
+     "max_aiming": 10,
+     "at": 0,
+     "length": 46,
+     "enemies": [
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 2.0,
+       "wake": 0.0,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 6.8,
+       "wake": 0.2,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 11.6,
+       "wake": 0.4,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 16.4,
+       "wake": 0.6000000000000001,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 21.2,
+       "wake": 0.8,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 26.0,
+       "wake": 1.0,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 30,
+       "wake": 0.0,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -1.5,
+       "d": 30,
+       "wake": 0.2,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 1.5,
+       "d": 30,
+       "wake": 0.4,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 30,
+       "wake": 0.6000000000000001,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 42,
+       "wake": 0.0,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": -1.5,
+       "d": 42,
+       "wake": 0.2,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 1.5,
+       "d": 42,
+       "wake": 0.4,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 42,
+       "wake": 0.6000000000000001,
+       "elevation": 3.9499999999999997,
+       "cover": false,
+       "aim_lead": 1.0,
+       "move_speed": 0.0
+      }
+     ]
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       3.8,
+       -30
+      ],
+      "size": [
+       12,
+       0.3,
+       1.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "RUST"
+     },
+     "at": 0.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       4.35,
+       -30.75
+      ],
+      "size": [
+       12,
+       0.08,
+       0.08
+      ],
+      "kind": "NEUTRAL",
+      "look": "RUST"
+     },
+     "at": 0.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       3.8,
+       -42
+      ],
+      "size": [
+       12,
+       0.3,
+       1.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "RUST"
+     },
+     "at": 0.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       4.35,
+       -42.75
+      ],
+      "size": [
+       12,
+       0.08,
+       0.08
+      ],
+      "kind": "NEUTRAL",
+      "look": "RUST"
+     },
+     "at": 0.0,
+     "length": 0
+    },
+    {
+     "hurdles": "barrel_rust",
+     "at": 4,
+     "trick": "flip"
+    },
+    {
+     "hurdles": "barrel_rust",
+     "at": 20.0,
+     "trick": "spin"
+    }
+   ]
+  },
+  {
+   "gate": {
+    "tier": 2
+   }
+  },
+  {
+   "roof": 10,
+   "y": 6,
+   "bare": true,
+   "look": "NEUTRAL"
+  },
+  {
+   "ramp_down": 0,
+   "length": 12,
+   "width": 12
+  },
+  {
+   "roof": 10,
+   "y": 0,
+   "bare": true,
+   "do": [
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Storm drain. It runs under the bank and comes up at the mall. Don't stop in there."
+     },
+     "at": 0,
+     "radius": 10
+    },
+    {
+     "label": "STORM DRAIN \u00b7 MERIDIAN",
+     "at": 6,
+     "size": 0.9
+    },
+    {
+     "piece": {
+      "mark": [
+       0,
+       0.004,
+       -5.0
+      ],
+      "size": [
+       12.0,
+       10
+      ],
+      "color": "#a08a68"
+     },
+     "at": 0.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       9.5,
+       -0.6
+      ],
+      "size": [
+       20.0,
+       7.0,
+       1.2
+      ],
+      "kind": "NEUTRAL"
+     },
+     "at": 10,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -8.0,
+       6.5,
+       -0.6
+      ],
+      "size": [
+       4,
+       13.0,
+       1.2
+      ],
+      "kind": "NEUTRAL"
+     },
+     "at": 10,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       8.0,
+       6.5,
+       -0.6
+      ],
+      "size": [
+       4,
+       13.0,
+       1.2
+      ],
+      "kind": "NEUTRAL"
+     },
+     "at": 10,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       3.0,
+       -9.0
+      ],
+      "size": [
+       12.0,
+       6.0,
+       0.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "RUST"
+     },
+     "at": 10,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -6.25,
+       3.0,
+       -4.8
+      ],
+      "size": [
+       0.5,
+       6.0,
+       8.4
+      ],
+      "kind": "NEUTRAL"
+     },
+     "at": 10,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       6.25,
+       3.0,
+       -4.8
+      ],
+      "size": [
+       0.5,
+       6.0,
+       8.4
+      ],
+      "kind": "NEUTRAL"
+     },
+     "at": 10,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       0,
+       6.25,
+       -4.8
+      ],
+      "size": [
+       13.0,
+       0.5,
+       8.4
+      ],
+      "kind": "NEUTRAL"
+     },
+     "at": 10,
+     "length": 0
+    }
+   ]
+  }
+ ]
+}
