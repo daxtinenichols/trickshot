@@ -570,7 +570,7 @@ static func _interior(st: Dictionary, z0: float, length: float, w: float, height
 	var y: float = st.y
 	for side: float in [-1.0, 1.0]:
 		if side == open:
-			_add(st, {"box": [side * (w * 0.5 - 0.6), y + RAIL_H * 0.5, z0 - length * 0.5], "size": [0.2, RAIL_H, length], "kind": "NEUTRAL", "look": "RUST"})
+			_add(st, {"box": [side * (w * 0.5 - 0.6), y + RAIL_H * 0.5, z0 - length * 0.5], "size": [0.25, RAIL_H, length], "kind": "NEUTRAL", "look": "RUST"})
 			continue
 		_add(st, {"box": [side * (w * 0.5 + 0.25), y + height * 0.5, z0 - length * 0.5], "size": [0.5, height, length], "kind": "NEUTRAL", "look": st.wall_look})
 	var d := 0.0
