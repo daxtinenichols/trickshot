@@ -4,6 +4,7 @@
  "runner": "",
  "atlas": true,
  "plain_runner": true,
+ "finish": true,
  "par_seconds": 160,
  "start": {
   "at": [
