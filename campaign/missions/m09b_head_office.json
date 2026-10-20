@@ -1,5 +1,6 @@
 {
  "id": "m09b_head_office",
+ "finish": false,
  "title": "Head Office",
  "runner": "",
  "par_seconds": 150,

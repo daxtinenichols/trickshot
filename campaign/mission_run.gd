@@ -47,6 +47,9 @@ const LOWEST_FAIL_Y := -30.0
 const COMBO_REACTION_MULTIPLIER := 4
 ## Points for each bonus goal finished.
 const BONUS_POINTS := 1000
+## A delivery's base points, into the running combo (so speed scales it).
+const DELIVERY_POINTS := 500
+const DROP_OFF_SCRIPT := "res://campaign/drop_off.gd"
 
 var phase := Phase.READY
 var ticks := 0
@@ -97,6 +100,8 @@ var _respawning := false
 const NEAR_GAP := 6.0
 var _host_near := false
 var _start_pos := Vector3.ZERO
+## "deliver" objective index -> its drop-off (campaign/drop_off.gd).
+var drop_offs := {}
 
 
 func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) -> void:
@@ -138,8 +143,21 @@ func setup(p: Player, b: MissionBuilder, c: ComboTracker = null, index := -1) ->
 				event.emit("host_close")
 			else:
 				_on_story_event("set_piece:" + kind))
+	# Set pieces that wait for a mission event ("on") rather than a place.
+	event.connect(func(e: String) -> void:
+		for sp: Node3D in builder.set_pieces:
+			if sp.has_method("on_event"):
+				sp.on_event(e, self))
+	for i in objectives.size():
+		if String(objectives[i].get("type", "")) == "deliver":
+			var d: Node3D = (load(DROP_OFF_SCRIPT) as Script).new()
+			d.name = "DropOff_%d" % i
+			b.add_child(d)
+			d.setup(objectives[i], carry_object(), b)
+			drop_offs[i] = d
 	_start_pos = b.spawns[0].origin
 	event.connect(_save_choice)
+	event.connect(_carry_event)
 	_reset_run(0)
 
 
@@ -232,6 +250,9 @@ func bonus_text() -> String:
 
 ## What the HUD shows for the active objective, with progress.
 func objective_text() -> String:
+	if phase == Phase.COMPLETE:
+		# Not the last goal any more: you're there (the radio may still talk).
+		return "Level complete"
 	var o := current_objective()
 	if o.is_empty():
 		return ""
@@ -267,6 +288,11 @@ func _physics_process(_delta: float) -> void:
 		# The chase is over: he stops (or holds you, if he caught you).
 		if pursuer != null:
 			pursuer.hold(player.global_position, 1.0 / Engine.physics_ticks_per_second)
+		if phase == Phase.COMPLETE:
+			# An ending set piece (the bridge going) plays out after the win.
+			for sp: Node3D in builder.set_pieces:
+				if sp.has_method("busy") and sp.busy():
+					sp.tick(player.global_position, self)
 		return
 	var pos := player.global_position
 	if phase == Phase.READY:
@@ -320,12 +346,16 @@ func _begin_objective(i: int) -> void:
 
 func _check_objective(pos: Vector3) -> void:
 	var o := current_objective()
-	if o.is_empty() or phase == Phase.READY and o.get("type", "reach") == "reach":
+	if o.is_empty() or phase == Phase.READY and o.get("type", "reach") in ["reach", "deliver"]:
 		return
 	var done := false
 	match String(o.get("type", "reach")):
 		"reach":
 			done = inside(o, pos) or _reached_later(pos)
+		"deliver":
+			# Only by going through the drop-off: reaching a later goal
+			# never counts a delivery you ran past.
+			done = inside(o, pos)
 		"score":
 			done = _score() >= int(o.points)
 		"combo":
@@ -341,6 +371,8 @@ func _check_objective(pos: Vector3) -> void:
 		"event":
 			done = int(event_counts.get(String(o.get("event", "")), 0)) >= int(o.get("count", 1))
 	if done:
+		if drop_offs.has(objective):
+			_deliver(objective)
 		event.emit("done:%d" % objective)
 		_close_bonuses(objective)
 		if _next_required(objective + 1) >= objectives.size():
@@ -562,6 +594,11 @@ func start_practice(index: int) -> void:
 	if index > 0:
 		var cps: Array = mission.get("checkpoints", [])
 		_begin_objective(cps[index - 1].get("objective", objective) if index - 1 < cps.size() else objective)
+		# A practice start past a drop-off: already delivered.
+		for i: int in drop_offs:
+			if i < objective:
+				_set_held(carry_then())
+				drop_offs[i].show_delivered()
 	else:
 		_begin_objective(0)
 
@@ -587,6 +624,9 @@ func _reset_run(index: int) -> void:
 	if pursuer != null:
 		pursuer.reset(_start_pos)
 	_reset_set_pieces()
+	_set_held(carry_object())
+	for i: int in drop_offs:
+		drop_offs[i].reset()
 	# A fresh run: everyone is back, even the ones killed last time.
 	for enc: Node3D in builder.encounters:
 		enc.reset(true)
@@ -647,3 +687,51 @@ func _reset_set_pieces() -> void:
 	_host_near = false
 	for sp: Node3D in builder.set_pieces:
 		sp.reset()
+
+
+# ---------------------------------------------------------------- carrying
+
+## What the mission has you carry instead of the gun: its "carry" key, a
+## kind ("parcel") or {"object", "until", "then"}. "gun" when there's none.
+func carry_object() -> String:
+	var c: Variant = mission.get("carry", "gun")
+	return String(c.get("object", "gun")) if c is Dictionary else String(c)
+
+
+## What the hands hold after a delivery or the "until" event: "hands"
+## (nothing; Dawn Run runs home empty-handed) unless "then" says ("gun").
+func carry_then() -> String:
+	var c: Variant = mission.get("carry", "gun")
+	return String(c.get("then", "hands")) if c is Dictionary else "hands"
+
+
+## What's in the player's hands now ("gun" without a weapon node).
+func held() -> String:
+	var w: Node = player.weapon if player != null else null
+	return String(w.held) if w != null and "held" in w else "gun"
+
+
+func _set_held(kind: String) -> void:
+	var w: Node = player.weapon if player != null else null
+	if w != null and "held" in w:
+		w.held = kind
+
+
+## The carry's "until" event (e.g. "set_piece:handoff") swaps to "then".
+func _carry_event(e: String) -> void:
+	var c: Variant = mission.get("carry", null)
+	if c is Dictionary and c.has("until") and e == String(c.until) and phase != Phase.READY:
+		_set_held(carry_then())
+
+
+## The object leaves your hands at drop-off `i`, tossed in on the run: you
+## keep every bit of speed, the combo gets DELIVERED, the radio "delivered".
+func _deliver(i: int) -> void:
+	var from := player.global_position + Vector3.UP * 1.2
+	if player.camera != null:
+		from = player.camera.global_position - player.camera.global_basis.z * 0.4 + Vector3.DOWN * 0.25
+	drop_offs[i].deliver(from, held())
+	_set_held(carry_then())
+	if combo != null:
+		combo.add(&"delivered", DELIVERY_POINTS, player.horizontal_speed())
+	event.emit("delivered")
