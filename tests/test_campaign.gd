@@ -100,8 +100,8 @@ func _index(id: String) -> int:
 
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
-	check(all.size() == 15, "15 missions (%d)" % all.size())
-	check(Campaign.acts().size() == 7, "the Docks, Stage 2, two acts and Stages 5, 6 and 7")
+	check(all.size() == 16, "16 missions (%d)" % all.size())
+	check(Campaign.acts().size() == 7, "the Docks, Stages 2 and 3, Meridian and Stages 5, 6 and 7")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
@@ -827,7 +827,7 @@ func _steer(x: float, veer: bool) -> InputFrame:
 ## first.
 ## `first_leg`: the leg the player starts on, for a run dropped in part way
 ## along a route that winds back on itself.
-func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = [], first_leg := 0) -> bool:
+func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = [], steady := false, first_leg := 0) -> bool:
 	_legs = legs if not legs.is_empty() else [[0.0, 0.0, 0.0, 0.0]]
 	_leg = first_leg
 	var lane: float = route[0][2] if route[0][1] == "" and not is_nan(route[0][2]) else _local(player.global_position, 0).x
@@ -837,6 +837,10 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 	# "flip" (back), "front" or "spin": done in the air after the next take-off.
 	var trick := ""
 	var trick_left := 0
+	# A level's "bot_steady" (its line built for it): a trick that comes up
+	# while still in the air from the last jump waits for the landing and
+	# goes into the next take-off, and eyes come back level once down.
+	var trick_wait := false
 	# Stopped dead against a wall (a speed gate's climb face after a miss):
 	# jump to climb it.
 	var stuck := 0
@@ -876,8 +880,18 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 				"flip", "front", "spin":
 					trick = step[1]
 					trick_left = 24
+					if steady:
+						trick_wait = player.state == Player.State.AIR
+						# Eyes level first, as a runner would after the last
+						# landing (a flip lands looking up: flip_look_gain).
+						player.pitch = 0.0
 			next += 1
-		if trick != "" and player.state == Player.State.AIR:
+		if steady and trick == "" and player.state == Player.State.GROUND:
+			# Eyes back to the line once down (a flip lands looking up).
+			player.pitch = 0.0
+		if trick_wait and player.state != Player.State.AIR:
+			trick_wait = false
+		if trick != "" and not trick_wait and player.state == Player.State.AIR:
 			var turn := TAU / 24.0
 			player._look(turn if trick == "spin" else 0.0, turn if trick == "flip" else (-turn if trick == "front" else 0.0))
 			trick_left -= 1
@@ -885,8 +899,10 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 				trick = ""
 				# Look ahead again (a flip leaves the view pitched to its
 				# limit, and a kick or a jump through glass aims with it).
-				player.pitch = 0.0
-		elif trick != "" and trick_left < 24 and player.state != Player.State.AIR:
+				# A steady line looks ahead once down instead.
+				if not steady:
+					player.pitch = 0.0
+		elif not steady and trick != "" and trick_left < 24 and player.state != Player.State.AIR:
 			# Landed before it was round: give it up and look ahead.
 			trick = ""
 			player.pitch = 0.0
@@ -1130,6 +1146,67 @@ func test_yard_pistol_handoff() -> void:
 		lines.append(l.line)
 	check(lines.any(func(l: String) -> bool: return l.begins_with("Here. This was your granddad's")), "Mags says whose it was")
 	check(player.global_position.distance_to(start) > 8.0, "on the way down")
+
+
+## Stage 3, the Silt: 3-1 starts on the blown Calder Way bridge where 2-3
+## ends (the atlas's "silt_bridge"), 3-2 comes up at the mall's south
+## entrance where 4-1 starts. Hollows (and the Static herding them), no
+## Ward; the Must play lines are marked; the drain holds the one loop.
+func test_silt_levels_follow_the_atlas() -> void:
+	var silt := Campaign.load_mission_file(Campaign.entry(_index("l3_1_the_silt")).file)
+	var drain := Campaign.load_mission_file(Campaign.entry(_index("l3_2_the_drain")).file)
+	var deck: Array = Atlas_.landmark("silt_bridge").boxes[0]
+	var start := MissionBuilder.vec(silt.route_origin.at)
+	check(Atlas_._rect(deck).has_point(Vector2(start.x, start.z)) and is_equal_approx(start.y, float(deck[5])), "3-1 starts on the Silt bridge's deck (%s)" % start)
+	check(is_equal_approx(float(silt.route_origin.yaw), 90.0), "facing west")
+	check(MissionBuilder.vec(drain.route_end).distance_to(Vector3(1500, 0, 380)) < 0.05 and is_equal_approx(float(drain.route_end_yaw), 90.0),
+		"3-2 ends at the mall's south entrance, facing west (%s)" % [drain.route_end])
+	check(MissionBuilder.vec(silt.route_end).distance_to(MissionBuilder.vec(drain.route_origin.at)) < 0.05, "3-2 starts where 3-1 ends")
+	var musts := {"l3_1_the_silt": 4, "l3_2_the_drain": 1}
+	for m: Dictionary in [silt, drain]:
+		check(m.route_length >= 600.0 and m.route_length <= 900.0, "%s: 600-900 m (%d)" % [m.id, int(m.route_length)])
+		check(m.get("plain_runner", false), "%s: checked by the plain runner" % m.id)
+		var loops := 0
+		var hollows := 0
+		for p: Dictionary in m.pieces:
+			loops += 1 if p.has("loop") else 0
+			if p.has("encounter"):
+				for e: Dictionary in p.get("enemies", []):
+					check(e.type in ["crawler", "leaper", "brute", "raider"], "%s: %s is a Hollow or a Static herder" % [m.id, e.type])
+					hollows += 1 if e.type != "raider" else 0
+		check(loops == (1 if m.id == "l3_2_the_drain" else 0), "%s: the drain's ring pipe is the only loop (%d)" % [m.id, loops])
+		check(hollows >= 12, "%s: Hollows on the line (%d)" % [m.id, hollows])
+		var n := 0
+		for r: Dictionary in m.radio:
+			n += 1 if r.get("must", false) else 0
+		check(n == musts[m.id], "%s: its Must play lines never drop (%d)" % [m.id, n])
+
+
+## The Silt's set pieces: the relay box goes off as it comes into sight,
+## and the Hollows pen's gate goes up (solid until it does).
+func test_silt_relay_and_pens() -> void:
+	await _load(_index("l3_1_the_silt"))
+	var got: Array[String] = []
+	run.event.connect(func(e: String) -> void:
+		if e.begins_with("set_piece:"):
+			got.append(e))
+	var pieces := {}
+	for sp: Node3D in level.builder.set_pieces:
+		pieces[sp.kind] = sp
+	check(pieces.has("silt_wreck") and pieces.has("relay_box") and pieces.has("hollows_cage"), "the wreck, the relay and the pen (%s)" % [pieces.keys()])
+	# Set pieces run once the run's under way: a step off the start.
+	player.global_position = MissionBuilder.vec(run.mission.start.at) + Vector3(-3, 0.05, 0)
+	await _step(3)
+	check("set_piece:wreck" in got, "the wreck is there from the start")
+	player.global_position = pieces.relay_box.trigger + Vector3(0, 0.05, 0)
+	await _step(3)
+	check("set_piece:relay" in got, "the relay box goes off in sight")
+	var cage: Node3D = pieces.hollows_cage
+	var gate: CollisionShape3D = cage.get("_gate_shape")
+	check(not gate.disabled, "the pen's gate is shut")
+	player.global_position = cage.trigger + Vector3(0, 0.05, 0)
+	await _step(60)
+	check("set_piece:cage" in got and gate.disabled, "it goes up and lets the pack out")
 
 
 ## The Yard's lost tape is a Calder Radio reel: its lines play as a tape.
@@ -1458,7 +1535,7 @@ func test_signal_out_can_be_escaped() -> void:
 	run.event.connect(func(e: String) -> void: heard[e] = int(heard.get(e, 0)) + 1)
 	await _step(10)
 	var frames := int(run.mission.route_length / 6.0 * 60.0) + 900
-	var done := await _run_route(run.mission.bot, frames, -INF, run.mission.route_legs)
+	var done := await _run_route(run.mission.bot, frames, -INF, run.mission.route_legs, run.mission.get("bot_steady", false))
 	check(done, "a scripted run outruns the Host (stopped at %s)" % player.global_position)
 	var length := int(run.mission.route_length)
 	check(length >= 600 and length <= 900, "a full level's chase, 600-900 m (%d m)" % length)
@@ -1664,7 +1741,7 @@ func _bot_run(label: String, alt := false) -> void:
 		print("  %s: %d m, %d legs, %d checkpoints, %d encounters, %d enemies, legs %s" % [label, int(run.mission.route_length),
 			run.mission.route_legs.size(), level.builder.spawns.size() - 1, level.builder.encounters.size(),
 			level.builder.encounters.reduce(func(n: int, e: Node) -> int: return n + e.enemies.size(), 0), run.mission.route_legs])
-	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []))
+	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []), run.mission.get("bot_steady", false))
 	_check_radio_pacing(label)
 	check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [label, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
 	check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])
@@ -2508,7 +2585,7 @@ func _cover(shapes: Array, at: Vector2) -> float:
 ## clear of every building, never sunk into a facade.
 func test_city_props_stand_clear_of_buildings() -> void:
 	var PropKit_: Script = load("res://art/props/prop_kit.gd")
-	for id: String in ["l1_2_the_yard", "m04_silt_line", "l5_1_storm_channels", "l5_2_rail_line"]:
+	for id: String in ["l1_2_the_yard", "l3_1_the_silt", "l5_1_storm_channels", "l5_2_rail_line"]:
 		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
 		var walls: Array = []
 		for p: Dictionary in m.pieces:

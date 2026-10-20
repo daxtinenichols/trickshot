@@ -67,74 +67,150 @@
    ]
   },
   {
-   "title": "Act 1: The Edge",
+   "title": "Stage 3: The Silt",
    "missions": [
     {
-     "id": "m04_silt_line",
+     "id": "l3_1_the_silt",
      "number": 5,
-     "title": "Silt Line",
-     "place": "Ground level",
-     "beat": "The Host blows a bridge and drops Parker into the Silt. Climb back up through the Hollows before the dust gets to you.",
-     "moves": "Quick turn, ground roll",
-     "enemies": "Crawlers. Lesson: never stop.",
-     "file": "res://campaign/missions/m04_silt_line.json"
+     "label": "3-1",
+     "title": "The Silt",
+     "place": "The dry bed of the Silt, from the blown bridge to the outfall",
+     "beat": "Parker climbs off the wrecked bridge into the dust: sunk buses, buried streets and the Hollows. One of Echo's relays blinks on a lamppost down here. The Static open a pen on the bank and the pack pours out ahead of him.",
+     "moves": "Bus roofs, wall runs, a tier-2 speed gate",
+     "enemies": "Hollows (crawlers, leapers, brutes); Static herders on the bank",
+     "file": "res://campaign/missions/l3_1_the_silt.json"
+    },
+    {
+     "id": "l3_2_the_drain",
+     "number": 6,
+     "label": "3-2",
+     "title": "The Drain",
+     "place": "The storm-drain main under the bank to the mall's south lot",
+     "beat": "Down the big round storm-drain main: run its curved walls, loop the ring pipe, over the pumps, and kick the rusted grate open onto Meridian Mall's south lot.",
+     "moves": "Wall runs on the pipe, the ring loop, a tier-2 speed gate",
+     "enemies": "Hollows in the pipes",
+     "file": "res://campaign/missions/l3_2_the_drain.json"
     }
    ]
   },
   {
    "title": "Stage 4: Meridian",
    "missions": [
-    {"id": "l4_1_meridian_mall", "number": 6, "label": "4-1", "title": "Meridian Mall", "place": "The atrium, the north wing and Hargrove and Sons",
+    {
+     "id": "l4_1_meridian_mall",
+     "number": 7,
+     "label": "4-1",
+     "title": "Meridian Mall",
+     "place": "The atrium, the north wing and Hargrove and Sons",
      "beat": "The Static have made the mall the Host's arena. He outs Mags on air as his old producer, Juno paces Parker along the far walkway, and in the store's electronics floor every screen lights up: Echo is alive.",
-     "moves": "Escalators, walkways over the voids, the store well; speed gates", "enemies": "Crawlers, leapers and a brute; bruisers and a spotter drone",
-     "file": "res://campaign/missions/l4_1_meridian_mall.json"},
-    {"id": "l4_2_parking_spiral", "number": 7, "label": "4-2", "title": "Parking Spiral", "place": "The skybridge and the Meridian car park",
+     "moves": "Escalators, walkways over the voids, the store well; speed gates",
+     "enemies": "Crawlers, leapers and a brute; bruisers and a spotter drone",
+     "file": "res://campaign/missions/l4_1_meridian_mall.json"
+    },
+    {
+     "id": "l4_2_parking_spiral",
+     "number": 8,
+     "label": "4-2",
+     "title": "Parking Spiral",
+     "place": "The skybridge and the Meridian car park",
      "beat": "Juno, on her own ground: a fight up the car park in three rounds, and between them she tells Parker how the Static found the Line's camp. Then the Ward speak for the first time.",
-     "moves": "Ramps up and slides down, the core, the top deck", "enemies": "Hunters; Juno (break her guard with a combo kick or an airborne headshot)",
-     "file": "res://campaign/missions/l4_2_parking_spiral.json"}
+     "moves": "Ramps up and slides down, the core, the top deck",
+     "enemies": "Hunters; Juno (break her guard with a combo kick or an airborne headshot)",
+     "file": "res://campaign/missions/l4_2_parking_spiral.json"
+    }
    ]
   },
   {
    "title": "Stage 5: Westside",
    "missions": [
-    {"id": "l5_1_storm_channels", "number": 8, "label": "5-1", "title": "Storm Channels", "place": "The Ward's storm channels, car park to the rail embankment",
+    {
+     "id": "l5_1_storm_channels",
+     "number": 9,
+     "label": "5-1",
+     "title": "Storm Channels",
+     "place": "The Ward's storm channels, car park to the rail embankment",
      "beat": "The city starts rooting for Parker and he can see it: listeners wave from the walkways and one hauls a sluice open for him. The Ward hold the channels because the channels are the water.",
-     "moves": "Banks, slides, speed gates", "enemies": "Ward troopers, shields, marksmen and gun drones",
-     "file": "res://campaign/missions/l5_1_storm_channels.json"},
-    {"id": "l5_2_rail_line", "number": 9, "label": "5-2", "title": "The Rail Line", "place": "The old rail line to the station under Calder House",
+     "moves": "Banks, slides, speed gates",
+     "enemies": "Ward troopers, shields, marksmen and gun drones",
+     "file": "res://campaign/missions/l5_1_storm_channels.json"
+    },
+    {
+     "id": "l5_2_rail_line",
+     "number": 10,
+     "label": "5-2",
+     "title": "The Rail Line",
+     "place": "The old rail line to the station under Calder House",
      "beat": "Told by the Ward to end it, the Host changes the course live: he blows the track ahead of Parker twice. Echo's second code picks the junction.",
-     "moves": "Long speed run; down and back up the blown sections", "enemies": "Ward squads and gun drones, then the Static",
-     "file": "res://campaign/missions/l5_2_rail_line.json"}
+     "moves": "Long speed run; down and back up the blown sections",
+     "enemies": "Ward squads and gun drones, then the Static",
+     "file": "res://campaign/missions/l5_2_rail_line.json"
+    }
    ]
   },
   {
    "title": "Stage 6: Calder House and the Tower",
    "missions": [
-    {"id": "l6_1_head_office", "number": 10, "label": "6-1", "title": "Head Office", "place": "Calder House, lobby to the executive floor",
+    {
+     "id": "l6_1_head_office",
+     "number": 11,
+     "label": "6-1",
+     "title": "Head Office",
+     "place": "Calder House, lobby to the executive floor",
      "beat": "Off the rail line and into Calder House. For the first time the Host is in the room: he shoots from the balconies and runs every time Parker gets close, and in his office there's a photo of him and Mags twenty years ago.",
-     "moves": "Kick doors, jump the glass, slide the shutters", "enemies": "The Host (hit him for a bonus); the Static on the office floors, the Ward in the atrium",
-     "file": "res://campaign/missions/l6_1_head_office.json"},
-    {"id": "l6_2_skybridge", "number": 11, "label": "6-2", "title": "Skybridge", "place": "Calder House top floors and the bridge to the tower",
+     "moves": "Kick doors, jump the glass, slide the shutters",
+     "enemies": "The Host (hit him for a bonus); the Static on the office floors, the Ward in the atrium",
+     "file": "res://campaign/missions/l6_1_head_office.json"
+    },
+    {
+     "id": "l6_2_skybridge",
+     "number": 12,
+     "label": "6-2",
+     "title": "Skybridge",
+     "place": "Calder House top floors and the bridge to the tower",
      "beat": "Up the Host's stairs and through the tape archive to the roof. Parker reaches Echo on the skybridge, and for a few seconds they're face to face. Then the Ward drag her into the tower and blow the bridge.",
-     "moves": "Shaft wallruns, tank tops, the CALDER sign", "enemies": "Static hunters in the archive; Ward squads and rifles on the roof",
-     "file": "res://campaign/missions/l6_2_skybridge.json"},
-    {"id": "l6_3_the_climb", "number": 12, "label": "6-3", "title": "The Climb", "place": "The builders' scaffold up the outside of the broadcast tower",
+     "moves": "Shaft wallruns, tank tops, the CALDER sign",
+     "enemies": "Static hunters in the archive; Ward squads and rifles on the roof",
+     "file": "res://campaign/missions/l6_2_skybridge.json"
+    },
+    {
+     "id": "l6_3_the_climb",
+     "number": 13,
+     "label": "6-3",
+     "title": "The Climb",
+     "place": "The builders' scaffold up the outside of the broadcast tower",
      "beat": "Off the broken skybridge and up the scaffold round the tower. Halfway up, Echo takes over the Host's uplink: his cameras turn to Parker, the Ward's gun drones fall, and the whole city watches the climb.",
-     "moves": "Ramps, climbs and wallruns round the tower; the builders' lift", "enemies": "Static crews and Ward squads, deck by deck",
-     "file": "res://campaign/missions/l6_3_the_climb.json"},
-    {"id": "l6_4_dead_air", "number": 13, "label": "6-4", "title": "Dead Air", "place": "The studio floors inside the broadcast tower",
+     "moves": "Ramps, climbs and wallruns round the tower; the builders' lift",
+     "enemies": "Static crews and Ward squads, deck by deck",
+     "file": "res://campaign/missions/l6_3_the_climb.json"
+    },
+    {
+     "id": "l6_4_dead_air",
+     "number": 14,
+     "label": "6-4",
+     "title": "Dead Air",
+     "place": "The studio floors inside the broadcast tower",
      "beat": "Parker fights up the tower's floors to the studio and reaches Echo, zip-tied at the console. The Host's last trap drops the mast on Parker and sets the studio burning; Echo, cut free, runs.",
-     "moves": "All", "enemies": "Ward squads and the Host's elite crew, floor by floor",
-     "file": "res://campaign/missions/l6_4_dead_air.json"}
+     "moves": "All",
+     "enemies": "Ward squads and the Host's elite crew, floor by floor",
+     "file": "res://campaign/missions/l6_4_dead_air.json"
+    }
    ]
   },
   {
    "title": "Stage 7: Signal Out",
    "missions": [
-    {"id": "l7_1_signal_out", "number": 14, "label": "7-1", "title": "Signal Out", "place": "Out of the burning studio, over the west roofs, down to the Silt",
+    {
+     "id": "l7_1_signal_out",
+     "number": 15,
+     "label": "7-1",
+     "title": "Signal Out",
+     "place": "Out of the burning studio, over the west roofs, down to the Silt",
      "beat": "You play Echo, and for the first time you are the one being chased. Parker is pinned in the burning studio; the Host comes through the smoke and hunts her himself, calling it live. She leads him down to the Silt, over a girder that holds her and not him, and the Hollows close over him on her own camera.",
-     "moves": "All, as Echo; pure speed", "enemies": "The Host as a pursuing boss",
-     "file": "res://campaign/missions/l7_1_signal_out.json", "unlocks": "echo"}
+     "moves": "All, as Echo; pure speed",
+     "enemies": "The Host as a pursuing boss",
+     "file": "res://campaign/missions/l7_1_signal_out.json",
+     "unlocks": "echo"
+    }
    ]
   }
  ]

@@ -193,15 +193,22 @@ func _trick_run(path: String) -> Dictionary:
 	var entered: Array = []
 	var taken := [0.0]
 	var p: Player = c.player
-	health.damaged.connect(func(a: float, from: Vector3, k: StringName) -> void:
+	health.damaged.connect(func(a: float, _f: Vector3, _k: StringName) -> void:
 		taken[0] += a
 		if OS.has_environment("PLAIN_LOG"):
-			print("    trick line hit: %.0f %s at %.1f m, %.1f m/s" % [a, k, PlainRunner.along(p.global_position, legs), p.horizontal_speed()]))
+			print("    hit %.0f %s at %.1f (speed %.1f, flow %.1f, health %.0f)" % [a, _k, PlainRunner.along(p.global_position, legs), p.horizontal_speed(), p.flow_source.call(), health.health]))
 	var watch := func() -> void:
 		if entered.size() < sections.size() and PlainRunner.along(p.global_position, legs) < float(sections[entered.size()][0]):
 			entered.append([p.global_position, p.yaw, PlainRunner.across(p.global_position, legs)])
+			if OS.has_environment("PLAIN_LOG"):
+				print("    enter %s at speed %.1f flow %.1f" % [sections[entered.size() - 1][2], p.horizontal_speed(), p.flow_source.call()])
 	tree.physics_frame.connect(watch)
-	var done: bool = await c._run_route(m.bot, int(m.route_length / 6.0 * 60.0) + 600, -INF, legs)
+	if OS.has_environment("PLAIN_LOG"):
+		var ct: Object = p.flow_source.get_object()
+		ct.added.connect(func(n: StringName, _pts: int) -> void: print("    + %s at %.1f speed %.1f flow %.1f" % [n, PlainRunner.along(p.global_position, legs), p.horizontal_speed(), ct.flow()]))
+		ct.bailed.connect(func(_pts: int, why: StringName) -> void: print("    BAIL %s at %.1f" % [why, PlainRunner.along(p.global_position, legs)]))
+		ct.finished.connect(func(sm: Dictionary) -> void: print("    banked (%s) at %.1f" % [sm.reason, PlainRunner.along(p.global_position, legs)]))
+	var done: bool = await c._run_route(m.bot, int(m.route_length / 6.0 * 60.0) + 600, -INF, legs, m.get("bot_steady", false))
 	tree.physics_frame.disconnect(watch)
 	if OS.has_environment("PLAIN_LOG"):
 		print("  trick line: done %s falls %d downs %d damage taken %.0f" % [done, c.run.falls, health.deaths, taken[0]])
@@ -233,6 +240,14 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 	p.velocity = p.forward() * p.tuning.top_speed
 	p.momentum = 1.0
 	var start_y: float = p.global_position.y
+	if m.get("bot_steady", false):
+		# Measured from the ground under the drop-in (the trick line may
+		# have come in mid-jump).
+		var q := PhysicsRayQueryParameters3D.create(p.global_position, p.global_position + Vector3.DOWN * 6.0, 1)
+		q.exclude = [p.get_rid()]
+		var under := p.get_world_3d().direct_space_state.intersect_ray(q)
+		if not under.is_empty():
+			start_y = minf(start_y, under.position.y)
 	var taken := [0.0]
 	health.damaged.connect(func(a: float, _f: Vector3, k: StringName) -> void:
 		taken[0] += a
@@ -242,11 +257,11 @@ func _plain_run(path: String, i: int, entry: Array, section: Array) -> String:
 	var watch := func() -> void: low[0] = minf(low[0], p.global_position.y)
 	tree.physics_frame.connect(watch)
 	var steps: Array = [[float(section[0]) + 1.0, "", float(entry[2])]]
-	for s: Array in PlainRunner.plain_steps(m.bot):
+	for s: Array in PlainRunner.plain_steps(m.bot, m.get("bot_steady", false)):
 		if float(s[0]) < float(section[0]):
 			steps.append(s)
 	var frames := int((float(section[0]) - float(section[1])) / 8.0 * 60.0) + 240
-	await c._run_route(steps, frames, float(section[1]), legs, maxi(PlainRunner.leg_index(entry[0], legs), 0))
+	await c._run_route(steps, frames, float(section[1]), legs, m.get("bot_steady", false), maxi(PlainRunner.leg_index(entry[0], legs), 0))
 	tree.physics_frame.disconnect(watch)
 	var past := PlainRunner.along(p.global_position, legs) < float(section[1])
 	var out := "through"

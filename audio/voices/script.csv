@@ -1,14 +1,5 @@
 who,file,where,line
-host,host/2a150828e1c6.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Ooh! Did everyone see that? Our Juno, folks. Remember the name."
-host,host/bc111000b468.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Toll's one arm and one leg, Parker. Or the other way round. We're flexible."
-juno,juno/d6009410a791.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Not that way, Parker. Take the stairs like everyone else."
-mags,mags/0afd152bb587.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",I know who it was. Keep moving.
-mags,mags/30105421ec95.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",They're sat right on our route. How do they know our routes?
-mags,mags/4562964e7c87.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","...Keep moving, love."
-mags,mags/c941cee02204.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Toll tower. Then the bridge, then the mall. Nearly halfway, love."
-parker,parker/6e42b34f391a.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Mags. Crane, up top. Red scarf."
-parker,parker/98080ba496c4.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",Juno!
-parker,parker/d95405713f64.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",That was Juno.
+host,host/ee635291ef01.ogg,brief: Replacements in built missions (obstacles are now real objects),"That was an expensive drone, Parker! That's going on your tab."
 host,host/86e9957c0159.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Feeding time! I do love a nature segment.
 host,host/debb57860f50.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)","Folks, he's gone down the drain. Ha. I've been waiting all day to say that."
 mags,mags/053db851872b.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Storm drain. It runs under the bank and comes up at the mall. Don't stop in there.
@@ -118,6 +109,100 @@ mags,mags/fa2124529d1c.ogg,l1_2_the_yard,"Chain three different moves before you
 mags,mags/faeb0f051c17.ogg,l1_2_the_yard,Alright. That's as ready as anybody gets for something this stupid.
 parker,parker/4cdca9a91d26.ogg,l1_2_the_yard,Not every time.
 parker,parker/ed0027ce9a4f.ogg,l1_2_the_yard,"Thanks, Mags."
+host,host/134451922f23.ogg,l2_1_on_air,Hey! He was on the clock!
+host,host/13e9a4c4e004.ogg,l2_1_on_air,Ooh! That one's going in the highlights.
+host,host/1d09e260d872.ogg,l2_1_on_air,"Oh, he shoots too! Echo, sweetheart, you never told me that."
+host,host/23e82b93eb07.ogg,l2_1_on_air,Look at this guy! Somebody give him a jingle.
+host,host/2b277247d46c.ogg,l2_1_on_air,"Down he goes! Echo, you married this?"
+host,host/587c89644a11.ogg,l2_1_on_air,"Ladies, gentlemen, and... whatever the rest of you are. Our courier has left the building!"
+host,host/68f80715d699.ogg,l2_1_on_air,"Ooh, right in the face. Listeners at home, look away."
+host,host/6fd581e99c19.ogg,l2_1_on_air,"His name's Parker. Runs for a living. Today? Running for love. Ugh, I know. Parker, darling, you're on the air."
+host,host/714349c0ca87.ogg,l2_1_on_air,"Oof. Listeners, I felt that one in my teeth."
+host,host/7afc543ba5c8.ogg,l2_1_on_air,Right through the headset. Rude.
+host,host/7c97f47caf62.ogg,l2_1_on_air,"Okay, okay, he's... honestly he's pretty good. Don't tell him I said that."
+host,host/819bb28777e7.ogg,l2_1_on_air,"He's quick, folks! Quicker than the last three couriers I had. Rest in pieces, boys."
+host,host/823b3e32af47.ogg,l2_1_on_air,"Moves like that, I might have to start paying him."
+host,host/847f27eb7bea.ogg,l2_1_on_air,"And he eats it! Folks, I didn't even have to do anything."
+host,host/911536029e13.ogg,l2_1_on_air,Somebody's been practising.
+host,host/a0057b730d35.ogg,l2_1_on_air,"Well, that's one less mouth to feed. Silver linings, folks."
+host,host/a0086f7eff96.ogg,l2_1_on_air,"Look at him go! Echo, you watching this? Oh, right. You're tied up."
+host,host/aa9a9432743b.ogg,l2_1_on_air,"Ooh. Hear that, folks? Pretty sure that was his pride."
+host,host/abec38ead5d4.ogg,l2_1_on_air,"Let's make it interesting, folks. Bets are open. My money says he's in the Silt by lunch."
+host,host/b899eac10a12.ogg,l2_1_on_air,"Rewind that. No, seriously, can somebody rewind that?"
+host,host/c2f4a8b46074.ogg,l2_1_on_air,And he's down! Little dust bath for our boy.
+host,host/c6c379cc5f66.ogg,l2_1_on_air,"Aw, he's having a lie-down. Bless him."
+host,host/d2b39c165762.ogg,l2_1_on_air,"And he's in the dirt! Stay down there, it's quieter."
+host,host/d7215b486cb9.ogg,l2_1_on_air,"Ah, come on, I liked that one. Didn't know his name, but I liked him."
+host,host/e3c100ff853f.ogg,l2_1_on_air,"Good lookout, that one. Looked out for about a second."
+host,host/e7eae58a9161.ogg,l2_1_on_air,"Don't go anywhere. Coming up, the Glass District. Mind the windows. And my toll boys. They bite."
+host,host/e8e7435fa577.ogg,l2_1_on_air,"Down goes the courier! Somebody check if he's breathing. Actually, don't."
+host,host/e95d25749d26.ogg,l2_1_on_air,"Oh, that's gonna be a closed casket."
+host,host/ecb56dcf0bbe.ogg,l2_1_on_air,And our courier's taking a nap! Somebody get the man a pillow.
+host,host/f3e68b6d2520.ogg,l2_1_on_air,Somebody tell payroll.
+host,host/f96de064d2e7.ogg,l2_1_on_air,"The phones are ringing off the hook! Okay, we don't have phones. But they would be."
+mags,mags/015e96c5ff64.ogg,l2_1_on_air,Up. He's only got a show if you stay down.
+mags,mags/0afd152bb587.ogg,l2_1_on_air,I know who it was. Keep moving.
+mags,mags/1a882e3299c1.ogg,l2_1_on_air,"Warehouse roofs. Static use 'em for lookouts. Head down, keep moving."
+mags,mags/1e6c8b1fdb53.ogg,l2_1_on_air,"Three gunners. Red laser on you means a shot's coming, so move. And if it gets busy, click the mouse wheel. Slows everything down for a few seconds."
+mags,mags/3cfaafc535fb.ogg,l2_1_on_air,Don't listen to him. Breathe. Then we go.
+mags,mags/4562964e7c87.ogg,l2_1_on_air,"...Keep moving, love."
+mags,mags/45a1355204b7.ogg,l2_1_on_air,"Ignore him. Keep going, that's lovely."
+mags,mags/6154b8c3b1bd.ogg,l2_1_on_air,"Two walls up ahead. Run the first, then jump and kick off the second one. Wall hop."
+mags,mags/7fd121263eae.ogg,l2_1_on_air,Up. Don't stand where they can see you.
+mags,mags/88931627a008.ogg,l2_1_on_air,"Up. Don't stand there in their sights. Run, then shoot."
+mags,mags/93423324c7d4.ogg,l2_1_on_air,Back up you go. Don't give him the satisfaction.
+mags,mags/963726f2702a.ogg,l2_1_on_air,That's it.
+mags,mags/a92e89e98436.ogg,l2_1_on_air,That mast's their relay. Get past it and they lose you. Wall's on your left this time.
+mags,mags/a9f152749393.ogg,l2_1_on_air,"Good. Keep going, don't give them time."
+mags,mags/b43754d6440a.ogg,l2_1_on_air,"You're okay. Get up, keep moving this time."
+parker,parker/6e42b34f391a.ogg,l2_1_on_air,"Mags. Crane, up top. Red scarf."
+parker,parker/d95405713f64.ogg,l2_1_on_air,That was Juno.
+echo,echo/82054987759c.ogg,l2_2_glass_district,"...he's got lookouts on every roof with glass. They watch the reflections. Stay low, stay quick."
+echo,echo/9e0a01af03f1.ogg,l2_2_glass_district,"...if anyone finds this, go west. Keep going west. He keeps the keys on his belt."
+host,host/0fc8992e1fd8.ogg,l2_2_glass_district,"Street level! Mind the Silt, darling."
+host,host/1954ac96c9dd.ogg,l2_2_glass_district,"Aaand he's down. Don't touch that dial, folks."
+host,host/198861cde2ee.ogg,l2_2_glass_district,"Another one! Folks, I'm running out of lookouts."
+host,host/1b00d06376e4.ogg,l2_2_glass_district,He's good. I hate that he's good.
+host,host/2a150828e1c6.ogg,l2_2_glass_district,"Ooh! Did everyone see that? Our Juno, folks. Remember the name."
+host,host/2d9d38bebc82.ogg,l2_2_glass_district,"Ooh, careful, that's a real... well, it was a window."
+host,host/4ec39ce08100.ogg,l2_2_glass_district,"And he's back on the street, where he belongs!"
+host,host/5f1e97046175.ogg,l2_2_glass_district,"Down he goes! Folks, we're gonna need more glass."
+host,host/65ab3e3d5571.ogg,l2_2_glass_district,"Courier down! On the glass, too. That's gotta sting."
+host,host/6c8470b3330b.ogg,l2_2_glass_district,"The man's a walking highlight reel. A bleeding one, but still."
+host,host/9c8cb8fda15c.ogg,l2_2_glass_district,"Morning, Glass District! Heads up, our courier's coming through, and he is not slowing down."
+host,host/a20148abc5f1.ogg,l2_2_glass_district,"Through the window and right into my heart, folks."
+host,host/c31d47819607.ogg,l2_2_glass_district,"Oh, come on. Do you know how hard it is to find people who can climb?"
+host,host/d5b2fe14584b.ogg,l2_2_glass_district,"Ooh. Right in the earpiece. Feedback, everybody."
+host,host/d69531ba5c69.ogg,l2_2_glass_district,"Listen to that glass go! That's music, that is."
+host,host/e90efb7389c3.ogg,l2_2_glass_district,"Yeesh. Somebody clean that up, the windows are bad enough."
+host,host/eeea2488529f.ogg,l2_2_glass_district,And the lookout's... not looking out. Not anymore.
+host,host/f541c9882dd3.ogg,l2_2_glass_district,"That spotter had a family, you know. Well. A rat. He called it Biscuit."
+host,host/f7ad9b836886.ogg,l2_2_glass_district,My spotters! Do you know how hard it is to find people who can count to three?
+host,host/fb3b98c1472d.ogg,l2_2_glass_district,Glass everywhere. Somebody sweep that up.
+juno,juno/d6009410a791.ogg,l2_2_glass_district,"Not that way, Parker. Take the stairs like everyone else."
+mags,mags/149403baef8a.ogg,l2_2_glass_district,Find a way up. You know how.
+mags,mags/16ac0e2d6fd7.ogg,l2_2_glass_district,"Back up. Same line, faster."
+mags,mags/1fda9d450e2e.ogg,l2_2_glass_district,Up. Don't think about it.
+mags,mags/2085f5027a14.ogg,l2_2_glass_district,"That's it, kid, keep flowing."
+mags,mags/2236e34b716b.ogg,l2_2_glass_district,"Up. Run first, then shoot."
+mags,mags/30105421ec95.ogg,l2_2_glass_district,They're sat right on our route. How do they know our routes?
+mags,mags/3eeda34bc340.ogg,l2_2_glass_district,Lovely. Stay on it.
+mags,mags/54f4024888fa.ogg,l2_2_glass_district,"Glass District. Office roofs to the toll tower, then the bridge."
+mags,mags/55bd19685096.ogg,l2_2_glass_district,Yes. That's how you do it.
+mags,mags/6e35925ef381.ogg,l2_2_glass_district,Get up. Keep the glass between you and them.
+mags,mags/98dac2ce2518.ogg,l2_2_glass_district,Good. Keep moving.
+mags,mags/9fa72c651fee.ogg,l2_2_glass_district,"Don't stand there trading shots. Run, then shoot."
+mags,mags/a276417000c2.ogg,l2_2_glass_district,"Higher roof. Run at the ledge and jump, you'll get up."
+mags,mags/adf2048af5c0.ogg,l2_2_glass_district,Good shot.
+mags,mags/c941cee02204.ogg,l2_2_glass_district,"Toll tower. Then the bridge, then the mall. Nearly halfway, love."
+mags,mags/d165c0881bec.ogg,l2_2_glass_district,Nice. Go.
+mags,mags/e0094ecd2f2b.ogg,l2_2_glass_district,That's it. Keep it going.
+parker,parker/98080ba496c4.ogg,l2_2_glass_district,Juno!
+host,host/4027bb46f7fe.ogg,l2_3_the_toll,"He's at the bridge, folks. Shame about the bridge."
+host,host/bc111000b468.ogg,l2_3_the_toll,"Toll's one arm and one leg, Parker. Or the other way round. We're flexible."
+host,host/e4d64c146d96.ogg,l2_3_the_toll,"Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker."
+mags,mags/4e878892114a.ogg,l2_3_the_toll,"Wall hop. First wall, then jump to the second."
+mags,mags/b46e27e4e683.ogg,l2_3_the_toll,"Parker, hang on. Something's off with that bridge."
 echo,echo/139c4cd7b4d8.ogg,l5_1_storm_channels,"...the channels used to fill every spring. Now they're dry and the Ward's tanks are full. Funny, that."
 echo,echo/3e80223a0e30.ogg,l5_1_storm_channels,...the Ward pays him in water. Every week. That's what 'sponsor' means.
 echo,echo/d09ba998a3a6.ogg,l5_1_storm_channels,...the Ward closed the channels the year the rain stopped. Nobody ever asked why.
@@ -238,7 +323,6 @@ mags,mags/6ee744b0d1ac.ogg,l6_1_head_office,Up. He's watching from the balconies
 mags,mags/6f51f331f67a.ogg,l6_1_head_office,Lovely. Keep him running.
 mags,mags/815a992b1578.ogg,l6_1_head_office,"He's going up. Echo's up there, Parker. She has to be."
 mags,mags/a90cf7c09d2f.ogg,l6_1_head_office,...Burn it.
-mags,mags/adf2048af5c0.ogg,l6_1_head_office,Good shot.
 mags,mags/b9d3020c4426.ogg,l6_1_head_office,Up. Keep off the open floor.
 mags,mags/c46f252b1603.ogg,l6_1_head_office,His office is on this floor. Corner one. It's always the corner one.
 mags,mags/ced2f90a98b2.ogg,l6_1_head_office,"That's Calder House. Radio people built it, back when radio was a job. He runs the show from in there."
@@ -420,98 +504,6 @@ parker,parker/de41dead0d1b.ogg,l7_1_signal_out,He came through the stairwell! He
 parker,parker/e0feb9567948.ogg,l7_1_signal_out,Don't look back. Just go!
 parker,parker/f5f2b22bc987.ogg,l7_1_signal_out,Last gap. Kick off the pillar if you need the distance.
 parker,parker/f978ff8b56ec.ogg,l7_1_signal_out,Another one's coming down. Get low!
-host,host/134451922f23.ogg,m02_on_air,Hey! He was on the clock!
-host,host/13e9a4c4e004.ogg,m02_on_air,Ooh! That one's going in the highlights.
-host,host/1d09e260d872.ogg,m02_on_air,"Oh, he shoots too! Echo, sweetheart, you never told me that."
-host,host/23e82b93eb07.ogg,m02_on_air,Look at this guy! Somebody give him a jingle.
-host,host/2b277247d46c.ogg,m02_on_air,"Down he goes! Echo, you married this?"
-host,host/587c89644a11.ogg,m02_on_air,"Ladies, gentlemen, and... whatever the rest of you are. Our courier has left the building!"
-host,host/68f80715d699.ogg,m02_on_air,"Ooh, right in the face. Listeners at home, look away."
-host,host/6fd581e99c19.ogg,m02_on_air,"His name's Parker. Runs for a living. Today? Running for love. Ugh, I know. Parker, darling, you're on the air."
-host,host/714349c0ca87.ogg,m02_on_air,"Oof. Listeners, I felt that one in my teeth."
-host,host/7afc543ba5c8.ogg,m02_on_air,Right through the headset. Rude.
-host,host/7c97f47caf62.ogg,m02_on_air,"Okay, okay, he's... honestly he's pretty good. Don't tell him I said that."
-host,host/819bb28777e7.ogg,m02_on_air,"He's quick, folks! Quicker than the last three couriers I had. Rest in pieces, boys."
-host,host/823b3e32af47.ogg,m02_on_air,"Moves like that, I might have to start paying him."
-host,host/847f27eb7bea.ogg,m02_on_air,"And he eats it! Folks, I didn't even have to do anything."
-host,host/911536029e13.ogg,m02_on_air,Somebody's been practising.
-host,host/a0057b730d35.ogg,m02_on_air,"Well, that's one less mouth to feed. Silver linings, folks."
-host,host/a0086f7eff96.ogg,m02_on_air,"Look at him go! Echo, you watching this? Oh, right. You're tied up."
-host,host/aa9a9432743b.ogg,m02_on_air,"Ooh. Hear that, folks? Pretty sure that was his pride."
-host,host/abec38ead5d4.ogg,m02_on_air,"Let's make it interesting, folks. Bets are open. My money says he's in the Silt by lunch."
-host,host/b10d9fcfbc0a.ogg,m02_on_air,"Lookouts! Boys, say hi to the man of the hour."
-host,host/b899eac10a12.ogg,m02_on_air,"Rewind that. No, seriously, can somebody rewind that?"
-host,host/c2f4a8b46074.ogg,m02_on_air,And he's down! Little dust bath for our boy.
-host,host/c6c379cc5f66.ogg,m02_on_air,"Aw, he's having a lie-down. Bless him."
-host,host/d2b39c165762.ogg,m02_on_air,"And he's in the dirt! Stay down there, it's quieter."
-host,host/d7215b486cb9.ogg,m02_on_air,"Ah, come on, I liked that one. Didn't know his name, but I liked him."
-host,host/e3c100ff853f.ogg,m02_on_air,"Good lookout, that one. Looked out for about a second."
-host,host/e7eae58a9161.ogg,m02_on_air,"Don't go anywhere. Coming up, the Glass District. Mind the windows. And my toll boys. They bite."
-host,host/e8e7435fa577.ogg,m02_on_air,"Down goes the courier! Somebody check if he's breathing. Actually, don't."
-host,host/e95d25749d26.ogg,m02_on_air,"Oh, that's gonna be a closed casket."
-host,host/ecb56dcf0bbe.ogg,m02_on_air,And our courier's taking a nap! Somebody get the man a pillow.
-host,host/ee635291ef01.ogg,m02_on_air,"That was an expensive drone, Parker! That's going on your tab."
-host,host/f3e68b6d2520.ogg,m02_on_air,Somebody tell payroll.
-host,host/f96de064d2e7.ogg,m02_on_air,"The phones are ringing off the hook! Okay, we don't have phones. But they would be."
-mags,mags/015e96c5ff64.ogg,m02_on_air,Up. He's only got a show if you stay down.
-mags,mags/1a882e3299c1.ogg,m02_on_air,"Warehouse roofs. Static use 'em for lookouts. Head down, keep moving."
-mags,mags/1e6c8b1fdb53.ogg,m02_on_air,"Three gunners. Red laser on you means a shot's coming, so move. And if it gets busy, click the mouse wheel. Slows everything down for a few seconds."
-mags,mags/23374efa946c.ogg,m02_on_air,"Too wide to jump. Wall on the right, like back home."
-mags,mags/3cfaafc535fb.ogg,m02_on_air,Don't listen to him. Breathe. Then we go.
-mags,mags/45a1355204b7.ogg,m02_on_air,"Ignore him. Keep going, that's lovely."
-mags,mags/6154b8c3b1bd.ogg,m02_on_air,"Two walls up ahead. Run the first, then jump and kick off the second one. Wall hop."
-mags,mags/7fd121263eae.ogg,m02_on_air,Up. Don't stand where they can see you.
-mags,mags/88931627a008.ogg,m02_on_air,"Up. Don't stand there in their sights. Run, then shoot."
-mags,mags/93423324c7d4.ogg,m02_on_air,Back up you go. Don't give him the satisfaction.
-mags,mags/963726f2702a.ogg,m02_on_air,That's it.
-mags,mags/a92e89e98436.ogg,m02_on_air,That mast's their relay. Get past it and they lose you. Wall's on your left this time.
-mags,mags/a9f152749393.ogg,m02_on_air,"Good. Keep going, don't give them time."
-mags,mags/b43754d6440a.ogg,m02_on_air,"You're okay. Get up, keep moving this time."
-mags,mags/ed6b9341adaf.ogg,m02_on_air,Barriers. Jump right into 'em and you'll vault without losing speed.
-echo,echo/82054987759c.ogg,m03_glass_district,"...he's got lookouts on every roof with glass. They watch the reflections. Stay low, stay quick."
-echo,echo/8ed816c39ddb.ogg,m03_glass_district,"...and the weather out west is, uh, glass. Mostly glass. Bring a broom. Back to you."
-echo,echo/9e0a01af03f1.ogg,m03_glass_district,"...if anyone finds this, go west. Keep going west. He keeps the keys on his belt."
-host,host/0fc8992e1fd8.ogg,m03_glass_district,"Street level! Mind the Silt, darling."
-host,host/1954ac96c9dd.ogg,m03_glass_district,"Aaand he's down. Don't touch that dial, folks."
-host,host/198861cde2ee.ogg,m03_glass_district,"Another one! Folks, I'm running out of lookouts."
-host,host/19b497264973.ogg,m03_glass_district,"Now, the Glass District's got a toll, folks. And Parker doesn't strike me as a guy who pays tolls."
-host,host/1b00d06376e4.ogg,m03_glass_district,He's good. I hate that he's good.
-host,host/2d9d38bebc82.ogg,m03_glass_district,"Ooh, careful, that's a real... well, it was a window."
-host,host/4027bb46f7fe.ogg,m03_glass_district,"He's at the bridge, folks. Shame about the bridge."
-host,host/4ec39ce08100.ogg,m03_glass_district,"And he's back on the street, where he belongs!"
-host,host/5f1e97046175.ogg,m03_glass_district,"Down he goes! Folks, we're gonna need more glass."
-host,host/65ab3e3d5571.ogg,m03_glass_district,"Courier down! On the glass, too. That's gotta sting."
-host,host/6c8470b3330b.ogg,m03_glass_district,"The man's a walking highlight reel. A bleeding one, but still."
-host,host/9c8cb8fda15c.ogg,m03_glass_district,"Morning, Glass District! Heads up, our courier's coming through, and he is not slowing down."
-host,host/a20148abc5f1.ogg,m03_glass_district,"Through the window and right into my heart, folks."
-host,host/c31d47819607.ogg,m03_glass_district,"Oh, come on. Do you know how hard it is to find people who can climb?"
-host,host/d5b2fe14584b.ogg,m03_glass_district,"Ooh. Right in the earpiece. Feedback, everybody."
-host,host/d69531ba5c69.ogg,m03_glass_district,"Listen to that glass go! That's music, that is."
-host,host/e4d64c146d96.ogg,m03_glass_district,"Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker."
-host,host/e90efb7389c3.ogg,m03_glass_district,"Yeesh. Somebody clean that up, the windows are bad enough."
-host,host/eeea2488529f.ogg,m03_glass_district,And the lookout's... not looking out. Not anymore.
-host,host/f541c9882dd3.ogg,m03_glass_district,"That spotter had a family, you know. Well. A rat. He called it Biscuit."
-host,host/f7ad9b836886.ogg,m03_glass_district,My spotters! Do you know how hard it is to find people who can count to three?
-host,host/fb3b98c1472d.ogg,m03_glass_district,Glass everywhere. Somebody sweep that up.
-mags,mags/1025aaf0bb7a.ogg,m03_glass_district,"Glass coming up. Don't slow down, jump right through it."
-mags,mags/149403baef8a.ogg,m03_glass_district,Find a way up. You know how.
-mags,mags/16ac0e2d6fd7.ogg,m03_glass_district,"Back up. Same line, faster."
-mags,mags/1fda9d450e2e.ogg,m03_glass_district,Up. Don't think about it.
-mags,mags/2085f5027a14.ogg,m03_glass_district,"That's it, kid, keep flowing."
-mags,mags/2236e34b716b.ogg,m03_glass_district,"Up. Run first, then shoot."
-mags,mags/3eeda34bc340.ogg,m03_glass_district,Lovely. Stay on it.
-mags,mags/4e878892114a.ogg,m03_glass_district,"Wall hop. First wall, then jump to the second."
-mags,mags/54f4024888fa.ogg,m03_glass_district,"Glass District. Office roofs to the toll tower, then the bridge."
-mags,mags/55bd19685096.ogg,m03_glass_district,Yes. That's how you do it.
-mags,mags/6e35925ef381.ogg,m03_glass_district,Get up. Keep the glass between you and them.
-mags,mags/98dac2ce2518.ogg,m03_glass_district,Good. Keep moving.
-mags,mags/9fa72c651fee.ogg,m03_glass_district,"Don't stand there trading shots. Run, then shoot."
-mags,mags/a210b66f7cfa.ogg,m03_glass_district,"Spotters on the toll roof. They're calling you in to him. Shut 'em up, or just get past."
-mags,mags/a276417000c2.ogg,m03_glass_district,"Higher roof. Run at the ledge and jump, you'll get up."
-mags,mags/b46e27e4e683.ogg,m03_glass_district,"Parker, hang on. Something's off with that bridge."
-mags,mags/d0eb6514f5e0.ogg,m03_glass_district,That bridge is the only way over the Silt. Get across before he gets ideas.
-mags,mags/d165c0881bec.ogg,m03_glass_district,Nice. Go.
-mags,mags/e0094ecd2f2b.ogg,m03_glass_district,That's it. Keep it going.
 echo,echo/5ba047dfc9fe.ogg,m04_silt_line,...the Silt's not empty. The Hollows used to be people. Whatever he says.
 echo,echo/aa7d97583ba8.ogg,m04_silt_line,...don't stop on the low pipes. They come up through the drains. I watched them do it.
 echo,echo/f9b6c8b6260d.ogg,m04_silt_line,"...traffic on the overpass: one guy, heading west, real fast. Drive safe, courier."
@@ -655,6 +647,16 @@ mags,mags/d2cebe619243.ogg,m07_parking_spiral,Parker. Those aren't raiders.
 mags,mags/dcfa2258e4ae.ogg,m07_parking_spiral,Up. She wants you to stop. Don't.
 parker,parker/5a94878ac718.ogg,m07_parking_spiral,Still running.
 vell,vell/72d50fc862b7.ogg,m07_parking_spiral,Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it.
+host,host/857cb7194a2d.ogg,pending: l4_1_meridian_mall,"Into Hargrove and Sons! Mind the perfume counter, folks. My boys are working it tonight."
+mags,mags/44ca24a97e91.ogg,pending: l4_1_meridian_mall,Don't slow down in there. They'll run you down.
+host,host/b10d9fcfbc0a.ogg,pending: m02_on_air,"Lookouts! Boys, say hi to the man of the hour."
+mags,mags/23374efa946c.ogg,pending: m02_on_air,"Too wide to jump. Wall on the right, like back home."
+mags,mags/ed6b9341adaf.ogg,pending: m02_on_air,Barriers. Jump right into 'em and you'll vault without losing speed.
+echo,echo/8ed816c39ddb.ogg,pending: m03_glass_district,"...and the weather out west is, uh, glass. Mostly glass. Bring a broom. Back to you."
+host,host/19b497264973.ogg,pending: m03_glass_district,"Now, the Glass District's got a toll, folks. And Parker doesn't strike me as a guy who pays tolls."
+mags,mags/1025aaf0bb7a.ogg,pending: m03_glass_district,"Glass coming up. Don't slow down, jump right through it."
+mags,mags/a210b66f7cfa.ogg,pending: m03_glass_district,"Spotters on the toll roof. They're calling you in to him. Shut 'em up, or just get past."
+mags,mags/d0eb6514f5e0.ogg,pending: m03_glass_district,That bridge is the only way over the Silt. Get across before he gets ideas.
 raider,raider/256548278328.ogg,static taunt,SAY HI TO ECHO!
 raider,raider/463d153ed062.ogg,static taunt,WAVE TO THE LISTENERS!
 raider,raider/539dbc23efa9.ogg,static taunt,"STAY DOWN, YOU LITTLE..."

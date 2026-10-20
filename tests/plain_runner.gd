@@ -37,10 +37,14 @@ static func fix_gate_takeoffs(mission: Dictionary) -> void:
 
 ## The bot steps a plain runner keeps: the moves the line can't be passed
 ## without (jumps, slides under bars, door kicks) and lane changes, but no
-## optional rolls. It still earns nothing for them (make_plain).
-static func plain_steps(bot: Array) -> Array:
+## optional rolls (and on a "bot_steady" level no flips or 360s either: a
+## trick in the air is harder to hit). It still earns nothing for them
+## (make_plain).
+static func plain_steps(bot: Array, no_tricks := false) -> Array:
 	var out: Array = []
 	for s: Array in bot:
+		if no_tricks and s[1] in ["flip", "front", "spin"]:
+			continue
 		if s[1] != "roll":
 			out.append(s)
 		elif not is_nan(float(s[2])):
