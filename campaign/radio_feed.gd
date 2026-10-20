@@ -189,7 +189,7 @@ func say(who: String, line: String, cue := false, local := false, fx := "", must
 		at = 0
 		while at < queue.size() and _rank(queue[at]) <= _rank(l):
 			at += 1
-		if at == queue.size() and at > 0 and queue.back().queued_at == _clock:
+		if at == queue.size() and at > 0 and queue.back().queued_at == _clock and queue.back().has("stale_at"):
 			prev = queue.back()
 	# When it's due: now, or for a conversation's next line, once the
 	# lines before it have been said.
