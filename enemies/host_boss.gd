@@ -64,6 +64,7 @@ var _awake := 0.0
 func _ready() -> void:
 	super()
 	max_health = 1000.0
+	one_shot_headshot = false
 	health = max_health
 	# He's a showman, not a soldier: quick to aim, a light carbine.
 	windup = 0.75

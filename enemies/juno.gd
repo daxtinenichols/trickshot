@@ -37,6 +37,7 @@ const ENRAGE_REPOSITION := 0.75
 func _ready() -> void:
 	super()
 	max_health = 420.0
+	one_shot_headshot = false
 	health = max_health
 	move_speed = 8.0
 	windup = 0.65

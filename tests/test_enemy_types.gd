@@ -161,12 +161,32 @@ func test_placeholder_when_models_are_off() -> void:
 func test_trooper_helmet_takes_one_headshot() -> void:
 	await _setup()
 	var t := _make("trooper", Vector3(0, 0, -12), false, true)
+	t.one_shot_headshot = false
 	await w.step(2)
 	await _shoot(t.head_position())
 	check(hits.size() == 1 and hits[0].zone == &"head", "first headshot hits the head")
 	check(not t.is_dead and not t.helmet, "it knocks the helmet off without killing")
 	await _shoot(t.head_position())
 	check(t.is_dead, "the second headshot kills")
+
+
+## Dax: every normal enemy dies to one headshot, through helmets, armor and
+## falloff, even with a weak shot. Bosses don't.
+func test_one_headshot_kills_every_normal_enemy() -> void:
+	await _setup()
+	var x := -12.0
+	for type in TYPES:
+		var e := _make(type, Vector3(x, 0, -30), false)
+		x += 3.0
+		await w.step(1)
+		var killed := e.take_hit({"zone": &"head", "damage": 1.0, "direction": Vector3.FORWARD})
+		if type == "juno":
+			check(not killed and not e.is_dead, "juno is a boss: a headshot doesn't kill her")
+		else:
+			check(killed and e.is_dead, "%s dies to one headshot" % type)
+	var b := _make("raider", Vector3(0, 0, -30), false)
+	var plain := b.take_hit({"zone": &"body", "damage": 1.0, "direction": Vector3.FORWARD})
+	check(not plain and not b.is_dead, "a body shot still does normal damage")
 
 
 func test_trooper_armor_soaks_body_shots() -> void:
