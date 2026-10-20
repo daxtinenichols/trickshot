@@ -438,7 +438,7 @@ func test_chatter_deals_every_line_before_repeating() -> void:
 
 
 func test_echo_chatter_waits_for_the_uplink() -> void:
-	await _load(_index("m10_the_climb"))
+	await _load(_index("l6_3_the_climb"))
 	var radio: RadioFeed = level.radio
 	RadioFeed.reset_chatter()
 	var echo := func() -> bool: return radio.queue.any(func(l: Dictionary) -> bool: return l.who == "echo")
@@ -733,7 +733,7 @@ func test_beating_the_finale_unlocks_echo() -> void:
 
 
 func test_echo_waits_in_the_studio_and_runs_the_finale() -> void:
-	await _load(_index("m11_dead_air"))
+	await _load(_index("l6_4_dead_air"))
 	var echo: Node3D = level.find_child("Figure_echo", true, false)
 	check(echo != null, "Echo stands in the Dead Air studio")
 	if echo != null:
@@ -924,19 +924,22 @@ func test_atlas_levels_meet() -> void:
 		var b := Campaign.load_mission_file(order[i][1])
 		var end := MissionBuilder.vec(a.route_end)
 		var start := MissionBuilder.vec(b.route_origin.at)
+		var lead: Array = b.get("pursuer", {}).get("lead_in", [])
+		if not lead.is_empty():
+			# A chase that opens on the chaser (Signal Out, out of Dead Air's
+			# studio): the spawn is a few strides from where the last level
+			# left off, on that floor, facing back at him where his lead-in
+			# ends; the route runs out of the room from there.
+			var at := MissionBuilder.vec(b.start.at)
+			check(at.distance_to(end) < 20.0 and absf(at.y - end.y) < 0.05 and absf(start.y - end.y) < 0.05
+				and at.distance_to(MissionBuilder.vec(lead[-1])) < 0.05,
+				"%s spawns just on from where %s ends, where the Host's lead-in ends (%s, %s)" % [b.id, a.id, at, end])
+			continue
 		check(end.distance_to(start) < 0.05, "%s ends where %s starts (%s, %s)" % [a.id, b.id, end, start])
 		check(is_equal_approx(wrapf(float(a.route_end_yaw) - float(b.route_origin.yaw), -180.0, 180.0), 0.0),
 			"facing the same way (%s, %s)" % [a.route_end_yaw, b.route_origin.yaw])
-		var lead: Array = b.get("pursuer", {}).get("lead_in", [])
-		if lead.is_empty():
-			check(MissionBuilder.vec(b.start.at).distance_to(start) < 0.05 and is_equal_approx(float(b.start.yaw), float(b.route_origin.yaw)),
-				"%s spawns there" % b.id)
-		else:
-			# A chase that opens on the chaser (Signal Out): the spawn is a few
-			# strides on, facing back at him, at the end of his lead-in.
-			var at := MissionBuilder.vec(b.start.at)
-			check(at.distance_to(start) < 20.0 and absf(at.y - start.y) < 0.05 and at.distance_to(MissionBuilder.vec(lead[-1])) < 0.05,
-				"%s spawns just on from there, where the Host's lead-in ends" % b.id)
+		check(MissionBuilder.vec(b.start.at).distance_to(start) < 0.05 and is_equal_approx(float(b.start.yaw), float(b.route_origin.yaw)),
+			"%s spawns there" % b.id)
 	check(met >= 2, "neighbouring atlas levels were checked (%d)" % met)
 
 
@@ -1618,7 +1621,7 @@ func test_route_finishes_keep_you_on_the_roof() -> void:
 		await tree.physics_frame
 	# (Stages 5 and 6 are atlas levels now: they run on, no finish; Signal
 	# Out ends on its set piece.)
-	check(ran >= 3, "route finishes were tried (%d)" % ran)
+	check(ran >= 1, "route finishes were tried (%d)" % ran)
 
 
 ## Runs the loaded mission's route bot (or its fork lines) to the end.

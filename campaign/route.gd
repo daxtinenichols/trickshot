@@ -31,6 +31,8 @@ const WALL_X := 6.5
 const FORK_SPREAD := WIDTH + 6.0
 ## Length of the wide roof where a fork splits or joins.
 const PLAZA := 28.0
+## A scaffold deck's thickness ("deck": true roofs and corners).
+const DECK := 0.4
 ## A bridge deck's thickness and the distance between its piers.
 const BRIDGE_DECK := 1.0
 const BRIDGE_SPAN := 30.0
@@ -397,6 +399,9 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	var w: float = seg.get("width", WIDTH)
 	if seg.get("bridge", false):
 		_bridge(st, z0, length, w, float(seg.get("beyond", 0.0)), _bridge_breaks(seg))
+	elif seg.get("deck", false):
+		var rail: Variant = seg.get("rail", 1.0)
+		_deck(st, z0, length, w, NAN if rail is bool and not rail else float(rail))
 	elif st.y > 0.5 and seg.get("building", true):
 		# ("building": false: a roof of something already there, like an
 		# atlas landmark the level runs over.)
@@ -424,7 +429,7 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 		busy.append([0.0, 14.0])
 	for f: Dictionary in seg.get("do", []):
 		busy.append(_feature(st, f, z0))
-	if not seg.get("bare", false) and not seg.get("bridge", false):
+	if not seg.get("bare", false) and not seg.get("bridge", false) and not seg.get("deck", false):
 		_clutter(st, z0, length, busy)
 	st.last = {"w": w, "inside": st.inside, "bridge": seg.get("bridge", false), "look": seg.get("look", st.roof_look)}
 	st.inside = 0.0
@@ -517,6 +522,25 @@ static func _bridge(st: Dictionary, z0: float, length: float, w: float, beyond: 
 		d += BRIDGE_SPAN
 
 
+## A scaffold deck instead of a building: steel plank on beams, hung off
+## whatever it runs along (no piers, so decks can pass over each other),
+## with a railing on its open side ("rail": 1 right, -1 left, 0 both,
+## false none: a floor indoors).
+static func _deck(st: Dictionary, z0: float, length: float, w: float, rail: float) -> void:
+	var y: float = st.y
+	var mid := z0 - length * 0.5
+	_add(st, {"box": [0, y - DECK * 0.5, mid], "size": [w, DECK, length], "kind": "NEUTRAL", "look": "RUST", "footprint": true})
+	var d := 2.0
+	while d < length:
+		_add(st, {"box": [0, y - DECK - 0.2, z0 - d], "size": [w, 0.4, 0.3], "kind": "NEUTRAL", "look": "RUST"})
+		d += 4.0
+	for side: float in [-1.0, 1.0]:
+		if not is_nan(rail) and (rail == 0.0 or side == rail):
+			var x := side * (w * 0.5 - 0.3)
+			_add(st, {"row": "railing", "from": [x, y, z0 - 1.0], "to": [x, y, z0 - length + 1.0],
+				"count": maxi(int(length / 2.0), 2), "yaw": 90.0})
+
+
 ## Where a bridge roof's deck breaks (m along it): the "breaks" of its
 ## "bridge_collapse" set piece, if it has one.
 static func _bridge_breaks(seg: Dictionary) -> Array:
@@ -575,7 +599,16 @@ static func _turn(st: Dictionary, seg: Dictionary) -> void:
 	var far_r := b * Vector3(h, 0, 0)
 	var quad := [[-h, z0], [h, z0], [far_c.x + far_r.x, far_c.z + far_r.z], [far_c.x - far_r.x, far_c.z - far_r.z]]
 	var square := is_equal_approx(angle, PI * 0.5)
-	if st.y > 0.5:
+	if st.y > 0.5 and seg.get("deck", false) and square:
+		# A scaffold corner, railed on its outer sides (not with "rail":
+		# false, indoors).
+		_add(st, {"box": [0, st.y - DECK * 0.5, pivot], "size": [size, DECK, size], "kind": "NEUTRAL", "look": "RUST", "footprint": true})
+		if seg.get("rail", true) != false:
+			var o := 1.0 if left else -1.0
+			var e := size * 0.5 - 0.3
+			_add(st, {"row": "railing", "from": [o * e, st.y, z0 - 1.0], "to": [o * e, st.y, z0 - size + 1.0], "count": maxi(int(size / 2.0), 2), "yaw": 90.0})
+			_add(st, {"row": "railing", "from": [-e, st.y, pivot - e], "to": [e, st.y, pivot - e], "count": maxi(int(size / 2.0), 2), "yaw": 0.0})
+	elif st.y > 0.5 and seg.get("building", true):
 		if square:
 			_add(st, {"building": [0, st.y, pivot], "size": [size, size], "look": seg.get("look", st.roof_look)})
 		else:
@@ -606,7 +639,7 @@ static func _fork(st: Dictionary, seg: Dictionary) -> void:
 	var off: float = float(seg.get("spread", FORK_SPREAD)) * float(seg.get("side", 1.0))
 	var plaza: float = seg.get("plaza", PLAZA)
 	var start: float = st.z
-	_plaza(st, off, plaza)
+	_plaza(st, off, plaza, seg.get("deck", false), seg.get("building", true))
 	var split: float = st.z
 	var main_y: float = st.y
 	var main_bot: Array = st.bot
@@ -641,16 +674,17 @@ static func _join(st: Dictionary, seg: Dictionary) -> void:
 	if not is_equal_approx(st.y, f.y):
 		push_error("Route: a fork's lines must end at the same height (%.1f and %.1f)" % [st.y, f.y])
 	var end := minf(st.z, f.end)
-	if st.z > end:
+	# (Lines a hair apart in float are the same length: no sliver of filler.)
+	if st.z > end + 0.01:
 		_filler(st, st.z, end, 0.0)
-	if f.end > end:
+	if f.end > end + 0.01:
 		var y: float = st.y
 		st.y = f.y
 		_filler(st, f.end, end, f.off)
 		st.y = y
 	st.z = end
 	st.roof_end = end
-	_plaza(st, f.off, seg.get("plaza", f.plaza))
+	_plaza(st, f.off, seg.get("plaza", f.plaza), seg.get("deck", false), seg.get("building", true))
 	var alt: Array = f.bot
 	# Over to the other line on the split roof, back on the join roof.
 	alt.append([f.start - 2.0, "veer", f.off])
@@ -667,10 +701,17 @@ static func _filler(st: Dictionary, from: float, to: float, dx: float) -> void:
 	_lane(st, from, to, WIDTH, 0.0, dx)
 
 
-## A roof wide enough for both lines of a fork.
-static func _plaza(st: Dictionary, off: float, length: float) -> void:
+## A roof wide enough for both lines of a fork (a scaffold deck, railed on
+## its outer side, with `deck`; nothing at all without `building`, on a
+## floor that's already there).
+static func _plaza(st: Dictionary, off: float, length: float, deck := false, building := true) -> void:
 	var z0: float = st.z
-	if st.y > 0.5:
+	if st.y > 0.5 and deck:
+		var w := absf(off) + WIDTH
+		_add(st, {"box": [off * 0.5, st.y - DECK * 0.5, z0 - length * 0.5], "size": [w, DECK, length], "kind": "NEUTRAL", "look": "RUST", "footprint": true})
+		var x := off * 0.5 + signf(off) * (w * 0.5 - 0.3)
+		_add(st, {"row": "railing", "from": [x, st.y, z0 - 1.0], "to": [x, st.y, z0 - length + 1.0], "count": maxi(int(length / 2.0), 2), "yaw": 90.0})
+	elif st.y > 0.5 and building:
 		_add(st, {"building": [off * 0.5, st.y, z0 - length * 0.5], "size": [absf(off) + WIDTH, length], "look": st.roof_look})
 	_lane(st, z0, z0 - length, absf(off) + WIDTH, off * 0.5)
 	_set_low(st, st.y)

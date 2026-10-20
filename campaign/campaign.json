@@ -72,14 +72,14 @@
      "beat": "Up the Host's stairs and through the tape archive to the roof. Parker reaches Echo on the skybridge, and for a few seconds they're face to face. Then the Ward drag her into the tower and blow the bridge.",
      "moves": "Shaft wallruns, tank tops, the CALDER sign", "enemies": "Static hunters in the archive; Ward squads and rifles on the roof",
      "file": "res://campaign/missions/l6_2_skybridge.json"},
-    {"id": "m10_the_climb", "number": 12, "title": "The Climb", "place": "Broadcast tower exterior",
-     "beat": "Straight up the tower while the Host counts down.",
-     "moves": "Vertical wallrun chains", "enemies": "All types",
-     "file": "res://campaign/missions/m10_the_climb.json"},
-    {"id": "m11_dead_air", "number": 13, "title": "Dead Air", "place": "Studio at the top",
-     "beat": "Parker fights through the Host's crew and reaches Echo, but the Host's last trap pins Parker and sets the tower burning.",
-     "moves": "All", "enemies": "Ward heavies and the Host's elite crew",
-     "file": "res://campaign/missions/m11_dead_air.json"}
+    {"id": "l6_3_the_climb", "number": 12, "label": "6-3", "title": "The Climb", "place": "The builders' scaffold up the outside of the broadcast tower",
+     "beat": "Off the broken skybridge and up the scaffold round the tower. Halfway up, Echo takes over the Host's uplink: his cameras turn to Parker, the Ward's gun drones fall, and the whole city watches the climb.",
+     "moves": "Ramps, climbs and wallruns round the tower; the builders' lift", "enemies": "Static crews and Ward squads, deck by deck",
+     "file": "res://campaign/missions/l6_3_the_climb.json"},
+    {"id": "l6_4_dead_air", "number": 13, "label": "6-4", "title": "Dead Air", "place": "The studio floors inside the broadcast tower",
+     "beat": "Parker fights up the tower's floors to the studio and reaches Echo, zip-tied at the console. The Host's last trap drops the mast on Parker and sets the studio burning; Echo, cut free, runs.",
+     "moves": "All", "enemies": "Ward squads and the Host's elite crew, floor by floor",
+     "file": "res://campaign/missions/l6_4_dead_air.json"}
    ]
   },
   {
