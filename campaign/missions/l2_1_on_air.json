@@ -93,11 +93,6 @@
    "cue": true
   },
   {
-   "who": "host",
-   "line": "Lookouts! Boys, say hi to the man of the hour.",
-   "on": "objective:1"
-  },
-  {
    "who": "mags",
    "line": "Three gunners. Red laser on you means a shot's coming, so move. And if it gets busy, click the mouse wheel. Slows everything down for a few seconds.",
    "on": "objective:1"
