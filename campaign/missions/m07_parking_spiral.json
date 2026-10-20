@@ -72,7 +72,7 @@
   {"on": "fate:not_spared", "who": "mags", "line": "...She was one of ours, once. Keep going."},
   {"on": "complete", "who": "host", "line": "Well. Ratings are through the roof. And you're all cheering for the wrong guy. Every one of you."},
   {"on": "complete", "who": "host", "line": "Let's, uh... let's take a quick break. Word from our sponsor."},
-  {"on": "complete", "who": "vell", "line": "Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it.", "keep": true},
+  {"on": "complete", "who": "vell", "line": "Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it.", "must": true},
   {"on": "complete", "who": "mags", "line": "Parker. Those aren't raiders."}
  ],
  "chatter": {

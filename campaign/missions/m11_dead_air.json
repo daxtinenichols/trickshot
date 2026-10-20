@@ -132,7 +132,7 @@
  "radio": [
   {"on": "start", "who": "mags", "line": "Studio's on the top floor. He's put everything he's got between you and her."},
   {"on": "go", "who": "host", "line": "Port Calder, this is it. The final segment. Please hold your applause until he's dead."},
-  {"on": "checkpoint:1", "who": "echo", "line": "Parker, the vents. Behind the transmitter. I left 'em open.", "keep": true},
+  {"on": "checkpoint:1", "who": "echo", "line": "Parker, the vents. Behind the transmitter. I left 'em open.", "must": true},
   {"on": "checkpoint:1", "who": "vell", "line": "All units to the studio. This ends tonight."},
   {"on": "checkpoint:2", "who": "parker", "line": "Echo."},
   {"on": "checkpoint:2", "who": "echo", "line": "You're late."},
