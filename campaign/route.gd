@@ -804,7 +804,9 @@ static func _set_piece(st: Dictionary, f: Dictionary, d: float, z: float, z0: fl
 		sp.drop = float(f.get("drop", y))
 		sp.width = float(f.get("width", st.roof_w))
 	_add(st, sp)
-	if f.set_piece == "debris":
+	if f.set_piece == "debris" or f.has("as"):
+		# Anything left across the run (a beam, a derailed wagon): slide
+		# under or jump it.
 		if f.get("as", "hurdle") == "slide":
 			st.bot.append([z + 4.5, "crouch", NAN])
 			return [d - 6.0, d + 3.0]
@@ -974,6 +976,9 @@ static func _encounter(st: Dictionary, f: Dictionary, d: float, z: float, y: flo
 		"raiders": raiders, "mutants": mutants, "cover": cover}
 	if not others.is_empty():
 		piece.enemies = others
+	if f.has("max_aiming"):
+		# How many may aim at you at once (EnemyEncounter's default is 3).
+		piece.max_aiming = f.max_aiming
 	_add(st, piece)
 	return [d, d + length]
 
@@ -999,7 +1004,8 @@ static func _wallrun_gap(st: Dictionary, seg: Dictionary) -> void:
 
 
 ## A ramp from this level down (or up) to the next: `{"ramp_down": to_y,
-## "length": 24}`. Down is a slide ramp: crouch onto it for speed.
+## "length": 24}`. Down is a slide ramp: crouch onto it for speed ("slide":
+## true and the bot does).
 static func _ramp(st: Dictionary, seg: Dictionary) -> void:
 	var down := seg.has("ramp_down")
 	var to_y: float = seg.ramp_down if down else seg.ramp_up
@@ -1010,6 +1016,12 @@ static func _ramp(st: Dictionary, seg: Dictionary) -> void:
 	var bottom_z: float = st.z - length if down else st.z
 	_add(st, {"ramp": [0, top_y, top_z], "to": [0, bottom_y, bottom_z], "width": seg.get("width", 6.0),
 		"kind": "SLIDE" if down else "SURFACE"})
+	if down and seg.get("slide", false):
+		# The bot slides all the way down (crouch held 4 m past each press).
+		var s := 0.5
+		while s < length - 1.0:
+			st.bot.append([st.z - s, "crouch", NAN])
+			s += 3.0
 	st.y = maxf(top_y, bottom_y)
 	_lane(st, st.z, st.z - length, WIDTH, 0.0, NAN, minf(top_y, bottom_y))
 	st.y = to_y
