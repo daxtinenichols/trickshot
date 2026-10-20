@@ -32,8 +32,6 @@ mags,mags/fcbc24fddb9e.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m0
 parker,parker/2673ce8234cc.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",Why?
 parker,parker/b637ec86e1bf.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",You produced his show?
 parker,parker/ca78b33688b0.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",She's working for him?
-host,host/7f39f2bc580c.ogg,"brief: Stage 6: Calder House and the Tower (4 levels; replaces m09b, m09c, m10, m11)","Somebody cut the scaffold! What do you mean, with what?"
-host,host/eb037699ef75.ogg,"brief: Stage 6: Calder House and the Tower (4 levels; replaces m09b, m09c, m10, m11)","She told him to come up the outside, folks. On my show. I heard that, sweetheart."
 mags,mags/7ba39f445dbe.ogg,brief: m08 Storm Channels,Helmets. First shot knocks it off. Second one counts.
 mags,mags/b10b2d3f61b8.ogg,brief: m08 Storm Channels,The big Hollow's armoured on the front. Get behind it.
 mags,mags/d845924261cc.ogg,brief: m08 Storm Channels,Helmet's off. Finish it.
@@ -41,6 +39,9 @@ echo,echo/0879fd6d41a8.ogg,brief: m09 Rail Bridge,"Go left at the junction, cour
 host,host/212a253cf537.ogg,brief: m09 Rail Bridge,Who keeps doing that?
 host,host/2271e42bcb41.ogg,brief: m09 Rail Bridge,Oh no. Section nine's gone. Oh well.
 host,host/6977a55e6b21.ogg,brief: m09c Skybridge,"I'm bleeding, folks, and he's doing flips. Is that fair? Call in."
+host,host/577be3acbd81.ogg,brief: m10 The Climb,Three minutes! Two! I don't even know anymore!
+host,host/5f33f13437f2.ogg,brief: m10 The Climb,"Ten minutes, folks. That's how long he's got. After that, well. Ask his wife."
+mags,mags/6877222f4e94.ogg,brief: m11 Dead Air,The armoured ones are slow. Don't trade with them. Get past.
 echo,echo/2a010073f168.ogg,l1_1_dawn_run,Don't drop this one.
 echo,echo/5f05e116c7f0.ogg,l1_1_dawn_run,Tuesday.
 echo,echo/75634e8fa467.ogg,l1_1_dawn_run,Hey. Porch light's on.
@@ -288,6 +289,137 @@ parker,parker/2eef1e853c19.ogg,l6_2_skybridge,"Hey. Hey, I've got you."
 parker,parker/bb193077c579.ogg,l6_2_skybridge,I'm okay. I'm going up.
 vell,vell/4c91d79464ac.ogg,l6_2_skybridge,Take her across. Blow the bridge.
 vell,vell/d28fa7af681f.ogg,l6_2_skybridge,Prepare the transfer. Nobody crosses that bridge after her.
+echo,echo/08b03debbea1.ogg,l6_3_the_climb,"...if you're hearing this, I hid it on the dish before he moved me upstairs. Keep the porch light on, okay?"
+echo,echo/0cb66a187f2e.ogg,l6_3_the_climb,"Got that on camera, courier. Whole city saw it."
+echo,echo/158444b40f07.ogg,l6_3_the_climb,Hi. Port Calder? It's Echo. He's lying to you. He's been lying to you for twenty years.
+echo,echo/20852850effd.ogg,l6_3_the_climb,...the dish on this floor still talks to the whole city. He doesn't know I know how to use it.
+echo,echo/45ea6c5f27c1.ogg,l6_3_the_climb,Parker? Parker. Get up. Please.
+echo,echo/593b36f5bee5.ogg,l6_3_the_climb,"Ha! They're whistling on the roofs, courier."
+echo,echo/5a5a1baa38f4.ogg,l6_3_the_climb,I've got the cameras now. Look at him go.
+echo,echo/653fe0ceb70b.ogg,l6_3_the_climb,Don't you dare. Get up.
+echo,echo/7ac4a5e159d5.ogg,l6_3_the_climb,"Builders' lift, on your right. I've got the door."
+echo,echo/8d9860136b75.ogg,l6_3_the_climb,...counted the stairs again. Four hundred and twelve. Bring water.
+echo,echo/a1850f23f0f9.ogg,l6_3_the_climb,I saw that one go! Keep coming.
+echo,echo/adbdcdd8eaca.ogg,l6_3_the_climb,"That's it. I'm right up here, Parker. Keep coming."
+echo,echo/c2e0b941f786.ogg,l6_3_the_climb,Look at you. Half the city's up on the roofs watching.
+host,host/04b261c90b45.ogg,l6_3_the_climb,"Long way down, Parker! Well, medium. Try harder."
+host,host/1861ee301ba7.ogg,l6_3_the_climb,"Do you know what marksmen cost, Parker? Do you?"
+host,host/378d2ce46be7.ogg,l6_3_the_climb,"Folks, this is going out live and I am not happy about it."
+host,host/7228916f6fe9.ogg,l6_3_the_climb,Fine. Fine! Come on in. Studio's open. Mind the step.
+host,host/7f39f2bc580c.ogg,l6_3_the_climb,"Somebody cut the scaffold! What do you mean, with what?"
+host,host/839a40713562.ogg,l6_3_the_climb,Get her off my uplink! GET HER OFF!
+host,host/8a34ae3aacd5.ogg,l6_3_the_climb,"And he's down! Stop the clock! No, no, keep it running, it's funnier."
+host,host/8fbd2be25c48.ogg,l6_3_the_climb,Courier down! And from up here he looks so small.
+host,host/ba221b88a8d4.ogg,l6_3_the_climb,"Oh, come on! I just hired him!"
+host,host/c81ed45f3757.ogg,l6_3_the_climb,Gravity! My oldest and most loyal sponsor.
+host,host/c8ca8ca9a076.ogg,l6_3_the_climb,"Every one of those comes out of my budget, Parker. Every single one."
+host,host/ddef035f4cb2.ogg,l6_3_the_climb,Stop showing off on my tower!
+host,host/e2d98d6e5807.ogg,l6_3_the_climb,"Oh, lovely. Who's gonna guard the stairs now?"
+host,host/e37ade589b60.ogg,l6_3_the_climb,"Whoops! Mind your step, it's scaffold all the way down."
+host,host/eb037699ef75.ogg,l6_3_the_climb,"She told him to come up the outside, folks. On my show. I heard that, sweetheart."
+host,host/ef3c3f20c65a.ogg,l6_3_the_climb,"And down he goes! Elevator's out, sorry. Take the stairs."
+host,host/f1801627d39f.ogg,l6_3_the_climb,Down he goes! Do I hear a creak? I think I hear a creak.
+mags,mags/01c6412c6034.ogg,l6_3_the_climb,Got him. Higher.
+mags,mags/1c890a347936.ogg,l6_3_the_climb,Back on the scaffold. Go again.
+mags,mags/32020e66d8d7.ogg,l6_3_the_climb,Beautiful. Keep going up.
+mags,mags/59a14af014b3.ogg,l6_3_the_climb,"Good. Up, before they reload."
+mags,mags/620dbe2c03c0.ogg,l6_3_the_climb,Fell off. Get back on and climb.
+mags,mags/82569cf56b1a.ogg,l6_3_the_climb,Up. Keep climbing. They can't hold the whole tower.
+mags,mags/899d79feec44.ogg,l6_3_the_climb,"Don't look down. Look up, that's where they're shooting from."
+mags,mags/997c66fbb8aa.ogg,l6_3_the_climb,"Up. Find cover on the scaffold, then go."
+mags,mags/9cbdacc00a49.ogg,l6_3_the_climb,Easy. Up you get.
+mags,mags/eac057fc6964.ogg,l6_3_the_climb,"That's it. Up, up, up."
+mags,mags/ef93dfc88df9.ogg,l6_3_the_climb,"Gun drones just went dark. That was her! Climb, Parker!"
+mags,mags/feeb599e0cbb.ogg,l6_3_the_climb,"That's it, now keep climbing."
+parker,parker/1919a410c0da.ogg,l6_3_the_climb,"I'm coming, Echo."
+echo,echo/095d631df2fa.ogg,l6_4_dead_air,Look at you. You never could walk anywhere like a normal person.
+echo,echo/218c79e5c021.ogg,l6_4_dead_air,Ha! Yes!
+echo,echo/2c40ab8736f5.ogg,l6_4_dead_air,"Get up, get up, get up."
+echo,echo/3a34f5d88b19.ogg,l6_4_dead_air,"Parker, the vents. Behind the transmitter. I left 'em open."
+echo,echo/52ca824682d4.ogg,l6_4_dead_air,You're late.
+echo,echo/7f5cbbebedc0.ogg,l6_4_dead_air,"No. No, no. Get up. Parker, get up."
+echo,echo/8a32654ab48d.ogg,l6_4_dead_air,"Parker! Parker, you're pinned. The whole floor's on fire."
+echo,echo/bddfa71dec7a.ogg,l6_4_dead_air,...the safe code's his birthday. Of course it is. He made me sing at it.
+echo,echo/c51c4cc20add.ogg,l6_4_dead_air,"...he does the callers himself, you know. The voices. Half the people who ring in are him."
+echo,echo/d2c934709a23.ogg,l6_4_dead_air,"One less. Keep coming, I'm right here."
+echo,echo/e6b5724c038b.ogg,l6_4_dead_air,"...he keeps the old tapes in the office safe. Twenty years of lies. All labelled, too."
+echo,echo/f3c215761d7e.ogg,l6_4_dead_air,Nice. Do that again.
+host,host/42da7778c082.ogg,l6_4_dead_air,"Stop! Stop it! That's... no, actually, that's great radio. Keep going."
+host,host/4e16f70ff2b3.ogg,l6_4_dead_air,"Tripped on my carpet! That's imported, Parker."
+host,host/4e474739d985.ogg,l6_4_dead_air,"Oh, I love a reunion. Okay. This is my favourite bit."
+host,host/59b80c1525ef.ogg,l6_4_dead_air,Down he goes! And that is why we don't run in the studio.
+host,host/8b5561b5f7eb.ogg,l6_4_dead_air,That was my best sound guy. Well. My only sound guy.
+host,host/8d1ac93b7593.ogg,l6_4_dead_air,"He's down! Oh, Echo, the look on your face. I wish radio had pictures."
+host,host/9f884127fd73.ogg,l6_4_dead_air,"That's coming out of your fee, Parker. Oh, you don't get a fee? Well, now you owe me."
+host,host/bcdfad8e3ad1.ogg,l6_4_dead_air,Ah! On air! You can't do that on air!
+host,host/c547daa36520.ogg,l6_4_dead_air,Not in my studio. Not in my lovely studio.
+host,host/d07933c34b6d.ogg,l6_4_dead_air,"And he's down! So close, folks. So, so close."
+host,host/d5e32c2a682b.ogg,l6_4_dead_air,"Folks, he's doing this in front of the whole city. In my building."
+host,host/de9c75419ba1.ogg,l6_4_dead_air,That was my floor manager. I'll need a new one.
+host,host/e218384e68b4.ogg,l6_4_dead_air,That was security! I need those!
+host,host/e4587397bc66.ogg,l6_4_dead_air,"Port Calder, this is it. The final segment. Please hold your applause until he's dead."
+host,host/e9d8488673c0.ogg,l6_4_dead_air,"Ooh, he's tangled in the mic cables! Classic rookie."
+host,host/eaf4cd29bcf6.ogg,l6_4_dead_air,Port Calder... the grand finale.
+host,host/eff5a1e77883.ogg,l6_4_dead_air,"Somebody, anybody, please stop letting him do that."
+mags,mags/091bf021e2de.ogg,l6_4_dead_air,Studio's on the top floor. He's put everything he's got between you and her.
+mags,mags/198c06a66603.ogg,l6_4_dead_air,Lovely. Keep pushing.
+mags,mags/404339b9ad3f.ogg,l6_4_dead_air,"Up, kid. Last stretch."
+mags,mags/8f57d26332a6.ogg,l6_4_dead_air,Up. You're so close.
+mags,mags/9ca4443f619a.ogg,l6_4_dead_air,That's it. Almost there.
+mags,mags/9f8d86b05100.ogg,l6_4_dead_air,Good. Don't stop.
+mags,mags/c251295d00b1.ogg,l6_4_dead_air,Up. You're nearly at her. Get up.
+mags,mags/f032a41940da.ogg,l6_4_dead_air,Nice. Keep going.
+parker,parker/38374530ec51.ogg,l6_4_dead_air,Draw him off me. Run. I'll talk you down.
+parker,parker/4da3fc7a75d1.ogg,l6_4_dead_air,Traffic.
+parker,parker/bd9cb607c7ad.ogg,l6_4_dead_air,Echo.
+vell,vell/22df3d263b74.ogg,l6_4_dead_air,All units to the studio. This ends tonight.
+echo,echo/2c49aa070bed.ogg,l7_1_signal_out,"Running. Talk to me, Parker."
+echo,echo/3088e7e480e2.ogg,l7_1_signal_out,"Parker, the mast's going! The whole tower's coming apart!"
+echo,echo/316c8beb808b.ogg,l7_1_signal_out,"Port Calder, it's Echo. And Parker. The show's over."
+echo,echo/8fb060d0a5c0.ogg,l7_1_signal_out,He's still behind me. I can hear him laughing.
+echo,echo/c20e59ff0519.ogg,l7_1_signal_out,I'm here. Hang on. I'm coming back for you.
+echo,echo/ca3f46c3f9a5.ogg,l7_1_signal_out,"And that's the show, Port Calder."
+host,host/105e09d78aa2.ogg,l7_1_signal_out,"Show-off. God, you two deserve each other."
+host,host/1ba4ee3812bc.ogg,l7_1_signal_out,Almost... almost got you...
+host,host/2b1542db436d.ogg,l7_1_signal_out,"Ooh, tripped! I'm right behind you."
+host,host/4a8b94ffb927.ogg,l7_1_signal_out,"Gotcha! Oh, don't cry, darling. We'll do another take."
+host,host/4ad616eb9404.ogg,l7_1_signal_out,"Down there? Oh, sweetheart, I'll find you down there too."
+host,host/5038dc5c8f5e.ogg,l7_1_signal_out,"Not the Silt yet, sweetheart. I want you on air."
+host,host/6f55021e676f.ogg,l7_1_signal_out,"Ha! Down she goes. Oh, I'm enjoying this."
+host,host/7263bbb2ce1b.ogg,l7_1_signal_out,"Where are you taking me, Echo? That's... that's the Silt. What are those... Echo? ECHO!"
+host,host/75524b97f685.ogg,l7_1_signal_out,"Change of plans, Port Calder! Our courier's stuck under my antenna, and the wife's making a run for it!"
+host,host/78651939a285.ogg,l7_1_signal_out,Did you miss me? Tell me you missed me.
+host,host/93a153cf480b.ogg,l7_1_signal_out,Stop that! Stop being good at things!
+host,host/9ddcd73ae23f.ogg,l7_1_signal_out,"I can hear your heart going, darling."
+host,host/b5586b0e112e.ogg,l7_1_signal_out,"I used to chase ratings, darling. This is way more fun."
+host,host/c1e8ab8c4292.ogg,l7_1_signal_out,"Slowing down, sweetheart? I can hear you breathing."
+host,host/d3b81a1bf18c.ogg,l7_1_signal_out,"Oops! I'm getting closer, sweetheart."
+host,host/de052e848b60.ogg,l7_1_signal_out,"Got you! Oh, let's do that bit again."
+host,host/ed51334f075f.ogg,l7_1_signal_out,"Shortcut! I know every stair in this tower, sweetheart."
+host,host/f213a987f4f4.ogg,l7_1_signal_out,Caught you! Folks love a rerun.
+host,host/f7a7597e6363.ogg,l7_1_signal_out,"Ooh, caught! Don't worry, I'll let you go. For the cameras."
+juno,juno/10ec5191ae01.ogg,l7_1_signal_out,"Not bad, courier. Not bad."
+mags,mags/4f0ff997c5c6.ogg,l7_1_signal_out,Line camp to anyone out there. They made it. Both of them.
+parker,parker/13ea9e0d7904.ogg,l7_1_signal_out,Yes! Keep that going!
+parker,parker/1f7a09f7f0fb.ogg,l7_1_signal_out,Too wide to jump. Wall on your right. Run it.
+parker,parker/344576ff5e8f.ogg,l7_1_signal_out,"Barriers. Jump into 'em, you'll go over without slowing down."
+parker,parker/4c70b8100c85.ogg,l7_1_signal_out,"Keep moving, Echo! Don't let him close in!"
+parker,parker/5b5b1cd6fc2a.ogg,l7_1_signal_out,"Okay. Okay, breathe. Go again, and don't stop."
+parker,parker/7a8fb9523789.ogg,l7_1_signal_out,Echo. Run. Don't look back. I'll talk you down.
+parker,parker/7ef0bb0efb75.ogg,l7_1_signal_out,That's it. That's my girl.
+parker,parker/8597ccba91c4.ogg,l7_1_signal_out,Go outside. It's a nice day.
+parker,parker/8c0c8958984c.ogg,l7_1_signal_out,Echo?
+parker,parker/99ef485f7ea2.ogg,l7_1_signal_out,"You're okay. Get up, keep going!"
+parker,parker/9d107565c3ed.ogg,l7_1_signal_out,Ceiling's coming down! Slide!
+parker,parker/a9a55c37114a.ogg,l7_1_signal_out,Bar ahead. Slide under it.
+parker,parker/b81db1514778.ogg,l7_1_signal_out,"Up! Get up, he's coming!"
+parker,parker/c5b6c1e05d75.ogg,l7_1_signal_out,"Big drop. Crouch right before you land, then roll."
+parker,parker/c6b6b78bd612.ogg,l7_1_signal_out,"Back up! Find a way up, go!"
+parker,parker/d40e5fa15dfc.ogg,l7_1_signal_out,Ha! You've been watching me.
+parker,parker/de41dead0d1b.ogg,l7_1_signal_out,He came through the stairwell! He's right behind you!
+parker,parker/e0feb9567948.ogg,l7_1_signal_out,Don't look back. Just go!
+parker,parker/f5f2b22bc987.ogg,l7_1_signal_out,Last gap. Kick off the pillar if you need the distance.
+parker,parker/f978ff8b56ec.ogg,l7_1_signal_out,Another one's coming down. Get low!
 host,host/134451922f23.ogg,m02_on_air,Hey! He was on the clock!
 host,host/13e9a4c4e004.ogg,m02_on_air,Ooh! That one's going in the highlights.
 host,host/1d09e260d872.ogg,m02_on_air,"Oh, he shoots too! Echo, sweetheart, you never told me that."
@@ -523,137 +655,6 @@ mags,mags/d2cebe619243.ogg,m07_parking_spiral,Parker. Those aren't raiders.
 mags,mags/dcfa2258e4ae.ogg,m07_parking_spiral,Up. She wants you to stop. Don't.
 parker,parker/5a94878ac718.ogg,m07_parking_spiral,Still running.
 vell,vell/72d50fc862b7.ogg,m07_parking_spiral,Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it.
-echo,echo/08b03debbea1.ogg,m10_the_climb,"...if you're hearing this, I hid it on the dish before he moved me upstairs. Keep the porch light on, okay?"
-echo,echo/0cb66a187f2e.ogg,m10_the_climb,"Got that on camera, courier. Whole city saw it."
-echo,echo/158444b40f07.ogg,m10_the_climb,Hi. Port Calder? It's Echo. He's lying to you. He's been lying to you for twenty years.
-echo,echo/20852850effd.ogg,m10_the_climb,...the dish on this floor still talks to the whole city. He doesn't know I know how to use it.
-echo,echo/45ea6c5f27c1.ogg,m10_the_climb,Parker? Parker. Get up. Please.
-echo,echo/593b36f5bee5.ogg,m10_the_climb,"Ha! They're whistling on the roofs, courier."
-echo,echo/5a5a1baa38f4.ogg,m10_the_climb,I've got the cameras now. Look at him go.
-echo,echo/653fe0ceb70b.ogg,m10_the_climb,Don't you dare. Get up.
-echo,echo/8d9860136b75.ogg,m10_the_climb,...counted the stairs again. Four hundred and twelve. Bring water.
-echo,echo/a1850f23f0f9.ogg,m10_the_climb,I saw that one go! Keep coming.
-echo,echo/adbdcdd8eaca.ogg,m10_the_climb,"That's it. I'm right up here, Parker. Keep coming."
-echo,echo/c2e0b941f786.ogg,m10_the_climb,Look at you. Half the city's up on the roofs watching.
-host,host/04b261c90b45.ogg,m10_the_climb,"Long way down, Parker! Well, medium. Try harder."
-host,host/1861ee301ba7.ogg,m10_the_climb,"Do you know what marksmen cost, Parker? Do you?"
-host,host/378d2ce46be7.ogg,m10_the_climb,"Folks, this is going out live and I am not happy about it."
-host,host/577be3acbd81.ogg,m10_the_climb,Three minutes! Two! I don't even know anymore!
-host,host/5f33f13437f2.ogg,m10_the_climb,"Ten minutes, folks. That's how long he's got. After that, well. Ask his wife."
-host,host/7228916f6fe9.ogg,m10_the_climb,Fine. Fine! Come on in. Studio's open. Mind the step.
-host,host/839a40713562.ogg,m10_the_climb,Get her off my uplink! GET HER OFF!
-host,host/8a34ae3aacd5.ogg,m10_the_climb,"And he's down! Stop the clock! No, no, keep it running, it's funnier."
-host,host/8fbd2be25c48.ogg,m10_the_climb,Courier down! And from up here he looks so small.
-host,host/ba221b88a8d4.ogg,m10_the_climb,"Oh, come on! I just hired him!"
-host,host/c81ed45f3757.ogg,m10_the_climb,Gravity! My oldest and most loyal sponsor.
-host,host/c8ca8ca9a076.ogg,m10_the_climb,"Every one of those comes out of my budget, Parker. Every single one."
-host,host/ddef035f4cb2.ogg,m10_the_climb,Stop showing off on my tower!
-host,host/e2d98d6e5807.ogg,m10_the_climb,"Oh, lovely. Who's gonna guard the stairs now?"
-host,host/e37ade589b60.ogg,m10_the_climb,"Whoops! Mind your step, it's scaffold all the way down."
-host,host/ef3c3f20c65a.ogg,m10_the_climb,"And down he goes! Elevator's out, sorry. Take the stairs."
-host,host/f1801627d39f.ogg,m10_the_climb,Down he goes! Do I hear a creak? I think I hear a creak.
-mags,mags/01c6412c6034.ogg,m10_the_climb,Got him. Higher.
-mags,mags/1c890a347936.ogg,m10_the_climb,Back on the scaffold. Go again.
-mags,mags/32020e66d8d7.ogg,m10_the_climb,Beautiful. Keep going up.
-mags,mags/59a14af014b3.ogg,m10_the_climb,"Good. Up, before they reload."
-mags,mags/620dbe2c03c0.ogg,m10_the_climb,Fell off. Get back on and climb.
-mags,mags/82569cf56b1a.ogg,m10_the_climb,Up. Keep climbing. They can't hold the whole tower.
-mags,mags/899d79feec44.ogg,m10_the_climb,"Don't look down. Look up, that's where they're shooting from."
-mags,mags/997c66fbb8aa.ogg,m10_the_climb,"Up. Find cover on the scaffold, then go."
-mags,mags/9cbdacc00a49.ogg,m10_the_climb,Easy. Up you get.
-mags,mags/eac057fc6964.ogg,m10_the_climb,"That's it. Up, up, up."
-mags,mags/ef93dfc88df9.ogg,m10_the_climb,"Gun drones just went dark. That was her! Climb, Parker!"
-mags,mags/feeb599e0cbb.ogg,m10_the_climb,"That's it, now keep climbing."
-parker,parker/1919a410c0da.ogg,m10_the_climb,"I'm coming, Echo."
-echo,echo/095d631df2fa.ogg,m11_dead_air,Look at you. You never could walk anywhere like a normal person.
-echo,echo/218c79e5c021.ogg,m11_dead_air,Ha! Yes!
-echo,echo/2c40ab8736f5.ogg,m11_dead_air,"Get up, get up, get up."
-echo,echo/3a34f5d88b19.ogg,m11_dead_air,"Parker, the vents. Behind the transmitter. I left 'em open."
-echo,echo/52ca824682d4.ogg,m11_dead_air,You're late.
-echo,echo/7f5cbbebedc0.ogg,m11_dead_air,"No. No, no. Get up. Parker, get up."
-echo,echo/8a32654ab48d.ogg,m11_dead_air,"Parker! Parker, you're pinned. The whole floor's on fire."
-echo,echo/bddfa71dec7a.ogg,m11_dead_air,...the safe code's his birthday. Of course it is. He made me sing at it.
-echo,echo/c51c4cc20add.ogg,m11_dead_air,"...he does the callers himself, you know. The voices. Half the people who ring in are him."
-echo,echo/d2c934709a23.ogg,m11_dead_air,"One less. Keep coming, I'm right here."
-echo,echo/e6b5724c038b.ogg,m11_dead_air,"...he keeps the old tapes in the office safe. Twenty years of lies. All labelled, too."
-echo,echo/f3c215761d7e.ogg,m11_dead_air,Nice. Do that again.
-host,host/42da7778c082.ogg,m11_dead_air,"Stop! Stop it! That's... no, actually, that's great radio. Keep going."
-host,host/4e16f70ff2b3.ogg,m11_dead_air,"Tripped on my carpet! That's imported, Parker."
-host,host/4e474739d985.ogg,m11_dead_air,"Oh, I love a reunion. Okay. This is my favourite bit."
-host,host/59b80c1525ef.ogg,m11_dead_air,Down he goes! And that is why we don't run in the studio.
-host,host/8b5561b5f7eb.ogg,m11_dead_air,That was my best sound guy. Well. My only sound guy.
-host,host/8d1ac93b7593.ogg,m11_dead_air,"He's down! Oh, Echo, the look on your face. I wish radio had pictures."
-host,host/9f884127fd73.ogg,m11_dead_air,"That's coming out of your fee, Parker. Oh, you don't get a fee? Well, now you owe me."
-host,host/bcdfad8e3ad1.ogg,m11_dead_air,Ah! On air! You can't do that on air!
-host,host/c547daa36520.ogg,m11_dead_air,Not in my studio. Not in my lovely studio.
-host,host/d07933c34b6d.ogg,m11_dead_air,"And he's down! So close, folks. So, so close."
-host,host/d5e32c2a682b.ogg,m11_dead_air,"Folks, he's doing this in front of the whole city. In my building."
-host,host/de9c75419ba1.ogg,m11_dead_air,That was my floor manager. I'll need a new one.
-host,host/e218384e68b4.ogg,m11_dead_air,That was security! I need those!
-host,host/e4587397bc66.ogg,m11_dead_air,"Port Calder, this is it. The final segment. Please hold your applause until he's dead."
-host,host/e9d8488673c0.ogg,m11_dead_air,"Ooh, he's tangled in the mic cables! Classic rookie."
-host,host/eaf4cd29bcf6.ogg,m11_dead_air,Port Calder... the grand finale.
-host,host/eff5a1e77883.ogg,m11_dead_air,"Somebody, anybody, please stop letting him do that."
-mags,mags/091bf021e2de.ogg,m11_dead_air,Studio's on the top floor. He's put everything he's got between you and her.
-mags,mags/198c06a66603.ogg,m11_dead_air,Lovely. Keep pushing.
-mags,mags/404339b9ad3f.ogg,m11_dead_air,"Up, kid. Last stretch."
-mags,mags/6877222f4e94.ogg,m11_dead_air,The armoured ones are slow. Don't trade with them. Get past.
-mags,mags/8f57d26332a6.ogg,m11_dead_air,Up. You're so close.
-mags,mags/9ca4443f619a.ogg,m11_dead_air,That's it. Almost there.
-mags,mags/9f8d86b05100.ogg,m11_dead_air,Good. Don't stop.
-mags,mags/c251295d00b1.ogg,m11_dead_air,Up. You're nearly at her. Get up.
-mags,mags/f032a41940da.ogg,m11_dead_air,Nice. Keep going.
-parker,parker/38374530ec51.ogg,m11_dead_air,Draw him off me. Run. I'll talk you down.
-parker,parker/4da3fc7a75d1.ogg,m11_dead_air,Traffic.
-parker,parker/bd9cb607c7ad.ogg,m11_dead_air,Echo.
-vell,vell/22df3d263b74.ogg,m11_dead_air,All units to the studio. This ends tonight.
-echo,echo/2c49aa070bed.ogg,m12_signal_out,"Running. Talk to me, Parker."
-echo,echo/3088e7e480e2.ogg,m12_signal_out,"Parker, the mast's going! The whole tower's coming apart!"
-echo,echo/316c8beb808b.ogg,m12_signal_out,"Port Calder, it's Echo. And Parker. The show's over."
-echo,echo/8fb060d0a5c0.ogg,m12_signal_out,He's still behind me. I can hear him laughing.
-echo,echo/c20e59ff0519.ogg,m12_signal_out,I'm here. Hang on. I'm coming back for you.
-echo,echo/ca3f46c3f9a5.ogg,m12_signal_out,"And that's the show, Port Calder."
-host,host/105e09d78aa2.ogg,m12_signal_out,"Show-off. God, you two deserve each other."
-host,host/1ba4ee3812bc.ogg,m12_signal_out,Almost... almost got you...
-host,host/2b1542db436d.ogg,m12_signal_out,"Ooh, tripped! I'm right behind you."
-host,host/4a8b94ffb927.ogg,m12_signal_out,"Gotcha! Oh, don't cry, darling. We'll do another take."
-host,host/4ad616eb9404.ogg,m12_signal_out,"Down there? Oh, sweetheart, I'll find you down there too."
-host,host/5038dc5c8f5e.ogg,m12_signal_out,"Not the Silt yet, sweetheart. I want you on air."
-host,host/6f55021e676f.ogg,m12_signal_out,"Ha! Down she goes. Oh, I'm enjoying this."
-host,host/7263bbb2ce1b.ogg,m12_signal_out,"Where are you taking me, Echo? That's... that's the Silt. What are those... Echo? ECHO!"
-host,host/75524b97f685.ogg,m12_signal_out,"Change of plans, Port Calder! Our courier's stuck under my antenna, and the wife's making a run for it!"
-host,host/78651939a285.ogg,m12_signal_out,Did you miss me? Tell me you missed me.
-host,host/93a153cf480b.ogg,m12_signal_out,Stop that! Stop being good at things!
-host,host/9ddcd73ae23f.ogg,m12_signal_out,"I can hear your heart going, darling."
-host,host/b5586b0e112e.ogg,m12_signal_out,"I used to chase ratings, darling. This is way more fun."
-host,host/c1e8ab8c4292.ogg,m12_signal_out,"Slowing down, sweetheart? I can hear you breathing."
-host,host/d3b81a1bf18c.ogg,m12_signal_out,"Oops! I'm getting closer, sweetheart."
-host,host/de052e848b60.ogg,m12_signal_out,"Got you! Oh, let's do that bit again."
-host,host/ed51334f075f.ogg,m12_signal_out,"Shortcut! I know every stair in this tower, sweetheart."
-host,host/f213a987f4f4.ogg,m12_signal_out,Caught you! Folks love a rerun.
-host,host/f7a7597e6363.ogg,m12_signal_out,"Ooh, caught! Don't worry, I'll let you go. For the cameras."
-juno,juno/10ec5191ae01.ogg,m12_signal_out,"Not bad, courier. Not bad."
-mags,mags/4f0ff997c5c6.ogg,m12_signal_out,Line camp to anyone out there. They made it. Both of them.
-parker,parker/13ea9e0d7904.ogg,m12_signal_out,Yes! Keep that going!
-parker,parker/1f7a09f7f0fb.ogg,m12_signal_out,Too wide to jump. Wall on your right. Run it.
-parker,parker/344576ff5e8f.ogg,m12_signal_out,"Barriers. Jump into 'em, you'll go over without slowing down."
-parker,parker/4c70b8100c85.ogg,m12_signal_out,"Keep moving, Echo! Don't let him close in!"
-parker,parker/5b5b1cd6fc2a.ogg,m12_signal_out,"Okay. Okay, breathe. Go again, and don't stop."
-parker,parker/7a8fb9523789.ogg,m12_signal_out,Echo. Run. Don't look back. I'll talk you down.
-parker,parker/7ef0bb0efb75.ogg,m12_signal_out,That's it. That's my girl.
-parker,parker/8597ccba91c4.ogg,m12_signal_out,Go outside. It's a nice day.
-parker,parker/8c0c8958984c.ogg,m12_signal_out,Echo?
-parker,parker/99ef485f7ea2.ogg,m12_signal_out,"You're okay. Get up, keep going!"
-parker,parker/9d107565c3ed.ogg,m12_signal_out,Ceiling's coming down! Slide!
-parker,parker/a9a55c37114a.ogg,m12_signal_out,Bar ahead. Slide under it.
-parker,parker/b81db1514778.ogg,m12_signal_out,"Up! Get up, he's coming!"
-parker,parker/c5b6c1e05d75.ogg,m12_signal_out,"Big drop. Crouch right before you land, then roll."
-parker,parker/c6b6b78bd612.ogg,m12_signal_out,"Back up! Find a way up, go!"
-parker,parker/d40e5fa15dfc.ogg,m12_signal_out,Ha! You've been watching me.
-parker,parker/de41dead0d1b.ogg,m12_signal_out,He came through the stairwell! He's right behind you!
-parker,parker/e0feb9567948.ogg,m12_signal_out,Don't look back. Just go!
-parker,parker/f5f2b22bc987.ogg,m12_signal_out,Last gap. Kick off the pillar if you need the distance.
-parker,parker/f978ff8b56ec.ogg,m12_signal_out,Another one's coming down. Get low!
 raider,raider/256548278328.ogg,static taunt,SAY HI TO ECHO!
 raider,raider/463d153ed062.ogg,static taunt,WAVE TO THE LISTENERS!
 raider,raider/539dbc23efa9.ogg,static taunt,"STAY DOWN, YOU LITTLE..."
