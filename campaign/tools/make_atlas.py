@@ -121,7 +121,14 @@ def other_landmarks():
     return [
         {"id": "calder_house", "name": "Calder House", "boxes": [[150, 20, 60, 60, 0, 150]], "shade": 3},
         {"id": "meridian_mall", "name": "Meridian Mall", "boxes": [[1290, 120, 190, 150, 0, 26], [1290, -60, 120, 70, 0, 34]], "shade": 1},
-        {"id": "rail_line", "name": "Westside rail line", "boxes": [[725, -200, 550, 10, 8, 10]], "shade": 4},
+        # Westside (Stage 5, exact): the rail line's viaduct, north from the
+        # sidings to West Central and west to the end of the line, plus its
+        # branch east to Meridian. 5-2 The Rail Line runs on it and ends at
+        # "westside_exit", where Stage 6 starts ("point", "yaw").
+        {"id": "rail_line", "name": "Westside rail line", "boxes": [[555, 76, 14, 576, 8, 10], [502, -200, 104, 14, 8, 10],
+                                                                    [790, -200, 420, 10, 8, 10]], "shade": 4},
+        {"id": "westside_exit", "name": "End of the Westside line", "boxes": [[452, -200, 4, 12, 0, 9]], "shade": 4,
+         "point": [450, 10, -200], "yaw": 90},
         {"id": "dam", "name": "The dam", "boxes": [[-150, -2640, 420, 26, 0, 48]], "shade": 2},
         {"id": "terrace_wall", "name": "The Ward's wall", "boxes": [[460, -1900, 900, 6, 0, 18], [20, -2225, 6, 650, 0, 18], [900, -2225, 6, 650, 0, 18]], "shade": 3},
     ]
