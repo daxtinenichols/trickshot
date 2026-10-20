@@ -76,6 +76,8 @@ var _ground_time := 0.0
 ## After a rough or hard landing: how long ago you touched down, the speed
 ## you came in with and how hard you hit, so a late crouch still rolls.
 ## -1 when there's no landing to roll out of.
+## This tick's move smashed through a window (still in the contacts).
+var _smashed := false
 var _late_roll_age := -1.0
 var _late_roll_h := Vector3.ZERO
 var _late_roll_fall := 0.0
@@ -715,6 +717,7 @@ static func timing_quality(error: float, perfect: float, worst: float) -> float:
 
 func _move() -> void:
 	_pre_move_velocity = velocity
+	_smashed = false
 	move_and_slide()
 	_smash_breakables()
 	_body_check()
@@ -768,6 +771,7 @@ func _smash_breakables() -> void:
 		if c and c.is_in_group("windows") and c.has_method("on_impact"):
 			if c.on_impact(self, _pre_move_velocity):
 				velocity = _pre_move_velocity
+				_smashed = true
 				_trick(&"window_smash")
 				return
 
@@ -1326,8 +1330,8 @@ func _trick_feedback(trick_name: StringName, info := {}) -> void:
 
 # ---------------------------------------------------------------- walls
 
-func _wall_ray(n: Vector3, dist := RADIUS + WALL_PROBE) -> Dictionary:
-	var from := global_position + Vector3.UP * (_height * 0.5)
+func _wall_ray(n: Vector3, dist := RADIUS + WALL_PROBE, up := -1.0) -> Dictionary:
+	var from := global_position + Vector3.UP * (_height * 0.5 if up < 0.0 else up)
 	var to := from - MovementMath.horizontal(n).normalized() * dist
 	var q := PhysicsRayQueryParameters3D.create(from, to, 1)
 	q.exclude = [get_rid()]
@@ -1339,12 +1343,12 @@ func _wall_ray(n: Vector3, dist := RADIUS + WALL_PROBE) -> Dictionary:
 
 func _try_start_wallrun(f: InputFrame, wish: Vector3) -> bool:
 	var n := _wall_normal
-	if absf(n.y) > 0.3:
+	if absf(n.y) > 0.3 or _smashed:
 		return false
 	var h := MovementMath.horizontal(velocity)
 	var pre_h := MovementMath.horizontal(_pre_move_velocity)
 	var speed := maxf(h.length(), pre_h.length())
-	if speed < tuning.wallrun_min_speed or velocity.y < -9.0:
+	if speed < tuning.wallrun_min_speed or velocity.y < -tuning.wallrun_max_fall_speed:
 		return false
 	if _wallrun_used_normal != Vector3.ZERO and _wallrun_used_normal.dot(n) > 0.9:
 		return false
@@ -1355,8 +1359,16 @@ func _try_start_wallrun(f: InputFrame, wish: Vector3) -> bool:
 		return false
 	if wish.dot(n) > 0.5:
 		return false
+	if angle_to_wall > tuning.wallrun_clean_entry_angle:
+		# Nearly head-on with jump held, a climb comes first.
+		if f.jump_held and _try_wall_climb(f, false):
+			return true
+		# And the wall has to stand above your head: clipping the top of
+		# something low (a box you're jumping over) isn't a wallrun.
+		if _wall_ray(n, RADIUS + WALL_PROBE + 0.3, _height + 0.3).is_empty():
+			return false
 	# Shallow, fast entries make longer, flatter wallruns.
-	var q_angle := 1.0 - clampf(angle_to_wall / tuning.wallrun_max_entry_angle, 0.0, 1.0)
+	var q_angle := 1.0 - clampf(angle_to_wall / tuning.wallrun_clean_entry_angle, 0.0, 1.0)
 	var q_speed := clampf((speed - tuning.wallrun_min_speed) / maxf(tuning.top_speed + 2.0 - tuning.wallrun_min_speed, 0.1), 0.0, 1.0)
 	_start_wallrun(n, speed, clampf(0.65 * q_angle + 0.35 * q_speed, 0.0, 1.0))
 	return true
@@ -1371,7 +1383,7 @@ func _start_wallrun(n: Vector3, speed: float, quality: float) -> void:
 	# Your path along the wall is the angle you came in at: rising steeply,
 	# you run up at a steep angle; coming down, you run down.
 	var h := maxf(speed, tuning.wallrun_min_speed)
-	var vy := velocity.y
+	var vy := maxf(velocity.y, -tuning.wallrun_fall_carry)
 	_wallrun_angle = clampf(atan2(vy, h), -deg_to_rad(tuning.wallrun_max_down_angle), deg_to_rad(tuning.wallrun_max_up_angle))
 	_wallrun_speed = Vector2(h, vy).length()
 	velocity = (t * cos(_wallrun_angle) + Vector3.UP * sin(_wallrun_angle)) * _wallrun_speed
