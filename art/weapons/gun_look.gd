@@ -35,6 +35,12 @@ var body: RunnerBody
 
 var fp_model: Node3D
 var held_model: Node3D
+## What the runner carries instead of the gun (Pistol.held), in the hand.
+var carried_model: Node3D
+## Where the carried object sits on the hand bone: under the palm, held
+## like a parcel rather than gripped like a gun.
+const CARRY_GRIP := Transform3D(Basis(Vector3(0, 0, 1), Vector3(-1, 0, 0), Vector3(0, -1, 0)), Vector3(-0.06, 0.1, -0.02))
+var _hand: Node3D
 var _slides: Array[Node3D] = []
 var _slide_back := 0.0
 var _flashes: Array[Node3D] = []
@@ -81,6 +87,7 @@ func setup(p: Pistol, runner: RunnerBody = null) -> void:
 		held_model.transform = HAND_GRIP
 		hand.add_child(held_model)
 		_add_flash(held_model, RunnerBody.LAYER)
+		_hand = hand
 	_light = OmniLight3D.new()
 	_light.light_color = Color(1.0, 0.72, 0.38)
 	_light.omni_range = 4.5
@@ -90,6 +97,22 @@ func setup(p: Pistol, runner: RunnerBody = null) -> void:
 	pistol.builtin_visuals = false
 	pistol.shot.connect(_on_shot)
 	pistol.reloaded.connect(_on_reloaded)
+	pistol.held_changed.connect(_on_held_changed)
+	_on_held_changed(pistol.held)
+
+
+## The gun in the hand, or what's carried instead (nothing for "hands").
+func _on_held_changed(held: String) -> void:
+	if is_instance_valid(held_model):
+		held_model.visible = held == "gun"
+	if is_instance_valid(carried_model):
+		carried_model.queue_free()
+	carried_model = null
+	if _hand == null or held == "gun" or held == "hands":
+		return
+	carried_model = (load(Pistol.CARRY_MODELS) as Script).call("build", held, RunnerBody.LAYER)
+	carried_model.transform = CARRY_GRIP
+	_hand.add_child(carried_model)
 
 
 func _exit_tree() -> void:
@@ -98,6 +121,7 @@ func _exit_tree() -> void:
 		if pistol.shot.is_connected(_on_shot):
 			pistol.shot.disconnect(_on_shot)
 			pistol.reloaded.disconnect(_on_reloaded)
+			pistol.held_changed.disconnect(_on_held_changed)
 	if is_instance_valid(fp_model):
 		fp_model.queue_free()
 	if is_instance_valid(held_model):

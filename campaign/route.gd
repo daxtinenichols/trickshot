@@ -365,7 +365,7 @@ static func _roof(st: Dictionary, seg: Dictionary) -> void:
 	var z0: float = st.z
 	var w: float = seg.get("width", WIDTH)
 	if seg.get("bridge", false):
-		_bridge(st, z0, length, w, float(seg.get("beyond", 0.0)))
+		_bridge(st, z0, length, w, float(seg.get("beyond", 0.0)), _bridge_breaks(seg))
 	elif st.y > 0.5 and seg.get("building", true):
 		# ("building": false: a roof of something already there, like an
 		# atlas landmark the level runs over.)
@@ -456,13 +456,26 @@ static func _finish_door(st: Dictionary, y: float, z: float) -> void:
 ## steel girders under its edges and railings along them. `beyond` m more
 ## of the span carry on past the segment's end (the far side of the bridge,
 ## seen but not run).
-static func _bridge(st: Dictionary, z0: float, length: float, w: float, beyond: float) -> void:
+static func _bridge(st: Dictionary, z0: float, length: float, w: float, beyond: float, breaks: Array = []) -> void:
 	var y: float = st.y
 	var total := length + beyond
 	var mid := z0 - total * 0.5
-	_add(st, {"box": [0, y - BRIDGE_DECK * 0.5, mid], "size": [w, BRIDGE_DECK, total], "kind": "NEUTRAL", "footprint": true})
+	# The deck and girders come in pieces between the breaks, so a
+	# "bridge_collapse" set piece can drop each one on its own.
+	var cuts: Array = [0.0]
+	for b: float in breaks:
+		if b > 0.0 and b < total:
+			cuts.append(b)
+	cuts.append(total)
+	cuts.sort()
+	for i in cuts.size() - 1:
+		var a: float = cuts[i]
+		var l: float = cuts[i + 1] - a
+		var m := z0 - a - l * 0.5
+		_add(st, {"box": [0, y - BRIDGE_DECK * 0.5, m], "size": [w, BRIDGE_DECK, l], "kind": "NEUTRAL", "footprint": true})
+		for side: float in [-1.0, 1.0]:
+			_add(st, {"box": [side * (w * 0.5 - 0.8), y - BRIDGE_DECK - 0.6, m], "size": [0.6, 1.2, l], "kind": "NEUTRAL", "look": "RUST"})
 	for side: float in [-1.0, 1.0]:
-		_add(st, {"box": [side * (w * 0.5 - 0.8), y - BRIDGE_DECK - 0.6, mid], "size": [0.6, 1.2, total], "kind": "NEUTRAL", "look": "RUST"})
 		var x := side * (w * 0.5 - 0.3)
 		_add(st, {"row": "railing", "from": [x, y, z0 - 1.0], "to": [x, y, z0 - total + 1.0],
 			"count": maxi(int(total / 2.0), 2), "yaw": 90.0})
@@ -471,6 +484,15 @@ static func _bridge(st: Dictionary, z0: float, length: float, w: float, beyond: 
 	while d < total:
 		_add(st, {"box": [0, (y - BRIDGE_DECK - 1.2) * 0.5, z0 - d], "size": [w * 0.5, y - BRIDGE_DECK - 1.2, 2.4], "kind": "NEUTRAL"})
 		d += BRIDGE_SPAN
+
+
+## Where a bridge roof's deck breaks (m along it): the "breaks" of its
+## "bridge_collapse" set piece, if it has one.
+static func _bridge_breaks(seg: Dictionary) -> Array:
+	for f: Dictionary in seg.get("do", []):
+		if f.get("set_piece", "") == "bridge_collapse":
+			return f.get("breaks", [])
+	return []
 
 
 ## Walls and a roof over a roof's whole length, `height` m up: the inside
@@ -762,9 +784,10 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 
 ## A chase set piece (campaign/set_piece.gd) at `at` m along the roof, `x`
 ## across (`up` above it), fired when you reach `trigger` m along it: {"set_piece":
-## "debris", "as": "slide"}, "host" ("gap"), "blast" ("size") or "mast"
-## ("height", "fall_yaw"). A fallen beam is an obstacle, so the bot slides
-## under or jumps it.
+## "debris", "as": "slide"}, "host" ("gap"), "blast" ("size"), "mast"
+## ("height", "fall_yaw") or, on a bridge roof, "bridge_collapse"
+## ("breaks": m along the roof where the deck splits). A fallen beam is an
+## obstacle, so the bot slides under or jumps it.
 static func _set_piece(st: Dictionary, f: Dictionary, d: float, z: float, z0: float, y: float) -> Array:
 	var sp := {}
 	for k: String in f:
@@ -772,6 +795,14 @@ static func _set_piece(st: Dictionary, f: Dictionary, d: float, z: float, z0: fl
 			sp[k] = f[k]
 	sp.at = [float(f.get("x", 0.0)), y + float(f.get("up", 0.0)), z]
 	sp.trigger = [float(f.get("trigger_x", 0.0)), y + 1.0, z0 - float(f.get("trigger", d - 26.0))]
+	if f.set_piece == "bridge_collapse":
+		# Its breaks as distances ahead of it (local -Z), down to the street.
+		var ahead: Array = []
+		for b: float in f.get("breaks", []):
+			ahead.append(d - b)
+		sp.breaks = ahead
+		sp.drop = float(f.get("drop", y))
+		sp.width = float(f.get("width", st.roof_w))
 	_add(st, sp)
 	if f.set_piece == "debris":
 		if f.get("as", "hurdle") == "slide":
