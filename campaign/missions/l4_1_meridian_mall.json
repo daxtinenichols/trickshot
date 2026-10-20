@@ -62,9 +62,9 @@
   },
   {
    "type": "reach",
-   "name": "electronics",
-   "text": "Up to electronics",
-   "at": "@Electronics"
+   "name": "the top floor",
+   "text": "Up to the top floor",
+   "at": "@Top floor"
   },
   {
    "type": "reach",
@@ -148,12 +148,6 @@
    "on": "set_piece:tvs",
    "who": "host",
    "line": "Technical difficulties, folks. Nobody touch anything.",
-   "must": true
-  },
-  {
-   "on": "set_piece:tvs",
-   "who": "parker",
-   "line": "That was her.",
    "must": true
   },
   {
@@ -706,42 +700,6 @@
      "checkpoint": "Food court",
      "at": 3,
      "objective": 2
-    },
-    {
-     "radio": {
-      "who": "host",
-      "line": "Hang on. Who's that in his ear? Is that... that's Margaret! Folks, she used to produce this show. Hi, Mags. Still sulking?",
-      "must": true
-     },
-     "at": 12,
-     "radius": 8
-    },
-    {
-     "radio": {
-      "who": "mags",
-      "line": "Ignore him.",
-      "must": true
-     },
-     "at": 12,
-     "radius": 8
-    },
-    {
-     "radio": {
-      "who": "parker",
-      "line": "You produced his show?",
-      "must": true
-     },
-     "at": 12,
-     "radius": 8
-    },
-    {
-     "radio": {
-      "who": "mags",
-      "line": "Twenty years ago. Later, Parker. Run.",
-      "must": true
-     },
-     "at": 12,
-     "radius": 8
     },
     {
      "hurdles": true,
@@ -1895,8 +1853,36 @@
    "do": [
     {
      "radio": {
+      "who": "host",
+      "line": "Hang on. Who's that in his ear? Is that... that's Margaret! Folks, she used to produce this show. Hi, Mags. Still sulking?",
+      "must": true
+     },
+     "at": 2,
+     "radius": 8
+    },
+    {
+     "radio": {
       "who": "mags",
-      "line": "Careful. Every shot you fire brings more of them."
+      "line": "Ignore him.",
+      "must": true
+     },
+     "at": 2,
+     "radius": 8
+    },
+    {
+     "radio": {
+      "who": "parker",
+      "line": "You produced his show?",
+      "must": true
+     },
+     "at": 2,
+     "radius": 8
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Twenty years ago. Later, Parker. Run.",
+      "must": true
      },
      "at": 2,
      "radius": 8
@@ -3504,6 +3490,19 @@
    "bare": true,
    "do": [
     {
+     "set_piece": "tvs",
+     "at": 1,
+     "trigger": 3,
+     "radius": 8,
+     "length": 16,
+     "hold": 8
+    },
+    {
+     "label": "ELECTRONICS",
+     "at": 2,
+     "size": 0.8
+    },
+    {
      "piece": {
       "box": [
        -5.93,
@@ -3918,20 +3917,12 @@
    "bare": true,
    "do": [
     {
-     "checkpoint": "Electronics",
+     "checkpoint": "Top floor",
      "at": 3,
      "objective": 7
     },
     {
-     "set_piece": "tvs",
-     "at": 2,
-     "trigger": 8,
-     "radius": 8,
-     "length": 34,
-     "hold": 8
-    },
-    {
-     "label": "ELECTRONICS",
+     "label": "HOUSEWARES",
      "at": 4,
      "size": 0.8
     },
