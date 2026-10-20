@@ -79,11 +79,16 @@
     {"id": "l6_4_dead_air", "number": 13, "label": "6-4", "title": "Dead Air", "place": "The studio floors inside the broadcast tower",
      "beat": "Parker fights up the tower's floors to the studio and reaches Echo, zip-tied at the console. The Host's last trap drops the mast on Parker and sets the studio burning; Echo, cut free, runs.",
      "moves": "All", "enemies": "Ward squads and the Host's elite crew, floor by floor",
-     "file": "res://campaign/missions/l6_4_dead_air.json"},
-    {"id": "m12_signal_out", "number": 14, "title": "Signal Out", "place": "Down the burning tower and across the roofs",
-     "beat": "You play Echo, and for the first time you are the one being chased. She runs to draw the Host away from Parker; he hunts her himself, calling it live. Slow down and he catches her.",
+     "file": "res://campaign/missions/l6_4_dead_air.json"}
+   ]
+  },
+  {
+   "title": "Stage 7: Signal Out",
+   "missions": [
+    {"id": "l7_1_signal_out", "number": 14, "label": "7-1", "title": "Signal Out", "place": "Out of the burning studio, over the west roofs, down to the Silt",
+     "beat": "You play Echo, and for the first time you are the one being chased. Parker is pinned in the burning studio; the Host comes through the smoke and hunts her himself, calling it live. She leads him down to the Silt, over a girder that holds her and not him, and the Hollows close over him on her own camera.",
      "moves": "All, as Echo; pure speed", "enemies": "The Host as a pursuing boss",
-     "file": "res://campaign/missions/m12_signal_out.json", "unlocks": "echo"}
+     "file": "res://campaign/missions/l7_1_signal_out.json", "unlocks": "echo"}
    ]
   }
  ]

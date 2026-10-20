@@ -49,6 +49,14 @@ var catchup_speed := 15.0
 var shortcut_range := 12.0
 var shortcut_ratio := 1.3
 var display_name := "THE HOST"
+## Where he comes from at the start ("lead_in": [[x, y, z], ...], ending at
+## the spawn): he stands at the first point, in sight, and runs the rest
+## before your own path, so the chase opens with him coming at you instead
+## of appearing after `delay`. Only at the start, not at checkpoints.
+var lead_in := PackedVector3Array()
+## A set piece has him (the Silt fall at the end of Signal Out): tick() and
+## the catch leave him alone, and the set piece moves him.
+var scripted := false
 
 ## Your path so far, and the distance along it to each point.
 var crumbs := PackedVector3Array()
@@ -88,6 +96,10 @@ func configure(d: Dictionary) -> void:
 		if d.has(k):
 			set(k, float(d[k]))
 	display_name = d.get("name", display_name)
+	lead_in.clear()
+	for a: Variant in d.get("lead_in", []):
+		if a is Array and a.size() >= 3:
+			lead_in.append(Vector3(a[0], a[1], a[2]))
 
 
 func _ready() -> void:
@@ -98,21 +110,31 @@ func _ready() -> void:
 func reset(at: Vector3) -> void:
 	crumbs = PackedVector3Array([at])
 	_lengths = PackedFloat32Array([0.0])
+	var lead := lead_in.size() >= 2 and lead_in[lead_in.size() - 1].distance_to(at) < 1.0
+	if lead:
+		crumbs = lead_in.duplicate()
+		crumbs[crumbs.size() - 1] = at
+		_lengths = PackedFloat32Array([0.0])
+		for i in range(1, crumbs.size()):
+			_lengths.append(_lengths[i - 1] + crumbs[i].distance_to(crumbs[i - 1]))
 	along = 0.0
 	_crumb_i = 0
-	_wait = delay
+	scripted = false
+	_wait = 0.0 if lead else delay
 	_chase_time = 0.0
 	gap = INF
 	direct = INF
-	pos = at
 	velocity = Vector3.ZERO
 	lunging = false
 	cutting = false
 	since_close_in = 1 << 20
 	caught = false
 	catch_ticks = 0
-	global_position = at
-	visible = false
+	pos = crumbs[0]
+	global_position = pos
+	visible = lead
+	if lead:
+		_face(at - pos)
 
 
 func waiting() -> bool:
@@ -149,6 +171,8 @@ func path_gap() -> float:
 
 
 func tick(target: Vector3, dt: float) -> void:
+	if scripted:
+		return
 	if crumbs.is_empty():
 		reset(target)
 	var last := crumbs[crumbs.size() - 1]
@@ -187,7 +211,7 @@ func tick(target: Vector3, dt: float) -> void:
 
 
 func has_caught() -> bool:
-	return not in_grace() and gap <= catch_distance
+	return not scripted and not in_grace() and gap <= catch_distance
 
 
 ## He's got you at `target` (your position): from now on hold() closes in
@@ -208,7 +232,7 @@ func catch(target: Vector3) -> void:
 ## you there. Call every physics tick instead of tick().
 func hold(target: Vector3, dt: float) -> void:
 	# A set piece moving him itself (e.g. a fall) keeps him.
-	if get("scripted") and not caught:
+	if scripted and not caught:
 		return
 	var before := pos
 	lunging = false
