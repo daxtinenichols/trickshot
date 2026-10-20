@@ -1008,7 +1008,7 @@
    {"piece": {"label": "PRIVATE", "at": [4.85, 2.6, -95.9], "size": 0.3}, "at": 0},
    {"label": "THE HOST", "at": 30, "size": 0.7},
    {"door": 0, "at": 54, "look": "WOOD"},
-   {"radio": {"who": "host", "line": "Look at this. You've tracked mud all over my carpet.", "keep": true}, "at": 58, "radius": 6},
+   {"radio": {"who": "host", "line": "Look at this. You've tracked mud all over my carpet.", "must": true}, "at": 58, "radius": 6},
    {"encounter": "office", "at": 56, "length": 38, "raiders": [[-3.6, 14, 0.2]], "enemies": [{"type": "host_boss", "x": -3.2, "d": 30, "appearance": 3, "flee": [8, 0, -6], "cover": false}]},
    {"piece": {"box": [-3.2, 0.4, -82], "size": [2.6, 0.8, 1.2], "kind": "NEUTRAL", "look": "WOOD"}, "at": 0},
    {"piece": {"box": [-5.5, 1.5, -76], "size": [0.9, 3.0, 8], "kind": "NEUTRAL", "look": "WOOD"}, "at": 0},
@@ -1021,16 +1021,16 @@
  "radio": [
   {"on": "start", "who": "mags", "line": "That's Calder House. Radio people built it, back when radio was a job. He runs the show from in there."},
   {"on": "go", "who": "host", "line": "Big treat tonight, folks. I'm coming down to say hello. In person! Don't wait up."},
-  {"on": "host:seen:1", "who": "host", "line": "There he is! Huh. You're smaller in real life.", "keep": true},
-  {"on": "host:seen:1", "who": "mags", "line": "That's him. That's actually him. Don't chase him into anything stupid.", "keep": true},
-  {"on": "host:hit:1", "who": "host", "line": "Ow! Ow. Okay. That's coming out of your fee.", "keep": true},
-  {"on": "host:hit:2", "who": "host", "line": "Will somebody shoot him? I pay you people!", "keep": true},
-  {"on": "host:run:1", "who": "host", "line": "Back in five, folks. Don't touch that dial.", "keep": true},
-  {"on": "checkpoint:2", "who": "vell", "line": "You were told to stay in the studio.", "keep": true},
-  {"on": "checkpoint:2", "who": "host", "line": "And you were told this'd be an easy contract, Commander. We've all been lied to.", "keep": true},
-  {"on": "checkpoint:3", "who": "mags", "line": "His office is on this floor. Corner one. It's always the corner one.", "keep": true},
-  {"on": "complete", "who": "host", "line": "Right. I'm leaving. Upstairs, everybody. And bring the wife.", "keep": true},
-  {"on": "complete", "who": "mags", "line": "He's going up. Echo's up there, Parker. She has to be.", "keep": true}
+  {"on": "host:seen:1", "who": "host", "line": "There he is! Huh. You're smaller in real life.", "must": true},
+  {"on": "host:seen:1", "who": "mags", "line": "That's him. That's actually him. Don't chase him into anything stupid.", "must": true},
+  {"on": "host:hit:1", "who": "host", "line": "Ow! Ow. Okay. That's coming out of your fee.", "must": true},
+  {"on": "host:hit:2", "who": "host", "line": "Will somebody shoot him? I pay you people!", "must": true},
+  {"on": "host:run:1", "who": "host", "line": "Back in five, folks. Don't touch that dial.", "must": true},
+  {"on": "checkpoint:2", "who": "vell", "line": "You were told to stay in the studio.", "must": true},
+  {"on": "checkpoint:2", "who": "host", "line": "And you were told this'd be an easy contract, Commander. We've all been lied to.", "must": true},
+  {"on": "checkpoint:3", "who": "mags", "line": "His office is on this floor. Corner one. It's always the corner one.", "must": true},
+  {"on": "complete", "who": "host", "line": "Right. I'm leaving. Upstairs, everybody. And bring the wife.", "must": true},
+  {"on": "complete", "who": "mags", "line": "He's going up. Echo's up there, Parker. She has to be.", "must": true}
  ],
  "chatter": {
   "headshot": [

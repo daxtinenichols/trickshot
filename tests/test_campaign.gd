@@ -1381,6 +1381,12 @@ func _bot_run(label: String, alt := false) -> void:
 						en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position})
 		if e.begins_with("objective:"):
 			_skip_lessons())
+	# Held at the start while the opening is said, as a player is.
+	level.radio.sim_clock = true
+	for k in 60 * 30:
+		if not level.radio.opening_playing():
+			break
+		await tree.physics_frame
 	_skip_lessons()
 	await _step(10)
 	var bot: Array = run.mission.bot_alt if alt else run.mission.bot
@@ -1390,6 +1396,7 @@ func _bot_run(label: String, alt := false) -> void:
 			run.mission.route_legs.size(), level.builder.spawns.size() - 1, level.builder.encounters.size(),
 			level.builder.encounters.reduce(func(n: int, e: Node) -> int: return n + e.enemies.size(), 0), run.mission.route_legs])
 	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []))
+	_check_radio_pacing(label)
 	check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [label, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
 	check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])
 	check(run.mission.route_length >= 500.0, "%s: a long run (%d m)" % [label, int(run.mission.route_length)])
@@ -1398,12 +1405,73 @@ func _bot_run(label: String, alt := false) -> void:
 	await tree.process_frame
 
 
+## The most a story line may start after what triggered it (seconds), and
+## the most lines from other moments that may be waiting ahead of it.
+const RADIO_LATE := 4.0
+const RADIO_BACKLOG := 2
+
+
+## The radio kept pace with the run just finished: every story line started
+## within RADIO_LATE of its trigger (a conversation's next line, of the
+## line before ending), no line had more than RADIO_BACKLOG lines from
+## other moments waiting ahead of it, and no "must" line was dropped. The
+## opening (you're held for it) and the ending (the card waits) don't
+## count. PACING=1 prints every mission's timeline.
+func _check_radio_pacing(label: String) -> void:
+	var radio: RadioFeed = level.radio
+	radio.advance(0.0)
+	var log := radio.story_log
+	var lines: Array[String] = []
+	var bad: Array[String] = []
+	for i in log.size():
+		var l: Dictionary = log[i]
+		var on: String = l.get("on", "")
+		var trigger: float = l.queued_at
+		var waiting := 0
+		for j in i:
+			var o: Dictionary = log[j]
+			if o.queued_at == l.queued_at and o.get("on", "") == on:
+				trigger = maxf(trigger, float(o.get("ends_at", o.get("dropped", trigger))))
+			elif o.get("on", "") != "start" and float(o.get("shown_at", o.get("dropped", INF))) > l.queued_at:
+				waiting += 1
+		var start: float = l.get("shown_at", -1.0)
+		var state := "dropped" if l.has("dropped") else "start +%.1fs" % (start - trigger) if start >= 0.0 else "unsaid"
+		lines.append("    %6.1fs  %-14s %s%s  %s: %s" % [l.queued_at, on, state, " MUST" if l.get("must", false) else "",
+				l.who, String(l.line).left(60)])
+		if on in ["start", "complete"]:
+			continue
+		if l.get("must", false) and (l.has("dropped") or start < 0.0):
+			bad.append("must line %s" % state)
+		elif start >= 0.0 and start - trigger > RADIO_LATE:
+			bad.append("%.1fs late: %s" % [start - trigger, String(l.line).left(40)])
+		if waiting > RADIO_BACKLOG:
+			bad.append("%d lines waiting ahead of: %s" % [waiting, String(l.line).left(40)])
+	if OS.has_environment("PACING") or not bad.is_empty():
+		print("  radio timeline, %s:\n%s" % [label, "\n".join(lines)])
+	# The city atlas's levels ("l<stage>_<n>") must keep pace; the older
+	# missions they're replacing only report it (see the timeline above).
+	if not String(run.mission.get("id", "")).begins_with("l"):
+		if not bad.is_empty():
+			print("  (not failed: %s is an older mission, rebuilt in the atlas later)" % label)
+		return
+	check(bad.is_empty(), "%s: the radio keeps pace (%s)" % [label, "; ".join(bad)])
+
+
 ## The Yard's lessons (a combo, the dummies, a score) aren't the bot's to
 ## learn: done for it, on to the next objective.
 func _skip_lessons() -> void:
 	var o := run.current_objective()
 	var t: String = o.get("type", "")
 	if t in ["combo", "score"] or t == "shoot" and level.builder.encounters.is_empty():
+		# A player hears the lesson while doing it: the bot skips both.
+		var lesson := ["objective:%d" % run.objective, "done:%d" % run.objective]
+		var radio: RadioFeed = level.radio
+		for list: Array[Dictionary] in [radio.queue, radio.story_log]:
+			for i in range(list.size() - 1, -1, -1):
+				if list[i].get("on", "") in lesson:
+					list.remove_at(i)
+		if radio.current.get("on", "") in lesson:
+			radio.current = {}
 		run.call_deferred("_begin_objective", run.objective + 1)
 
 
@@ -1901,6 +1969,78 @@ func test_radio_cues_jump_the_queue_and_stale_lines_drop() -> void:
 		if not radio.current.is_empty() and String(radio.current.line).begins_with("Line "):
 			heard = maxi(heard, int(String(radio.current.line).substr(5, 1)) + 1)
 	check(heard == 4, "a conversation plays to the end (%d of 4)" % heard)
+
+
+## A line the story needs goes ahead of every other line waiting and is
+## never dropped; the lines of one conversation stay together.
+func test_radio_must_lines_go_first_and_never_drop() -> void:
+	await _load(_index("m05_atrium"))
+	var radio: RadioFeed = level.radio
+	radio.queue.clear()
+	radio.current = {}
+	radio.say("host", "A riff.", false, true, "", false, "checkpoint:0")
+	radio.say("mags", "Left here.", true, true, "", false, "checkpoint:1")
+	radio.say("echo", "The story.", false, false, "", true, "set_piece:a")
+	radio.say("parker", "The answer.", false, false, "", true, "set_piece:a")
+	var order: Array = radio.queue.map(func(l: Dictionary) -> String: return l.line)
+	check(order == ["The story.", "The answer.", "Left here.", "A riff."], "must lines first, then the cue (%s)" % [order])
+	radio.advance(0.0)
+	radio.advance(RadioFeed.STALE_AFTER * 3.0)
+	for k in 10:
+		radio.advance(1.0)
+	var heard: Array = radio.history.map(func(l: Dictionary) -> String: return l.line)
+	check("The story." in heard and "The answer." in heard, "must lines are said, however long they wait")
+
+
+## A spot's lines start early, by your speed, so they've been said as you
+## get there: not yet when the spot is further than the lines take to say,
+## now when it's within that, worked out at a run at least when you're
+## slow, and never for a spot behind you.
+func test_radio_spot_lines_start_early() -> void:
+	await _load(_index("m05_atrium"))
+	var radio: RadioFeed = level.radio
+	var s: Dictionary = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.has("at"))[0]
+	var key := "at:%s" % str(s.at)
+	var at := MissionBuilder.vec(s.at)
+	var half := MissionBuilder.vec(s.size) * 0.5
+	var reach := minf(half.x, half.z)
+	var lead := radio._lead(key)
+	check(lead >= RadioFeed.clip_length(s.who, s.line) + RadioFeed.LEAD - 0.01, "the lead covers the clip (%.1fs)" % lead)
+	var toward := Vector3(0, 0, -15)
+	check(not radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * 15.0 + 5.0), toward), "too far at 15 m/s: not yet")
+	check(radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * 15.0 - 2.0), toward), "close enough at 15 m/s: now")
+	var slow := Vector3(0, 0, -2)
+	check(radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * RadioFeed.LEAD_MIN_SPEED - 1.0), slow), "slow: worked out at a run")
+	check(not radio._coming_up(s, key, at + Vector3(0, 0, reach + 3.0), -toward), "not for a spot behind you")
+
+
+## The first time you play a level it holds you while the opening is said,
+## then lets you go; after a restart the opening is skipped and you can go
+## at once.
+func test_opening_holds_you_until_it_is_said() -> void:
+	var saved: ConfigFile = Campaign._save
+	Campaign._save = ConfigFile.new()
+	await _load(_index("l1_1_dawn_run"))
+	check(level.holding(), "held at the start")
+	check(level.radio.opening_playing(), "while the opening plays")
+	player.scripted_input = level._hold
+	var at := player.global_position
+	for k in 40:
+		if not level.holding():
+			break
+		level.radio.advance(1.0)
+		await tree.physics_frame
+	check(not level.holding(), "let go once the opening is said")
+	check(player.scripted_input == null, "your controls are back")
+	check(player.global_position.distance_to(at) < 0.5, "you stayed put meanwhile")
+	var opening: Array = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.get("on", "") == "start")
+	var heard: Array = level.radio.history.map(func(l: Dictionary) -> String: return l.line)
+	check(opening.all(func(r: Dictionary) -> bool: return r.line in heard), "every opening line was said")
+	level.restart()
+	check(await _await_restart(), "restarted")
+	check(not level.holding(), "no hold after a restart")
+	check(not level.radio.opening_playing(), "and no opening")
+	Campaign._save = saved
 
 
 ## Along diagonal legs and 45 degree corners the city's fronts and kerbs
