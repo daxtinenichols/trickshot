@@ -24,6 +24,9 @@ const DOCKS_SCENE_PATH := "res://campaign/docks_scene.gd"
 ## chalk), loaded by path for these kinds.
 const STAGE2_SCENE_PATH := "res://campaign/stage2_scene.gd"
 const STAGE2_SCENE_KINDS := ["juno_crane", "walkway", "line_chalk"]
+## Westside's set pieces (Stage 5), by kind.
+const WESTSIDE_SCENE_PATH := "res://campaign/westside_scene.gd"
+const WESTSIDE_KINDS := ["floodlights", "listeners", "sluice", "ward_water", "track_blast", "wagon", "junction"]
 ## Stage 6's set pieces (the photo, the uplink, the studio): kinds it builds.
 const TOWER_SCENE_PATH := "res://campaign/tower_scene.gd"
 const TOWER_SCENE_KINDS := ["photo"]
@@ -338,6 +341,8 @@ func _set_piece(p: Dictionary) -> void:
 	var path: String = DOCKS_SCENE_PATH if p.set_piece == "camp" else SET_PIECE_SCRIPT_PATH
 	if p.set_piece in STAGE2_SCENE_KINDS:
 		path = STAGE2_SCENE_PATH
+	elif p.set_piece in WESTSIDE_KINDS:
+		path = WESTSIDE_SCENE_PATH
 	elif p.set_piece in TOWER_SCENE_KINDS:
 		path = TOWER_SCENE_PATH
 	var script := load(path) as Script if ResourceLoader.exists(path) else null
