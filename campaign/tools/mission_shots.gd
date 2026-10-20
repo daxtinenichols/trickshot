@@ -88,8 +88,18 @@ const SHOTS := [
 	["l6_4_dead_air", Vector3(1.2, 106.9, 1.5), Vector3(0, 106, -6), "s6_4_trap_reunion", 150],
 	["l6_4_dead_air", Vector3(1.2, 106.9, 1.5), Vector3(0, 106, -6), "s6_4_trap_fire", 750],
 	["l6_4_dead_air", Vector3(1.2, 106.9, 1.5), Vector3(-6, 106, 0), "s6_4_trap_door", 450],
-	["m12_signal_out", Vector3(-14, 66, 10), Vector3(0, 56, -30), "m12_tower"],
-	["m12_signal_out", Vector3(80, 260, 80), Vector3(-120, 30, -320), "m12_overview"],
+	# Stage 7, Signal Out (atlas): the studio, the chute over the Silt, the
+	# west roofs, the bank and the girder (campaign/tools/signal_out_shots.gd
+	# plays the fall).
+	["l7_1_signal_out", Vector3(-13.2, 106.6, 0), Vector3(4, 106.0, 0), "s7_opening"],
+	["l7_1_signal_out", Vector3(4, 108.0, 3.5), Vector3(-14, 105.4, -1), "s7_studio"],
+	["l7_1_signal_out", Vector3(-22, 107.2, 3), Vector3(-108, 52, 0), "s7_chute"],
+	["l7_1_signal_out", Vector3(-40, 22, -70), Vector3(-55, 10, 10), "s7_over_silt"],
+	["l7_1_signal_out", Vector3(-277, 49.7, 14), Vector3(-277, 44, 90), "s7_west_roofs"],
+	["l7_1_signal_out", Vector3(-150, 16, 311), Vector3(-80, 0, 311), "s7_down_to_bank"],
+	["l7_1_signal_out", Vector3(-88, 2.7, 311.5), Vector3(-21, 1.0, 311), "s7_girder"],
+	["l7_1_signal_out", Vector3(-30, 14, 260), Vector3(-53, 0, 311), "s7_crossing"],
+	["l7_1_signal_out", Vector3(150, 320, 560), Vector3(-140, 0, 160), "s7_overview"],
 	# The route generator's test route: corners, a fork, climbs and ramps.
 	["res://tests/fixtures/route_twists.json", Vector3(-150, 300, 120), Vector3(-260, 0, -130), "twists_overview"],
 	["res://tests/fixtures/route_twists.json", Vector3(10, 22, -40), Vector3(-30, 10, -66), "twists_corner"],
@@ -200,7 +210,7 @@ func _shots(campaign: Script, only: String) -> void:
 		var cam := Camera3D.new()
 		cam.cull_mask &= ~4
 		cam.fov = 75.0
-		cam.far = 600.0 if s.size() > 4 or String(s[0]).begins_with("l1_") else 500.0
+		cam.far = 600.0 if s.size() > 4 or String(s[0]).begins_with("l") else 500.0
 		level.add_child(cam)
 		cam.look_at_from_position(s[1], s[2])
 		cam.make_current()
