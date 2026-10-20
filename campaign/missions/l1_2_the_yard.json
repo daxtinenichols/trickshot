@@ -22,7 +22,7 @@
   {"on": "start", "who": "mags", "line": "Juno used to beat you round this yard. Every time.", "must": true},
   {"on": "start", "who": "parker", "line": "Not every time.", "must": true},
   {"on": "start", "who": "mags", "line": "Every time, love.", "must": true},
-  {"on": "go", "who": "mags", "line": "I know you want to go after her. You're running the yard first. Once. Humor me."},
+  {"on": "start", "who": "mags", "line": "I know you want to go after her. You're running the yard first. Once. Humor me."},
   {"on": "objective:0", "who": "mags", "line": "Chain three different moves before your feet settle. Vault, slide, flip, wall, whatever you like. Just don't stop."},
   {"on": "done:0", "who": "mags", "line": "There it is. His listeners love that stuff, and right now you want them on your side."},
   {"on": "set_piece:handoff", "who": "mags", "line": "Here. This was your granddad's. Older than you, and it still shoots better than you do.", "must": true},

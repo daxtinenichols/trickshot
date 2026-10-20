@@ -191,12 +191,13 @@ func say(who: String, line: String, cue := false, local := false, fx := "", must
 			at += 1
 		if at == queue.size() and at > 0 and queue.back().queued_at == _clock:
 			prev = queue.back()
+	# When it's due: now, or for a conversation's next line, once the
+	# lines before it have been said.
+	l["due"] = _clock
+	if not prev.is_empty():
+		l["due"] = float(prev.get("due", prev.queued_at)) + clip_length(prev.who, prev.line)
 	if local:
-		l["stale_at"] = _clock + STALE_AFTER
-		# A conversation's next line can wait as long as the lines before
-		# it take.
-		if prev.has("stale_at"):
-			l["stale_at"] = float(prev.stale_at) + clip_length(prev.who, prev.line) + 2.0
+		l["stale_at"] = float(l.due) + STALE_AFTER
 	queue.insert(at, l)
 	_last_queued = at
 	_last_queued_at = _clock

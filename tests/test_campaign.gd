@@ -1247,6 +1247,12 @@ func _bot_run(label: String, alt := false) -> void:
 						en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position})
 		if e.begins_with("objective:"):
 			_skip_lessons())
+	# Held at the start while the opening is said, as a player is.
+	level.radio.sim_clock = true
+	for k in 60 * 30:
+		if not level.radio.opening_playing():
+			break
+		await tree.physics_frame
 	_skip_lessons()
 	await _step(10)
 	var bot: Array = run.mission.bot_alt if alt else run.mission.bot
@@ -1255,12 +1261,6 @@ func _bot_run(label: String, alt := false) -> void:
 		print("  %s: %d m, %d legs, %d checkpoints, %d encounters, %d enemies, legs %s" % [label, int(run.mission.route_length),
 			run.mission.route_legs.size(), level.builder.spawns.size() - 1, level.builder.encounters.size(),
 			level.builder.encounters.reduce(func(n: int, e: Node) -> int: return n + e.enemies.size(), 0), run.mission.route_legs])
-	# Held at the start while the opening is said, as a player is.
-	level.radio.sim_clock = true
-	for k in 60 * 30:
-		if not level.radio.opening_playing():
-			break
-		await tree.physics_frame
 	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []))
 	_check_radio_pacing(label)
 	check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [label, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
@@ -1298,7 +1298,7 @@ func _check_radio_pacing(label: String) -> void:
 			var o: Dictionary = log[j]
 			if o.queued_at == l.queued_at and o.get("on", "") == on:
 				trigger = maxf(trigger, float(o.get("ends_at", o.get("dropped", trigger))))
-			elif float(o.get("shown_at", o.get("dropped", INF))) > l.queued_at:
+			elif o.get("on", "") != "start" and float(o.get("shown_at", o.get("dropped", INF))) > l.queued_at:
 				waiting += 1
 		var start: float = l.get("shown_at", -1.0)
 		var state := "dropped" if l.has("dropped") else "start +%.1fs" % (start - trigger) if start >= 0.0 else "unsaid"
