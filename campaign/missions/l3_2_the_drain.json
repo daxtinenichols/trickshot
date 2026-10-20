@@ -839,17 +839,79 @@
   {
    "fork": [
     {
-     "roof": 10,
+     "roof": 2,
      "y": 0,
      "bare": true,
-     "interior": 7
+     "interior": 7,
+     "do": [
+      {
+       "piece": {
+        "box": [
+         -5.94,
+         3.5,
+         -6.0
+        ],
+        "size": [
+         0.1,
+         7.0,
+         8.0
+        ],
+        "kind": "NEUTRAL",
+        "look": "NEUTRAL"
+       },
+       "at": 0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         5.94,
+         3.5,
+         -6.0
+        ],
+        "size": [
+         0.1,
+         7.0,
+         8.0
+        ],
+        "kind": "NEUTRAL",
+        "look": "NEUTRAL"
+       },
+       "at": 0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         0,
+         7.15,
+         -6.0
+        ],
+        "size": [
+         12.0,
+         0.3,
+         8.0
+        ],
+        "kind": "NEUTRAL",
+        "look": "NEUTRAL"
+       },
+       "at": 0,
+       "length": 0
+      }
+     ]
+    },
+    {
+     "ramp_up": 3,
+     "length": 8,
+     "width": 12
     },
     {
      "roof": 14,
      "y": 3,
      "bare": true,
      "interior": 4,
-     "look": "RUST"
+     "look": "RUST",
+     "width": 16
     },
     {
      "wallrun": 12,
@@ -861,6 +923,7 @@
      "bare": true,
      "interior": 4,
      "look": "RUST",
+     "width": 16,
      "do": [
       {
        "tape": "l3_2_tape_drains",
@@ -878,7 +941,8 @@
      "y": 3,
      "bare": true,
      "interior": 4,
-     "look": "RUST"
+     "look": "RUST",
+     "width": 16
     },
     {
      "gap": 5,
@@ -1523,7 +1587,7 @@
     },
     {
      "hurdles": "barrel_rust",
-     "at": 18,
+     "at": 14,
      "trick": "front"
     },
     {

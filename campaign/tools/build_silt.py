@@ -433,13 +433,19 @@ def the_drain(start, a1, a2):
                 + crew(36, 26) + crew(44, 26) + crew(60, 26) + crew(67, 26)},
         ] + catwalk(36) + catwalk(44) + catwalk(60) + catwalk(67) + course(6, 18, step=12, hurdle="barrel_rust") + course(34, 66, hurdle="barrel_rust", k=2)},
         {"fork": [
-            {"roof": 10, "y": 0, "bare": True, "interior": 7},
-            {"roof": 14, "y": 3, "bare": True, "interior": 4, "look": "RUST"},
+            {"roof": 2, "y": 0, "bare": True, "interior": 7, "do": shaft(2, 0, 7.0, look="NEUTRAL")},
+            # Up into the side pipe on a ramp: a 3 m step at speed is a
+            # wall to run, not a ledge to climb.
+            {"ramp_up": 3, "length": 8, "width": 12},
+            # The pipe is wider either side of its wallruns: its own walls
+            # stand back from the wallrun faces, so a wallrun ends where its
+            # wall does instead of running on along the pipe.
+            {"roof": 14, "y": 3, "bare": True, "interior": 4, "look": "RUST", "width": 16},
             {"wallrun": 12, "side": -1},
-            {"roof": 18, "y": 3, "bare": True, "interior": 4, "look": "RUST", "do": [
+            {"roof": 18, "y": 3, "bare": True, "interior": 4, "look": "RUST", "width": 16, "do": [
                 {"tape": "l3_2_tape_drains", "x": 0, "at": 10}]},
             {"wallrun": 12, "side": 1},
-            {"roof": 14, "y": 3, "bare": True, "interior": 4, "look": "RUST"},
+            {"roof": 14, "y": 3, "bare": True, "interior": 4, "look": "RUST", "width": 16},
             {"gap": 5, "trick": "flip"},
             {"roof": 14, "y": 3, "bare": True, "interior": 4, "look": "RUST"},
             {"roof": 20, "y": 0, "bare": True, "interior": 7},
@@ -459,7 +465,7 @@ def the_drain(start, a1, a2):
         {"roof": 32, "y": 0, "bare": True, **pipe, "do": [
             {"checkpoint": "Pumping station", "at": 4, "objective": 1},
             {"hole": 0, "style": "duct", "at": 28},
-        ] + pumps(20) + course(4, 18, step=14, hurdle="barrel_rust", k=1) + shaft(32, 0, 17, 7)},
+        ] + pumps(20) + course(4, 14, step=10, hurdle="barrel_rust", k=1) + shaft(32, 0, 17, 7)},
         # Up the pump hall on its sloped sumps, not breaking stride.
         {"ramp_up": 3, "length": 8, "width": 12},
         {"roof": 8, "y": 3, "bare": True, "interior": 14, "look": "RUST", "do": [
