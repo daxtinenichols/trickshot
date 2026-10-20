@@ -71,12 +71,12 @@ const SHOTS := [
 	["m10_the_climb", Vector3(30, 40, 20), Vector3(-60, 25, -60), "m10_tower_decks"],
 	["m11_dead_air", Vector3(0, 48.6, -36), Vector3(0, 47.5, -80), "m11_lobby"],
 	["m11_dead_air", Vector3(100, 260, 60), Vector3(-220, 40, -300), "m11_overview"],
-	# Stage 7, Signal Out (atlas): the studio, the gantry over the Silt, the
+	# Stage 7, Signal Out (atlas): the studio, the chute over the Silt, the
 	# west roofs, the bank and the girder (campaign/tools/signal_out_shots.gd
 	# plays the fall).
-	["l7_1_signal_out", Vector3(-11.2, 59.6, 0), Vector3(4, 59.0, 0), "s7_opening"],
-	["l7_1_signal_out", Vector3(-21, 61.8, 4.5), Vector3(2, 58.4, -1), "s7_studio"],
-	["l7_1_signal_out", Vector3(-22, 60.2, 3), Vector3(-84, 57, 0), "s7_gantry"],
+	["l7_1_signal_out", Vector3(-13.2, 106.6, 0), Vector3(4, 106.0, 0), "s7_opening"],
+	["l7_1_signal_out", Vector3(4, 108.0, 3.5), Vector3(-14, 105.4, -1), "s7_studio"],
+	["l7_1_signal_out", Vector3(-22, 107.2, 3), Vector3(-108, 52, 0), "s7_chute"],
 	["l7_1_signal_out", Vector3(-40, 22, -70), Vector3(-55, 10, 10), "s7_over_silt"],
 	["l7_1_signal_out", Vector3(-277, 49.7, 14), Vector3(-277, 44, 90), "s7_west_roofs"],
 	["l7_1_signal_out", Vector3(-150, 16, 311), Vector3(-80, 0, 311), "s7_down_to_bank"],
