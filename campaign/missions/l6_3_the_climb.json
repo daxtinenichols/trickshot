@@ -51,12 +51,13 @@
    {"checkpoint": "North deck", "at": 3, "objective": 0},
    {"encounter": "gun deck", "at": 4, "length": 36, "troopers": [[-3.6, 12, 0.2], [3.6, 20, 0.6], [3.6, 34, 1.0]], "enemies": [{"type": "marksman", "x": 4.0, "d": 30, "wake": 0.8}]}
   ]},
-  {"roof": 22.1, "deck": true, "rail": 1, "y": 44},
+  {"roof": 22.1, "deck": true, "rail": 1, "y": 44, "do": [
+   {"set_piece": "uplink", "at": 6, "trigger": 6, "radius": 9, "center": [0, 0, 0], "screen": [-28.05, 53.5, 35.55], "screen_yaw": 0}
+  ]},
   {"turn": "left", "size": 12.0, "deck": true},
   {"roof": 22, "deck": true, "rail": 1, "do": [
    {"checkpoint": "Uplink", "at": 3, "objective": 1},
-   {"label": "UPLINK", "x": -5.6, "at": 6, "size": 0.8},
-   {"set_piece": "uplink", "at": 10, "trigger": 10, "radius": 9, "center": [0, 0, 0], "screen": [-28.05, 53.5, 35.55], "screen_yaw": 0}
+   {"label": "UPLINK", "x": -5.6, "at": 6, "size": 0.8}
   ]},
   {"roof": 22.1, "deck": true, "rail": 1, "y": 47},
   {"turn": "left", "size": 12.0, "deck": true},
@@ -70,7 +71,7 @@
   {"turn": "left", "size": 12.0, "deck": true},
   {"fork": [
    {"roof": 5, "deck": true, "rail": 1, "do": [
-    {"set_piece": "cage", "at": 0.3, "trigger": -18, "trigger_x": -6, "radius": 7, "height": 4.5, "depth": 5}
+    {"set_piece": "cage", "at": 0.3, "trigger": -12, "trigger_x": -8, "radius": 10, "height": 4.5, "depth": 5}
    ]},
    {"roof": 5, "y": 55, "deck": true, "rail": 1, "do": [
     {"mark": "#f57320", "at": 3}

@@ -141,7 +141,9 @@ func tick(player_pos: Vector3, run: Node) -> void:
 		"uplink":
 			_tick_drones(player_pos)
 	if not fired:
-		if player_pos.distance_to(trigger) < radius:
+		# A cage opens for anyone at its door, even someone who came at it
+		# round the trigger.
+		if player_pos.distance_to(trigger) < radius or kind == "cage" and player_pos.distance_to(global_position) < 4.0:
 			fired = true
 			ticks = 0
 			if kind == "uplink":
@@ -171,7 +173,7 @@ func _build_trap() -> void:
 	var steel := _mat(Color(0.3, 0.3, 0.32))
 	var rug := _mat(Color(0.42, 0.08, 0.07))
 	# The carpet, a hair off the floor, and cables snaking over it.
-	_box(self, Vector3(0, 0.01, 1.0), Vector3(10.0, 0.02, 8.0), rug)
+	_box(self, Vector3(0, 0.012, 1.0), Vector3(10.0, 0.015, 8.0), rug)
 	for i in 5:
 		var c := _box(self, Vector3(-3.0 + i * 1.4, 0.03, 1.4 - i * 0.3), Vector3(0.05, 0.04, 5.0), dark)
 		c.rotation.y = 0.25 * (i - 2)

@@ -1374,7 +1374,9 @@ func test_route_finishes_keep_you_on_the_roof() -> void:
 		level.queue_free()
 		level = null
 		await tree.physics_frame
-	check(ran >= 6, "route finishes were tried (%d)" % ran)
+	# Only the older route missions still have a finish run-out (atlas
+	# levels opt in); Stage 6 retired two of them.
+	check(ran >= 4, "route finishes were tried (%d)" % ran)
 
 
 ## Runs the loaded mission's route bot (or its fork lines) to the end.
