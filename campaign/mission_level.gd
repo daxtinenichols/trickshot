@@ -67,6 +67,7 @@ func _ready() -> void:
 	mission_hud.retry_pressed.connect(_retry)
 	mission_hud.menu_pressed.connect(func() -> void: Campaign.open_menu(get_tree()))
 	run.completed.connect(_on_completed)
+	run.event.connect(_on_run_event)
 	_build_fade()
 	run.begin()
 	if start_zone > 0:
@@ -82,6 +83,20 @@ func _on_completed(result: Dictionary) -> void:
 	# The ending is seen, not read over a menu: you keep control while the
 	# level's last story lines play, then the results card comes up.
 	_results = {"result": result, "next": has_next, "waited": 0.0}
+
+
+## A set piece you watch rather than play: the mission's "hold" maps an
+## event to "stop" (hands off the controls, you come to a halt where you
+## are) or "pinned" (the same, crouched under whatever came down on you):
+## Dead Air's reunion and the Host's trap.
+func _on_run_event(e: String) -> void:
+	var hold: Dictionary = run.mission.get("hold", {})
+	if not hold.has(e) or run.phase != MissionRun.Phase.RUNNING:
+		return
+	var f := InputFrame.new()
+	f.crouch_held = hold[e] == "pinned"
+	player.use_device_input = false
+	player.scripted_input = f
 
 
 func _process(delta: float) -> void:

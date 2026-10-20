@@ -9,7 +9,8 @@ extends Node3D
 ## "pose": "arms_crossed"} piece (MissionBuilder loads this by path).
 ## Poses: idle, arms_crossed, sitting (on the floor, back to a wall or
 ## wreck), holding_out (right hand held out with the pistol in it: Mags's
-## handoff). Figures: "parker", "echo", "mags".
+## handoff), tied (on a chair, hands tied behind it). Figures: "parker",
+## "echo", "mags", "host".
 
 const BODY_SCRIPT_PATH := "res://art/characters/runner/runner_body.gd"
 ## How far (degrees) she turns her head and chest toward the camera.
@@ -30,6 +31,9 @@ var body: Node3D
 ## the skybridge, campaign/set_piece.gd): legs cycle, head stops following
 ## the camera, and she pulls back against it. 0 = still, in her pose.
 var walk_speed := 0.0
+## While walking, lean back and look behind (pulled along, or running from
+## someone). False walks facing ahead (the Host strolling in).
+var look_back := true
 ## What the figure holds in her right hand: "pistol", or "" for nothing.
 ## The holding_out pose shows the pistol unless this is set first.
 var held := "auto"
@@ -83,6 +87,30 @@ static func pose(pose_id: String) -> Dictionary:
 				"RightUpperArm": Vector3(-8, 0, -12),
 				"RightLowerArm": Vector3(10, 0, 0),
 				"RightHand": Vector3(-60, 0, 0),
+			}
+		"tied":
+			# On a chair, wrists zip-tied behind its back, leaning forward
+			# against it (Echo in the Dead Air studio). The feet stay on the
+			# floor, so the hips sit at chair height.
+			return {
+				"Hips": Vector3(0, 0, 0),
+				"Spine": Vector3(10, 0, 0),
+				"Chest": Vector3(6, 0, 0),
+				"Head": Vector3(-8, 0, 0),
+				"LeftShoulder": Vector3(0, 0, -6),
+				"RightShoulder": Vector3(0, 0, 6),
+				"LeftUpperArm": Vector3(-34, 0, 14),
+				"LeftLowerArm": Vector3(62, 0, 0),
+				"LeftHand": Vector3(0, 0, 0),
+				"RightUpperArm": Vector3(-34, 0, -14),
+				"RightLowerArm": Vector3(62, 0, 0),
+				"RightHand": Vector3(0, 0, 0),
+				"LeftUpperLeg": Vector3(88, -4, 6),
+				"LeftLowerLeg": Vector3(-86, 0, 0),
+				"LeftFoot": Vector3(2, 0, 0),
+				"RightUpperLeg": Vector3(88, 4, -6),
+				"RightLowerLeg": Vector3(-86, 0, 0),
+				"RightFoot": Vector3(2, 0, 0),
 			}
 		"holding_out":
 			# Right arm out at chest height, the pistol on her open hand:
@@ -186,9 +214,10 @@ func _process(delta: float) -> void:
 		_phase = fposmod(_phase + walk_speed * minf(delta, 0.1) / 1.3, 1.0)
 		var w := RunnerPoses.run(_phase, clampf(walk_speed / 9.0, 0.0, 1.0))
 		# Leaning back, twisting to look behind her.
-		w["Spine"] = w.get("Spine", Vector3.ZERO) + Vector3(-10, 8, 0)
-		w["Neck"] = w.get("Neck", Vector3.ZERO) + Vector3(0, 20, 0)
-		w["Head"] = w.get("Head", Vector3.ZERO) + Vector3(0, 30, 0)
+		if look_back:
+			w["Spine"] = w.get("Spine", Vector3.ZERO) + Vector3(-10, 8, 0)
+			w["Neck"] = w.get("Neck", Vector3.ZERO) + Vector3(0, 20, 0)
+			w["Head"] = w.get("Head", Vector3.ZERO) + Vector3(0, 30, 0)
 		body.pose_override = w
 		body.global_transform = global_transform
 		return

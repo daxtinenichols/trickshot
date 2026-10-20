@@ -25,6 +25,15 @@ extends Node3D
 ##             "skybridge") at the gate, "skybridge_blast" when it blows and
 ##             "skybridge_down" once it has fallen (the mission's last
 ##             objective waits for that). The gate never opens.
+##   "studio"  (Dead Air, m11) Echo waiting in the studio at `at`, the end
+##             of the level. Fired as you reach her: the reunion ("studio"),
+##             the Host walks in from the roof ("studio_host"), springs his
+##             trap ("studio_trap": the walls blow and the floor burns), a
+##             burning section of the antenna comes through the ceiling onto
+##             you ("studio_pinned"), Echo runs out past him and he goes
+##             after her ("studio_out", the mission's last objective waits
+##             for it). The mission's "hold" stops you for the reunion and
+##             pins you down under the antenna (MissionLevel).
 ## Fields: "trigger" [x, y, z], "radius", "yaw" (the run's heading, from the
 ## route), and the kind's own.
 
@@ -45,6 +54,28 @@ const SKY_DOOR_SHUT := 1060
 const SKY_BLAST := 1140
 const SKY_FALL_TICKS := 150
 const SKY_DOWN := 1320
+## The studio scene (60 Hz ticks from reaching Echo), timed to the radio
+## with room for slower takes: the reunion (three short lines), the Host's
+## first line once he's in, the trap, then Echo's and Parker's last lines
+## before she runs.
+const STUDIO_HOST_IN := 300
+const STUDIO_HOST_AT := 360
+const STUDIO_TRAP := 660
+const STUDIO_DROP := 690
+const STUDIO_PINNED := 724
+const STUDIO_RUN := 1290
+const STUDIO_CHASE := 1325
+const STUDIO_OUT := 1420
+## The studio, local to Echo's spot (+Z back into the room, toward you):
+## the Host comes along the roof outside the open end, stops just inside
+## it, and both leave the same way, off to the left behind the wall.
+const HOST_FROM := Vector3(8.5, 0, -3.1)
+const HOST_SPOT := Vector3(2.6, 0, -2.4)
+const STUDIO_DOOR := Vector3(-1.6, 0, -3.1)
+const STUDIO_EXIT := Vector3(-9.5, 0, -3.1)
+## Where the floor catches when the trap goes (around you too, see _trap).
+const STUDIO_FIRES := [Vector3(-4.4, 0, 3), Vector3(4.2, 0, 5), Vector3(-3.8, 0, 9), Vector3(4.6, 0, 12),
+	Vector3(-4.6, 0, 15), Vector3(0.6, 0, 18), Vector3(3.8, 0, 20), Vector3(-2.2, 0, 23)]
 const TROOPER_MODEL := "res://enemies/models/soldier.glb"
 const ENEMY_BODY_PATH := "res://enemies/enemy_body.gd"
 const ENEMY_POSES_PATH := "res://enemies/enemy_poses.gd"
@@ -79,6 +110,11 @@ var _doorway: Node3D
 var _echo: Node3D
 var _guards: Array[Node3D] = []
 var _poses: Script
+var _host: Node3D
+var _antenna: Node3D
+var _fires: Node3D
+## Where you were when the trap went (local), where the antenna lands.
+var _pin := Vector3(0, 0, 4)
 
 
 func setup(p: Dictionary) -> void:
@@ -95,6 +131,8 @@ func setup(p: Dictionary) -> void:
 			_build_mast()
 		"skybridge":
 			_build_skybridge()
+		"studio":
+			_build_studio()
 	reset()
 
 
@@ -122,6 +160,21 @@ func reset() -> void:
 		for i in _guards.size():
 			_guards[i].visible = false
 			_guards[i].transform = _guard_start(i)
+	if kind == "studio":
+		_pin = Vector3(0, 0, 4)
+		if _echo != null:
+			_echo.transform = Transform3D.IDENTITY
+			_echo.visible = true
+			_echo.set("walk_speed", 0.0)
+		if _host != null:
+			_host.visible = false
+			_host.transform = Transform3D(Basis.IDENTITY, HOST_FROM)
+			_host.set("walk_speed", 0.0)
+		if _antenna != null:
+			_antenna.visible = false
+		if _fires != null:
+			for c in _fires.get_children():
+				c.queue_free()
 	if _fx != null:
 		_fx.queue_free()
 		_fx = null
@@ -162,13 +215,18 @@ func tick(player_pos: Vector3, run: Node) -> void:
 				_sound("door_bang", to_local(tip), 6.0)
 		"skybridge":
 			_skybridge_tick()
+		"studio":
+			if ticks < STUDIO_DROP:
+				_pin = to_local(player_pos)
+				_pin.y = 0.0
+			_studio_tick()
 
 
 func _fire(run: Node) -> void:
 	fired = true
 	ticks = 0
 	match kind:
-		"skybridge":
+		"skybridge", "studio":
 			pass
 		"debris":
 			_beam.visible = true
@@ -474,6 +532,183 @@ func _skybridge_tick() -> void:
 		_span.visible = ticks < SKY_BLAST + SKY_FALL_TICKS
 	if ticks == SKY_DOWN:
 		went.emit("skybridge_down")
+
+
+## Echo, the Host (hidden until he walks in), the antenna section that
+## comes down, and a node for the fires the trap lights.
+func _build_studio() -> void:
+	var figure := load(FIGURE_PATH) as Script if ResourceLoader.exists(FIGURE_PATH) else null
+	if figure != null and figure.can_instantiate():
+		_echo = figure.new()
+		_echo.name = "Figure_echo"
+		_echo.set("runner", "echo")
+		_echo.set("pose_name", String(spec.get("pose", "arms_crossed")))
+		add_child(_echo)
+		_host = figure.new()
+		_host.name = "Figure_host"
+		_host.set("runner", "host")
+		_host.set("pose_name", "idle")
+		_host.set("look_back", false)
+		add_child(_host)
+	_fires = Node3D.new()
+	_fires.name = "Fires"
+	add_child(_fires)
+	# A 6.5 m section of the roof antenna: a square lattice lying along X,
+	# red and white, its warning lamp still lit.
+	_antenna = Node3D.new()
+	_antenna.name = "Antenna"
+	add_child(_antenna)
+	var steel := _steel()
+	steel.albedo_color = Color(0.32, 0.12, 0.08)
+	var white := StandardMaterial3D.new()
+	white.albedo_color = Color(0.82, 0.8, 0.76)
+	var w := 0.7
+	var x := -3.25
+	var i := 0
+	while x < 3.2:
+		var mat := white if i % 2 == 1 else steel
+		for cy: float in [-1.0, 1.0]:
+			for cz: float in [-1.0, 1.0]:
+				_strut(_antenna, Vector3(x, cy * w * 0.5, cz * w * 0.5), Vector3(x + 1.3, cy * w * 0.5, cz * w * 0.5), 0.09, mat)
+		_strut(_antenna, Vector3(x, -w * 0.5, -w * 0.5), Vector3(x + 1.3, w * 0.5, -w * 0.5), 0.05, steel)
+		_strut(_antenna, Vector3(x, -w * 0.5, w * 0.5), Vector3(x + 1.3, w * 0.5, w * 0.5), 0.05, steel)
+		_strut(_antenna, Vector3(x, w * 0.5, -w * 0.5), Vector3(x + 1.3, w * 0.5, w * 0.5), 0.05, steel)
+		x += 1.3
+		i += 1
+	var red := StandardMaterial3D.new()
+	red.albedo_color = Color(1, 0.1, 0.05)
+	red.emission_enabled = true
+	red.emission = Color(1, 0.1, 0.05)
+	red.emission_energy_multiplier = 5.0
+	var lamp := MeshInstance3D.new()
+	var sm := SphereMesh.new()
+	sm.radius = 0.22
+	sm.height = 0.44
+	lamp.mesh = sm
+	lamp.material_override = red
+	lamp.position = Vector3(3.3, 0, 0)
+	_antenna.add_child(lamp)
+	var glow := OmniLight3D.new()
+	glow.light_color = Color(1.0, 0.4, 0.12)
+	glow.omni_range = 6.0
+	glow.light_energy = 1.8
+	glow.position = Vector3(0, 0.8, 0)
+	_antenna.add_child(glow)
+	_flames(_antenna, Vector3(-2.2, w * 0.5, 0), 1.0, 2)
+	_flames(_antenna, Vector3(1.6, w * 0.5, 0), 0.8, 2)
+
+
+## Lying across you, propped on the rubble it brought down: over your
+## head as you crouch, low end on the floor to your left.
+func _antenna_rest() -> Transform3D:
+	return Transform3D(Basis(Vector3.BACK, -0.16), _pin + Vector3(0.4, 1.1, 0))
+
+
+func _antenna_start() -> Transform3D:
+	return Transform3D(Basis(Vector3.BACK, 0.7) * Basis(Vector3.UP, 0.4), _pin + Vector3(1.5, 7.5, -0.5))
+
+
+## The yaw that turns a figure (facing +Z at 0) from `from` to `to`.
+static func _facing(from: Vector3, to: Vector3) -> float:
+	var d := to - from
+	return atan2(d.x, d.z)
+
+
+## Moves a figure along a -> b -> c over ticks t0..t1 at a steady pace,
+## facing the way it goes. Returns its speed (m/s) for the walk cycle.
+func _walk(f: Node3D, path: Array, t0: int, t1: int) -> float:
+	var total := 0.0
+	for j in path.size() - 1:
+		total += (path[j] as Vector3).distance_to(path[j + 1])
+	var k := clampf(float(ticks - t0) / float(t1 - t0), 0.0, 1.0)
+	var left := total * k
+	var at: Vector3 = path[0]
+	var to: Vector3 = path[1]
+	for j in path.size() - 1:
+		var a: Vector3 = path[j]
+		var b: Vector3 = path[j + 1]
+		var seg := a.distance_to(b)
+		to = b
+		if left <= seg or j == path.size() - 2:
+			at = a.lerp(b, clampf(left / maxf(seg, 0.001), 0.0, 1.0))
+			break
+		left -= seg
+	f.transform = Transform3D(Basis(Vector3.UP, _facing(at, to)), at)
+	return 0.0 if k >= 1.0 else total / (float(t1 - t0) / 60.0)
+
+
+func _studio_tick() -> void:
+	if _host != null:
+		if ticks < STUDIO_HOST_IN:
+			_host.visible = false
+		elif ticks < STUDIO_CHASE:
+			_host.visible = true
+			var speed := _walk(_host, [HOST_FROM, HOST_SPOT], STUDIO_HOST_IN, STUDIO_HOST_AT)
+			if speed == 0.0:
+				# In, facing the room: the show's host, and you're his guest.
+				_host.transform = Transform3D(Basis(Vector3.UP, _facing(HOST_SPOT, _pin)), HOST_SPOT)
+			_host.set("walk_speed", speed)
+		else:
+			var speed := _walk(_host, [HOST_SPOT, STUDIO_DOOR, STUDIO_EXIT], STUDIO_CHASE, STUDIO_OUT - 10)
+			_host.set("walk_speed", speed)
+			_host.set("look_back", false)
+			_host.visible = _host.position.x > -7.4
+	if _echo != null:
+		if ticks < STUDIO_RUN:
+			# Arms crossed at you, then round to him when he walks in, then
+			# back to you when the ceiling comes down.
+			var look := _pin
+			if ticks >= STUDIO_HOST_IN + 20 and ticks < STUDIO_DROP + 20:
+				look = HOST_SPOT
+			_echo.transform = Transform3D(Basis(Vector3.UP, _facing(Vector3.ZERO, look)), Vector3.ZERO)
+			_echo.set("walk_speed", 0.0)
+		else:
+			var speed := _walk(_echo, [Vector3.ZERO, STUDIO_DOOR, STUDIO_EXIT], STUDIO_RUN, STUDIO_OUT - 40)
+			_echo.set("walk_speed", speed)
+			_echo.visible = _echo.position.x > -7.4
+	if ticks == STUDIO_HOST_AT:
+		went.emit("studio_host")
+	if ticks == STUDIO_TRAP:
+		_trap()
+		went.emit("studio_trap")
+	if ticks == STUDIO_TRAP + 24:
+		_burst_extra(Vector3(5.4, 1.2, 11))
+		_sound("door_bang", Vector3(5.4, 1.2, 11), 8.0)
+	if _antenna != null and ticks >= STUDIO_DROP:
+		_antenna.visible = true
+		var t := clampf(float(ticks - STUDIO_DROP) / float(STUDIO_PINNED - STUDIO_DROP), 0.0, 1.0)
+		_antenna.transform = _antenna_start().interpolate_with(_antenna_rest(), t * t)
+	if ticks == STUDIO_DROP:
+		_burst_extra(_pin + Vector3(1.0, 4.3, 0))
+		_sound("whoosh", _pin + Vector3(0, 4, 0), 4.0)
+	if ticks == STUDIO_PINNED:
+		_burst_extra(_pin + Vector3(0, 0.3, 0))
+		_sound("debris", _pin, 8.0)
+		_sound("door_bang", _pin, 6.0)
+		if _fires != null:
+			for at: Vector3 in [_pin + Vector3(-2.6, 0, 0.8), _pin + Vector3(2.8, 0, -0.6), _pin + Vector3(0.4, 0, 2.6)]:
+				_flames(_fires, at, 1.6, 3)
+		went.emit("studio_pinned")
+	if ticks == STUDIO_OUT:
+		went.emit("studio_out")
+
+
+## The Host's trap: the left wall blows in, the floor between you and the
+## door catches.
+func _trap() -> void:
+	_burst(Vector3(-5.4, 1.2, 7), 1.8, true)
+	_sound("door_bang", Vector3(-5.4, 1.2, 7), 10.0)
+	_sound("debris", Vector3(-5.4, 1.2, 7), 8.0)
+	if _fires == null:
+		return
+	for at: Vector3 in STUDIO_FIRES:
+		_flames(_fires, at, 2.0, 4)
+	var light := OmniLight3D.new()
+	light.light_color = Color(1.0, 0.42, 0.12)
+	light.omni_range = 18.0
+	light.light_energy = 2.4
+	light.position = Vector3(0, 3.6, 10)
+	_fires.add_child(light)
 
 
 ## A second, smaller burst right at the gate: the charge on this side.

@@ -9,8 +9,9 @@
   {"type": "reach", "name": "the offices", "text": "Fight up through the studio floors", "at": "@Offices"},
   {"type": "reach", "name": "the transmitter room", "text": "Get through the offices to the transmitter room", "at": "@Transmitter room"},
   {"type": "reach", "name": "the studio", "text": "Reach the studio", "at": "@Studio"},
-  {"type": "reach", "name": "Echo", "text": "Get to Echo", "at": "end"}
+  {"type": "event", "event": "set_piece:studio_out", "text": "Get to Echo"}
  ],
+ "hold": {"set_piece:studio": "stop", "set_piece:studio_pinned": "pinned"},
  "route": [
   {"roof": 50, "do": [
    {"piece": {"box": [0, 4.6, -24.0], "size": [12.6, 0.4, 48.0], "kind": "NEUTRAL"}, "at": 0},
@@ -126,7 +127,7 @@
    {"piece": {"fire": [-4.6, 0, -24], "size": [1.6, 1.6, 2]}, "at": 0},
    {"piece": {"fire": [4.6, 0, -30], "size": [1.6, 1.6, 2]}, "at": 0},
    {"mark": "#f57320", "at": 42},
-   {"piece": {"figure": "echo", "at": [0, 0, -56], "pose": "arms_crossed"}, "at": 0}
+   {"set_piece": "studio", "at": 56, "trigger": 50, "radius": 5, "pose": "arms_crossed"}
   ]}
  ],
  "radio": [
@@ -134,13 +135,13 @@
   {"on": "go", "who": "host", "line": "Port Calder, this is it. The final segment. Please hold your applause until he's dead."},
   {"on": "checkpoint:1", "who": "echo", "line": "Parker, the vents. Behind the transmitter. I left 'em open.", "keep": true},
   {"on": "checkpoint:1", "who": "vell", "line": "All units to the studio. This ends tonight."},
-  {"on": "checkpoint:2", "who": "parker", "line": "Echo."},
-  {"on": "checkpoint:2", "who": "echo", "line": "You're late."},
-  {"on": "checkpoint:2", "who": "parker", "line": "Traffic."},
-  {"on": "complete", "who": "host", "line": "Oh, I love a reunion. Okay. This is my favourite bit."},
-  {"on": "complete", "who": "host", "line": "Port Calder... the grand finale."},
-  {"on": "complete", "who": "echo", "line": "Parker! Parker, you're pinned. The whole floor's on fire."},
-  {"on": "complete", "who": "parker", "line": "Draw him off me. Run. I'll talk you down."}
+  {"on": "set_piece:studio", "who": "parker", "line": "Echo.", "keep": true},
+  {"on": "set_piece:studio", "who": "echo", "line": "You're late.", "keep": true},
+  {"on": "set_piece:studio", "who": "parker", "line": "Traffic.", "keep": true},
+  {"on": "set_piece:studio_host", "who": "host", "keep": true, "line": "Oh, I love a reunion. Okay. This is my favourite bit."},
+  {"on": "set_piece:studio_trap", "who": "host", "keep": true, "line": "Port Calder... the grand finale."},
+  {"on": "set_piece:studio_pinned", "who": "echo", "keep": true, "line": "Parker! Parker, you're pinned. The whole floor's on fire."},
+  {"on": "set_piece:studio_pinned", "who": "parker", "keep": true, "line": "Draw him off me. Run. I'll talk you down."}
  ],
  "chatter": {
   "headshot": [
