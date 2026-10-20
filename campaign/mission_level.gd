@@ -85,10 +85,16 @@ func _on_completed(result: Dictionary) -> void:
 
 
 func _process(delta: float) -> void:
+	if radio != null and run != null:
+		# Set pieces timed to the radio (a bridge blows after its line).
+		var on_air: String = radio.current.get("line", "")
+		for sp: Node3D in run.builder.set_pieces:
+			if sp.has_method("hear"):
+				sp.hear(on_air)
 	if _results.is_empty():
 		return
 	_results.waited += delta
-	if radio != null and radio.busy() and _results.waited < STORY_WAIT_MAX:
+	if _results.waited < STORY_WAIT_MAX and (radio != null and radio.busy() or _set_piece_busy()):
 		return
 	var r := _results
 	_results = {}
@@ -98,6 +104,13 @@ func _process(delta: float) -> void:
 	if DisplayServer.get_name() != "headless":
 		player.capture_mouse(false)
 	mission_hud.show_results(r.result, run.mission.get("title", "Mission complete"), r.next)
+
+
+func _set_piece_busy() -> bool:
+	for sp: Node3D in run.builder.set_pieces:
+		if sp.has_method("busy") and sp.busy():
+			return true
+	return false
 
 
 func _next() -> void:

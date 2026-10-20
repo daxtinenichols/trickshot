@@ -1186,6 +1186,51 @@ func test_skybridge_ends_after_the_bridge_falls() -> void:
 	check(heard.find("set_piece:skybridge_down") < heard.find("complete"), "won only after the drop (%s)" % [heard])
 
 
+func test_glass_district_bridge_falls_into_the_silt() -> void:
+	await _load(_index("m03_glass_district"))
+	var bridge: Node3D = null
+	for sp: Node3D in level.builder.set_pieces:
+		if sp.kind == "bridge_collapse":
+			bridge = sp
+	check(bridge != null, "the Silt bridge has its collapse")
+	if bridge == null:
+		return
+	var heard: Array[String] = []
+	run.event.connect(func(e: String) -> void: heard.append(e))
+	await _step(40, _forward())
+	var objs: Array = run.objectives
+	for i in objs.size():
+		if objs[i].get("type", "reach") == "reach":
+			player.global_position = MissionBuilder.vec(objs[i].at) + Vector3(0, 0.1, 0)
+			await _step(2)
+	check(run.phase == MissionRun.Phase.COMPLETE, "reaching the bridge wins the level")
+	check(bridge.fired and bridge.busy(), "and sets the bridge going")
+	check(not heard.has("set_piece:bridge_collapse_blast"), "the charge waits for the Host's line")
+	var deck_y := player.global_position.y
+	# The Host's line comes and goes: the charge goes a moment later.
+	bridge.hear(String(bridge.spec.cue))
+	bridge.hear("")
+	await _step(bridge.BRIDGE_CUE_DELAY + 2)
+	check(heard.has("set_piece:bridge_collapse_blast"), "it blows after the line (%s)" % [heard])
+	var lines: Array = level.radio.queue.map(func(l: Dictionary) -> String: return l.line) + [level.radio.current.get("line", "")]
+	check(lines.any(func(l: String) -> bool: return l.begins_with("Whoops. Did the bridge")), "the Host's \"Whoops\" goes with it (%s)" % [lines])
+	check(level._set_piece_busy(), "the results wait while it falls")
+	await _step(bridge.BRIDGE_FALL_TICKS + 2)
+	check(heard.has("set_piece:bridge_collapse_down"), "the spans come down")
+	check(not bridge.busy(), "and it's done")
+	await _step(90)
+	check(player.global_position.y < deck_y - 6.0, "Parker goes down with it (y %.1f from %.1f)" % [player.global_position.y, deck_y])
+	check(run.falls == 0 and run.downs == 0, "falling with it after the win isn't a loss")
+	# Every span ends lower than it stood, and the piers between went.
+	for span: Dictionary in bridge._spans:
+		check(not span.nodes.is_empty(), "each span carries its deck")
+	check(bridge._blown.size() == 3, "the three middle piers go (%d)" % bridge._blown.size())
+	var piers: Array[Node3D] = bridge._blown.duplicate()
+	bridge.reset()
+	for n: Node3D in piers:
+		check(n.visible, "a reset puts the piers back")
+
+
 ## Ticks until a fired set piece reaches tick `at` (0 if it's past).
 func set_piece_ticks(sp: Node, at: int) -> int:
 	return maxi(at - int(sp.ticks), 0)
