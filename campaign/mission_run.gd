@@ -339,13 +339,17 @@ func total_tapes() -> int:
 
 
 func _physics_process(_delta: float) -> void:
-	if player != null and phase == Phase.COMPLETE:
-		# An ending set piece (the bridge going) plays out after the win.
-		for sp: Node3D in builder.set_pieces:
-			if sp.has_method("busy") and sp.busy():
-				sp.tick(player.global_position, self)
+	if player == null:
 		return
-	if player == null or phase == Phase.LOST:
+	if phase == Phase.COMPLETE or phase == Phase.LOST:
+		# The chase is over: he stops (or holds you, if he caught you).
+		if pursuer != null:
+			pursuer.hold(player.global_position, 1.0 / Engine.physics_ticks_per_second)
+		if phase == Phase.COMPLETE:
+			# An ending set piece (the bridge going) plays out after the win.
+			for sp: Node3D in builder.set_pieces:
+				if sp.has_method("busy") and sp.busy():
+					sp.tick(player.global_position, self)
 		return
 	var pos := player.global_position
 	if phase == Phase.READY:
@@ -364,6 +368,7 @@ func _physics_process(_delta: float) -> void:
 		pursuer.tick(pos, 1.0 / Engine.physics_ticks_per_second)
 		if pursuer.has_caught():
 			catches += 1
+			pursuer.catch(pos)
 			_lose("caught")
 			return
 		# He's on your back: the radio can react (once until you pull away).
