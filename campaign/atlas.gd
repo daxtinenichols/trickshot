@@ -367,7 +367,8 @@ static func course_of(id: String, path: String) -> Array:
 	route.call("expand", m)
 	var out: Array = []
 	for p: Dictionary in m.get("pieces", []):
-		if p.has("atlas") or p.has("city"):
+		# (A level's own copy of the tower is the atlas's tower.)
+		if p.has("atlas") or p.has("city") or p.get("tower", false):
 			continue
 		if p.has("building"):
 			out.append([p.building[0], p.building[2], p.size[0], p.size[1], 0.0, p.building[1], 1, float(p.get("yaw", 0.0))])

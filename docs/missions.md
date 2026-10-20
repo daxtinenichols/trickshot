@@ -30,7 +30,7 @@ later".
  "runner": "",                  // "" = the player's pick; "echo" or "parker" forces one
  "base": "",                    // optional: build on an existing map, e.g. "res://maps/rooftop_course_builder.gd"
  "base_set": {},                // optional: the base builder's exported settings, e.g. {"hide_course_marks": true}
- "fail_y": 2.5,                 // below this you've fallen: back to the last checkpoint
+ "fail_y": 2.5,                 // below this, off anything solid, you've fallen: the level restarts
  "par_seconds": 60,
  "start": {"at": [0, 8, -3], "yaw": 0},
  "checkpoints": [ ... ],
@@ -163,6 +163,14 @@ fall off a high roof would leave you stuck in the slot beside it. The
 route then adds `"pits": {"y": 1.2, "streets": [regions]}`: anywhere
 below `y` that isn't on a street region (or the base map's ground) counts
 as a fall too.
+
+Below `fail_y` or in a pit, a fall only counts once nothing but the bare
+ground (the route's FLOOR slab, under 0.5 m) or nothing at all is under
+you (MissionRun.is_fall): standing on a kerb, a crate or a low roof, or
+just over one, never ends the run. `campaign/tools/fall_probe.gd` checks
+every level for places you can stand that count as falls, floors with
+nothing solid in them, slots between floors and hard landings that go
+through; tests/test_falls.gd runs it on every mission.
 
 Roofs also get edge clutter from `clutter` (a mission-level list of props),
 kept out of run-ups, landings and features. Keep lines long and open:
