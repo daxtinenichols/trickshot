@@ -1048,5 +1048,55 @@
 		"who": "echo",
 		"line": "...there's a bridge off the roof, straight into the tower. If I'm not here when you get here, that's where they've taken me.",
 		"where": "pending: m09c Skybridge chatter (tape)"
+	},
+	{
+		"who": "parker",
+		"line": "Mags. Crane, up top. Red scarf.",
+		"where": "Stage 2 rebuild: l2_1_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "...Keep moving, love.",
+		"where": "Stage 2 rebuild: l2_1_on_air"
+	},
+	{
+		"who": "parker",
+		"line": "That was Juno.",
+		"where": "Stage 2 rebuild: l2_1_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "I know who it was. Keep moving.",
+		"where": "Stage 2 rebuild: l2_1_on_air"
+	},
+	{
+		"who": "juno",
+		"line": "Not that way, Parker. Take the stairs like everyone else.",
+		"where": "Stage 2 rebuild: l2_2_glass_district"
+	},
+	{
+		"who": "parker",
+		"line": "Juno!",
+		"where": "Stage 2 rebuild: l2_2_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Ooh! Did everyone see that? Our Juno, folks. Remember the name.",
+		"where": "Stage 2 rebuild: l2_2_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Toll tower. Then the bridge, then the mall. Nearly halfway, love.",
+		"where": "Stage 2 rebuild: l2_2_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "They're sat right on our route. How do they know our routes?",
+		"where": "Stage 2 rebuild: l2_2_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Toll's one arm and one leg, Parker. Or the other way round. We're flexible.",
+		"where": "Stage 2 rebuild: l2_3_the_toll"
 	}
 ]

@@ -100,8 +100,8 @@ func _index(id: String) -> int:
 
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
-	check(all.size() == 15, "15 missions (%d)" % all.size())
-	check(Campaign.acts().size() == 4, "the Docks stage and three acts")
+	check(all.size() == 16, "16 missions (%d)" % all.size())
+	check(Campaign.acts().size() == 5, "the Docks, Stage 2 and three acts")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
@@ -1040,7 +1040,8 @@ func test_on_air_lookouts_are_raiders() -> void:
 	check(enc.covers.size() > 0, "with cover spots")
 	check(level.find_children("*", "CanvasLayer", false, false).any(func(n: Node) -> bool: return n.get_script() == level.HURT_OVERLAY_SCRIPT), "and the hurt overlay")
 	# Step onto the lookout roof: they wake.
-	player.respawn(b.spawns[4])
+	var names: Array = run.mission.checkpoints.map(func(cp: Dictionary) -> String: return cp.name)
+	player.respawn(b.spawns[1 + names.find("Lookout roof")])
 	var c: Vector3 = enc.bounds.get_center()
 	player.global_position = Vector3(c.x, 6.05, c.z)
 	await _step(5)

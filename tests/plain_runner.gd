@@ -57,25 +57,34 @@ static func make_plain(player: Player) -> void:
 static func along(pos: Vector3, legs: Array) -> float:
 	if legs.is_empty():
 		return pos.z
-	for i in range(legs.size() - 1, -1, -1):
-		var l: Array = legs[i]
-		var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
-		var z := v.z + float(l[3])
-		if i == 0 or z <= float(l[3]) + 0.5:
-			return z
-	return pos.z
+	return _in_leg(pos, legs, leg_of(pos, legs)).y
 
 
 ## A world point's offset across the route (right +).
 static func across(pos: Vector3, legs: Array) -> float:
 	if legs.is_empty():
 		return pos.x
-	var z := along(pos, legs)
-	for i in range(legs.size() - 1, -1, -1):
-		var l: Array = legs[i]
-		if i == 0 or z <= float(l[3]) + 0.5:
-			return (Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])).x
-	return pos.x
+	return _in_leg(pos, legs, leg_of(pos, legs)).x
+
+
+## The leg a point is on: past a corner once it is past the line that
+## halves the corner (as the route bot steers), so a point beside or
+## behind a later leg isn't read as on it.
+static func leg_of(pos: Vector3, legs: Array) -> int:
+	var leg := 0
+	while leg + 1 < legs.size():
+		var pivot := float(legs[leg + 1][3])
+		if (pivot - _in_leg(pos, legs, leg).y) + (pivot - _in_leg(pos, legs, leg + 1).y) <= 0.0:
+			break
+		leg += 1
+	return leg
+
+
+## [across, along] in a leg's frame.
+static func _in_leg(pos: Vector3, legs: Array, i: int) -> Vector2:
+	var l: Array = legs[i]
+	var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
+	return Vector2(v.x, v.z + float(l[3]))
 
 
 ## [start, end, label] along the route for every gate and encounter,

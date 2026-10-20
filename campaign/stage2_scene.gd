@@ -5,11 +5,10 @@ extends Node3D
 ## `went` signal. Local frame: -Z is on along the run, +X is its right.
 ##
 ##   "juno_crane" (2-1 On Air) a container gantry crane straddling the roof
-##       at `at`, its boom 20 m up and out over the city on the left. Juno
-##       sits on the boom with her legs over the edge, watching the run.
-##       Fired at "trigger": she stands, looks down at Parker, walks out
-##       along the boom and drops off its far side out of sight. No
-##       shooting. went("juno_crane").
+##       at `at`, its boom 20 m up across it. Juno sits on the boom with her
+##       legs over the edge, watching the run. Fired at "trigger": she
+##       stands, looks down at Parker, walks out along the boom and drops
+##       off its far side out of sight. No shooting. went("juno_crane").
 ##   "walkway" (2-2 Glass District) a glass walkway from the roof's end
 ##       (`at`) `span` m on across the gap to the next tower's roof, with
 ##       Juno on the far side by a window cleaner's cradle. Fired at
@@ -25,18 +24,18 @@ const JUNO_MODEL := "res://enemies/models/juno.glb"
 const ENEMY_BODY_PATH := "res://enemies/enemy_body.gd"
 const ENEMY_POSES_PATH := "res://enemies/enemy_poses.gd"
 ## The crane: legs either side of the roof, the boom this high over it and
-## reaching this far out to the left; where Juno sits on it (x along it).
+## reaching this far past the left leg; where Juno sits on it (x along it).
 const CRANE_LEG_X := 5.8
-const CRANE_UP := 20.0
-const CRANE_REACH := 22.0
-const JUNO_SIT_X := -4.0
+const CRANE_UP := 16.0
+const CRANE_REACH := 3.0
+const JUNO_SIT_X := 1.5
 ## Her timeline on the crane (ticks from the trigger): stand, look, walk
 ## out, drop.
 const CRANE_STAND := 30
 const CRANE_WALK := 110
 const CRANE_DROP := 210
 const CRANE_GONE := 270
-const CRANE_WALK_SPEED := 4.0
+const CRANE_WALK_SPEED := 3.0
 ## The walkway: kick, the cradle's swing, the hit, everything down, gone.
 const WALK_KICK := 24
 const WALK_HIT := 64
@@ -129,8 +128,8 @@ func _build_crane() -> void:
 		# A sill beam along each side at the foot, and braces.
 		_box(root, Vector3(side * CRANE_LEG_X, 0.4, 0), Vector3(0.6, 0.8, 7.4), steel, true)
 		_box(root, Vector3(side * CRANE_LEG_X, CRANE_UP * 0.55, 0), Vector3(0.4, 0.4, 6.0), steel, false)
-	# The boom: across the top and out over the city on the left.
-	var boom_len := CRANE_LEG_X + CRANE_REACH + 4.0
+	# The boom: across the top, a little past the left leg.
+	var boom_len := CRANE_LEG_X * 2.0 + CRANE_REACH + 4.0
 	var boom_x := (CRANE_LEG_X + 4.0 - CRANE_REACH - CRANE_LEG_X) * 0.5
 	for dz: float in [-1.4, 1.4]:
 		_box(root, Vector3(boom_x, CRANE_UP + 0.5, dz), Vector3(boom_len, 1.0, 0.5), steel, false)
@@ -139,7 +138,7 @@ func _build_crane() -> void:
 	# The trolley and its cab, parked over the lane, and the machinery house
 	# on the back end.
 	_box(root, Vector3(1.0, CRANE_UP - 1.2, 0), Vector3(3.2, 2.2, 3.4), steel, false)
-	_box(root, Vector3(CRANE_LEG_X + 2.0, CRANE_UP + 2.2, 0), Vector3(4.0, 2.6, 3.6), _material(Color(0.36, 0.38, 0.36), 0.9), false)
+	_box(root, Vector3(CRANE_LEG_X + 1.85, CRANE_UP + 2.32, 0), Vector3(4.0, 2.6, 3.6), _material(Color(0.36, 0.38, 0.36), 0.9), false)
 	_juno = _figure()
 
 
@@ -153,20 +152,24 @@ func _crane_tick(player_pos: Vector3) -> void:
 		_face(_juno, player_pos)
 		_show(_juno, _sitting() if ticks < CRANE_STAND else _standing(), dt, 0.0)
 	elif ticks < CRANE_DROP:
-		# Out along the boom, away over the city.
+		# Out along the boom to its end past the left leg.
 		var x := JUNO_SIT_X - CRANE_WALK_SPEED * float(ticks - CRANE_WALK) / 60.0
-		_juno.position = Vector3(maxf(x, JUNO_SIT_X - CRANE_REACH + 3.0), CRANE_UP + 1.0, 0.0)
+		_juno.position = Vector3(maxf(x, _boom_end()), CRANE_UP + 1.0, 0.0)
 		_juno.rotation.y = -PI * 0.5
 		_juno.step(CRANE_WALK_SPEED, 1.6, dt)
 		_show(_juno, _poses.blend(_poses.stand(), _poses.legs(_juno.phase, 1.0), 1.0) if _poses else {}, dt, CRANE_WALK_SPEED)
 	elif ticks < CRANE_GONE:
 		# Off the far side: down behind the boom and gone.
 		var t := float(ticks - CRANE_DROP) / 60.0
-		var end_x := JUNO_SIT_X - CRANE_REACH + 3.0
-		_juno.position = Vector3(end_x - 1.2 * t, CRANE_UP + 1.0 - 4.9 * t * t, -1.6 * t)
+		_juno.position = Vector3(_boom_end() - 1.2 * t, CRANE_UP + 1.0 - 4.9 * t * t, -1.6 * t)
 		_show(_juno, _poses.hop() if _poses else {}, dt, 0.0)
 	else:
 		_juno.visible = false
+
+
+## Where she stops at the boom's left end, before she drops.
+func _boom_end() -> float:
+	return -CRANE_LEG_X - CRANE_REACH + 0.8
 
 
 # ---------------------------------------------------------------- walkway
