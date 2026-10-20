@@ -461,9 +461,9 @@ func test_echo_chatter_waits_for_the_uplink() -> void:
 
 func test_juno_fate_carries_to_the_ending() -> void:
 	# A boss's fate in a real (not practice) run is saved with its mission.
-	await _load(_index("m08_storm_channels"))
+	await _load(_index("l5_1_storm_channels"))
 	run.event.emit("fate:spared")
-	check(Campaign.choice("m08_storm_channels", "fate") == "spared", "a fate event is saved")
+	check(Campaign.choice("l5_1_storm_channels", "fate") == "spared", "a fate event is saved")
 	level.queue_free()
 	await tree.process_frame
 	for spared: bool in [false, true]:
@@ -832,6 +832,10 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 	# "flip" (back), "front" or "spin": done in the air after the next take-off.
 	var trick := ""
 	var trick_left := 0
+	# Stopped dead against a wall (a speed gate's climb face after a miss):
+	# jump to climb it.
+	var stuck := 0
+	var moved := false
 	for i in max_frames:
 		var pos := player.global_position
 		if run.phase == MissionRun.Phase.COMPLETE:
@@ -844,7 +848,7 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 		if z < stop_z:
 			return false
 		if OS.has_environment("ROUTE_LOG") and i % 10 == 0:
-			print("  t%4d pos %s leg %d along %.1f state %s speed %.1f obj %d falls %d caught %d gap %.1f" % [i, pos.snapped(Vector3.ONE * 0.01), _leg, z, Player.State.keys()[player.state], player.horizontal_speed(), run.objective, run.falls, run.catches, run.pursuer.gap if run.pursuer else 0.0])
+			print("  t%4d pos %s leg %d along %.1f state %s speed %.1f flow %.1f obj %d falls %d caught %d gap %.1f" % [i, pos.snapped(Vector3.ONE * 0.01), _leg, z, Player.State.keys()[player.state], player.horizontal_speed(), player.flow_source.call() if player.flow_source.is_valid() else 0.0, run.objective, run.falls, run.catches, run.pursuer.gap if run.pursuer else 0.0])
 		if veer and absf(lane - _local(pos, _leg).x) < 1.5:
 			veer = false
 		var f := _steer(lane, veer)
@@ -883,6 +887,12 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 				roll_armed = false
 		if player.state == Player.State.SLIDE or player.state == Player.State.CROUCH:
 			f.crouch_held = z > route[next - 1][0] - 4.0 if next > 0 else false
+		moved = moved or player.horizontal_speed() > 5.0
+		stuck = stuck + 1 if moved and player.state == Player.State.GROUND and player.horizontal_speed() < 0.5 else 0
+		if stuck > 30:
+			f.jump_pressed = true
+			f.jump_held = true
+			stuck = 0
 		if player.state == Player.State.WALLRUN and player.wallrun_angle() < 0.05:
 			f.lean = 1.0 if player._lean_toward_wall(1.0) > 0.0 else -1.0
 		player.scripted_input = f
@@ -898,14 +908,16 @@ const Atlas_ := preload("res://campaign/atlas.gd")
 func test_atlas_levels_meet() -> void:
 	var order: Array = Atlas_.order()
 	check(order.size() >= 2, "the Docks levels are on the atlas (%d)" % order.size())
-	# (Levels next to each other in the campaign: stages not rebuilt yet
-	# leave gaps between atlas levels.)
+	# Levels next to each other in the campaign meet; a gap (a stage not
+	# rebuilt in the atlas yet) is left for that stage's levels to fill.
 	var number := {}
 	for m: Dictionary in Campaign.missions():
-		number[m.id] = int(m.get("number", -1))
+		number[String(m.id)] = int(m.get("number", -1))
+	var met := 0
 	for i in range(1, order.size()):
-		if int(number.get(order[i][0], -9)) - int(number.get(order[i - 1][0], -9)) != 1:
+		if int(number.get(order[i][0], -1)) != int(number.get(order[i - 1][0], -1)) + 1:
 			continue
+		met += 1
 		var a := Campaign.load_mission_file(order[i - 1][1])
 		var b := Campaign.load_mission_file(order[i][1])
 		var end := MissionBuilder.vec(a.route_end)
@@ -915,6 +927,7 @@ func test_atlas_levels_meet() -> void:
 			"facing the same way (%s, %s)" % [a.route_end_yaw, b.route_origin.yaw])
 		check(MissionBuilder.vec(b.start.at).distance_to(start) < 0.05 and is_equal_approx(float(b.start.yaw), float(b.route_origin.yaw)),
 			"%s spawns there" % b.id)
+	check(met >= 2, "neighbouring atlas levels were checked (%d)" % met)
 
 
 ## The broadcast tower is in sight from the start and end of every atlas
@@ -1205,7 +1218,7 @@ func test_raiders_and_the_ward_never_share_a_fight() -> void:
 ## squads and still win at the end, and a bonus you ran past is closed,
 ## not something to go back for.
 func test_kill_goals_are_bonuses() -> void:
-	await _load(_index("m08_storm_channels"))
+	await _load(_index("l5_1_storm_channels"))
 	var objs: Array = run.objectives
 	check(MissionRun.is_bonus(objs[1]) and MissionRun.is_bonus(objs[3]), "the squad fights are bonus goals")
 	check(not MissionRun.is_bonus(objs[0]) and not MissionRun.is_bonus(objs[4]), "the run itself isn't")
@@ -1436,7 +1449,7 @@ func test_route_missions_can_be_finished() -> void:
 		var path: String = all[i].get("file", "")
 		if path == "" or not Campaign.load_mission_file(path).has("bot"):
 			continue
-		# ROUTE_ONLY=m08 runs just the matching missions (while tuning one).
+		# ROUTE_ONLY=l5_1 runs just the matching missions (while tuning one).
 		if OS.has_environment("ROUTE_ONLY") and not String(all[i].id).contains(OS.get_environment("ROUTE_ONLY")):
 			continue
 		if Campaign.load_mission_file(path).get("route_from", "") == "base_exit":
@@ -1484,7 +1497,8 @@ func test_route_finishes_keep_you_on_the_roof() -> void:
 		level.queue_free()
 		level = null
 		await tree.physics_frame
-	check(ran >= 6, "route finishes were tried (%d)" % ran)
+	# (Stages 5 and 6 are atlas levels now: they run on, no finish.)
+	check(ran >= 4, "route finishes were tried (%d)" % ran)
 
 
 ## Runs the loaded mission's route bot (or its fork lines) to the end.
@@ -2270,7 +2284,7 @@ func _cover(shapes: Array, at: Vector2) -> float:
 ## clear of every building, never sunk into a facade.
 func test_city_props_stand_clear_of_buildings() -> void:
 	var PropKit_: Script = load("res://art/props/prop_kit.gd")
-	for id: String in ["l1_2_the_yard", "m04_silt_line", "m08_storm_channels", "m09_rail_bridge"]:
+	for id: String in ["l1_2_the_yard", "m04_silt_line", "l5_1_storm_channels", "l5_2_rail_line"]:
 		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
 		var walls: Array = []
 		for p: Dictionary in m.pieces:
@@ -2293,7 +2307,8 @@ func test_city_props_stand_clear_of_buildings() -> void:
 				if not Geometry2D.intersect_polygons(foot, w).is_empty():
 					sunk.append("%s at %s" % [p.prop, p.at])
 					break
-		check(props > 10, "%s has city props (%d)" % [id, props])
+		# (The Rail Line runs up on the tracks, over few streets.)
+		check(props > 5, "%s has city props (%d)" % [id, props])
 		check(sunk.is_empty(), "%s: no city prop in a building (%d: %s)" % [id, sunk.size(), sunk.slice(0, 4)])
 
 
