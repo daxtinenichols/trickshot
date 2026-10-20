@@ -290,6 +290,41 @@ func test_wallrun_starts_and_carries_you() -> void:
 	check(&"wallrun" in w.tricks_seen, "wallrun trick reported")
 
 
+## Flies at a wall on the right (face at x = 1.5) from 0.8 m away, at
+## `angle` degrees off running along it, `speed` m/s, rising `vy`, feet 3 m
+## up (the 6 m wall stands over your head).
+func _air_into_wall(angle: float, speed: float, vy: float, f: InputFrame = null) -> Player:
+	_add_side_wall()
+	w.add_floor()
+	var a := deg_to_rad(angle)
+	var p := w.spawn_player(Vector3(0.7, 3.0, 0), -a)
+	p.velocity = Vector3(sin(a), 0, -cos(a)) * speed + Vector3(0, vy, 0)
+	p.momentum = 1.0
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 60, f if f != null else _fwd())
+	return p
+
+
+func test_wallrun_from_a_steep_entry() -> void:
+	var p := await _air_into_wall(72.0, 9.0, 1.0)
+	check(p.state == Player.State.WALLRUN, "hitting the wall nearly head-on still wallruns (%s)" % Player.State.keys()[p.state])
+
+
+func test_wallrun_from_a_slow_entry() -> void:
+	var p := await _air_into_wall(30.0, 4.0, 1.0)
+	check(p.state == Player.State.WALLRUN, "slow wallruns too (%s)" % Player.State.keys()[p.state])
+
+
+func test_wallrun_while_falling_fast() -> void:
+	var p := await _air_into_wall(30.0, 9.0, -11.0)
+	check(p.state == Player.State.WALLRUN, "falling onto a wall still wallruns (%s)" % Player.State.keys()[p.state])
+	check(p.velocity.length() <= Vector2(9.0, 9.0).length() + 0.3, "and the fall doesn't add speed (%.2f)" % p.velocity.length())
+
+
+func test_steep_wall_with_jump_held_still_climbs() -> void:
+	var p := await _air_into_wall(72.0, 9.0, 1.0, _fwd_jump())
+	check(p.state == Player.State.WALLCLIMB, "jump held into a wall you face: a climb (%s)" % Player.State.keys()[p.state])
+
+
 func test_wallrun_times_out() -> void:
 	var ok := await _enter_wallrun()
 	check(ok, "wallrun starts")

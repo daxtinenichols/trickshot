@@ -253,13 +253,29 @@ Story lines play once, queued, without ever stopping the game:
 {"at": [4, 8, -62], "radius": 7, "who": "mags", "line": "Wall on the right, same as home."}
 ```
 
-`who`: `mags`, `host`, `echo`, `parker`, `juno`, `vell`. A line that tells
-you the way says `"cue": true`: it goes to the front of the queue, so it's
-heard while it still helps. A line about a place (an `at` line, or one on
-reaching a checkpoint) still waiting after `RadioFeed.STALE_AFTER` (12 s)
-is dropped, since you've run on; lines queued together (a conversation)
-wait for each other, and a story beat that must be heard says
-`"keep": true` (Echo's first message in m06). Triggers (`on`):
+`who`: `mags`, `host`, `echo`, `parker`, `juno`, `vell`. Lines are never
+cut off. A line the story needs (the Story director's "Must play" list for
+the level) says `"must": true` (old name `"keep"`): it is never dropped and
+goes ahead of every other line waiting. A line that tells you the way says
+`"cue": true`: it goes ahead of the rest, so it's heard while it still
+helps. Any other line still waiting after `RadioFeed.STALE_AFTER` (12 s) is
+dropped, since you've run on; lines queued together (a conversation) wait
+for each other. The `start` lines are never dropped: the first time you
+play a level it holds you at the start (ON AIR, free look) until they've
+been said, and after a restart or on a level finished before they're
+skipped. The `complete` lines aren't dropped either: the results card waits
+for them.
+
+Lines for a place start early so they've been said as you get there: an
+`at` line (and a `checkpoint:N` line, from checkpoint N's spot) starts when
+your time to the spot, along the route on a route level, at your speed
+(at least `RadioFeed.LEAD_MIN_SPEED`), is down to its clip length plus
+`RadioFeed.LEAD`; lines sharing a spot (a conversation) count all their
+clips. So put a long beat where the run gives it room, and prefer place
+triggers to `time:` ones. The route bot test checks each route level keeps
+pace: no story line starts more than 4 s after its trigger or behind more
+than 2 lines from earlier moments (`PACING=1` prints every timeline).
+Triggers (`on`):
 `start` (mission loads), `go` (you leave the start), `objective:N` (objective
 N begins), `done:N`, `checkpoint:N`, `complete`, `time:SECONDS`, `fall`,
 `caught`, `down`, `tape`, `kill:TYPE` (the first kill of an enemy listed by
