@@ -1,6 +1,48 @@
 who,file,where,line
-host,host/64618e95e6dc.ogg,brief: m06 Anchor Store,He's on the roof! And guess who's waiting for him over at the car park. Go on. Guess.
-mags,mags/1d1d3d07867f.ogg,brief: m06 Anchor Store,"Department store. There's a roof hatch, top floor, back corner. Up you go."
+echo,echo/2a010073f168.ogg,"brief: Stage 1: The Docks (2 levels, no enemies)",Don't drop this one.
+mags,mags/f2105dfe548d.ogg,"brief: Stage 1: The Docks (2 levels, no enemies)","Fish market, high roof. Back for breakfast."
+parker,parker/7218c185f1d6.ogg,"brief: Stage 1: The Docks (2 levels, no enemies)",When have I ever?
+host,host/2a150828e1c6.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Ooh! Did everyone see that? Our Juno, folks. Remember the name."
+host,host/bc111000b468.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Toll's one arm and one leg, Parker. Or the other way round. We're flexible."
+juno,juno/d6009410a791.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Not that way, Parker. Take the stairs like everyone else."
+mags,mags/0afd152bb587.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",I know who it was. Keep moving.
+mags,mags/30105421ec95.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",They're sat right on our route. How do they know our routes?
+mags,mags/4562964e7c87.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","...Keep moving, love."
+mags,mags/c941cee02204.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Toll tower. Then the bridge, then the mall. Nearly halfway, love."
+parker,parker/6e42b34f391a.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Mags. Crane, up top. Red scarf."
+parker,parker/98080ba496c4.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",Juno!
+parker,parker/d95405713f64.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",That was Juno.
+host,host/86e9957c0159.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Feeding time! I do love a nature segment.
+host,host/debb57860f50.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)","Folks, he's gone down the drain. Ha. I've been waiting all day to say that."
+mags,mags/053db851872b.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Storm drain. It runs under the bank and comes up at the mall. Don't stop in there.
+mags,mags/319d16b83fac.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Pipe's wide enough. Run the wall if you're brave.
+mags,mags/754b219fc1f0.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",See that box on the lamppost? That's one of Echo's. She put one on every block that'd let her.
+mags,mags/9a2083f05fe6.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Especially down here. Nobody else was going to.
+mags,mags/f5f8be164156.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)","They were people, Parker. Stayed in the dust too long. Don't let them get hold of you."
+parker,parker/1e212d26be41.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Even down here?
+echo,echo/12835f928ba0.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Porch light's on, courier. I'm coming home."
+host,host/ede76c374812.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Hang on. Who's that in his ear? Is that... that's Margaret! Folks, she used to produce this show. Hi, Mags. Still sulking?"
+host,host/f905d65ff2d8.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Into Hargrove and Sons! Mind the perfume counter, it's mostly Hollows now."
+juno,juno/110ed4682303.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",You want to know how they found your camp? I drew them the routes. All of them.
+juno,juno/313f65389975.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Hey, stranger. Keep up."
+juno,juno/bec6219f6314.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Kettle Row's had no water for two years, Parker. My brother's eleven. Work it out."
+mags,mags/2f1504d0d7b1.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","It's an arena, Parker. Don't stop moving in there."
+mags,mags/40438fd34e57.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Parker, far walkway. That's... oh, that's Juno."
+mags,mags/5ccfb5d51463.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",Two years now. Her block's taps went dry. I'll tell you the rest when you're not getting shot at.
+mags,mags/8c13f50a94b3.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Twenty years ago. Later, Parker. Run."
+mags,mags/e62d3d874aae.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",She's not lying. Doesn't make it alright.
+mags,mags/fcbc24fddb9e.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",Ignore him.
+parker,parker/2673ce8234cc.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",Why?
+parker,parker/b637ec86e1bf.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",You produced his show?
+parker,parker/ca78b33688b0.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",She's working for him?
+echo,echo/472933476864.ogg,"brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)","...Porch light's on the left, courier. Left."
+host,host/4dca55d49083.ogg,"brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)",Who keeps getting on my frequency?
+host,host/5e64db4f4903.ogg,"brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)","Section nine, gone! Tell him what he's won, Margaret!"
+host,host/912c95096f3c.ogg,"brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)","Folks, please. Stop waving at him. You're encouraging him."
+mags,mags/5a2b967315d9.ogg,"brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)",Don't answer him.
+mags,mags/a5f2397ee395.ogg,"brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)","Did he just... Parker, that's a listener. They're helping you."
+host,host/7f39f2bc580c.ogg,"brief: Stage 6: Calder House and the Tower (4 levels; replaces m09b, m09c, m10, m11)","Somebody cut the scaffold! What do you mean, with what?"
+host,host/eb037699ef75.ogg,"brief: Stage 6: Calder House and the Tower (4 levels; replaces m09b, m09c, m10, m11)","She told him to come up the outside, folks. On my show. I heard that, sweetheart."
 echo,echo/5f05e116c7f0.ogg,l1_1_dawn_run,Tuesday.
 echo,echo/75634e8fa467.ogg,l1_1_dawn_run,Hey. Porch light's on.
 echo,echo/9ebf06c9dd74.ogg,l1_1_dawn_run,"Don't drop this one. It's insulin, for the Okafor kid."
@@ -610,6 +652,10 @@ parker,parker/de41dead0d1b.ogg,m12_signal_out,He came through the stairwell! He'
 parker,parker/e0feb9567948.ogg,m12_signal_out,Don't look back. Just go!
 parker,parker/f5f2b22bc987.ogg,m12_signal_out,Last gap. Kick off the pillar if you need the distance.
 parker,parker/f978ff8b56ec.ogg,m12_signal_out,Another one's coming down. Get low!
+host,host/c46e65f587fc.ogg,pending: l6_1_head_office,"She was a lot more fun back then. Weren't you, Margaret?"
+mags,mags/a90cf7c09d2f.ogg,pending: l6_1_head_office,...Burn it.
+parker,parker/aabddf5fdb42.ogg,pending: l6_1_head_office,Mags. There's a photo of you in here.
+host,host/f66254eeaa93.ogg,pending: l6_2_skybridge,"Folks, small update. He's still coming. Show goes on."
 raider,raider/256548278328.ogg,static taunt,SAY HI TO ECHO!
 raider,raider/463d153ed062.ogg,static taunt,WAVE TO THE LISTENERS!
 raider,raider/539dbc23efa9.ogg,static taunt,"STAY DOWN, YOU LITTLE..."

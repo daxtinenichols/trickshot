@@ -1,5 +1,270 @@
 [
 	{
+		"who": "echo",
+		"line": "Don't drop this one.",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "parker",
+		"line": "When have I ever?",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "echo",
+		"line": "Tuesday.",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "mags",
+		"line": "Fish market, high roof. Back for breakfast.",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "echo",
+		"line": "Hey. Porch light's on.",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "mags",
+		"line": "Parker, there's a truck down on the... they're on the roof, they're...",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "mags",
+		"line": "They went straight for her bunk. Didn't even look at the others.",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "mags",
+		"line": "Juno used to beat you round this yard. Every time.",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "parker",
+		"line": "Not every time.",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "mags",
+		"line": "Every time, love.",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "host",
+		"line": "...and that's the weather. Margaret, is it raining? Is that right?",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "mags",
+		"line": "Look out the window, Rook.",
+		"where": "brief: Stage 1: The Docks (2 levels, no enemies)"
+	},
+	{
+		"who": "parker",
+		"line": "Mags. Crane, up top. Red scarf.",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "mags",
+		"line": "...Keep moving, love.",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "parker",
+		"line": "That was Juno.",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "mags",
+		"line": "I know who it was. Keep moving.",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "mags",
+		"line": "They're sat right on our route. How do they know our routes?",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "juno",
+		"line": "Not that way, Parker. Take the stairs like everyone else.",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "parker",
+		"line": "Juno!",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "host",
+		"line": "Ooh! Did everyone see that? Our Juno, folks. Remember the name.",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "mags",
+		"line": "Toll tower. Then the bridge, then the mall. Nearly halfway, love.",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "host",
+		"line": "Toll's one arm and one leg, Parker. Or the other way round. We're flexible.",
+		"where": "brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)"
+	},
+	{
+		"who": "mags",
+		"line": "They were people, Parker. Stayed in the dust too long. Don't let them get hold of you.",
+		"where": "brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)"
+	},
+	{
+		"who": "mags",
+		"line": "See that box on the lamppost? That's one of Echo's. She put one on every block that'd let her.",
+		"where": "brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)"
+	},
+	{
+		"who": "parker",
+		"line": "Even down here?",
+		"where": "brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)"
+	},
+	{
+		"who": "mags",
+		"line": "Especially down here. Nobody else was going to.",
+		"where": "brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)"
+	},
+	{
+		"who": "host",
+		"line": "Feeding time! I do love a nature segment.",
+		"where": "brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)"
+	},
+	{
+		"who": "mags",
+		"line": "Storm drain. It runs under the bank and comes up at the mall. Don't stop in there.",
+		"where": "brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)"
+	},
+	{
+		"who": "host",
+		"line": "Folks, he's gone down the drain. Ha. I've been waiting all day to say that.",
+		"where": "brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)"
+	},
+	{
+		"who": "mags",
+		"line": "Pipe's wide enough. Run the wall if you're brave.",
+		"where": "brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)"
+	},
+	{
+		"who": "mags",
+		"line": "It's an arena, Parker. Don't stop moving in there.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "host",
+		"line": "Hang on. Who's that in his ear? Is that... that's Margaret! Folks, she used to produce this show. Hi, Mags. Still sulking?",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "mags",
+		"line": "Ignore him.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "parker",
+		"line": "You produced his show?",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "mags",
+		"line": "Twenty years ago. Later, Parker. Run.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "mags",
+		"line": "Parker, far walkway. That's... oh, that's Juno.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "juno",
+		"line": "Hey, stranger. Keep up.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "parker",
+		"line": "She's working for him?",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "mags",
+		"line": "Two years now. Her block's taps went dry. I'll tell you the rest when you're not getting shot at.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "host",
+		"line": "Into Hargrove and Sons! Mind the perfume counter, it's mostly Hollows now.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "echo",
+		"line": "Porch light's on, courier. I'm coming home.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "juno",
+		"line": "You want to know how they found your camp? I drew them the routes. All of them.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "parker",
+		"line": "Why?",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "juno",
+		"line": "Kettle Row's had no water for two years, Parker. My brother's eleven. Work it out.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "mags",
+		"line": "She's not lying. Doesn't make it alright.",
+		"where": "brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)"
+	},
+	{
+		"who": "mags",
+		"line": "Did he just... Parker, that's a listener. They're helping you.",
+		"where": "brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)"
+	},
+	{
+		"who": "host",
+		"line": "Folks, please. Stop waving at him. You're encouraging him.",
+		"where": "brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)"
+	},
+	{
+		"who": "host",
+		"line": "Section nine, gone! Tell him what he's won, Margaret!",
+		"where": "brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)"
+	},
+	{
+		"who": "mags",
+		"line": "Don't answer him.",
+		"where": "brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)"
+	},
+	{
+		"who": "echo",
+		"line": "...Porch light's on the left, courier. Left.",
+		"where": "brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)"
+	},
+	{
+		"who": "host",
+		"line": "Who keeps getting on my frequency?",
+		"where": "brief: Stage 5: Westside (2 levels; Ward, then the Static; replaces m08, m09)"
+	},
+	{
+		"who": "host",
+		"line": "She told him to come up the outside, folks. On my show. I heard that, sweetheart.",
+		"where": "brief: Stage 6: Calder House and the Tower (4 levels; replaces m09b, m09c, m10, m11)"
+	},
+	{
+		"who": "host",
+		"line": "Somebody cut the scaffold! What do you mean, with what?",
+		"where": "brief: Stage 6: Calder House and the Tower (4 levels; replaces m09b, m09c, m10, m11)"
+	},
+	{
 		"who": "mags",
 		"line": "You won't jump that one. Run the wall.",
 		"where": "brief: Replacements in built missions (obstacles are now real objects)"
@@ -76,7 +341,7 @@
 	},
 	{
 		"who": "mags",
-		"line": "Department store. There's a roof hatch, top floor, back corner. Up you go.",
+		"line": "Department store. Skybridge to the car park's on the top floor, back corner. Up you go.",
 		"where": "brief: m06 Anchor Store"
 	},
 	{
@@ -116,7 +381,7 @@
 	},
 	{
 		"who": "host",
-		"line": "He's on the roof! And guess who's waiting for him over at the car park. Go on. Guess.",
+		"line": "He's on the skybridge! And guess who's waiting for him at the other end. Go on. Guess.",
 		"where": "brief: m06 Anchor Store"
 	},
 	{
@@ -530,6 +795,51 @@
 		"where": "brief: m11 Dead Air"
 	},
 	{
+		"who": "parker",
+		"line": "Ceiling's coming down! Slide!",
+		"where": "brief: m12 Signal Out (set pieces and chase chatter, PR #33, vetted 2026-10-18)"
+	},
+	{
+		"who": "echo",
+		"line": "Parker, the mast's going! The whole tower's coming apart!",
+		"where": "brief: m12 Signal Out (set pieces and chase chatter, PR #33, vetted 2026-10-18)"
+	},
+	{
+		"who": "parker",
+		"line": "Another one's coming down. Get low!",
+		"where": "brief: m12 Signal Out (set pieces and chase chatter, PR #33, vetted 2026-10-18)"
+	},
+	{
+		"who": "host",
+		"line": "Shortcut! I know every stair in this tower, sweetheart.",
+		"where": "brief: m12 Signal Out (set pieces and chase chatter, PR #33, vetted 2026-10-18)"
+	},
+	{
+		"who": "parker",
+		"line": "He came through the stairwell! He's right behind you!",
+		"where": "brief: m12 Signal Out (set pieces and chase chatter, PR #33, vetted 2026-10-18)"
+	},
+	{
+		"who": "host",
+		"line": "Did you miss me? Tell me you missed me.",
+		"where": "brief: m12 Signal Out (set pieces and chase chatter, PR #33, vetted 2026-10-18)"
+	},
+	{
+		"who": "host",
+		"line": "I can hear your heart going, darling.",
+		"where": "brief: m12 Signal Out (set pieces and chase chatter, PR #33, vetted 2026-10-18)"
+	},
+	{
+		"who": "parker",
+		"line": "Don't look back. Just go!",
+		"where": "brief: m12 Signal Out (set pieces and chase chatter, PR #33, vetted 2026-10-18)"
+	},
+	{
+		"who": "host",
+		"line": "Almost... almost got you...",
+		"where": "brief: m12 Signal Out (set pieces and chase chatter, PR #33, vetted 2026-10-18)"
+	},
+	{
 		"who": "mags",
 		"line": "Line camp to anyone out there. They made it. Both of them.",
 		"where": "brief: Ending (after m12)"
@@ -835,218 +1145,2168 @@
 		"where": "brief: m11 Dead Air"
 	},
 	{
+		"who": "mags",
+		"line": "Parcel's in. Good. Come on home, kid.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
 		"who": "host",
-		"line": "Oi! That was my receptionist!",
-		"where": "pending: m09b Head Office chatter (headshot)"
+		"line": "Gooood morning, Port Calder! It's your Host, on the, uh, only frequency you've got left. Lucky you.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "host",
+		"line": "So, today's show. We've got a courier, comes home, and his camp's empty. Wife's gone. I know! Awful. I can't stop listening either.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "host",
+		"line": "Echo's up here with me, fixing my tower. Lovely hands. Parker, darling, come and get her. Everybody's listening.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "host",
+		"line": "Oh, and is Mags there? Course she is. Tell her I said hi.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Good shot.",
-		"where": "pending: m09b Head Office chatter (headshot)"
-	},
-	{
-		"who": "host",
-		"line": "Right in the face. In my own building. Unbelievable.",
-		"where": "pending: m09b Head Office chatter (headshot)"
+		"line": "Parker. Parker, listen to me. You are not going alone. Yard first.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "That's it. Keep your head down, he's above you.",
-		"where": "pending: m09b Head Office chatter (headshot)"
-	},
-	{
-		"who": "host",
-		"line": "Ooh, the desk got him! Desk one, courier nil.",
-		"where": "pending: m09b Head Office chatter (bail)"
+		"line": "Eh. Happens. Shake it off.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Up. He's watching from the balconies.",
-		"where": "pending: m09b Head Office chatter (bail)"
-	},
-	{
-		"who": "host",
-		"line": "Slipped on a memo! Happens to the best of us.",
-		"where": "pending: m09b Head Office chatter (bail)"
+		"line": "You alright? ...Yeah, you're alright. Go.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Get up, kid.",
-		"where": "pending: m09b Head Office chatter (bail)"
-	},
-	{
-		"who": "host",
-		"line": "Stop vaulting my furniture!",
-		"where": "pending: m09b Head Office chatter (combo)"
+		"line": "Land on your feet next time, yeah? It's cheaper.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Lovely. Keep him running.",
-		"where": "pending: m09b Head Office chatter (combo)"
-	},
-	{
-		"who": "host",
-		"line": "Folks, he's doing parkour through middle management. I've wanted to do that for years.",
-		"where": "pending: m09b Head Office chatter (combo)"
-	},
-	{
-		"who": "host",
-		"line": "There goes payroll. Again.",
-		"where": "pending: m09b Head Office chatter (kill)"
+		"line": "That's gonna bruise. Keep going.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Down. Keep moving.",
-		"where": "pending: m09b Head Office chatter (kill)"
-	},
-	{
-		"who": "host",
-		"line": "Who's gonna file all this now? You, Parker?",
-		"where": "pending: m09b Head Office chatter (kill)"
+		"line": "Up you get.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Good. Don't stop for the rest.",
-		"where": "pending: m09b Head Office chatter (kill)"
-	},
-	{
-		"who": "host",
-		"line": "That's a Ward lad. Somebody tell the Commander. Quietly.",
-		"where": "pending: m09b Head Office chatter (kill)"
-	},
-	{
-		"who": "host",
-		"line": "Courier down in the office! Somebody fetch a stapler. For the wound.",
-		"where": "pending: m09b Head Office chatter (down)"
+		"line": "Ooh. Walk it off. Run it off, I mean.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Up. Keep off the open floor.",
-		"where": "pending: m09b Head Office chatter (down)"
-	},
-	{
-		"who": "host",
-		"line": "He's down! I could shoot him from up here. I won't. Probably.",
-		"where": "pending: m09b Head Office chatter (down)"
-	},
-	{
-		"who": "echo",
-		"line": "...he rehearses in the mirror on the fourth floor. Out loud. Every line, even the 'spontaneous' ones.",
-		"where": "pending: m09b Head Office chatter (tape)"
-	},
-	{
-		"who": "echo",
-		"line": "...the Ward's man comes up the back stairs on Fridays. Never the lift. Doesn't trust the lift.",
-		"where": "pending: m09b Head Office chatter (tape)"
-	},
-	{
-		"who": "host",
-		"line": "Not near the tapes! Not near the tapes!",
-		"where": "pending: m09c Skybridge chatter (headshot)"
+		"line": "Down you go. Find a way back up, kid.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Good shot.",
-		"where": "pending: m09c Skybridge chatter (headshot)"
-	},
-	{
-		"who": "host",
-		"line": "Ah! Right in front of the archive. Show some respect.",
-		"where": "pending: m09c Skybridge chatter (headshot)"
+		"line": "Nobody delivers anything from down there. Back up.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "That's it. Keep going up.",
-		"where": "pending: m09c Skybridge chatter (headshot)"
-	},
-	{
-		"who": "host",
-		"line": "Ha! Down he goes, among the classics.",
-		"where": "pending: m09c Skybridge chatter (bail)"
+		"line": "That's the Silt, kid. Get back up and go again.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Up. She's close.",
-		"where": "pending: m09c Skybridge chatter (bail)"
-	},
-	{
-		"who": "host",
-		"line": "Careful! That shelf's older than you.",
-		"where": "pending: m09c Skybridge chatter (bail)"
+		"line": "Roofs, Parker. Stay on the roofs.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Get up. Go.",
-		"where": "pending: m09c Skybridge chatter (bail)"
-	},
-	{
-		"who": "host",
-		"line": "He's running across my whole back catalogue! Do you know how long that took me?",
-		"where": "pending: m09c Skybridge chatter (combo)"
+		"line": "Okay. Okay, that was pretty good.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Beautiful. Keep going.",
-		"where": "pending: m09c Skybridge chatter (combo)"
-	},
-	{
-		"who": "host",
-		"line": "Ugh. Fine. Somebody record that, I'll use it later.",
-		"where": "pending: m09c Skybridge chatter (combo)"
+		"line": "Showing off already? It's barely light out.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Fell. Back up, she's right there.",
-		"where": "pending: m09c Skybridge chatter (fall)"
-	},
-	{
-		"who": "host",
-		"line": "Over the edge! Oh, that's going in the archive.",
-		"where": "pending: m09c Skybridge chatter (fall)"
-	},
-	{
-		"who": "host",
-		"line": "That one alphabetised the tapes! Do you know how rare that is?",
-		"where": "pending: m09c Skybridge chatter (kill)"
+		"line": "Huh. Didn't teach you that one.",
+		"where": "pending: l1_1_dawn_run"
 	},
 	{
 		"who": "mags",
-		"line": "Good. Up.",
-		"where": "pending: m09c Skybridge chatter (kill)"
+		"line": "Nice. Don't get cocky.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "mags",
+		"line": "Who're you showing off for? The pigeons?",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "mags",
+		"line": "Rails coming up. Don't hop 'em, jump right into them. Vault keeps your speed.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "mags",
+		"line": "Low bar. Get down and slide it.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "mags",
+		"line": "That door's been stuck since the storm. Kick it in. Or use the window, if you're feeling polite.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "mags",
+		"line": "Big drop here. Crouch right before you hit and roll it out.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "mags",
+		"line": "I know you want to go after her. You're running the yard first. Once. Humor me.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Chain three different moves before your feet settle. Vault, slide, flip, wall, whatever you like. Just don't stop.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "There it is. His listeners love that stuff, and right now you want them on your side.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Here. This was your granddad's. Older than you, and it still shoots better than you do.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Now go for the heads. The Static plate their chests. Not their faces.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Last one. All of it at once. Shoot mid-combo and it counts for more.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Alright. That's as ready as anybody gets for something this stupid.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "South gate, then the warehouses. I'll be in your ear the whole way, okay?",
+		"where": "pending: l1_2_the_yard"
 	},
 	{
 		"who": "host",
-		"line": "Another one gone. I'm running out of staff, Parker. Honestly.",
-		"where": "pending: m09c Skybridge chatter (kill)"
+		"line": "I'm not paid to look out windows. I'm paid to talk.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "parker",
+		"line": "Thanks, Mags.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Just come back. Both of you.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "host",
+		"line": "Still on the playground, Parker? Echo says you're always late. She's not wrong, is she?",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Go again.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "You're thinking too much. Just run.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Ouch. Right, again, and land it this time.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Again. Smoother.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Feet first, kid. Not face.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Sloppy. The Static won't wait for you to get up.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "There you go.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Good. That's the one that counts.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Oh, nice. Do that every time.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Head. Good. Keep doing that.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Ha! Right between the eyes.",
+		"where": "pending: l1_2_the_yard"
 	},
 	{
 		"who": "mags",
 		"line": "Down. Next.",
-		"where": "pending: m09c Skybridge chatter (kill)"
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Good, now don't stop to admire it.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "That's one. Keep your feet moving.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Okay. Don't stand there, go.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Got him. Move.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Keep moving while you shoot.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Yes! That. Do that.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "There it is. That's the run.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Ha. Okay, kid, I see you.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Good line. Hold onto it.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Now that's a courier.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Don't let it go to your head.",
+		"where": "pending: l1_2_the_yard"
+	},
+	{
+		"who": "mags",
+		"line": "Warehouse roofs. Static use 'em for lookouts. Head down, keep moving.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Ladies, gentlemen, and... whatever the rest of you are. Our courier has left the building!",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "His name's Parker. Runs for a living. Today? Running for love. Ugh, I know. Parker, darling, you're on the air.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Let's make it interesting, folks. Bets are open. My money says he's in the Silt by lunch.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Lookouts! Boys, say hi to the man of the hour.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Three gunners. Red laser on you means a shot's coming, so move. And if it gets busy, click the mouse wheel. Slows everything down for a few seconds.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Oh, he shoots too! Echo, sweetheart, you never told me that.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "That mast's their relay. Get past it and they lose you. Wall's on your left this time.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "He's quick, folks! Quicker than the last three couriers I had. Rest in pieces, boys.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Don't go anywhere. Coming up, the Glass District. Mind the windows. And my toll boys. They bite.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Don't listen to him. Breathe. Then we go.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "And he eats it! Folks, I didn't even have to do anything.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Rewind that. No, seriously, can somebody rewind that?",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Oof. Listeners, I felt that one in my teeth.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Ooh! That one's going in the highlights.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Ooh. Hear that, folks? Pretty sure that was his pride.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Down he goes! Echo, you married this?",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Okay, okay, he's... honestly he's pretty good. Don't tell him I said that.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Look at this guy! Somebody give him a jingle.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Ignore him. Keep going, that's lovely.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Look at him go! Echo, you watching this? Oh, right. You're tied up.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Moves like that, I might have to start paying him.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "The phones are ringing off the hook! Okay, we don't have phones. But they would be.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "And he's in the dirt! Stay down there, it's quieter.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Up. He's only got a show if you stay down.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "And he's down! Little dust bath for our boy.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Back up you go. Don't give him the satisfaction.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Hey! He was on the clock!",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Well, that's one less mouth to feed. Silver linings, folks.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Keep going, don't give them time.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Ah, come on, I liked that one. Didn't know his name, but I liked him.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Somebody tell payroll.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Good lookout, that one. Looked out for about a second.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Down goes the courier! Somebody check if he's breathing. Actually, don't.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "You're okay. Get up, keep moving this time.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Aw, he's having a lie-down. Bless him.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Don't stand where they can see you.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "And our courier's taking a nap! Somebody get the man a pillow.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Don't stand there in their sights. Run, then shoot.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, right in the face. Listeners at home, look away.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "That's it.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Somebody's been practising.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Oh, that's gonna be a closed casket.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "host",
+		"line": "Right through the headset. Rude.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Barriers. Jump right into 'em and you'll vault without losing speed.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Too wide to jump. Wall on the right, like back home.",
+		"where": "pending: m02_on_air"
+	},
+	{
+		"who": "mags",
+		"line": "Glass coming up. Don't slow down, jump right through it.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Now, the Glass District's got a toll, folks. And Parker doesn't strike me as a guy who pays tolls.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Spotters on the toll roof. They're calling you in to him. Shut 'em up, or just get past.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "echo",
+		"line": "...and the weather out west is, uh, glass. Mostly glass. Bring a broom. Back to you.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "That bridge is the only way over the Silt. Get across before he gets ideas.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "He's at the bridge, folks. Shame about the bridge.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Parker, hang on. Something's off with that bridge.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Glass District. Office roofs to the toll tower, then the bridge.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Morning, Glass District! Heads up, our courier's coming through, and he is not slowing down.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "My spotters! Do you know how hard it is to find people who can count to three?",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Whoops. Did the bridge fall down? Old bridges, folks. What can you do. Say hi to the Silt for me, Parker.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, careful, that's a real... well, it was a window.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Down he goes! Folks, we're gonna need more glass.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Don't think about it.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Through the window and right into my heart, folks.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Glass everywhere. Somebody sweep that up.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Listen to that glass go! That's music, that is.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Lovely. Stay on it.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "He's good. I hate that he's good.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "That's it, kid, keep flowing.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "The man's a walking highlight reel. A bleeding one, but still.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Keep it going.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "And he's back on the street, where he belongs!",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Find a way up. You know how.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Street level! Mind the Silt, darling.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Back up. Same line, faster.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Oh, come on. Do you know how hard it is to find people who can climb?",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Nice. Go.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Another one! Folks, I'm running out of lookouts.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Keep moving.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "And the lookout's... not looking out. Not anymore.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "That spotter had a family, you know. Well. A rat. He called it Biscuit.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Good shot.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Ooh. Right in the earpiece. Feedback, everybody.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Yeesh. Somebody clean that up, the windows are bad enough.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Yes. That's how you do it.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Courier down! On the glass, too. That's gotta sting.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Get up. Keep the glass between you and them.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "host",
+		"line": "Aaand he's down. Don't touch that dial, folks.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Run first, then shoot.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Don't stand there trading shots. Run, then shoot.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "echo",
+		"line": "...he's got lookouts on every roof with glass. They watch the reflections. Stay low, stay quick.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "echo",
+		"line": "...if anyone finds this, go west. Keep going west. He keeps the keys on his belt.",
+		"where": "pending: m03_glass_district"
+	},
+	{
+		"who": "mags",
+		"line": "Parker! You're in the Silt. Whatever's down there, don't let it catch you standing still.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "Crawlers. Quick off the mark, but they tire. Keep your speed up and they can't hang.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "He climbed out! Nobody climbs out of the Silt, folks. Okay. Bigger bridge next time.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "echo",
+		"line": "...traffic on the overpass: one guy, heading west, real fast. Drive safe, courier.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "You're alive. Okay. Okay, good. Run. It's not the dust you need to worry about.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "Get up on the overpass. Runs straight to the mall, and the mall's the only way through the center.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Meridian Mall, folks! The arena! Parker, darling, you just walked into the main event.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Splat! Don't swallow any of that, Parker.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "Up! Up, they're coming.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Oh, he's in it now. Literally.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "Don't lie there. Move.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Face first in the Silt! That'll stain.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Faster than them, that's all you need.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Oh, he's making them look slow. They're not slow!",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Keep your feet out of the muck.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Folks, he's dancing with the Hollows. Don't try this at home. You don't have a home.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "That's how you outrun them. Don't stop.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Look at him dance down there! Come on, crawlers, keep up.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "Okay, but don't stop for them.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, he's swatting crawlers! Plenty more where that came from.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "Leave the rest. Go.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "One down! Out of... yeah, I don't know. Lots.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "Don't fight them all. Run.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Dinner's... oh, he's up again. Well, they'll keep.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "Up. They're slow, you're not. Act like it.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Down in the Silt! Folks, I'm not going down there to check.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "host",
+		"line": "Dinner's served!",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "You stopped. Never stop down there.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "echo",
+		"line": "...don't stop on the low pipes. They come up through the drains. I watched them do it.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "echo",
+		"line": "...the Silt's not empty. The Hollows used to be people. Whatever he says.",
+		"where": "pending: m04_silt_line"
+	},
+	{
+		"who": "mags",
+		"line": "He's shut the concourse. Escalator, your left. Then up on the walkways.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Over the bridge. Walkway's caved in past the shops. Take the plank, or run the hoarding.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Down goes another! Folks, I'm starting to feel sorry for them. No, I'm not.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Don't wait for the next one, go.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Splat! Right by the fountain, too. Nobody's drinking that.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "That's one. Keep your head up, they jump.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "And down goes another one! The crowd goes mild.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Now keep moving.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Oh! Right in the... well, I think that was the head.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Pop! Hear that? That's the sound of ratings.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Nice. Watch the railings, they come over.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Right between the eyes! Run that back!",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "And he's lunch! Oh, no, wait, he's back. Never mind.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Keep moving, they'll swarm you if you stop.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Courier down in the Atrium! Mind your step, it's very... chewy in there.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Don't stand still in here.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Oops! Slippery floors, folks. We'd sue, but, you know.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "And down he goes in front of everyone. Mortifying.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Up, quick.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "He fell! Somebody find a wet floor sign. Does anybody still have a wet floor sign?",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "He's down! No, he's up. Disappointing.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Folks, this is better than the fountain show. There used to be a fountain show.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "Lovely. Keep it.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Ugh. Fine. That was good. Happy?",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "host",
+		"line": "Folks, I hate to say it, but that was beautiful.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Give 'em a show.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "echo",
+		"line": "...this mall had the last clean taps in Port Calder. Somebody turned them off. Ask who.",
+		"where": "pending: m05_atrium"
+	},
+	{
+		"who": "mags",
+		"line": "East side's shuttered. Go round. Through electronics.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Oh, he was employee of the month! Well. Of a month.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Don't let the big ones corner you.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Another one off the shop floor! No refunds.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "Down. Move.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Clean-up in aisle four!",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Up, up, up.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Ooh! Everything must go, apparently.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Somebody call security. Oh, wait. That was security.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "Yes. Keep doing that.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Oh, that's a returns-desk situation.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Courier down! Lie there a while, everything's half off.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Don't fight the big ones head on.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "And he's down! Folks, I think that one broke something. Not him, the shelf.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "And our courier's in the bargain bin!",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Get round them, don't stand in front of them.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Whoa! You break it, you bought it, Parker.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Ha! Mind the mannequins, they're rubbish at catching.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Keep going.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Oops. Listeners, he's tripped over his own feet. In a shop. Embarrassing.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Mind the floor, it's freshly ruined.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Look at him! It's like watching someone shop with a grudge.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Through the store, keep going.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Folks, I've never seen anyone move through a sale like that. And I've seen sales.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Don't slow down for the drones.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "host",
+		"line": "Is he shopping or showing off? Bit of both, I think.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "echo",
+		"line": "...somebody's water trucks park behind this place every week. Clean ones. Not his. Count the barrels, I did.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "echo",
+		"line": "...Hargrove's sold radios to half this city. They all still work. You just have to know how to listen.",
+		"where": "pending: m06_anchor_store"
+	},
+	{
+		"who": "mags",
+		"line": "Skybridge to the car park. It goes uphill. Slide it if you've got the speed.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Wow. Okay. You're gonna owe me a crew.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "host",
+		"line": "Juno, sweetheart, these are your people! Do something!",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Huh. Didn't like him anyway.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Watch the ramps, they come round fast.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "host",
+		"line": "Another hunter down! I'm docking their pay. Posthumously.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "That one owed me money. Thanks, I guess.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Hm. Lucky.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, right between the eyes! In my car park!",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Okay, that one was actually nice.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Clean. Mags teach you that?",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "That's it? Get up, you're embarrassing both of us.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "host",
+		"line": "Courier down on level... what level is this? Somebody count.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Keep going round, don't let them pin you.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Up you get, courier. I'm not done with you.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "mags",
+		"line": "Up. She wants you to stop. Don't.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Ha! Oh, that was beautiful.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, tyre marks! On his face.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "mags",
+		"line": "Up, kid.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "You used to be better at this.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "host",
+		"line": "Oh, he's eaten the concrete! Somebody park on him.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "host",
+		"line": "Laps! He's doing laps! In my car park!",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Fine. That was good. Don't make it weird.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "mags",
+		"line": "Lovely. Keep spinning up.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "juno",
+		"line": "Show-off. You haven't changed.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "host",
+		"line": "Look at those lines! Somebody stop him, he's making me look bad.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "echo",
+		"line": "...Juno never took his money till her block's taps ran dry. Somebody shut them off. Remember that before you judge her.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "echo",
+		"line": "...Juno ran a parcel through a fire for us once. Ask her about it sometime.",
+		"where": "pending: m07_parking_spiral"
+	},
+	{
+		"who": "mags",
+		"line": "Nice shot.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, through the visor. The sponsor's gonna send me an invoice.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Go for the head, the rest is plated.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Oops! Sorry, Commander. That one's coming out of his pay.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Ha! Wet concrete. Nobody's cleaned these channels in years.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Keep the speed.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Oh, he's in the gutter! Where he belongs, honestly.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "mags",
+		"line": "Shake it off. Get back on the bank.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Look at him use the banks! The Ward built those for water, Parker. Not for you.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "mags",
+		"line": "Beautiful. Keep it up.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Commander, if you're listening, your boys are getting lapped.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "mags",
+		"line": "That's the line. Stay on it.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Oh dear. That's a Ward helmet rolling down the channel.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "mags",
+		"line": "Down. Don't wait for his mates.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Another one for the sponsor's paperwork! I'll sign it, I'll sign it.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Keep moving, there'll be more.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Ooh. The Commander's not gonna like that. I sort of do.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "mags",
+		"line": "Up! Squads flank. Keep moving.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "And he's down! The Ward thank you for your cooperation.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "mags",
+		"line": "Get up. Stay out of their crossfire.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "echo",
+		"line": "...the channels used to fill every spring. Now they're dry and the Ward's tanks are full. Funny, that.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "echo",
+		"line": "...the Ward pays him in water. Every week. That's what 'sponsor' means.",
+		"where": "pending: m08_storm_channels"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, right off the bridge! That's a long way down for a helmet.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Now the next one.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "Yikes. Commander, I'd stop sending the tall ones.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Lovely shot.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, tripped on the tracks! Classic.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Watch your feet on the sleepers.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "Down he goes! Shall I hold the train? There's no train.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Get up, you're fine.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "He's using my wreckage! That's my wreckage, Parker!",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Keep it going across.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "Okay, who's paying for this guy? Because it isn't me.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. That's the run.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "And he's off the bridge! I did warn him. Well, I blew it up, which is sort of a warning.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Off the bridge. Back up, go again.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "Splash! No, wait, there's no water. Thud!",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "Ooh. That's another one of Vell's. He keeps count, you know.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Keep moving, the marksmen can't track you if you move.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "Somebody tell the Ward they're down another one. Actually, don't, they'll blame me.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "And a drone goes down! Those aren't cheap, Parker. I've seen the invoice.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Stay off the open deck.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "Courier down on the line! Delays expected, folks.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "mags",
+		"line": "Get up. Keep the drones behind you.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "echo",
+		"line": "...there's a pipe under this bridge, runs all the way to the reservoir. That's what the Ward's really guarding.",
+		"where": "pending: m09_rail_bridge"
+	},
+	{
+		"who": "host",
+		"line": "Oi! That was my receptionist!",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "Right in the face. In my own building. Unbelievable.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Keep your head down, he's above you.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, the desk got him! Desk one, courier nil.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "mags",
+		"line": "Up. He's watching from the balconies.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "Slipped on a memo! Happens to the best of us.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "mags",
+		"line": "Get up, kid.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "Stop vaulting my furniture!",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "mags",
+		"line": "Lovely. Keep him running.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "Folks, he's doing parkour through middle management. I've wanted to do that for years.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "There goes payroll. Again.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "mags",
+		"line": "Down. Keep moving.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "Who's gonna file all this now? You, Parker?",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Don't stop for the rest.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "That's a Ward lad. Somebody tell the Commander. Quietly.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "Courier down in the office! Somebody fetch a stapler. For the wound.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Keep off the open floor.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "He's down! I could shoot him from up here. I won't. Probably.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "echo",
+		"line": "...he rehearses in the mirror on the fourth floor. Out loud. Every line, even the 'spontaneous' ones.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "echo",
+		"line": "...the Ward's man comes up the back stairs on Fridays. Never the lift. Doesn't trust the lift.",
+		"where": "pending: m09b_head_office"
+	},
+	{
+		"who": "host",
+		"line": "Not near the tapes! Not near the tapes!",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "host",
+		"line": "Ah! Right in front of the archive. Show some respect.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "mags",
+		"line": "That's it. Keep going up.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "host",
+		"line": "Ha! Down he goes, among the classics.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "mags",
+		"line": "Up. She's close.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "host",
+		"line": "Careful! That shelf's older than you.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "mags",
+		"line": "Get up. Go.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "host",
+		"line": "He's running across my whole back catalogue! Do you know how long that took me?",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "mags",
+		"line": "Beautiful. Keep going.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "host",
+		"line": "Ugh. Fine. Somebody record that, I'll use it later.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "mags",
+		"line": "Fell. Back up, she's right there.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "host",
+		"line": "Over the edge! Oh, that's going in the archive.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "host",
+		"line": "That one alphabetised the tapes! Do you know how rare that is?",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Up.",
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "host",
+		"line": "Another one gone. I'm running out of staff, Parker. Honestly.",
+		"where": "pending: m09c_skybridge"
 	},
 	{
 		"who": "host",
 		"line": "He's down in the archive! Filed under 'gone'.",
-		"where": "pending: m09c Skybridge chatter (down)"
+		"where": "pending: m09c_skybridge"
 	},
 	{
 		"who": "mags",
 		"line": "Up. Don't let them pin you in the stacks.",
-		"where": "pending: m09c Skybridge chatter (down)"
+		"where": "pending: m09c_skybridge"
 	},
 	{
 		"who": "host",
 		"line": "Ooh, down he goes. Echo, sweetheart, you might want to look away.",
-		"where": "pending: m09c Skybridge chatter (down)"
+		"where": "pending: m09c_skybridge"
 	},
 	{
 		"who": "echo",
 		"line": "...the first show he ever did is on a shelf in here somewhere. He sounded scared. I've heard it.",
-		"where": "pending: m09c Skybridge chatter (tape)"
+		"where": "pending: m09c_skybridge"
 	},
 	{
 		"who": "echo",
 		"line": "...there's a bridge off the roof, straight into the tower. If I'm not here when you get here, that's where they've taken me.",
-		"where": "pending: m09c Skybridge chatter (tape)"
+		"where": "pending: m09c_skybridge"
+	},
+	{
+		"who": "host",
+		"line": "Oh, come on! I just hired him!",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "echo",
+		"line": "Ha! They're whistling on the roofs, courier.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "mags",
+		"line": "That's it, now keep climbing.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "host",
+		"line": "Whoops! Mind your step, it's scaffold all the way down.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "mags",
+		"line": "Easy. Up you get.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "host",
+		"line": "Down he goes! Do I hear a creak? I think I hear a creak.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "echo",
+		"line": "Don't you dare. Get up.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "host",
+		"line": "Stop showing off on my tower!",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "mags",
+		"line": "Beautiful. Keep going up.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "echo",
+		"line": "That's it. I'm right up here, Parker. Keep coming.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "host",
+		"line": "Folks, this is going out live and I am not happy about it.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "host",
+		"line": "And down he goes! Elevator's out, sorry. Take the stairs.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "mags",
+		"line": "Fell off. Get back on and climb.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "host",
+		"line": "Every one of those comes out of my budget, Parker. Every single one.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Up, before they reload.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "host",
+		"line": "Oh, lovely. Who's gonna guard the stairs now?",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "mags",
+		"line": "Got him. Higher.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "echo",
+		"line": "I saw that one go! Keep coming.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "mags",
+		"line": "Up. Find cover on the scaffold, then go.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "host",
+		"line": "Courier down! And from up here he looks so small.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "echo",
+		"line": "Parker? Parker. Get up. Please.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "echo",
+		"line": "...the dish on this floor still talks to the whole city. He doesn't know I know how to use it.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "echo",
+		"line": "...counted the stairs again. Four hundred and twelve. Bring water.",
+		"where": "pending: m10_the_climb"
+	},
+	{
+		"who": "host",
+		"line": "Ah! On air! You can't do that on air!",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "mags",
+		"line": "Nice. Keep going.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "echo",
+		"line": "Ha! Yes!",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "host",
+		"line": "That was my best sound guy. Well. My only sound guy.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, he's tangled in the mic cables! Classic rookie.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "mags",
+		"line": "Up. You're so close.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "echo",
+		"line": "Get up, get up, get up.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "host",
+		"line": "Down he goes! And that is why we don't run in the studio.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "host",
+		"line": "Folks, he's doing this in front of the whole city. In my building.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "echo",
+		"line": "Look at you. You never could walk anywhere like a normal person.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "mags",
+		"line": "Lovely. Keep pushing.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "host",
+		"line": "Stop! Stop it! That's... no, actually, that's great radio. Keep going.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "host",
+		"line": "That was security! I need those!",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "mags",
+		"line": "Good. Don't stop.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "host",
+		"line": "That's coming out of your fee, Parker. Oh, you don't get a fee? Well, now you owe me.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "echo",
+		"line": "One less. Keep coming, I'm right here.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "host",
+		"line": "Somebody, anybody, please stop letting him do that.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "echo",
+		"line": "No. No, no. Get up. Parker, get up.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "host",
+		"line": "He's down! Oh, Echo, the look on your face. I wish radio had pictures.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "mags",
+		"line": "Up, kid. Last stretch.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "echo",
+		"line": "...the safe code's his birthday. Of course it is. He made me sing at it.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "echo",
+		"line": "...he does the callers himself, you know. The voices. Half the people who ring in are him.",
+		"where": "pending: m11_dead_air"
+	},
+	{
+		"who": "parker",
+		"line": "Barriers. Jump into 'em, you'll go over without slowing down.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Bar ahead. Slide under it.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Too wide to jump. Wall on your right. Run it.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Big drop. Crouch right before you land, then roll.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Last gap. Kick off the pillar if you need the distance.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Change of plans, Port Calder! Our courier's stuck under my antenna, and the wife's making a run for it!",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Echo. Run. Don't look back. I'll talk you down.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "echo",
+		"line": "Running. Talk to me, Parker.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "I used to chase ratings, darling. This is way more fun.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "echo",
+		"line": "He's still behind me. I can hear him laughing.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Slowing down, sweetheart? I can hear you breathing.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Where are you taking me, Echo? That's... that's the Silt. What are those... Echo? ECHO!",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "echo",
+		"line": "And that's the show, Port Calder.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Echo?",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "echo",
+		"line": "I'm here. Hang on. I'm coming back for you.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Got you! Oh, let's do that bit again.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Okay. Okay, breathe. Go again, and don't stop.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, caught! Don't worry, I'll let you go. For the cameras.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Gotcha! Oh, don't cry, darling. We'll do another take.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Caught you! Folks love a rerun.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Keep moving, Echo! Don't let him close in!",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Oops! I'm getting closer, sweetheart.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "You're okay. Get up, keep going!",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Ha! Down she goes. Oh, I'm enjoying this.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Ooh, tripped! I'm right behind you.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Up! Get up, he's coming!",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Back up! Find a way up, go!",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Down there? Oh, sweetheart, I'll find you down there too.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Not the Silt yet, sweetheart. I want you on air.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Yes! Keep that going!",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Stop that! Stop being good at things!",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "Ha! You've been watching me.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "host",
+		"line": "Show-off. God, you two deserve each other.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "parker",
+		"line": "That's it. That's my girl.",
+		"where": "pending: m12_signal_out"
+	},
+	{
+		"who": "echo",
+		"line": "Don't drop this one. It's insulin, for the Okafor kid.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "parker",
+		"line": "When have I ever dropped one?",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "mags",
+		"line": "High roof past the fish market. And back for breakfast. I'm not keeping it warm.",
+		"where": "pending: l1_1_dawn_run"
+	},
+	{
+		"who": "parker",
+		"line": "Mags. There's a photo of you in here.",
+		"where": "pending: l6_1_head_office"
+	},
+	{
+		"who": "mags",
+		"line": "...Burn it.",
+		"where": "pending: l6_1_head_office"
+	},
+	{
+		"who": "host",
+		"line": "She was a lot more fun back then. Weren't you, Margaret?",
+		"where": "pending: l6_1_head_office"
+	},
+	{
+		"who": "host",
+		"line": "Folks, small update. He's still coming. Show goes on.",
+		"where": "pending: l6_2_skybridge"
 	}
 ]
