@@ -80,6 +80,8 @@ TTS = os.path.join(VOICES, "tts")
 SAMPLE_RATE = 24000
 # Chatterbox takes tried per line before keeping the clearest.
 TAKES = 4
+# Longest quiet stretch kept in a Chatterbox take (seconds).
+SQUEEZE = 0.35
 
 
 def key(line):
@@ -290,6 +292,15 @@ def settings(c):
     return json.dumps([RENDER_VERSION, c], sort_keys=True)
 
 
+def chatterbox_filters(c):
+    """Chatterbox takes can hang on a breath; long quiet stretches are cut
+    to SQUEEZE seconds. It has no pace control, so "speed" stretches the take."""
+    out = ["silenceremove=start_periods=1:start_threshold=-40dB:stop_periods=-1:stop_duration=%g:stop_threshold=-40dB:stop_silence=%g" % (SQUEEZE + 0.1, SQUEEZE)]
+    if c.get("speed", 1.0) != 1.0:
+        out.append("atempo=%g" % c["speed"])
+    return out
+
+
 def render(voices, cast, who, line, out_path):
     import soundfile as sf
 
@@ -314,10 +325,7 @@ def render(voices, cast, who, line, out_path):
         # the line are touched here, so the pauses survive.)
         filters = ",".join([
             "loudnorm=I=-16:TP=-1.5:LRA=11",
-        ] + (
-            # Chatterbox has no pace control; "speed" stretches the take.
-            ["atempo=%g" % c["speed"]] if c.get("engine") == "chatterbox" and c.get("speed", 1.0) != 1.0 else []
-        ) + [
+        ] + (chatterbox_filters(c) if c.get("engine") == "chatterbox" else []) + [
             "adelay=60",
             "apad=pad_dur=0.12",
         ])
