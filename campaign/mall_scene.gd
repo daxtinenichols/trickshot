@@ -202,7 +202,7 @@ func _build_convoy() -> void:
 		_box(t, Vector3(0, 1.9, 1.2), Vector3(2.5, 2.8, 5.6), white, false)
 		_box(t, Vector3(0, 1.5, 1.2), Vector3(2.52, 0.4, 5.62), blue, false)
 		_box(t, Vector3(0, 1.4, -2.6), Vector3(2.4, 2.0, 2.0), white, false)
-		_box(t, Vector3(0, 0.45, 0), Vector3(2.3, 0.6, 8.0), dark, false)
+		_box(t, Vector3(0, 0.45, -0.1), Vector3(2.3, 0.6, 7.8), dark, false)
 		for k in [-0.8, 0.8]:
 			_box(t, Vector3(k, 1.0, -3.62), Vector3(0.35, 0.25, 0.05), head, false)
 		_trucks.append(t)

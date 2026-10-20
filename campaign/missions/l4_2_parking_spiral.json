@@ -373,11 +373,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": -7
      },
      "at": 4.0,
      "length": 0
@@ -386,13 +386,121 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 88
+      "yaw": 1
      },
      "at": 11.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 14.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 21.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 28.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 35.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 42.5,
      "length": 0
     }
    ]
@@ -414,11 +522,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": -7
      },
      "at": 4.0,
      "length": 0
@@ -427,13 +535,31 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 88
+      "yaw": 1
      },
      "at": 11.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
      "length": 0
     }
    ]
@@ -464,6 +590,24 @@
      },
      "at": 2,
      "radius": 8
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
     }
    ]
   },
@@ -478,7 +622,27 @@
    "look": "NEUTRAL",
    "bare": true,
    "interior": 3.8,
-   "open": 1
+   "open": 1,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
   },
   {
    "gap": 3,
@@ -662,6 +826,24 @@
        "bullet_damage": 10.0
       }
      ]
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
     }
    ]
   },
@@ -692,13 +874,85 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 83
+      "yaw": 2
      },
      "at": 25.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 14.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 21.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 28.5,
      "length": 0
     }
    ]
@@ -714,7 +968,27 @@
    "look": "NEUTRAL",
    "bare": true,
    "interior": 3.8,
-   "open": 1
+   "open": 1,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
   },
   {
    "ramp_up": 28,
@@ -727,7 +1001,8 @@
    "look": "NEUTRAL",
    "bare": true,
    "interior": 3.8,
-   "open": 1
+   "open": 1,
+   "do": []
   },
   {
    "gap": 3,
@@ -740,7 +1015,8 @@
    "look": "NEUTRAL",
    "bare": true,
    "interior": 3.8,
-   "open": 1
+   "open": 1,
+   "do": []
   },
   {
    "turn": "right",
@@ -759,6 +1035,42 @@
      "checkpoint": "The core",
      "at": 2,
      "objective": 3
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
     }
    ]
   },
@@ -772,7 +1084,45 @@
    "y": 28,
    "look": "BRICK",
    "bare": true,
-   "interior": 3.8
+   "interior": 3.8,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    }
+   ]
   },
   {
    "ramp_up": 31.5,
@@ -849,11 +1199,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": -7
      },
      "at": 4.0,
      "length": 0
@@ -862,11 +1212,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       4.7,
+       4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": 173
      },
      "at": 4.0,
      "length": 0
@@ -875,13 +1225,146 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 88
+      "yaw": 1
      },
      "at": 11.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       -13.03,
+       0,
+       -7.0
+      ],
+      "size": [
+       14,
+       14
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -19.8,
+       0.55,
+       -7.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       14
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       13.03,
+       0,
+       -7.0
+      ],
+      "size": [
+       14,
+       14
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       19.8,
+       0.55,
+       -7.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       14
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       10.5,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 10.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       16.0,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 5.0,
      "length": 0
     }
    ]
@@ -900,11 +1383,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": -7
      },
      "at": 5.0,
      "length": 0
@@ -913,11 +1396,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       4.7,
+       4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": 173
      },
      "at": 5.0,
      "length": 0
@@ -926,11 +1409,157 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 88
+      "yaw": 1
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       -13.03,
+       0,
+       -9.0
+      ],
+      "size": [
+       14,
+       18
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -19.8,
+       0.55,
+       -9.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       18
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       13.03,
+       0,
+       -9.0
+      ],
+      "size": [
+       14,
+       18
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       19.8,
+       0.55,
+       -9.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       18
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       10.5,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 10.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       16.0,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": 1
      },
      "at": 12.0,
      "length": 0
@@ -946,7 +1575,154 @@
    "y": 35,
    "look": "NEUTRAL",
    "bare": true,
-   "do": []
+   "do": [
+    {
+     "piece": {
+      "building": [
+       -13.03,
+       0,
+       -9.0
+      ],
+      "size": [
+       14,
+       18
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -19.8,
+       0.55,
+       -9.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       18
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       13.03,
+       0,
+       -9.0
+      ],
+      "size": [
+       14,
+       18
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       19.8,
+       0.55,
+       -9.0
+      ],
+      "size": [
+       0.4,
+       1.1,
+       18
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       10.5,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 10.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       16.0,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 12.0,
+     "length": 0
+    }
+   ]
   },
   {
    "gap": 3,
@@ -962,11 +1738,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": -7
      },
      "at": 5.0,
      "length": 0
@@ -975,11 +1751,144 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       4.7,
+       4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": 173
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       -13.03,
+       0,
+       -7.149999999999999
+      ],
+      "size": [
+       14,
+       14.299999999999997
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -19.8,
+       0.55,
+       -7.149999999999999
+      ],
+      "size": [
+       0.4,
+       1.1,
+       14.299999999999997
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "building": [
+       13.03,
+       0,
+       -7.149999999999999
+      ],
+      "size": [
+       14,
+       14.299999999999997
+      ],
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       19.8,
+       0.55,
+       -7.149999999999999
+      ],
+      "size": [
+       0.4,
+       1.1,
+       14.299999999999997
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       10.5,
+       0,
+       0
+      ],
+      "yaw": 173
+     },
+     "at": 3.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -10.5,
+       0,
+       0
+      ],
+      "yaw": 1
+     },
+     "at": 10.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       -16.0,
+       0,
+       0
+      ],
+      "yaw": -7
+     },
+     "at": 5.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "prop": "car_wreck",
+      "at": [
+       16.0,
+       0,
+       0
+      ],
+      "yaw": 173
      },
      "at": 5.0,
      "length": 0
@@ -1003,6 +1912,24 @@
      "checkpoint": "Down ramps",
      "at": 2,
      "objective": 5
+    },
+    {
+     "piece": {
+      "box": [
+       5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
     }
    ]
   },
@@ -1034,13 +1961,67 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": -7
      },
      "at": 4.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 14.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 21.5,
      "length": 0
     }
    ]
@@ -1072,11 +2053,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": -7
      },
      "at": 4.0,
      "length": 0
@@ -1085,11 +2066,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 84
+      "yaw": -4
      },
      "at": 46.0,
      "length": 0
@@ -1098,13 +2079,175 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 90
+      "yaw": 4
      },
      "at": 53.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 7.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 14.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 21.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 28.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 35.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 42.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 49.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 56.5,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.62,
+       1.9,
+       0
+      ],
+      "size": [
+       0.5,
+       3.8,
+       0.5
+      ],
+      "kind": "NEUTRAL",
+      "look": "NEUTRAL"
+     },
+     "at": 63.5,
      "length": 0
     }
    ]
@@ -1129,11 +2272,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": -7
      },
      "at": 4.0,
      "length": 0
@@ -1142,11 +2285,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       4.7,
+       4.6,
        0,
        0
       ],
-      "yaw": 82
+      "yaw": 173
      },
      "at": 4.0,
      "length": 0
@@ -1155,11 +2298,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 88
+      "yaw": 1
      },
      "at": 13.0,
      "length": 0
@@ -1168,11 +2311,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       4.7,
+       4.6,
        0,
        0
       ],
-      "yaw": 94
+      "yaw": 174
      },
      "at": 22.0,
      "length": 0
@@ -1181,11 +2324,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       -4.7,
+       -4.6,
        0,
        0
       ],
-      "yaw": 83
+      "yaw": 2
      },
      "at": 31.0,
      "length": 0
@@ -1194,11 +2337,11 @@
      "piece": {
       "prop": "car_wreck",
       "at": [
-       4.7,
+       4.6,
        0,
        0
       ],
-      "yaw": 83
+      "yaw": 182
      },
      "at": 31.0,
      "length": 0
