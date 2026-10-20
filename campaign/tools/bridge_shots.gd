@@ -1,5 +1,5 @@
 extends SceneTree
-## Renders Glass District's Silt bridge going down, frame by frame, from the
+## Renders The Toll's (2-3) Silt bridge going down, frame by frame, from the
 ## side and over Parker's shoulder (first person), for review:
 ##   xvfb-run -a godot --path . --fixed-fps 60 -s res://campaign/tools/bridge_shots.gd -- <out_dir> [mission id] [side|fp] [camera x,y,z]
 ## Writes side_NNNN.png and fp_NNNN.png (every third tick); join them with
@@ -8,7 +8,7 @@ extends SceneTree
 ## with classes that need them.
 
 var out := "user://bridge_shots"
-var mission := "m03_glass_district"
+var mission := "l2_3_the_toll"
 ## The chase camera (behind and above Parker: the city walls the
 ## bridge in, so a true side view sees only buildings), local to the bridge's collapse (the end mark; -Z on
 ## across the bridge), and what it looks at.

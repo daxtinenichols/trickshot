@@ -7,7 +7,7 @@ const SHOTS := [
 	# [mission id or scene, camera position, look at, name]
 	["res://maps/rooftops.tscn", Vector3(-6, 12.6, -21), Vector3(0, 11.0, -31), "rooftops_bar"],
 	["res://maps/combo_park.tscn", Vector3(-7, 2.4, -86), Vector3(0, 1.0, -96), "park_bars"],
-	["m03_glass_district", Vector3(-7, 16.6, -18), Vector3(0, 15.0, -28), "m03_bar"],
+	["m09_rail_bridge", Vector3(-7, 10.6, -40), Vector3(0, 9.0, -50), "m09_bar"],
 ]
 
 

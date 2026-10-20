@@ -92,7 +92,8 @@ static func _local(pos: Vector3, legs: Array) -> Vector2:
 
 ## [start, end, label] along the route for every gate and encounter,
 ## nearest first. A gate runs from 20 m before its edge to 6 m past the
-## far side; an encounter is its area.
+## far side; an encounter is its area. An unarmed one (only the Host's
+## camera drones filming you) is no fight, so it isn't a section.
 static func sections(mission: Dictionary) -> Array:
 	var legs: Array = mission.get("route_legs", [])
 	var out: Array = []
@@ -106,10 +107,20 @@ static func sections(mission: Dictionary) -> Array:
 			var a: Array = p.mark
 			var edge := along(Vector3(a[0], a[1], a[2]), legs) - EDGE_MARK
 			out.append([edge + 20.0, edge - float(p.get("gap", 15.0)) - 6.0, "tier %d gate" % int(p.gate)])
-		elif p.has("encounter"):
+		elif p.has("encounter") and armed(p):
 			var c: Array = p.area.at
 			var mid := along(Vector3(c[0], c[1], c[2]), legs)
 			var half := float(maxf(p.area.size[0], p.area.size[2])) * 0.5
 			out.append([mid + half, mid - half, "encounter %s" % p.encounter])
 	out.sort_custom(func(a: Array, b: Array) -> bool: return a[0] > b[0])
 	return out
+
+
+## True if an expanded encounter piece has anyone who shoots or bites.
+static func armed(encounter: Dictionary) -> bool:
+	if not encounter.get("raiders", []).is_empty() or not encounter.get("mutants", []).is_empty():
+		return true
+	for e: Dictionary in encounter.get("enemies", []):
+		if String(e.get("type", "raider")) != "camera_drone":
+			return true
+	return false

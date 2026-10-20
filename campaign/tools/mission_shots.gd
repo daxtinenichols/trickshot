@@ -54,17 +54,6 @@ const SHOTS := [
 	["l6_2_skybridge", Vector3(197, 45.7, 168), Vector3(197, 44, 225), "s6_2_tanks"],
 	["l6_2_skybridge", Vector3(0, 44.7, 150), Vector3(0, 46, 20), "s6_2_bridge"],
 	["l6_2_skybridge", Vector3(110, 80, 150), Vector3(0, 40, 50), "s6_2_bridge_outside"],
-	["m02_on_air", Vector3(-14, 18, 6), Vector3(0, 8, -40), "m02_start"],
-	["m02_on_air", Vector3(-12, 16, -150), Vector3(0, 8, -190), "m02_lookouts"],
-	["m02_on_air", Vector3(320, 260, 60), Vector3(120, 0, -380), "m02_overview"],
-	["m02_on_air", Vector3(214.7, 3.2, -362), Vector3(214.7, 2.5, -400), "m02_warehouse"],
-	["m02_on_air", Vector3(170, 22, -325), Vector3(205, 9, -370), "m02_fork"],
-	["m03_glass_district", Vector3(-14, 22, 10), Vector3(0, 14, -40), "m03_start"],
-	["m03_glass_district", Vector3(-12, 18, -236), Vector3(0, 11, -275), "m03_toll_roof"],
-	["m03_glass_district", Vector3(-50, 75, 30), Vector3(0, 10, -280), "m03_overview"],
-	["m03_glass_district", Vector3(-60.1, 16, -250.1), Vector3(-88.4, 15.5, -278.4), "m03_offices"],
-	["m03_glass_district", Vector3(-358, 13, -712), Vector3(-347.9, 7, -790), "m03_bridge"],
-	["m03_glass_district", Vector3(-395, 7, -790), Vector3(-347.9, 6, -835), "m03_bridge_side"],
 	# Stage 3: the Silt.
 	["l3_1_the_silt", Vector3(1792, 9.7, 40), Vector3(1740, 0, 30), "l3_1_wreck"],
 	["l3_1_the_silt", Vector3(1720, 22, 70), Vector3(1780, 0, 0), "l3_1_wreck_behind"],
@@ -176,16 +165,19 @@ func _run() -> void:
 	await _shots(campaign, "")
 
 	# First person, a few seconds in, with the radio and objective up.
-	var level: Node = await _load_mission(campaign, "m02_on_air")
+	var level: Node = await _load_mission(campaign, "l2_1_on_air")
 	var p: Node = level.get_node("Player")
 	p.set_physics_process(false)
-	p.global_position = Vector3(0, 8, -40)
+	# 2-1's first warehouse roof, heading west.
+	p.global_position = Vector3(2885, 6, 318)
+	p.basis = Basis(Vector3.UP, PI * 0.5)
+	p.yaw = PI * 0.5
 	p.set_view(0.15, -0.05)
 	level.radio.say("host", "Ladies, gentlemen, and... whatever the rest of you are. Our courier has left the building!")
 	level.radio.advance(0.0)
 	_hide_ui(level, false)
 	await _frames(10)
-	_save("m02_first_person_radio")
+	_save("l2_1_first_person_radio")
 	# The results card.
 	level.mission_hud.show_results({"seconds": 52.4, "score": 18450, "best_combo": 6200, "par_seconds": 60.0,
 		"total_tapes": 1, "tapes": ["x"], "restarts": 1, "practice": false, "records": {"time": true}},
