@@ -109,6 +109,8 @@ Features on a roof, `at` meters from its start:
 | `{"lane": x}` | where the test bot runs from here |
 | `{"set_piece": "debris", "as": "slide", "at": 46, "trigger": 20}` | a chase set piece (see The chase) |
 
+**Finish.** A route that ends up high (not on a street or a bridge) ends in a finish you can't run off: a white line, then the roof runs on 16 m between 8 m walls to a building across the end with a shut door in it, all in the last roof's look. If the last roof is indoors (`interior`/`indoors`) it's just the room's end wall with a door. The `"at": "end"` goal reaches over the run-out, so you win the moment you cross the line. `"finish": false` leaves it out (a set piece ending); atlas levels leave it out unless `"finish": true`, as the next level carries on from their end.
+
 Everything after a corner is laid out turned with the run (checkpoints
 face along it). Two 45° corners make a 90° turn with a diagonal stretch
 between; on a diagonal leg roofs are turned boxes and checkpoints turned

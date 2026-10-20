@@ -1,10 +1,11 @@
 class_name Pistol
 extends Node3D
 ## Hitscan test pistol: semi-auto or full-auto, headshots, damage falloff,
-## bloom, recoil, reload, aim down sights. Lives under the player's camera.
+## recoil, reload, aim down sights. Lives under the player's camera.
 ##
-## Accuracy philosophy: the first shot always goes exactly where the crosshair
-## is, even mid-flip at full speed. Spamming blooms; controlled fire doesn't.
+## No spread and no bloom: every shot goes exactly along the first-person
+## head ray, even mid-flip at full speed or holding full auto. Recoil kicks
+## the camera for feel but never moves where shots land.
 
 signal fired(ammo: int)
 ## Every shot, for muzzle flashes, tracers, impacts and sound: the world
@@ -58,11 +59,9 @@ var aim_blend := 0.0
 
 var _cooldown := 0.0
 var _reload_left := 0.0
-var _bloom := 0.0
-var _since_shot := 999.0
 var _await_release := false
 var _rng := RandomNumberGenerator.new()
-## Looks only (recoil roll), so it never shifts the spread's random sequence.
+## Looks only (recoil roll), so it never shifts the recoil yaw sequence.
 var _fx_rng := RandomNumberGenerator.new()
 var _builtin: Node3D
 ## Gun recoil spring: 0 at rest, about 1 at the peak of a shot's kick.
@@ -133,9 +132,6 @@ func _physics_process(delta: float) -> void:
 
 func tick(delta: float) -> void:
 	_cooldown = maxf(_cooldown - delta, 0.0)
-	_since_shot += delta
-	if _since_shot >= stats.bloom_recovery_delay:
-		_bloom = maxf(_bloom - stats.bloom_recovery * delta, 0.0)
 	aim_blend = move_toward(aim_blend, 1.0 if aim_held and not is_reloading() else 0.0, delta / stats.aim_time)
 	if player:
 		player.aim_zoom = aim_blend
@@ -172,25 +168,11 @@ func _start_reload() -> void:
 	reload_started.emit()
 
 
-func current_spread() -> float:
-	var speed_frac := clampf(player.horizontal_speed() / player.tuning.top_speed, 0.0, 1.0) if player else 0.0
-	return lerpf(stats.hip_spread, stats.aim_spread, aim_blend) + _bloom + stats.move_spread * speed_frac
-
-
 func _fire() -> void:
 	ammo -= 1
 	shots_fired += 1
-	_since_shot = 0.0
 	_cooldown = 1.0 / (stats.auto_rate if full_auto else stats.semi_max_rate)
-	# First shot after the gun has settled is perfectly accurate.
-	var spread := 0.0 if _bloom < 0.05 else current_spread()
-	var basis := camera.global_transform.basis
-	var dir := -basis.z
-	if spread > 0.0:
-		var angle := deg_to_rad(spread) * sqrt(_rng.randf())
-		var around := _rng.randf() * TAU
-		dir = (dir + (basis.x * cos(around) + basis.y * sin(around)) * tan(angle)).normalized()
-	_bloom = minf(_bloom + stats.bloom_per_shot, stats.max_bloom)
+	var dir := player.shot_direction() if player else -camera.global_transform.basis.z
 	if player:
 		player.add_view_kick(deg_to_rad(stats.recoil_pitch), deg_to_rad(_rng.randf_range(-stats.recoil_yaw, stats.recoil_yaw)), stats.recoil_recovery,
 			deg_to_rad(_fx_rng.randf_range(-stats.recoil_roll, stats.recoil_roll)), stats.fov_punch)

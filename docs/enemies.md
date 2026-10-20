@@ -66,6 +66,9 @@ gun drones) never share an encounter. The Hollows can turn up with either.
 
 ## Types
 
+Every normal enemy dies to one headshot, whatever the damage, range, combo
+or armor (`Enemy.one_shot_headshot`). Juno and the Host turn it off.
+
 | type | faction | what it does | how you beat it |
 |---|---|---|---|
 | `raider` | Static | rifle, cover, red laser that turns white and beeps before the shot | move after the lock; headshot when it pops up |
@@ -75,10 +78,10 @@ gun drones) never share an encounter. The Hollows can turn up with either.
 | `mutant` / `crawler` | Hollows | rushes, leaps (crouch-and-glow windup), swipes; winded after landing | sidestep the leap, headshot while winded |
 | `leaper` | Hollows | small and quick, leaps far and often, short winded window | watch the ledges, quick headshots |
 | `brute` | Hollows | huge, bone-armored front (shots barely hurt), soft back (extra damage); roars, then charges in a locked straight line | sidestep after the line locks; it's dazed if it hits a wall; shoot its back |
-| `trooper` | Ward | like a raider but 3-round bursts, leads shots, body armor; the helmet stops the first headshot; squads spread around you | keep moving; two headshots |
+| `trooper` | Ward | like a raider but 3-round bursts, leads shots, body armor; squads spread around you | keep moving; one headshot (the helmet flies off) |
 | `shield` | Ward | riot shield blocks shots from the front, walks you down, one-handed carbine | over it, around it (turns slowly), headshot over the top, kick it aside |
 | `marksman` | Ward | scoped rifle from up to 55 m, one heavy shot, quick laser aim | break line of sight, move on the lock |
-| `heavy` | Ward | heavy armor (body shots barely hurt), LMG bursts of 6, walks at you, kicks barely move it | headshots (full damage) |
+| `heavy` | Ward | heavy armor (body shots barely hurt), LMG bursts of 6, walks at you, kicks barely move it | one headshot |
 | `drone` / `gun_drone` | Ward | quadcopter, circles you at range, telegraphed 3-shot bursts; one hit drops it | air and wallrun shots |
 | `camera_drone` | Static | the Host's broadcast camera: harmless, circles close with REC on; emits `feed_cut` when shot down | free trick shot |
 | `spotter_drone` | Static | hangs high and paints you with a green beam; while it sees you, its encounter's gunners keep aiming at you behind cover and lock on faster | shoot it first |

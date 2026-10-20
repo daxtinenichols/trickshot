@@ -1235,6 +1235,43 @@ func test_route_missions_can_be_finished() -> void:
 	check(ran >= 1, "route missions were run (%d)" % ran)
 
 
+## Every route that ends up high ends in a finish you can't run off:
+## across the line at well over top speed, straight on or veering either
+## way, holding forward or letting go, you stay on the finish's floor.
+func test_route_finishes_keep_you_on_the_roof() -> void:
+	var all := Campaign.missions()
+	var ran := 0
+	for i in all.size():
+		var path: String = all[i].get("file", "")
+		if path == "" or not Campaign.load_mission_file(path).has("route_finish"):
+			continue
+		await _load(i)
+		PlayerHealth.ensure(player).can_die = false
+		var e: Array = run.mission.route_end
+		var end := Vector3(e[0], e[1], e[2])
+		var yaw := deg_to_rad(float(run.mission.route_end_yaw))
+		for veer: float in [0.0, 20.0, -20.0]:
+			for hold: bool in [true, false]:
+				var look := yaw + deg_to_rad(veer)
+				var fwd := Vector3(-sin(look), 0, -cos(look))
+				player.global_position = end - fwd * 6.0 + Vector3(0, 0.05, 0)
+				player.basis = Basis(Vector3.UP, look)
+				player.velocity = fwd * 22.0
+				var f := InputFrame.new()
+				f.move = Vector2(0, 1) if hold else Vector2.ZERO
+				var low := INF
+				for k in 240:
+					await _step(1, f)
+					low = minf(low, player.global_position.y)
+				check(low > end.y - 0.6 and run.phase != MissionRun.Phase.LOST,
+					"%s: %s at 22 m/s, veering %d, stays on the finish (lowest %.1f, line %.1f)" % [all[i].id, "holding forward" if hold else "letting go", int(veer), low, end.y])
+		ran += 1
+		level.queue_free()
+		level = null
+		await tree.physics_frame
+	check(ran >= 6, "route finishes were tried (%d)" % ran)
+
+
 ## Runs the loaded mission's route bot (or its fork lines) to the end.
 func _bot_run(label: String, alt := false) -> void:
 	var health := PlayerHealth.ensure(player)
