@@ -86,7 +86,8 @@ See `l2_2_glass_district.json`.
 
 On an indoor roof, `"open": 1` (or `-1`) puts a 1.1 m balustrade on that
 side instead of a wall: a walkway over a void the mission builds itself
-(4-1's atrium). A mission's `"interior_look"` (default `FACADE`) dresses
+(4-1's atrium); `"rail_inset"` (default 0.6) is how far in from the
+roof's edge it stands. A mission's `"interior_look"` (default `FACADE`) dresses
 every indoor wall. Hurdles take `"lead"`: how far before them the bot jumps
 (2.8 for a fast line; 1.6 by default). Encounters take `"wake_distance"`
 (how close you get before a sleeper wakes) as well as `hear_shots`,
