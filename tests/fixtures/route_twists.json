@@ -1,0 +1,42 @@
+{
+ "id": "test_route_twists",
+ "title": "Route twists",
+ "runner": "",
+ "start": {"at": [0, 10, 2]},
+ "objectives": [
+  {"type": "reach", "name": "the squad roof", "at": "@Squad roof"},
+  {"type": "shoot", "count": 2},
+  {"type": "reach", "name": "the end", "at": "end"}
+ ],
+ "route": [
+  {"roof": 60, "do": [{"label": "TWISTS", "at": 4}, {"hurdles": true, "at": 22}]},
+  {"turn": "left", "size": 22},
+  {"roof": 50, "do": [{"checkpoint": "Corner", "at": 4}, {"slide": true, "at": 30}]},
+  {"roof": 40, "y": 13},
+  {"gap": 6},
+  {"roof": 56, "y": 9, "do": [
+   {"checkpoint": "Squad roof", "at": 6, "objective": 1},
+   {"encounter": "squad", "at": 10, "length": 40, "raiders": [[-3, 16]], "troopers": [[3, 22]], "drones": [[0, 30, 5]]}
+  ]},
+  {"fork": [
+   {"roof": 30, "y": 12},
+   {"gap": 5},
+   {"roof": 30, "y": 9},
+   {"wallrun": 12, "side": 1},
+   {"roof": 34, "do": [{"tape": "twists_tape", "at": 20}]}
+  ], "side": 1},
+  {"roof": 50, "do": [{"hurdles": true, "at": 24}]},
+  {"gap": 5},
+  {"roof": 40},
+  {"join": true},
+  {"roof": 30, "do": [{"checkpoint": "Joined", "at": 4, "objective": 2}]},
+  {"turn": "right", "size": 22},
+  {"roof": 60, "do": [{"window": 3.3, "at": 24}]},
+  {"ramp_down": 4, "length": 20},
+  {"roof": 50, "y": 4},
+  {"turn": "left"},
+  {"roof": 60, "do": [{"hop": true, "side": -1, "at": 14}]},
+  {"ramp_up": 7, "length": 18},
+  {"roof": 60, "y": 7, "do": [{"mark": "#f57320", "at": 50}]}
+ ]
+}

@@ -1,0 +1,1249 @@
+{
+ "id": "l5_1_storm_channels",
+ "title": "Storm Channels",
+ "runner": "",
+ "atlas": true,
+ "road_lines": false,
+ "plain_runner": true,
+ "par_seconds": 170,
+ "start": {
+  "at": [
+   1010,
+   12,
+   -110
+  ],
+  "yaw": 90
+ },
+ "route_origin": {
+  "at": [
+   1010,
+   12,
+   -110
+  ],
+  "yaw": 90
+ },
+ "chalk": true,
+ "tower_views": [
+  [
+   1010,
+   12,
+   -110
+  ]
+ ],
+ "clutter": [
+  "debris_pile",
+  "tire_stack",
+  "barrel_rust",
+  "generator",
+  "crate_wood",
+  "barricade_jersey",
+  "pallet",
+  "vent_stack"
+ ],
+ "objectives": [
+  {
+   "type": "reach",
+   "name": "the channels",
+   "text": "Down into the storm channels",
+   "at": "@Channel floor"
+  },
+  {
+   "type": "shoot",
+   "count": 4,
+   "text": "Break the Ward squad in the channel"
+  },
+  {
+   "type": "reach",
+   "name": "the sluice",
+   "text": "Through the sluice, on to the pumping station",
+   "at": "@Pumping station"
+  },
+  {
+   "type": "shoot",
+   "count": 5,
+   "text": "Clear the pumping station"
+  },
+  {
+   "type": "reach",
+   "name": "the rail line",
+   "text": "Out of the channels, up onto the rail line",
+   "at": "end"
+  }
+ ],
+ "radio": [
+  {
+   "on": "start",
+   "who": "mags",
+   "line": "Channels go straight to the west side. That's Ward land. Their water, too. Be quick."
+  },
+  {
+   "on": "go",
+   "who": "host",
+   "line": "And we're back, Port Calder. Our sponsors are watching tonight, so... Parker, darling, could you die quietly?"
+  },
+  {
+   "on": "objective:1",
+   "who": "vell",
+   "line": "Courier sighted. Squad two, close the sluice line.",
+   "must": true
+  },
+  {
+   "on": "objective:1",
+   "who": "mags",
+   "line": "These ones work in teams. They don't miss twice. Don't give them a still target."
+  },
+  {
+   "on": "set_piece:listeners",
+   "who": "host",
+   "line": "Folks, please. Stop waving at him. You're encouraging him."
+  },
+  {
+   "on": "set_piece:sluice",
+   "who": "mags",
+   "line": "Did he just... Parker, that's a listener. They're helping you.",
+   "must": true
+  },
+  {
+   "on": "complete",
+   "who": "vell",
+   "line": "The courier is not to reach the tower. Whatever it costs.",
+   "must": true
+  },
+  {
+   "on": "complete",
+   "who": "host",
+   "line": "You heard the man. Whatever it costs. I'll send him the bill.",
+   "must": true
+  }
+ ],
+ "route": [
+  {
+   "roof": 24,
+   "y": 12,
+   "do": [
+    {
+     "label": "WESTSIDE",
+     "at": 6,
+     "size": 1.3
+    },
+    {
+     "mark": "#f57320",
+     "at": 9
+    },
+    {
+     "hurdles": true,
+     "at": 14
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "flip"
+  },
+  {
+   "roof": 14,
+   "y": 12,
+   "bare": true,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 7
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "front"
+  },
+  {
+   "roof": 12,
+   "y": 12,
+   "bare": true
+  },
+  {
+   "gap": 3,
+   "trick": "spin"
+  },
+  {
+   "roof": 12,
+   "y": 12,
+   "bare": true
+  },
+  {
+   "ramp_down": 0,
+   "length": 22,
+   "slide": true
+  },
+  {
+   "roof": 89,
+   "y": 0,
+   "width": 18.0,
+   "bare": true,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -7.5,
+       2.5,
+       -44.5
+      ],
+      "size": [
+       3.0,
+       5.0,
+       89
+      ],
+      "kind": "NEUTRAL",
+      "look": "FACADE"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       7.5,
+       2.5,
+       -44.5
+      ],
+      "size": [
+       3.0,
+       5.0,
+       89
+      ],
+      "kind": "NEUTRAL",
+      "look": "FACADE"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "checkpoint": "Channel floor",
+     "at": 6,
+     "objective": 0
+    },
+    {
+     "slide": true,
+     "at": 4
+    },
+    {
+     "set_piece": "floodlights",
+     "at": 8.0,
+     "trigger": 8.0,
+     "count": 3,
+     "spacing": 30.0,
+     "x": 7.0,
+     "base": 5.0
+    },
+    {
+     "set_piece": "listeners",
+     "at": 18,
+     "trigger": 4,
+     "radius": 10,
+     "id": "listeners",
+     "people": [
+      [
+       -7.8,
+       5.0,
+       0,
+       "wave"
+      ],
+      [
+       -7.6,
+       5.0,
+       -6,
+       "pot"
+      ],
+      [
+       7.8,
+       5.0,
+       -10,
+       "wave"
+      ],
+      [
+       7.6,
+       5.0,
+       -22,
+       "watch"
+      ],
+      [
+       -7.8,
+       5.0,
+       -30,
+       "wave"
+      ],
+      [
+       7.8,
+       5.0,
+       -38,
+       "wave"
+      ]
+     ],
+     "arrows": [
+      [
+       -6.0,
+       2.4,
+       -4,
+       "up"
+      ],
+      [
+       6.0,
+       2.4,
+       -26,
+       "up"
+      ],
+      [
+       -6.0,
+       2.4,
+       -48,
+       "up"
+      ]
+     ]
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Fresh orange. That's not my mark. Somebody's out there marking you a route, Parker."
+     },
+     "at": 22,
+     "radius": 9
+    },
+    {
+     "encounter": "channel squad",
+     "at": 24,
+     "length": 60,
+     "troopers": [
+      [
+       -3.6,
+       14,
+       0
+      ],
+      [
+       3.6,
+       24,
+       0.4
+      ],
+      [
+       -3.6,
+       38,
+       0.8
+      ],
+      [
+       3.6,
+       50,
+       1.2
+      ]
+     ],
+     "enemies": [
+      {
+       "type": "gun_drone",
+       "x": 0,
+       "d": 30,
+       "height": 6
+      },
+      {
+       "type": "shield",
+       "x": 0,
+       "d": 58,
+       "wake": 1.0,
+       "cover": false
+      }
+     ]
+    },
+    {
+     "hurdles": true,
+     "at": 12.0
+    },
+    {
+     "slide": true,
+     "at": 26.0
+    },
+    {
+     "hurdles": true,
+     "at": 40.0
+    },
+    {
+     "slide": true,
+     "at": 54.0
+    },
+    {
+     "hurdles": true,
+     "at": 68.0
+    },
+    {
+     "slide": true,
+     "at": 82.0
+    }
+   ]
+  },
+  {
+   "turn": "left",
+   "size": 24
+  },
+  {
+   "roof": 36,
+   "y": 0,
+   "width": 18.0,
+   "bare": true,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -7.5,
+       2.5,
+       -18.0
+      ],
+      "size": [
+       3.0,
+       5.0,
+       36
+      ],
+      "kind": "NEUTRAL",
+      "look": "FACADE"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       7.5,
+       2.5,
+       -18.0
+      ],
+      "size": [
+       3.0,
+       5.0,
+       36
+      ],
+      "kind": "NEUTRAL",
+      "look": "FACADE"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "set_piece": "floodlights",
+     "at": 4,
+     "trigger": 4,
+     "count": 2,
+     "spacing": 30.0,
+     "x": 7.0,
+     "base": 5.0
+    },
+    {
+     "hurdles": true,
+     "at": 4.0
+    },
+    {
+     "slide": true,
+     "at": 18.0
+    },
+    {
+     "hurdles": true,
+     "at": 32.0
+    }
+   ]
+  },
+  {
+   "plaza": 22,
+   "fork": [
+    {
+     "ramp_up": 6,
+     "length": 12
+    },
+    {
+     "roof": 14,
+     "y": 6,
+     "look": "RUST",
+     "do": [
+      {
+       "label": "Pipeline",
+       "at": 4
+      }
+     ]
+    },
+    {
+     "roof": 18,
+     "y": 9,
+     "look": "RUST",
+     "bare": true
+    },
+    {
+     "gate": {
+      "tier": 3,
+      "tricks": false
+     }
+    },
+    {
+     "roof": 16,
+     "y": 9,
+     "look": "RUST",
+     "do": [
+      {
+       "tape": "m08_tape_pipeline",
+       "x": 4.6,
+       "at": 10
+      }
+     ]
+    },
+    {
+     "ramp_down": 0,
+     "length": 13,
+     "slide": true
+    }
+   ],
+   "side": 1
+  },
+  {
+   "roof": 98.52,
+   "y": 0,
+   "width": 18.0,
+   "bare": true,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -7.5,
+       2.5,
+       -49.26
+      ],
+      "size": [
+       3.0,
+       5.0,
+       98.52
+      ],
+      "kind": "NEUTRAL",
+      "look": "FACADE"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       7.5,
+       2.5,
+       -49.26
+      ],
+      "size": [
+       3.0,
+       5.0,
+       98.52
+      ],
+      "kind": "NEUTRAL",
+      "look": "FACADE"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "set_piece": "sluice",
+     "at": 30,
+     "trigger": 4,
+     "radius": 12,
+     "id": "sluice"
+    },
+    {
+     "checkpoint": "Sluice",
+     "at": 6,
+     "objective": 2
+    },
+    {
+     "encounter": "sluice squad",
+     "at": 22,
+     "length": 32,
+     "troopers": [
+      [
+       -3.6,
+       10,
+       0
+      ],
+      [
+       3.6,
+       16,
+       0.4
+      ],
+      [
+       -3.6,
+       22,
+       0.8
+      ],
+      [
+       3.6,
+       28,
+       1.0
+      ]
+     ],
+     "enemies": [
+      {
+       "type": "marksman",
+       "x": -7.8,
+       "d": 14,
+       "elevation": 5.0,
+       "wake": 0.4,
+       "cover": false
+      },
+      {
+       "type": "gun_drone",
+       "x": 0,
+       "d": 6,
+       "height": 5
+      },
+      {
+       "type": "gun_drone",
+       "x": 2,
+       "d": 24,
+       "height": 5
+      }
+     ]
+    },
+    {
+     "hurdles": true,
+     "at": 4.0
+    },
+    {
+     "slide": true,
+     "at": 18.0
+    },
+    {
+     "hurdles": true,
+     "at": 36.0
+    },
+    {
+     "slide": true,
+     "at": 50.0
+    },
+    {
+     "hurdles": true,
+     "at": 64.0
+    },
+    {
+     "slide": true,
+     "at": 78.0
+    },
+    {
+     "hurdles": true,
+     "at": 92.0
+    }
+   ]
+  },
+  {
+   "join": true
+  },
+  {
+   "ramp_up": 6,
+   "length": 18
+  },
+  {
+   "roof": 25,
+   "y": 6,
+   "look": "RUST",
+   "do": [
+    {
+     "label": "WARD PUMPING STATION 3",
+     "at": 8,
+     "size": 1.0
+    },
+    {
+     "hurdles": true,
+     "at": 5
+    },
+    {
+     "slide": true,
+     "at": 17
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "flip"
+  },
+  {
+   "roof": 16,
+   "y": 6,
+   "look": "RUST",
+   "bare": true,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 8
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "front"
+  },
+  {
+   "roof": 16,
+   "y": 6,
+   "look": "RUST",
+   "bare": true,
+   "do": [
+    {
+     "slide": true,
+     "at": 13
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "flip"
+  },
+  {
+   "roof": 12,
+   "y": 6,
+   "look": "RUST",
+   "bare": true
+  },
+  {
+   "wallrun": 12,
+   "side": -1,
+   "trick": "spin"
+  },
+  {
+   "roof": 18,
+   "y": 6,
+   "look": "RUST",
+   "bare": true
+  },
+  {
+   "gap": 2,
+   "trick": "front"
+  },
+  {
+   "roof": 16,
+   "y": 6,
+   "look": "RUST",
+   "bare": true
+  },
+  {
+   "gate": {
+    "tier": 2,
+    "tricks": false
+   }
+  },
+  {
+   "roof": 6,
+   "y": 6,
+   "look": "RUST"
+  },
+  {
+   "ramp_up": 9,
+   "length": 8
+  },
+  {
+   "roof": 58,
+   "y": 9,
+   "interior": 5.5,
+   "look": "RUST",
+   "do": [
+    {
+     "checkpoint": "Pumping station",
+     "at": 4,
+     "objective": 3
+    },
+    {
+     "encounter": "pumping station",
+     "at": 8,
+     "length": 42,
+     "troopers": [
+      [
+       -3.6,
+       6,
+       0
+      ],
+      [
+       3.6,
+       10,
+       0
+      ],
+      [
+       -3.6,
+       14,
+       0.2
+      ],
+      [
+       3.6,
+       20,
+       0.4
+      ],
+      [
+       -3.6,
+       26,
+       0.6
+      ],
+      [
+       3.6,
+       30,
+       0.8
+      ],
+      [
+       -3.6,
+       36,
+       0.2
+      ],
+      [
+       3.6,
+       40,
+       0.2
+      ],
+      [
+       -3.6,
+       44,
+       0
+      ],
+      [
+       3.6,
+       46,
+       0
+      ]
+     ],
+     "enemies": [
+      {
+       "type": "shield",
+       "x": 0.0,
+       "d": 24,
+       "wake": 0.8,
+       "cover": false
+      },
+      {
+       "type": "marksman",
+       "x": 3.6,
+       "d": 42,
+       "wake": 0.3
+      },
+      {
+       "type": "gun_drone",
+       "x": 0,
+       "d": 12,
+       "height": 4
+      },
+      {
+       "type": "gun_drone",
+       "x": 2,
+       "d": 30,
+       "height": 4
+      }
+     ]
+    },
+    {
+     "door": 0,
+     "at": 53
+    },
+    {
+     "hurdles": true,
+     "at": 8.0
+    },
+    {
+     "slide": true,
+     "at": 22.0
+    },
+    {
+     "hurdles": true,
+     "at": 36.0
+    }
+   ]
+  },
+  {
+   "roof": 34,
+   "y": 9,
+   "width": 24,
+   "bare": true,
+   "do": [
+    {
+     "set_piece": "ward_water",
+     "at": 6,
+     "trigger": 0,
+     "radius": 14,
+     "id": "ward_water"
+    },
+    {
+     "radio": {
+      "who": "host",
+      "line": "Quick reminder from the sponsor, folks: water's a privilege. Parker's probably drinking some right now. For free."
+     },
+     "at": 6,
+     "radius": 10
+    }
+   ]
+  },
+  {
+   "turn": "right",
+   "size": 24
+  },
+  {
+   "roof": 20,
+   "y": 9,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 10
+    }
+   ]
+  },
+  {
+   "ramp_down": 0,
+   "length": 24,
+   "slide": true
+  },
+  {
+   "roof": 60,
+   "y": 0,
+   "width": 18.0,
+   "bare": true,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -7.5,
+       2.5,
+       -30.0
+      ],
+      "size": [
+       3.0,
+       5.0,
+       60
+      ],
+      "kind": "NEUTRAL",
+      "look": "FACADE"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       7.5,
+       2.5,
+       -30.0
+      ],
+      "size": [
+       3.0,
+       5.0,
+       60
+      ],
+      "kind": "NEUTRAL",
+      "look": "FACADE"
+     },
+     "at": 0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "bank": [
+       -3.2,
+       0,
+       0
+      ],
+      "length": 16,
+      "side": -1
+     },
+     "at": 6,
+     "length": 16
+    },
+    {
+     "piece": {
+      "bank": [
+       3.2,
+       0,
+       0
+      ],
+      "length": 16,
+      "side": 1
+     },
+     "at": 6,
+     "length": 16
+    },
+    {
+     "checkpoint": "Outflow",
+     "at": 4,
+     "objective": 4
+    },
+    {
+     "set_piece": "floodlights",
+     "at": 4,
+     "trigger": 4,
+     "count": 2,
+     "spacing": 30.0,
+     "x": 7.0,
+     "base": 5.0
+    },
+    {
+     "set_piece": "listeners",
+     "at": 10,
+     "trigger": 0,
+     "radius": 10,
+     "id": "listeners_far",
+     "people": [
+      [
+       -7.8,
+       5.0,
+       0,
+       "wave"
+      ],
+      [
+       7.8,
+       5.0,
+       -8,
+       "watch"
+      ],
+      [
+       7.6,
+       5.0,
+       -16,
+       "wave"
+      ]
+     ],
+     "arrows": [
+      [
+       6.0,
+       2.4,
+       -6,
+       "up"
+      ]
+     ]
+    },
+    {
+     "encounter": "outflow squad",
+     "at": 24,
+     "length": 34,
+     "troopers": [
+      [
+       -3.6,
+       6,
+       0
+      ],
+      [
+       3.6,
+       12,
+       0.3
+      ],
+      [
+       -3.6,
+       18,
+       0.6
+      ],
+      [
+       3.6,
+       24,
+       0.9
+      ],
+      [
+       -3.6,
+       30,
+       1.2
+      ]
+     ],
+     "enemies": [
+      {
+       "type": "gun_drone",
+       "x": -2,
+       "d": 8,
+       "height": 5
+      },
+      {
+       "type": "gun_drone",
+       "x": 2,
+       "d": 24,
+       "height": 5
+      }
+     ]
+    },
+    {
+     "hurdles": true,
+     "at": 14.0
+    },
+    {
+     "slide": true,
+     "at": 28.0
+    },
+    {
+     "hurdles": true,
+     "at": 42.0
+    },
+    {
+     "slide": true,
+     "at": 56.0
+    }
+   ]
+  },
+  {
+   "ramp_up": 4,
+   "length": 14
+  },
+  {
+   "roof": 44,
+   "y": 4,
+   "look": "RUST",
+   "do": [
+    {
+     "hurdles": true,
+     "at": 4.0
+    },
+    {
+     "slide": true,
+     "at": 18.0
+    },
+    {
+     "hurdles": true,
+     "at": 32.0
+    }
+   ]
+  },
+  {
+   "ramp_up": 10,
+   "length": 14
+  },
+  {
+   "roof": 30,
+   "y": 10,
+   "look": "RUST",
+   "do": [
+    {
+     "label": "RAIL LINE",
+     "at": 14,
+     "size": 1.3
+    },
+    {
+     "mark": "#f57320",
+     "at": 22
+    }
+   ]
+  }
+ ],
+ "chatter": {
+  "headshot": [
+   {
+    "who": "mags",
+    "line": "Nice shot."
+   },
+   {
+    "who": "host",
+    "line": "Ooh, through the visor. The sponsor's gonna send me an invoice."
+   },
+   {
+    "who": "mags",
+    "line": "That's it. Go for the head, the rest is plated."
+   },
+   {
+    "who": "host",
+    "line": "Oops! Sorry, Commander. That one's coming out of his pay."
+   },
+   {
+    "who": "mags",
+    "line": "Clean."
+   }
+  ],
+  "bail": [
+   {
+    "who": "host",
+    "line": "Ha! Wet concrete. Nobody's cleaned these channels in years."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Keep the speed."
+   },
+   {
+    "who": "host",
+    "line": "Oh, he's in the gutter! Where he belongs, honestly."
+   },
+   {
+    "who": "mags",
+    "line": "Shake it off. Get back on the bank."
+   },
+   {
+    "who": "host",
+    "line": "Careful! The sponsor charges for concrete."
+   }
+  ],
+  "combo": [
+   {
+    "who": "host",
+    "line": "Look at him use the banks! The Ward built those for water, Parker. Not for you."
+   },
+   {
+    "who": "mags",
+    "line": "Beautiful. Keep it up."
+   },
+   {
+    "who": "host",
+    "line": "Commander, if you're listening, your boys are getting lapped."
+   },
+   {
+    "who": "mags",
+    "line": "That's the line. Stay on it."
+   },
+   {
+    "who": "host",
+    "line": "Lovely line, Parker. The Ward hates that, by the way."
+   },
+   {
+    "who": "mags",
+    "line": "That's it. Keep the speed through the banks."
+   }
+  ],
+  "kill": [
+   {
+    "who": "host",
+    "line": "Oh dear. That's a Ward helmet rolling down the channel."
+   },
+   {
+    "who": "mags",
+    "line": "Down. Don't wait for his mates."
+   },
+   {
+    "who": "host",
+    "line": "Another one for the sponsor's paperwork! I'll sign it, I'll sign it."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Keep moving, there'll be more."
+   },
+   {
+    "who": "host",
+    "line": "Ooh. The Commander's not gonna like that. I sort of do."
+   },
+   {
+    "who": "host",
+    "line": "Oh, that's one of the sponsor's. Somebody start the paperwork."
+   }
+  ],
+  "down": [
+   {
+    "who": "mags",
+    "line": "Up! Squads flank. Keep moving."
+   },
+   {
+    "who": "host",
+    "line": "And he's down! The Ward thank you for your cooperation."
+   },
+   {
+    "who": "mags",
+    "line": "Get up. Stay out of their crossfire."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Don't trade with a squad. Move, then shoot."
+   },
+   {
+    "who": "host",
+    "line": "Down he goes! And... we'll be right back."
+   }
+  ],
+  "tape": [
+   {
+    "who": "echo",
+    "line": "...the channels used to fill every spring. Now they're dry and the Ward's tanks are full. Funny, that."
+   },
+   {
+    "who": "echo",
+    "line": "...the Ward pays him in water. Every week. That's what 'sponsor' means."
+   },
+   {
+    "who": "echo",
+    "line": "...the Ward closed the channels the year the rain stopped. Nobody ever asked why."
+   }
+  ]
+ }
+}

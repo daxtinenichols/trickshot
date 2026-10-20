@@ -1,0 +1,196 @@
+{
+ "id": "l6_3_the_climb",
+ "title": "The Climb",
+ "runner": "",
+ "atlas": true,
+ "atlas_tower": false,
+ "par_seconds": 150,
+ "start": {"at": [0, 43, 58.0], "yaw": 0},
+ "route_origin": {"at": [0, 43, 58.0], "yaw": 0},
+ "tower_views": [[0, 44.7, 66]],
+ "roof_look": "TOWER_BASE",
+ "clutter": ["crate_wood", "generator", "vent_stack", "loudspeaker_pole"],
+ "city_open": [[-76.05, -76.05, 76.05, 76.05]],
+ "pieces": [
+  {"building": [0, 232.0, 0], "size": [44.0, 44.0], "look": "TOWER", "tower": true},
+  {"box": [0, 76.5, 22.06], "size": [2.4, 3.0, 0.12], "kind": "NEUTRAL", "look": "RUST"},
+  {"box": [0, 78.15, 22.1], "size": [3.0, 0.3, 0.2], "kind": "NEUTRAL", "look": "NEUTRAL"},
+  {"label": "STUDIO", "at": [0, 79.2, 22.15], "size": 0.8}
+ ],
+ "objectives": [
+  {"type": "reach", "name": "the north deck", "text": "Climb the scaffold", "at": "@North deck"},
+  {"type": "reach", "name": "the uplink", "text": "Keep climbing", "at": "@Uplink"},
+  {"type": "reach", "name": "the antenna deck", "text": "Up past the antenna deck", "at": "@Antenna deck"},
+  {"type": "reach", "name": "the top decks", "text": "Up to the top decks", "at": "@Top decks"},
+  {"type": "reach", "name": "the studio door", "text": "Reach the studio door", "at": "end"}
+ ],
+ "route": [
+  {"roof": 18, "y": 43, "bridge": true, "do": [
+   {"label": "THE CLIMB", "at": 5, "size": 1.3},
+   {"piece": {"box": [-4.2, 0.12, -14.5], "size": [2.4, 0.25, 1.2], "kind": "NEUTRAL", "look": "CONCRETE", "yaw": 12.0}, "at": 0},
+   {"piece": {"box": [4.3, 0.12, -15.5], "size": [2.4, 0.25, 1.2], "kind": "NEUTRAL", "look": "CONCRETE", "yaw": -8.0}, "at": 0},
+   {"piece": {"box": [0, 3.0, 0.15], "size": [12.6, 6.0, 0.3], "kind": "NEUTRAL", "look": "CONCRETE"}, "at": 0}
+  ]},
+  {"gap": 6, "roll": true},
+  {"roof": 5.95, "y": 37, "deck": true, "rail": 0},
+  {"turn": "right", "size": 12.0, "deck": true},
+  {"roof": 16.05, "deck": true, "rail": 1, "do": [
+   {"prop": "crate_wood", "x": 4.2, "at": 8}
+  ]},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 18, "deck": true, "rail": 1, "do": [
+   {"radio": {"who": "mags", "line": "Don't look down. Look up, that's where they're shooting from."}, "at": 2, "radius": 8},
+   {"encounter": "scaffold crew", "at": 2, "length": 16, "raiders": [[-3.6, 8, 0], [3.6, 14, 0.6]], "enemies": [{"type": "hunter", "x": 3, "d": 30, "wake": 0.8}, {"type": "spotter_drone", "x": 0, "d": 18, "height": 4}]}
+  ]},
+  {"ramp_up": 41, "length": 9.6, "width": 12},
+  {"roof": 16.5, "deck": true, "rail": 1, "y": 41, "do": [
+   {"hurdles": true, "at": 9}
+  ]},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 22, "deck": true, "rail": 1, "do": [
+   {"checkpoint": "North deck", "at": 3, "objective": 0},
+   {"encounter": "gun deck", "at": 4, "length": 36, "troopers": [[-3.6, 12, 0.2], [3.6, 20, 0.6], [3.6, 34, 1.0]], "enemies": [{"type": "marksman", "x": 4.0, "d": 30, "wake": 0.8}]}
+  ]},
+  {"roof": 22.1, "deck": true, "rail": 1, "y": 44, "do": [
+   {"set_piece": "uplink", "at": 6, "trigger": 6, "radius": 9, "center": [0, 0, 0], "screen": [-28.05, 53.5, 35.55], "screen_yaw": 0}
+  ]},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 22, "deck": true, "rail": 1, "do": [
+   {"checkpoint": "Uplink", "at": 3, "objective": 1},
+   {"label": "UPLINK", "x": -5.6, "at": 6, "size": 0.8}
+  ]},
+  {"roof": 22.1, "deck": true, "rail": 1, "y": 47},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 10, "deck": true, "rail": 1},
+  {"ramp_up": 52, "length": 12, "width": 12},
+  {"roof": 22.1, "deck": true, "rail": 1, "y": 52, "do": [
+   {"prop": "satellite_dish", "x": 4.6, "at": 4, "yaw": 200},
+   {"tape": "l6_3_tape_dish", "x": 4.4, "at": 9},
+   {"encounter": "dish platform", "at": 1, "length": 20, "troopers": [[-3.6, 8, 0.2], [3.6, 14, 0.6]], "enemies": [{"type": "gun_drone", "x": -2, "d": 10, "height": 4}, {"type": "gun_drone", "x": 2, "d": 18, "height": 4}, {"type": "marksman", "x": -3.8, "d": 30, "wake": 1.0}]}
+  ]},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"fork": [
+   {"roof": 5, "deck": true, "rail": 1, "do": [
+    {"set_piece": "cage", "at": 0.3, "trigger": -12, "trigger_x": -8, "radius": 10, "height": 4.5, "depth": 5}
+   ]},
+   {"roof": 5, "y": 55, "deck": true, "rail": 1, "do": [
+    {"mark": "#f57320", "at": 3}
+   ]},
+   {"roof": 6.1, "deck": true, "rail": 1, "do": [
+    {"tape": "l6_3_tape_lift", "x": 3.8, "at": 3}
+   ]}
+  ], "side": 1, "spread": 12, "plaza": 16, "deck": true},
+  {"roof": 8.9, "deck": true, "rail": 1, "do": [
+   {"hurdles": true, "at": 4}
+  ]},
+  {"ramp_up": 55, "length": 7.2, "width": 12},
+  {"join": true, "plaza": 12, "deck": true},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 22, "deck": true, "rail": 1, "do": [
+   {"checkpoint": "Antenna deck", "at": 3, "objective": 2},
+   {"prop": "antenna_mast", "x": 5.0, "at": 30},
+   {"encounter": "antenna deck", "at": 4, "length": 36, "raiders": [[-3.6, 12, 0], [3.6, 22, 0.8]], "enemies": [{"type": "raider", "x": -3.8, "d": 34, "wake": 1.2}, {"type": "hunter", "x": 3, "d": 18, "wake": 0.4}, {"type": "camera_drone", "x": 0, "d": 26, "height": 3}]}
+  ]},
+  {"roof": 22.1, "deck": true, "rail": 1, "y": 58},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 16, "deck": true, "rail": 1},
+  {"wallrun": 12, "side": 1},
+  {"roof": 8, "deck": true, "rail": 1},
+  {"roof": 8.1, "deck": true, "rail": 1, "y": 61},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 10, "deck": true, "rail": 1},
+  {"ramp_up": 66, "length": 12, "width": 12},
+  {"roof": 8, "deck": true, "rail": 1, "y": 66, "do": [
+   {"checkpoint": "Top decks", "at": 2, "objective": 3}
+  ]},
+  {"gap": 6},
+  {"roof": 8.1, "deck": true, "rail": 1, "do": [
+   {"piece": {"box": [0, -0.6, 0.6], "size": [11.6, 0.3, 0.6], "kind": "NEUTRAL", "look": "RUST", "yaw": 8}, "at": 0}
+  ]},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 22, "deck": true, "rail": 1, "do": [
+   {"encounter": "top deck", "at": 3, "length": 38, "troopers": [[-3.6, 10, 0], [3.6, 16, 0.4], [-3.6, 24, 0.8]], "enemies": [{"type": "shield", "x": 0, "d": 28, "wake": 0.6}, {"type": "marksman", "x": 3.8, "d": 36, "wake": 1.0}]}
+  ]},
+  {"roof": 22.1, "deck": true, "rail": 1, "y": 69},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 22, "deck": true, "rail": 1, "do": [
+   {"set_piece": "watchers", "at": 2},
+   {"encounter": "cable run", "at": 6, "length": 34, "raiders": [[-3.6, 8, 0], [3.6, 16, 0.5], [-3.6, 24, 1.0]], "enemies": [{"type": "hunter", "x": 3, "d": 32, "wake": 0.8}]}
+  ]},
+  {"roof": 22.1, "deck": true, "rail": 1, "y": 72, "do": [
+   {"hurdles": true, "at": 10}
+  ]},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 22, "deck": true, "rail": 1, "do": [
+   {"slide": true, "at": 12}
+  ]},
+  {"roof": 22.1, "deck": true, "rail": 1, "y": 75},
+  {"turn": "left", "size": 12.0, "deck": true},
+  {"roof": 16.05, "deck": true, "rail": 1, "do": [
+   {"label": "STUDIO", "x": -5.4, "at": 10, "size": 1.0}
+  ]},
+  {"turn": "left", "size": 12.0, "deck": true}
+ ],
+ "radio": [
+  {"on": "start", "who": "host", "line": "She told him to come up the outside, folks. On my show. I heard that, sweetheart."},
+  {"on": "go", "who": "parker", "line": "I'm coming, Echo."},
+  {"on": "set_piece:uplink", "who": "echo", "line": "Hi. Port Calder? It's Echo. He's lying to you. He's been lying to you for twenty years.", "must": true},
+  {"on": "set_piece:uplink", "who": "echo", "line": "I've got the cameras now. Look at him go.", "must": true},
+  {"on": "set_piece:uplink", "who": "host", "line": "Get her off my uplink! GET HER OFF!", "must": true},
+  {"on": "set_piece:uplink", "who": "mags", "line": "Gun drones just went dark. That was her! Climb, Parker!", "must": true},
+  {"on": "set_piece:cage", "who": "echo", "line": "Builders' lift, on your right. I've got the door.", "must": true},
+  {"on": "checkpoint:3", "who": "host", "line": "Somebody cut the scaffold! What do you mean, with what?"},
+  {"on": "complete", "who": "host", "line": "Fine. Fine! Come on in. Studio's open. Mind the step.", "must": true}
+ ],
+ "chatter": {
+  "headshot": [
+   {"who": "mags", "line": "Good shot."},
+   {"who": "host", "line": "Oh, come on! I just hired him!"},
+   {"who": "echo", "line": "Ha! They're whistling on the roofs, courier.", "after": "checkpoint:1"},
+   {"who": "mags", "line": "That's it, now keep climbing."},
+   {"who": "mags", "line": "Clean."},
+   {"who": "echo", "line": "Got that on camera, courier. Whole city saw it.", "after": "checkpoint:1"}
+  ],
+  "bail": [
+   {"who": "host", "line": "Whoops! Mind your step, it's scaffold all the way down."},
+   {"who": "mags", "line": "Easy. Up you get."},
+   {"who": "host", "line": "Down he goes! Do I hear a creak? I think I hear a creak."},
+   {"who": "echo", "line": "Don't you dare. Get up.", "after": "checkpoint:1"},
+   {"who": "host", "line": "Long way down, Parker! Well, medium. Try harder."}
+  ],
+  "combo": [
+   {"who": "host", "line": "Stop showing off on my tower!"},
+   {"who": "mags", "line": "Beautiful. Keep going up."},
+   {"who": "echo", "line": "That's it. I'm right up here, Parker. Keep coming.", "after": "checkpoint:1"},
+   {"who": "host", "line": "Folks, this is going out live and I am not happy about it."},
+   {"who": "echo", "line": "Look at you. Half the city's up on the roofs watching.", "after": "checkpoint:1"},
+   {"who": "mags", "line": "That's it. Up, up, up."}
+  ],
+  "fall": [
+   {"who": "host", "line": "And down he goes! Elevator's out, sorry. Take the stairs."},
+   {"who": "mags", "line": "Fell off. Get back on and climb."},
+   {"who": "host", "line": "Gravity! My oldest and most loyal sponsor."},
+   {"who": "mags", "line": "Back on the scaffold. Go again."}
+  ],
+  "kill": [
+   {"who": "host", "line": "Every one of those comes out of my budget, Parker. Every single one."},
+   {"who": "mags", "line": "Good. Up, before they reload."},
+   {"who": "host", "line": "Oh, lovely. Who's gonna guard the stairs now?"},
+   {"who": "mags", "line": "Got him. Higher."},
+   {"who": "echo", "line": "I saw that one go! Keep coming.", "after": "checkpoint:1"},
+   {"who": "host", "line": "Do you know what marksmen cost, Parker? Do you?"}
+  ],
+  "down": [
+   {"who": "mags", "line": "Up. Find cover on the scaffold, then go."},
+   {"who": "host", "line": "Courier down! And from up here he looks so small."},
+   {"who": "echo", "line": "Parker? Parker. Get up. Please.", "after": "checkpoint:1"},
+   {"who": "mags", "line": "Up. Keep climbing. They can't hold the whole tower."},
+   {"who": "host", "line": "And he's down! Stop the clock! No, no, keep it running, it's funnier."}
+  ],
+  "tape": [
+   {"who": "echo", "line": "...the dish on this floor still talks to the whole city. He doesn't know I know how to use it."},
+   {"who": "echo", "line": "...counted the stairs again. Four hundred and twelve. Bring water."},
+   {"who": "echo", "line": "...if you're hearing this, I hid it on the dish before he moved me upstairs. Keep the porch light on, okay?"}
+  ]
+ }
+}

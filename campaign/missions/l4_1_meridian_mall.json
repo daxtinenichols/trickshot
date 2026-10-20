@@ -1,0 +1,4637 @@
+{
+ "id": "l4_1_meridian_mall",
+ "title": "Meridian Mall",
+ "runner": "parker",
+ "atlas": true,
+ "par_seconds": 190,
+ "start": {
+  "at": [
+   1500,
+   0,
+   380
+  ],
+  "yaw": 90
+ },
+ "route_origin": {
+  "at": [
+   1500,
+   0,
+   380
+  ],
+  "yaw": 90
+ },
+ "chalk": true,
+ "plain_runner": true,
+ "interior_look": "NEUTRAL",
+ "objectives": [
+  {
+   "type": "reach",
+   "name": "the atrium",
+   "text": "In through the south entrance",
+   "at": "@Atrium"
+  },
+  {
+   "type": "reach",
+   "name": "the escalators",
+   "text": "Through the atrium and up the escalators",
+   "at": "@Food court"
+  },
+  {
+   "type": "reach",
+   "name": "the north walkway",
+   "text": "Round the food court",
+   "at": "@North walkway"
+  },
+  {
+   "type": "reach",
+   "name": "the north wing",
+   "text": "Across the walkway and up to the wing",
+   "at": "@North wing"
+  },
+  {
+   "type": "reach",
+   "name": "Hargrove and Sons",
+   "text": "Through the wing to the department store",
+   "at": "@Hargrove and Sons"
+  },
+  {
+   "type": "reach",
+   "name": "the store well",
+   "text": "Up the store well",
+   "at": "@Store well"
+  },
+  {
+   "type": "reach",
+   "name": "the top floor",
+   "text": "Up to the top floor",
+   "at": "@Top floor"
+  },
+  {
+   "type": "reach",
+   "name": "the skybridge door",
+   "text": "Out through the skybridge door",
+   "at": "end"
+  }
+ ],
+ "tower_views": [],
+ "road_lines": false,
+ "radio": [
+  {
+   "on": "start",
+   "who": "host",
+   "line": "Welcome to the Meridian Mall, folks! Tonight's main event: one courier versus a whole lot of hungry neighbours."
+  },
+  {
+   "on": "start",
+   "who": "mags",
+   "line": "It's an arena, Parker. Don't stop moving in there."
+  },
+  {
+   "on": "set_piece:gates",
+   "who": "host",
+   "line": "Open the gates! Let 'em out!",
+   "must": true
+  },
+  {
+   "on": "checkpoint:2",
+   "who": "host",
+   "line": "And he's into the food court! Sorry, folks, food court's closed. Has been for twenty years."
+  },
+  {
+   "on": "set_piece:billboard",
+   "who": "host",
+   "line": "This segment is brought to you by the Ward. Clean water, for people who know their place.",
+   "must": true
+  },
+  {
+   "on": "set_piece:juno",
+   "who": "mags",
+   "line": "Parker, far walkway. That's... oh, that's Juno.",
+   "must": true
+  },
+  {
+   "on": "set_piece:juno",
+   "who": "juno",
+   "line": "Hey, stranger. Keep up.",
+   "must": true
+  },
+  {
+   "on": "set_piece:juno_gone",
+   "who": "parker",
+   "line": "She's working for him?",
+   "must": true
+  },
+  {
+   "on": "set_piece:juno_gone",
+   "who": "mags",
+   "line": "Two years now. Her block's taps went dry. I'll tell you the rest when you're not getting shot at.",
+   "must": true
+  },
+  {
+   "on": "checkpoint:5",
+   "who": "host",
+   "line": "Into Hargrove and Sons! Mind the perfume counter, folks. My boys are working it tonight."
+  },
+  {
+   "on": "set_piece:tvs",
+   "who": "host",
+   "line": "Now, Parker, while you're browsing, a word from our... what is that? Who's on my frequency?",
+   "must": true
+  },
+  {
+   "on": "set_piece:tvs",
+   "who": "echo",
+   "line": "Porch light's on, courier. I'm coming home.",
+   "must": true
+  },
+  {
+   "on": "set_piece:tvs",
+   "who": "host",
+   "line": "Technical difficulties, folks. Nobody touch anything.",
+   "must": true
+  },
+  {
+   "on": "set_piece:tvs",
+   "who": "mags",
+   "line": "That was her. She's alive. She's in his wires, Parker. Go. Run.",
+   "must": true
+  },
+  {
+   "on": "complete",
+   "who": "host",
+   "line": "He's on the skybridge! And guess who's waiting for him at the other end. Go on. Guess."
+  }
+ ],
+ "chatter": {
+  "kill": [
+   {
+    "who": "host",
+    "line": "Down goes another! Folks, I'm starting to feel sorry for them. No, I'm not."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Don't wait for the next one, go."
+   },
+   {
+    "who": "host",
+    "line": "Splat! Right by the fountain, too. Nobody's drinking that."
+   },
+   {
+    "who": "mags",
+    "line": "That's one. Keep your head up, they jump."
+   },
+   {
+    "who": "host",
+    "line": "And down goes another one! The crowd goes mild."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Now keep moving."
+   },
+   {
+    "who": "host",
+    "line": "Oh, he was employee of the month! Well. Of a month."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Don't let the big ones corner you."
+   },
+   {
+    "who": "host",
+    "line": "Another one off the shop floor! No refunds."
+   },
+   {
+    "who": "mags",
+    "line": "Down. Move."
+   },
+   {
+    "who": "host",
+    "line": "Clean-up in aisle four!"
+   },
+   {
+    "who": "mags",
+    "line": "Good. Up, up, up."
+   }
+  ],
+  "headshot": [
+   {
+    "who": "host",
+    "line": "Oh! Right in the... well, I think that was the head."
+   },
+   {
+    "who": "mags",
+    "line": "Good shot."
+   },
+   {
+    "who": "host",
+    "line": "Pop! Hear that? That's the sound of ratings."
+   },
+   {
+    "who": "mags",
+    "line": "Nice. Watch the railings, they come over."
+   },
+   {
+    "who": "host",
+    "line": "Right between the eyes! Run that back!"
+   },
+   {
+    "who": "host",
+    "line": "Ooh! Everything must go, apparently."
+   },
+   {
+    "who": "mags",
+    "line": "Good shot."
+   },
+   {
+    "who": "host",
+    "line": "Somebody call security. Oh, wait. That was security."
+   },
+   {
+    "who": "mags",
+    "line": "Yes. Keep doing that."
+   },
+   {
+    "who": "host",
+    "line": "Oh, that's a returns-desk situation."
+   }
+  ],
+  "down": [
+   {
+    "who": "host",
+    "line": "And he's lunch! Oh, no, wait, he's back. Never mind."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Keep moving, they'll swarm you if you stop."
+   },
+   {
+    "who": "host",
+    "line": "Courier down in the Atrium! Mind your step, it's very... chewy in there."
+   },
+   {
+    "who": "host",
+    "line": "Ooh! That one's going in the highlights."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Don't stand still in here."
+   },
+   {
+    "who": "host",
+    "line": "Courier down! Lie there a while, everything's half off."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Don't fight the big ones head on."
+   },
+   {
+    "who": "host",
+    "line": "And he's down! Folks, I think that one broke something. Not him, the shelf."
+   },
+   {
+    "who": "host",
+    "line": "And our courier's in the bargain bin!"
+   },
+   {
+    "who": "mags",
+    "line": "Up. Get round them, don't stand in front of them."
+   }
+  ],
+  "bail": [
+   {
+    "who": "host",
+    "line": "Oops! Slippery floors, folks. We'd sue, but, you know."
+   },
+   {
+    "who": "host",
+    "line": "And down he goes in front of everyone. Mortifying."
+   },
+   {
+    "who": "mags",
+    "line": "Up, quick."
+   },
+   {
+    "who": "host",
+    "line": "He fell! Somebody find a wet floor sign. Does anybody still have a wet floor sign?"
+   },
+   {
+    "who": "host",
+    "line": "He's down! No, he's up. Disappointing."
+   },
+   {
+    "who": "host",
+    "line": "Whoa! You break it, you bought it, Parker."
+   },
+   {
+    "who": "host",
+    "line": "Ha! Mind the mannequins, they're rubbish at catching."
+   },
+   {
+    "who": "mags",
+    "line": "Up. Keep going."
+   },
+   {
+    "who": "host",
+    "line": "Oops. Listeners, he's tripped over his own feet. In a shop. Embarrassing."
+   },
+   {
+    "who": "host",
+    "line": "Mind the floor, it's freshly ruined."
+   }
+  ],
+  "combo": [
+   {
+    "who": "host",
+    "line": "Folks, this is better than the fountain show. There used to be a fountain show."
+   },
+   {
+    "who": "mags",
+    "line": "Lovely. Keep it."
+   },
+   {
+    "who": "host",
+    "line": "Ugh. Fine. That was good. Happy?"
+   },
+   {
+    "who": "host",
+    "line": "Folks, I hate to say it, but that was beautiful."
+   },
+   {
+    "who": "mags",
+    "line": "That's it. Give 'em a show."
+   },
+   {
+    "who": "host",
+    "line": "Look at him! It's like watching someone shop with a grudge."
+   },
+   {
+    "who": "mags",
+    "line": "That's it. Through the store, keep going."
+   },
+   {
+    "who": "host",
+    "line": "Folks, I've never seen anyone move through a sale like that. And I've seen sales."
+   },
+   {
+    "who": "mags",
+    "line": "Good. Don't slow down for the drones."
+   },
+   {
+    "who": "host",
+    "line": "Is he shopping or showing off? Bit of both, I think."
+   }
+  ],
+  "tape": [
+   {
+    "who": "echo",
+    "line": "...this mall had the last clean taps in Port Calder. Somebody turned them off. Ask who."
+   },
+   {
+    "who": "echo",
+    "line": "...somebody's water trucks park behind this place every week. Clean ones. Not his. Count the barrels, I did."
+   },
+   {
+    "who": "echo",
+    "line": "...Hargrove's sold radios to half this city. They all still work. You just have to know how to listen."
+   }
+  ]
+ },
+ "route": [
+  {
+   "roof": 20,
+   "y": 0,
+   "interior": 8,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "South entrance",
+     "at": 3,
+     "objective": 0
+    },
+    {
+     "label": "MERIDIAN MALL",
+     "at": 5,
+     "size": 1.2
+    },
+    {
+     "hole": 0,
+     "style": "shutter",
+     "look": "TILE",
+     "at": 12
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "roof": 34,
+   "y": 0,
+   "interior": 14.0,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "Atrium",
+     "at": 2,
+     "objective": 1
+    },
+    {
+     "set_piece": "shutters",
+     "at": 8,
+     "trigger": 4,
+     "radius": 7,
+     "sides": [
+      -1,
+      1
+     ],
+     "length": 26
+    },
+    {
+     "hurdles": true,
+     "at": 16,
+     "lead": 2.8
+    },
+    {
+     "slide": true,
+     "at": 30
+    },
+    {
+     "tape": "l4_1_tape_taps",
+     "x": 4.6,
+     "at": 32
+    }
+   ]
+  },
+  {
+   "turn": "right",
+   "size": 16,
+   "interior": 14.0,
+   "look": "TILE"
+  },
+  {
+   "ramp_up": 4.5,
+   "length": 16,
+   "interior": 9.5
+  },
+  {
+   "roof": 32,
+   "y": 4.5,
+   "interior": 9.5,
+   "look": "TILE",
+   "open": 1,
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "Food court",
+     "at": 3,
+     "objective": 2
+    },
+    {
+     "hurdles": true,
+     "at": 8,
+     "lead": 2.8
+    },
+    {
+     "slide": true,
+     "at": 27
+    },
+    {
+     "set_piece": "billboard",
+     "at": 20,
+     "x": 44,
+     "up": 6,
+     "yaw": -90,
+     "trigger": 30,
+     "radius": 9,
+     "hang": 10.5,
+     "hold": 9
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 21.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "turn": "right",
+   "size": 16,
+   "interior": 9.5,
+   "look": "TILE"
+  },
+  {
+   "roof": 14,
+   "y": 4.5,
+   "interior": 9.5,
+   "look": "TILE",
+   "open": 1,
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "North walkway",
+     "at": 1,
+     "objective": 3
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "flip",
+   "interior": 9.5
+  },
+  {
+   "roof": 14,
+   "y": 4.5,
+   "interior": 9.5,
+   "look": "TILE",
+   "open": 1,
+   "bare": true
+  },
+  {
+   "gap": 3,
+   "trick": "spin",
+   "interior": 9.5
+  },
+  {
+   "roof": 56,
+   "y": 4.5,
+   "interior": 9.5,
+   "look": "TILE",
+   "open": 1,
+   "bare": true,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 30.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 30.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 30.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 39.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 39.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 39.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 48.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 48.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 48.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gate": {
+    "tier": 1
+   }
+  },
+  {
+   "roof": 16,
+   "y": 4.5,
+   "interior": 9.5,
+   "look": "TILE",
+   "open": 1,
+   "bare": true,
+   "do": [
+    {
+     "encounter": "walkway",
+     "at": 8,
+     "length": 42,
+     "hear_shots": true,
+     "wake_distance": 7.5,
+     "enemies": [
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 3,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 3,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 8,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 8,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 13,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 13,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 21,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 21,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 30,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 30,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 35,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 35,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 39,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 39,
+       "sleeper": true,
+       "run_speed": 13.2,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      }
+     ]
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "spin",
+   "interior": 9.5
+  },
+  {
+   "roof": 14,
+   "y": 4.5,
+   "interior": 9.5,
+   "look": "TILE",
+   "open": 1,
+   "bare": true
+  },
+  {
+   "gap": 3,
+   "trick": "front",
+   "interior": 9.5
+  },
+  {
+   "roof": 14,
+   "y": 4.5,
+   "interior": 9.5,
+   "look": "TILE",
+   "open": 1,
+   "bare": true
+  },
+  {
+   "turn": "left",
+   "size": 16,
+   "interior": 9.5,
+   "look": "TILE"
+  },
+  {
+   "ramp_up": 9,
+   "length": 16,
+   "interior": 5.5
+  },
+  {
+   "roof": 20,
+   "y": 9,
+   "interior": 6.5,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "North wing",
+     "at": 3,
+     "objective": 4
+    },
+    {
+     "hole": 0,
+     "style": "shutter",
+     "at": 12
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "turn": "left",
+   "angle": 45,
+   "size": 16,
+   "interior": 6.5,
+   "look": "TILE"
+  },
+  {
+   "roof": 18,
+   "y": 9,
+   "interior": 6.5,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "glass": 0,
+     "look": "TILE",
+     "at": 9
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "turn": "right",
+   "angle": 45,
+   "size": 16,
+   "interior": 6.5,
+   "look": "TILE"
+  },
+  {
+   "roof": 14,
+   "y": 9,
+   "interior": 6.5,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "radio": {
+      "who": "host",
+      "line": "Hang on. Who's that in his ear? Is that... that's Margaret! Folks, she used to produce this show. Hi, Mags. Still sulking?",
+      "must": true
+     },
+     "at": 2,
+     "radius": 8
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Ignore him.",
+      "must": true
+     },
+     "at": 2,
+     "radius": 8
+    },
+    {
+     "radio": {
+      "who": "parker",
+      "line": "You produced his show?",
+      "must": true
+     },
+     "at": 2,
+     "radius": 8
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Twenty years ago. Later, Parker. Run.",
+      "must": true
+     },
+     "at": 2,
+     "radius": 8
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "spin",
+   "interior": 6.5
+  },
+  {
+   "roof": 14,
+   "y": 9,
+   "interior": 6.5,
+   "look": "TILE",
+   "bare": true
+  },
+  {
+   "gap": 3,
+   "trick": "front",
+   "interior": 6.5
+  },
+  {
+   "roof": 24,
+   "y": 9,
+   "interior": 6.5,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Don't slow down in there. They'll run you down."
+     },
+     "at": 1,
+     "radius": 8
+    },
+    {
+     "encounter": "wing",
+     "at": 0,
+     "length": 44,
+     "hear_shots": true,
+     "wake_distance": 6.0,
+     "enemies": [
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 2,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 2,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 6,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 6,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 10,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 10,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 14,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 14,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 18,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 18,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": -5.4,
+       "d": 22,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      },
+      {
+       "type": "crawler",
+       "x": 5.4,
+       "d": 22,
+       "sleeper": true,
+       "run_speed": 12.5,
+       "leap_min": 50.0,
+       "leash_radius": 40,
+       "aggro_radius": 20,
+       "give_up_time": 6.0
+      }
+     ]
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "fork": [
+    {
+     "roof": 24,
+     "y": 11.5,
+     "interior": 4.0,
+     "look": "TILE",
+     "open": 1,
+     "bare": true,
+     "do": [
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.6,
+         -3.5
+        ],
+        "size": [
+         0.12,
+         3.2,
+         6.4
+        ],
+        "kind": "NEUTRAL",
+        "look": "CORRUGATED"
+       },
+       "at": 3.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.9,
+         0
+        ],
+        "size": [
+         0.1,
+         3.8,
+         0.6
+        ],
+        "kind": "NEUTRAL",
+        "look": "TILE"
+       },
+       "at": 3.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.97,
+         3.9,
+         -3.5
+        ],
+        "size": [
+         0.1,
+         0.7,
+         7.0
+        ],
+        "kind": "NEUTRAL",
+        "look": "SIGN"
+       },
+       "at": 3.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.6,
+         -3.5
+        ],
+        "size": [
+         0.12,
+         3.2,
+         6.4
+        ],
+        "kind": "NEUTRAL",
+        "look": "CORRUGATED"
+       },
+       "at": 12.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.9,
+         0
+        ],
+        "size": [
+         0.1,
+         3.8,
+         0.6
+        ],
+        "kind": "NEUTRAL",
+        "look": "TILE"
+       },
+       "at": 12.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.97,
+         3.9,
+         -3.5
+        ],
+        "size": [
+         0.1,
+         0.7,
+         7.0
+        ],
+        "kind": "NEUTRAL",
+        "look": "SIGN"
+       },
+       "at": 12.0,
+       "length": 0
+      }
+     ]
+    },
+    {
+     "gap": 3,
+     "trick": "flip",
+     "interior": 4.0
+    },
+    {
+     "roof": 14,
+     "y": 11.5,
+     "interior": 4.0,
+     "look": "TILE",
+     "open": 1,
+     "bare": true
+    },
+    {
+     "gap": 3,
+     "trick": "front",
+     "interior": 4.0
+    },
+    {
+     "roof": 14,
+     "y": 11.5,
+     "interior": 4.0,
+     "look": "TILE",
+     "open": 1,
+     "bare": true
+    },
+    {
+     "gap": 3,
+     "trick": "spin",
+     "interior": 4.0
+    },
+    {
+     "roof": 44,
+     "y": 11.5,
+     "interior": 4.0,
+     "look": "TILE",
+     "open": 1,
+     "bare": true,
+     "do": [
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.6,
+         -3.5
+        ],
+        "size": [
+         0.12,
+         3.2,
+         6.4
+        ],
+        "kind": "NEUTRAL",
+        "look": "CORRUGATED"
+       },
+       "at": 3.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.9,
+         0
+        ],
+        "size": [
+         0.1,
+         3.8,
+         0.6
+        ],
+        "kind": "NEUTRAL",
+        "look": "TILE"
+       },
+       "at": 3.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.97,
+         3.9,
+         -3.5
+        ],
+        "size": [
+         0.1,
+         0.7,
+         7.0
+        ],
+        "kind": "NEUTRAL",
+        "look": "SIGN"
+       },
+       "at": 3.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.6,
+         -3.5
+        ],
+        "size": [
+         0.12,
+         3.2,
+         6.4
+        ],
+        "kind": "NEUTRAL",
+        "look": "CORRUGATED"
+       },
+       "at": 12.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.9,
+         0
+        ],
+        "size": [
+         0.1,
+         3.8,
+         0.6
+        ],
+        "kind": "NEUTRAL",
+        "look": "TILE"
+       },
+       "at": 12.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.97,
+         3.9,
+         -3.5
+        ],
+        "size": [
+         0.1,
+         0.7,
+         7.0
+        ],
+        "kind": "NEUTRAL",
+        "look": "SIGN"
+       },
+       "at": 12.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.6,
+         -3.5
+        ],
+        "size": [
+         0.12,
+         3.2,
+         6.4
+        ],
+        "kind": "NEUTRAL",
+        "look": "CORRUGATED"
+       },
+       "at": 21.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.9,
+         0
+        ],
+        "size": [
+         0.1,
+         3.8,
+         0.6
+        ],
+        "kind": "NEUTRAL",
+        "look": "TILE"
+       },
+       "at": 21.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.97,
+         3.9,
+         -3.5
+        ],
+        "size": [
+         0.1,
+         0.7,
+         7.0
+        ],
+        "kind": "NEUTRAL",
+        "look": "SIGN"
+       },
+       "at": 21.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.6,
+         -3.5
+        ],
+        "size": [
+         0.12,
+         3.2,
+         6.4
+        ],
+        "kind": "NEUTRAL",
+        "look": "CORRUGATED"
+       },
+       "at": 30.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.93,
+         1.9,
+         0
+        ],
+        "size": [
+         0.1,
+         3.8,
+         0.6
+        ],
+        "kind": "NEUTRAL",
+        "look": "TILE"
+       },
+       "at": 30.0,
+       "length": 0
+      },
+      {
+       "piece": {
+        "box": [
+         -5.97,
+         3.9,
+         -3.5
+        ],
+        "size": [
+         0.1,
+         0.7,
+         7.0
+        ],
+        "kind": "NEUTRAL",
+        "look": "SIGN"
+       },
+       "at": 30.0,
+       "length": 0
+      }
+     ]
+    },
+    {
+     "gate": {
+      "tier": 1
+     }
+    },
+    {
+     "roof": 10,
+     "y": 11.5,
+     "interior": 4.0,
+     "look": "TILE",
+     "open": 1,
+     "bare": true
+    },
+    {
+     "ramp_down": 9,
+     "length": 12
+    },
+    {
+     "roof": 6,
+     "y": 9,
+     "interior": 6.5,
+     "look": "TILE",
+     "bare": true
+    }
+   ],
+   "side": -1,
+   "interior": 6.5
+  },
+  {
+   "roof": 30,
+   "y": 9,
+   "interior": 6.5,
+   "look": "TILE",
+   "open": -1,
+   "bare": true,
+   "do": [
+    {
+     "set_piece": "juno",
+     "at": 0,
+     "trigger": 2,
+     "radius": 9,
+     "line_x": -18,
+     "length": 106
+    },
+    {
+     "hurdles": true,
+     "at": 10,
+     "lead": 2.8
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 21.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "roof": 44,
+   "y": 9,
+   "interior": 6.5,
+   "look": "TILE",
+   "open": -1,
+   "bare": true,
+   "do": [
+    {
+     "slide": true,
+     "at": 14
+    },
+    {
+     "hop": true,
+     "side": -1,
+     "at": 26
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 21.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 30.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 30.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 30.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "join": true,
+   "interior": 6.5
+  },
+  {
+   "roof": 8,
+   "y": 9,
+   "interior": 6.5,
+   "look": "TILE",
+   "bare": true
+  },
+  {
+   "turn": "left",
+   "size": 16,
+   "interior": 6.5,
+   "look": "TILE"
+  },
+  {
+   "roof": 28,
+   "y": 9,
+   "interior": 6.0,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "Hargrove and Sons",
+     "at": 2,
+     "objective": 5
+    },
+    {
+     "label": "HARGROVE AND SONS",
+     "at": 9,
+     "size": 1.0
+    },
+    {
+     "radio": {
+      "who": "mags",
+      "line": "Big lads with the shields. Get round 'em, or shoot what the shield doesn't cover."
+     },
+     "at": 14,
+     "radius": 7
+    },
+    {
+     "encounter": "store",
+     "at": 24,
+     "length": 40,
+     "max_aiming": 8,
+     "enemies": [
+      {
+       "type": "spotter_drone",
+       "x": 0,
+       "d": 16,
+       "height": 4.0
+      },
+      {
+       "type": "bruiser",
+       "x": 4.5,
+       "d": 31,
+       "move_speed": 0.0
+      },
+      {
+       "type": "bruiser",
+       "x": -4.5,
+       "d": 35,
+       "move_speed": 0.0
+      },
+      {
+       "type": "raider",
+       "x": 4.0,
+       "d": 29,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": -3.0,
+       "d": 30,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": 3.0,
+       "d": 32,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": -4.5,
+       "d": 33,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": -2.0,
+       "d": 34,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": 2.5,
+       "d": 36,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": -4.0,
+       "d": 37,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      },
+      {
+       "type": "raider",
+       "x": 4.5,
+       "d": 35,
+       "move_speed": 0.0,
+       "cover": false,
+       "aim_lead": 1.0
+      }
+     ]
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "spin",
+   "interior": 6.0
+  },
+  {
+   "roof": 14,
+   "y": 9,
+   "interior": 6.0,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "radio": {
+      "who": "mags",
+      "line": "That drone's spotting you for the shooters. Knock it down if you can."
+     },
+     "at": 2,
+     "radius": 7
+    }
+   ]
+  },
+  {
+   "gap": 3,
+   "trick": "front",
+   "interior": 6.0
+  },
+  {
+   "roof": 18,
+   "y": 9,
+   "interior": 6.0,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "set_piece": "tvs",
+     "at": 1,
+     "trigger": 3,
+     "radius": 8,
+     "length": 16,
+     "hold": 8
+    },
+    {
+     "label": "ELECTRONICS",
+     "at": 2,
+     "size": 0.8
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "turn": "right",
+   "size": 16,
+   "interior": 9.0,
+   "look": "TILE"
+  },
+  {
+   "roof": 14,
+   "y": 11.5,
+   "interior": 6.5,
+   "look": "TILE",
+   "bare": true
+  },
+  {
+   "roof": 16,
+   "y": 14,
+   "interior": 6.0,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "Store well",
+     "at": 3,
+     "objective": 6
+    },
+    {
+     "tape": "l4_1_tape_trucks",
+     "x": -4.6,
+     "at": 12
+    }
+   ]
+  },
+  {
+   "turn": "right",
+   "size": 16,
+   "interior": 6.0,
+   "look": "TILE"
+  },
+  {
+   "roof": 22,
+   "y": 14,
+   "interior": 6.0,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 4,
+     "lead": 2.8
+    },
+    {
+     "glass": 0,
+     "look": "TILE",
+     "at": 15
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "ramp_up": 18,
+   "length": 12,
+   "interior": 6.0
+  },
+  {
+   "turn": "left",
+   "size": 16,
+   "interior": 6.0,
+   "look": "TILE"
+  },
+  {
+   "roof": 20,
+   "y": 18,
+   "interior": 6.0,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 3.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       -5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.6,
+       -3.5
+      ],
+      "size": [
+       0.12,
+       3.2,
+       6.4
+      ],
+      "kind": "NEUTRAL",
+      "look": "CORRUGATED"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.93,
+       1.9,
+       0
+      ],
+      "size": [
+       0.1,
+       3.8,
+       0.6
+      ],
+      "kind": "NEUTRAL",
+      "look": "TILE"
+     },
+     "at": 12.0,
+     "length": 0
+    },
+    {
+     "piece": {
+      "box": [
+       5.97,
+       3.9,
+       -3.5
+      ],
+      "size": [
+       0.1,
+       0.7,
+       7.0
+      ],
+      "kind": "NEUTRAL",
+      "look": "SIGN"
+     },
+     "at": 12.0,
+     "length": 0
+    }
+   ]
+  },
+  {
+   "turn": "left",
+   "size": 16,
+   "interior": 6.0,
+   "look": "TILE"
+  },
+  {
+   "roof": 44,
+   "y": 18,
+   "interior": 6.0,
+   "look": "TILE",
+   "bare": true,
+   "do": [
+    {
+     "checkpoint": "Top floor",
+     "at": 3,
+     "objective": 7
+    },
+    {
+     "label": "HOUSEWARES",
+     "at": 4,
+     "size": 0.8
+    },
+    {
+     "slide": true,
+     "at": 26
+    },
+    {
+     "tape": "l4_1_tape_radios",
+     "x": 3.8,
+     "at": 34
+    },
+    {
+     "glass": 0,
+     "look": "TILE",
+     "at": 40
+    }
+   ]
+  },
+  {
+   "roof": 12,
+   "y": 18,
+   "interior": 6.0,
+   "look": "TILE",
+   "bare": true
+  }
+ ],
+ "pieces": [
+  {
+   "box": [
+    1473.0,
+    -0.1,
+    348.0
+   ],
+   "size": [
+    46.0,
+    0.2,
+    52.0
+   ],
+   "kind": "NEUTRAL",
+   "look": "TILE"
+  },
+  {
+   "box": [
+    1496.25,
+    7.0,
+    348.0
+   ],
+   "size": [
+    0.5,
+    14.0,
+    52.0
+   ],
+   "kind": "NEUTRAL",
+   "look": "FACADE"
+  },
+  {
+   "box": [
+    1473.0,
+    14.25,
+    334.0
+   ],
+   "size": [
+    47.0,
+    0.5,
+    24.5
+   ],
+   "kind": "NEUTRAL",
+   "look": "RUST"
+  },
+  {
+   "box": [
+    1473.0,
+    14.25,
+    362.0
+   ],
+   "size": [
+    47.0,
+    0.5,
+    24.5
+   ],
+   "kind": "NEUTRAL",
+   "look": "RUST"
+  },
+  {
+   "box": [
+    1473.0,
+    0.4,
+    348.0
+   ],
+   "size": [
+    12,
+    0.8,
+    12
+   ],
+   "kind": "NEUTRAL",
+   "look": "TILE"
+  },
+  {
+   "box": [
+    1473.0,
+    1.6,
+    348.0
+   ],
+   "size": [
+    2,
+    2.4,
+    2
+   ],
+   "kind": "NEUTRAL",
+   "look": "TILE"
+  },
+  {
+   "label": "MERIDIAN",
+   "at": [
+    1473.0,
+    3.4,
+    349.1
+   ],
+   "size": 0.6
+  },
+  {
+   "fire": [
+    1491.0,
+    0.2,
+    340.0
+   ],
+   "size": [
+    1,
+    1.2,
+    1
+   ]
+  },
+  {
+   "prop": "planter_tub",
+   "at": [
+    1458.0,
+    0,
+    330.0
+   ],
+   "yaw": 0
+  },
+  {
+   "prop": "planter_tub",
+   "at": [
+    1458.0,
+    0,
+    366.0
+   ],
+   "yaw": 37
+  },
+  {
+   "prop": "planter_tub",
+   "at": [
+    1486.0,
+    0,
+    330.0
+   ],
+   "yaw": 74
+  },
+  {
+   "prop": "planter_tub",
+   "at": [
+    1486.0,
+    0,
+    366.0
+   ],
+   "yaw": 111
+  },
+  {
+   "prop": "loudspeaker_pole",
+   "at": [
+    1459.0,
+    0,
+    354.0
+   ],
+   "yaw": 200
+  },
+  {
+   "prop": "debris_pile",
+   "at": [
+    1483.0,
+    0,
+    360.0
+   ],
+   "yaw": 40
+  },
+  {
+   "prop": "barricade_scrap",
+   "at": [
+    1453.0,
+    0,
+    334.0
+   ],
+   "yaw": 70
+  },
+  {
+   "box": [
+    1581.63830566406,
+    15.75,
+    72.1183776855471
+   ],
+   "size": [
+    6.5,
+    0.5,
+    147.67999267578182
+   ],
+   "kind": "NEUTRAL",
+   "look": "RUST"
+  },
+  {
+   "box": [
+    1581.63830566406,
+    -0.1,
+    72.1183776855471
+   ],
+   "size": [
+    6.0,
+    0.2,
+    147.67999267578182
+   ],
+   "kind": "NEUTRAL",
+   "look": "TILE"
+  },
+  {
+   "chalk": [
+    1436.3,
+    2.6,
+    380.0
+   ],
+   "point": "right",
+   "size": 2.4,
+   "yaw": 90.0
+  },
+  {
+   "light": [
+    1444.0,
+    4.5,
+    380.0
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1444.0,
+    7.1,
+    308.3
+   ],
+   "point": "right",
+   "size": 2.4,
+   "yaw": 0.0
+  },
+  {
+   "light": [
+    1444.0,
+    9.0,
+    316.0
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1622.38,
+    7.1,
+    316.0
+   ],
+   "point": "left",
+   "size": 2.4,
+   "yaw": -90.0
+  },
+  {
+   "light": [
+    1614.68,
+    9.0,
+    316.0
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1614.68,
+    9.02,
+    264.0
+   ],
+   "on": "floor",
+   "point": "left",
+   "size": 2.4,
+   "yaw": 0.0
+  },
+  {
+   "light": [
+    1614.68,
+    13.5,
+    264.0
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1590.64,
+    9.02,
+    239.96
+   ],
+   "on": "floor",
+   "point": "right",
+   "size": 2.4,
+   "yaw": 45.0
+  },
+  {
+   "light": [
+    1590.64,
+    13.5,
+    239.96
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1590.64,
+    11.6,
+    -53.42
+   ],
+   "point": "left",
+   "size": 2.4,
+   "yaw": 0.0
+  },
+  {
+   "light": [
+    1590.64,
+    13.5,
+    -45.72
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1500.94,
+    11.6,
+    -45.72
+   ],
+   "point": "right",
+   "size": 2.4,
+   "yaw": 90.0
+  },
+  {
+   "light": [
+    1508.64,
+    13.5,
+    -45.72
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1508.64,
+    16.6,
+    -99.42
+   ],
+   "point": "right",
+   "size": 2.4,
+   "yaw": 0.0
+  },
+  {
+   "light": [
+    1508.64,
+    18.5,
+    -91.72
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1566.34,
+    20.6,
+    -91.72
+   ],
+   "point": "left",
+   "size": 2.4,
+   "yaw": -90.0
+  },
+  {
+   "light": [
+    1558.64,
+    22.5,
+    -91.72
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  },
+  {
+   "chalk": [
+    1558.64,
+    20.6,
+    -135.42
+   ],
+   "point": "left",
+   "size": 2.4,
+   "yaw": 0.0
+  },
+  {
+   "light": [
+    1558.64,
+    22.5,
+    -127.72
+   ],
+   "range": 11.0,
+   "energy": 1.8
+  }
+ ],
+ "city_open": [
+  [
+   1450.0,
+   322.0,
+   1496.0,
+   374.0
+  ],
+  [
+   1578.63830566406,
+   -1.7216186523437997,
+   1584.63830566406,
+   145.958374023438
+  ]
+ ],
+ "guide": [
+  [
+   1500,
+   0,
+   380
+  ],
+  [
+   1444.0,
+   0.0,
+   380.0
+  ],
+  [
+   1444.0,
+   4.5,
+   316.0
+  ],
+  [
+   1614.68,
+   4.5,
+   316.0
+  ],
+  [
+   1614.68,
+   9.0,
+   264.0
+  ],
+  [
+   1590.64,
+   9.0,
+   239.96
+  ],
+  [
+   1590.64,
+   9.0,
+   -45.72
+  ],
+  [
+   1508.64,
+   9.0,
+   -45.72
+  ],
+  [
+   1508.64,
+   14.0,
+   -91.72
+  ],
+  [
+   1558.64,
+   18.0,
+   -91.72
+  ],
+  [
+   1558.64,
+   18.0,
+   -127.72
+  ],
+  [
+   1494.64,
+   18.0,
+   -127.72
+  ]
+ ]
+}

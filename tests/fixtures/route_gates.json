@@ -1,0 +1,121 @@
+{
+ "id": "test_route_gates",
+ "title": "Speed gates",
+ "runner": "",
+ "plain_runner": true,
+ "start": {
+  "at": [
+   0,
+   14,
+   2
+  ]
+ },
+ "objectives": [
+  {
+   "type": "reach",
+   "name": "the end",
+   "at": "end"
+  }
+ ],
+ "route": [
+  {
+   "roof": 50,
+   "y": 14,
+   "do": [
+    {
+     "label": "GATES",
+     "at": 4
+    }
+   ]
+  },
+  {
+   "gap": 4
+  },
+  {
+   "roof": 30,
+   "y": 10
+  },
+  {
+   "wallrun": 12,
+   "side": 1
+  },
+  {
+   "roof": 40,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 16
+    },
+    {
+     "slide": true,
+     "at": 28
+    }
+   ]
+  },
+  {
+   "gate": {
+    "tier": 1,
+    "tricks": false
+   }
+  },
+  {
+   "roof": 90,
+   "do": [
+    {
+     "hurdles": true,
+     "at": 10
+    },
+    {
+     "hurdles": true,
+     "at": 28
+    },
+    {
+     "hurdles": true,
+     "at": 46
+    },
+    {
+     "hurdles": true,
+     "at": 64
+    },
+    {
+     "hurdles": true,
+     "at": 82
+    },
+    {
+     "encounter": "yard",
+     "at": 2,
+     "length": 80,
+     "raiders": [
+      [
+       -4,
+       30
+      ],
+      [
+       4,
+       38
+      ],
+      [
+       -4,
+       48
+      ],
+      [
+       4,
+       56
+      ],
+      [
+       -4,
+       66
+      ],
+      [
+       4,
+       74
+      ]
+     ]
+    }
+   ]
+  },
+  {
+   "roof": 40
+  }
+ ]
+}
