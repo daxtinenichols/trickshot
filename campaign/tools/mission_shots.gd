@@ -30,6 +30,22 @@ const SHOTS := [
 	["l1_2_the_yard", Vector3(3112, 6.5, 321), Vector3(3060, 2.5, 318), "dk_1_2_speed_gate"],
 	["l1_2_the_yard", Vector3(2992, 1.7, 318), Vector3(2700, 30, 318), "dk_1_2_gate_west"],
 	["l1_2_the_yard", Vector3(2972, 1.7, 318), Vector3(0, 120, 0), "dk_1_2_skyline_west"],
+	# Stage 5, Westside.
+	["l5_1_storm_channels", Vector3(1012, 15, -110), Vector3(960, 4, -110), "ws_5_1_spillway"],
+	["l5_1_storm_channels", Vector3(930, 14, -100), Vector3(870, 0, -110), "ws_5_1_channel"],
+	["l5_1_storm_channels", Vector3(915, 1.7, -110), Vector3(895, 4, -110), "ws_5_1_listeners", 60],
+	["l5_1_storm_channels", Vector3(822, 1.8, -26), Vector3(822, 2.5, -10), "ws_5_1_sluice", 90],
+	["l5_1_storm_channels", Vector3(822, 11.7, 306), Vector3(818, 9, 330), "ws_5_1_ward_water", 10],
+	["l5_1_storm_channels", Vector3(772, 2, 359.6), Vector3(720, 3, 359.6), "ws_5_1_outflow", 60],
+	["l5_1_storm_channels", Vector3(640, 9.7, 359.6), Vector3(600, 11, 359.6), "ws_5_1_rail_line"],
+	["l5_2_rail_line", Vector3(606, 11.7, 359.6), Vector3(570, 10, 359.6), "ws_5_2_old_line"],
+	["l5_2_rail_line", Vector3(556, 14, 256), Vector3(555, 4, 222), "ws_5_2_blast_nine", 150],
+	["l5_2_rail_line", Vector3(555, 11.7, 24), Vector3(555, 13, 6), "ws_5_2_junction", 100],
+	["l5_2_rail_line", Vector3(556, 12.5, -78), Vector3(555, 11, -100), "ws_5_2_wagon", 140],
+	["l5_2_rail_line", Vector3(556, 14, -96), Vector3(555, 4, -140), "ws_5_2_blast_four", 150],
+	["l5_2_rail_line", Vector3(522, 12, -200), Vector3(480, 11, -200), "ws_5_2_station"],
+	["l5_2_rail_line", Vector3(452, 11.7, -200), Vector3(150, 70, 20), "ws_5_2_calder_house"],
+	["l5_2_rail_line", Vector3(470, 11.7, -200), Vector3(300, 30, -200), "ws_5_2_end_ahead"],
 	# Stage 6, Calder House and the Tower (atlas coordinates).
 	["l6_1_head_office", Vector3(452, 11.7, -200), Vector3(380, 9, -200), "s6_1_platform"],
 	["l6_1_head_office", Vector3(560, 150, -420), Vector3(250, 0, -100), "s6_1_overview"],
@@ -68,12 +84,6 @@ const SHOTS := [
 	["m07_parking_spiral", Vector3(-15.5, 8.5, -485), Vector3(-15.5, 5, -530), "act2_m07_lower_lap"],
 	["m07_parking_spiral", Vector3(70, 45, -430), Vector3(0, 10, -510), "act2_m07_garage_outside"],
 	["m07_parking_spiral", Vector3(8, 4, -486), Vector3(-2, 2, -530), "act2_m07_core"],
-	["m08_storm_channels", Vector3(-14, 14, 10), Vector3(0, 4, -40), "m08_start"],
-	["m08_storm_channels", Vector3(-11, 7, -104), Vector3(0, 0, -150), "m08_channel"],
-	["m08_storm_channels", Vector3(100, 260, 100), Vector3(-220, 0, -400), "m08_overview"],
-	["m09_rail_bridge", Vector3(-14, 16, 10), Vector3(0, 8, -40), "m09_start"],
-	["m09_rail_bridge", Vector3(-80, 24, -392), Vector3(-150, 8, -426), "m09_junction"],
-	["m09_rail_bridge", Vector3(120, 300, 100), Vector3(-260, 0, -420), "m09_overview"],
 	["m10_the_climb", Vector3(20, 30, -150), Vector3(-40, 20, -172), "m10_platforms"],
 	["m10_the_climb", Vector3(80, 200, 80), Vector3(-90, 30, -90), "m10_overview"],
 	["m10_the_climb", Vector3(-62, 52, -70), Vector3(-90, 40, -110), "m10_tower_scaffold"],
@@ -181,7 +191,13 @@ func _shots(campaign: Script, only: String) -> void:
 		if s.size() > 4:
 			# Play the set pieces out first.
 			for sp: Node in level.builder.set_pieces:
-				if sp.get("kind") == "camp" and sp.get("state") == "intact":
+				var camp: bool = sp.get("kind") == "camp" and sp.get("state") == "intact"
+				# Other set pieces in sight (Westside's blasts, wagon, signals).
+				var near: bool = sp is Node3D and sp.get("fired") == false and sp.has_method("_fire") \
+					and (sp as Node3D).global_position.distance_to(s[1]) < 90.0
+				if near:
+					sp.set("fired", true)
+				if camp or near:
 					sp.call("_fire")
 					for t in int(s[4]):
 						sp.call("tick", s[1], null)

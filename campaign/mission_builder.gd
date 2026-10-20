@@ -22,6 +22,9 @@ const SKYLINE_SCRIPT_PATH := "res://campaign/atlas_skyline.gd"
 const DOCKS_SCENE_PATH := "res://campaign/docks_scene.gd"
 ## The Host's fall into the Silt (Stage 7): set piece "silt_fall".
 const SILT_FALL_PATH := "res://campaign/silt_fall.gd"
+## Westside's set pieces (Stage 5), by kind.
+const WESTSIDE_SCENE_PATH := "res://campaign/westside_scene.gd"
+const WESTSIDE_KINDS := ["floodlights", "listeners", "sluice", "ward_water", "track_blast", "wagon", "junction"]
 ## Stage 6's set pieces (the photo, the uplink, the studio): kinds it builds.
 const TOWER_SCENE_PATH := "res://campaign/tower_scene.gd"
 const TOWER_SCENE_KINDS := ["photo"]
@@ -334,7 +337,9 @@ func _skyline(p: Dictionary) -> void:
 
 func _set_piece(p: Dictionary) -> void:
 	var path: String = {"camp": DOCKS_SCENE_PATH, "silt_fall": SILT_FALL_PATH}.get(p.set_piece, SET_PIECE_SCRIPT_PATH)
-	if p.set_piece in TOWER_SCENE_KINDS:
+	if p.set_piece in WESTSIDE_KINDS:
+		path = WESTSIDE_SCENE_PATH
+	elif p.set_piece in TOWER_SCENE_KINDS:
 		path = TOWER_SCENE_PATH
 	var script := load(path) as Script if ResourceLoader.exists(path) else null
 	if script == null or not script.can_instantiate():
