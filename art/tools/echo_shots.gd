@@ -139,7 +139,7 @@ func _pose(figure: Script, p: String) -> Dictionary:
 
 ## Echo waiting in the studio, as Parker comes in, then close.
 func _m11(campaign: Script) -> void:
-	var level := await _load_mission(campaign, "m11_dead_air")
+	var level := await _load_mission(campaign, "l6_4_dead_air")
 	var echo: Node3D = level.find_child("Figure_echo", true, false)
 	if echo == null:
 		push_error("echo_shots: no Echo figure in m11")
