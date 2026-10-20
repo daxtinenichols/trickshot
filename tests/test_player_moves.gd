@@ -290,6 +290,41 @@ func test_wallrun_starts_and_carries_you() -> void:
 	check(&"wallrun" in w.tricks_seen, "wallrun trick reported")
 
 
+## Flies at a wall on the right (face at x = 1.5) from 0.8 m away, at
+## `angle` degrees off running along it, `speed` m/s, rising `vy`, feet 3 m
+## up (the 6 m wall stands over your head).
+func _air_into_wall(angle: float, speed: float, vy: float, f: InputFrame = null) -> Player:
+	_add_side_wall()
+	w.add_floor()
+	var a := deg_to_rad(angle)
+	var p := w.spawn_player(Vector3(0.7, 3.0, 0), -a)
+	p.velocity = Vector3(sin(a), 0, -cos(a)) * speed + Vector3(0, vy, 0)
+	p.momentum = 1.0
+	await w.step_until(func() -> bool: return p.state != Player.State.AIR, 60, f if f != null else _fwd())
+	return p
+
+
+func test_wallrun_from_a_steep_entry() -> void:
+	var p := await _air_into_wall(72.0, 9.0, 1.0)
+	check(p.state == Player.State.WALLRUN, "hitting the wall nearly head-on still wallruns (%s)" % Player.State.keys()[p.state])
+
+
+func test_wallrun_from_a_slow_entry() -> void:
+	var p := await _air_into_wall(30.0, 4.0, 1.0)
+	check(p.state == Player.State.WALLRUN, "slow wallruns too (%s)" % Player.State.keys()[p.state])
+
+
+func test_wallrun_while_falling_fast() -> void:
+	var p := await _air_into_wall(30.0, 9.0, -11.0)
+	check(p.state == Player.State.WALLRUN, "falling onto a wall still wallruns (%s)" % Player.State.keys()[p.state])
+	check(p.velocity.length() <= Vector2(9.0, 9.0).length() + 0.3, "and the fall doesn't add speed (%.2f)" % p.velocity.length())
+
+
+func test_steep_wall_with_jump_held_still_climbs() -> void:
+	var p := await _air_into_wall(72.0, 9.0, 1.0, _fwd_jump())
+	check(p.state == Player.State.WALLCLIMB, "jump held into a wall you face: a climb (%s)" % Player.State.keys()[p.state])
+
+
 func test_wallrun_times_out() -> void:
 	var ok := await _enter_wallrun()
 	check(ok, "wallrun starts")
@@ -444,6 +479,74 @@ func test_small_drop_is_a_normal_landing() -> void:
 	await w.step(60)
 	check(not (Player.State.STUN in w.states_seen), "no stun from a short drop")
 	check(p.state == Player.State.GROUND, "standing")
+
+
+## Runs off a ledge `h` m up at `speed`, onto flat ground or (slope > 0)
+## a ramp going down away from the ledge. `crouch_after` presses crouch that
+## many ticks after touchdown (-1: never). Returns [player, lowest speed in
+## the second after landing].
+func _ledge_drop(h: float, slope: float, speed: float, crouch_after := -1) -> Array:
+	if slope == 0.0:
+		w.add_floor()
+	else:
+		var a := deg_to_rad(slope)
+		var b := Basis(Vector3.RIGHT, -a)
+		var top := Vector3(0, 0, -1)
+		var bottom := top + Vector3(0, -60.0 * sin(a), -60.0 * cos(a))
+		w.add_box(Vector3.ZERO, Vector3(10, 1, 60)).global_transform = Transform3D(b, (top + bottom) * 0.5 - b.y * 0.5)
+	w.add_box(Vector3(0, h - 0.5, 10), Vector3(10, 1, 20))
+	var p := w.spawn_player(Vector3(0, h + 0.05, 1))
+	p.velocity = Vector3(0, 0, -speed)
+	p.momentum = 1.0  # been running a while: top speed holds
+	await w.step_until(func() -> bool: return p.global_position.z < -0.5 and p.state != Player.State.AIR, 200, _fwd())
+	if crouch_after >= 0:
+		await w.step(crouch_after, _fwd())
+		await w.step(1, _fwd_crouch())
+	var low := [p.horizontal_speed()]
+	for i in 60:
+		await w.step(1, _fwd())
+		low[0] = minf(low[0], p.horizontal_speed())
+	return [p, low[0]]
+
+
+func test_small_drop_keeps_momentum() -> void:
+	# A 5 m drop at top speed with no roll: a rough landing that costs a
+	# little speed, not a stun that stops you.
+	var r := await _ledge_drop(5.0, 0.0, 11.5)
+	check(not (Player.State.STUN in w.states_seen), "no stun from a one-storey drop")
+	check(not (&"hard_landing" in w.tricks_seen), "no hard landing")
+	check(r[1] >= 11.5 * 0.85, "most of the speed kept (lowest %.2f)" % r[1])
+
+
+func test_late_crouch_still_rolls() -> void:
+	# Crouch a couple of ticks after touching down still rolls you out.
+	var r := await _ledge_drop(8.0, 0.0, 11.5, 2)
+	check(&"landing_roll" in w.tricks_seen, "late crouch rolls")
+	check(not (&"hard_landing" in w.tricks_seen), "no hard landing (combo kept)")
+	check(r[1] >= 10.0, "most of the speed kept (lowest %.2f)" % r[1])
+
+
+func test_landing_on_a_down_ramp_is_soft() -> void:
+	# Coming down onto a slope that runs away from you you hit it at an
+	# angle: the hit is the speed into the slope, not straight down.
+	var r := await _ledge_drop(5.0, 23.0, 11.5)
+	check(not (Player.State.STUN in w.states_seen), "no stun")
+	check(r[1] >= 11.0, "speed kept (lowest %.2f)" % r[1])
+
+
+func test_crouch_held_from_a_slide_rolls_a_big_drop() -> void:
+	# Slide off a ledge still holding crouch and land hard: you roll.
+	w.add_floor()
+	w.add_box(Vector3(0, 8.0 - 0.5, 10), Vector3(10, 1, 20))
+	var p := w.spawn_player(Vector3(0, 8.05, 6))
+	await w.step(10)
+	p.velocity = Vector3(0, 0, -11.5)
+	await w.step(1, _fwd_crouch())
+	check(p.state == Player.State.SLIDE, "sliding")
+	await w.step_until(func() -> bool: return p.global_position.z < -0.5 and p.state != Player.State.AIR, 200, _fwd_crouch_hold())
+	check(Player.State.AIR in w.states_seen, "slid off the edge")
+	check(p.state == Player.State.ROLL, "rolled (%s)" % Player.State.keys()[p.state])
+	check(not (&"hard_landing" in w.tricks_seen), "no hard landing")
 
 
 func _tuck_drop(tuck_degrees: float) -> Player:

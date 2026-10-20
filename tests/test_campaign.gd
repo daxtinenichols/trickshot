@@ -101,7 +101,7 @@ func _index(id: String) -> int:
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
 	check(all.size() == 15, "15 missions (%d)" % all.size())
-	check(Campaign.acts().size() == 5, "the Docks stage, three acts and Signal Out")
+	check(Campaign.acts().size() == 6, "the Docks stage, three acts, Stage 6 and Signal Out")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
@@ -225,6 +225,7 @@ func test_zone_key_starts_a_practice_run() -> void:
 	await _step(3)
 	check(run.practice and run.checkpoint == 3, "practice from the third checkpoint")
 	check(run.objective == 1, "on that checkpoint's objective (%d)" % run.objective)
+	check((player.weapon as Pistol).held == "hands", "past the drop: the parcel's delivered")
 	player.global_position = _camp()
 	await _step(3)
 	check(run.phase == MissionRun.Phase.COMPLETE, "can finish")
@@ -844,10 +845,13 @@ const Atlas_ := preload("res://campaign/atlas.gd")
 func test_atlas_levels_meet() -> void:
 	var order: Array = Atlas_.order()
 	check(order.size() >= 2, "the Docks levels are on the atlas (%d)" % order.size())
+	# (Levels next to each other in the campaign: stages not rebuilt yet
+	# leave gaps between atlas levels.)
+	var number := {}
+	for m: Dictionary in Campaign.missions():
+		number[m.id] = int(m.get("number", -1))
 	for i in range(1, order.size()):
-		# Only levels next to each other in the campaign (stages still to be
-		# rebuilt leave gaps).
-		if _index(order[i][0]) != _index(order[i - 1][0]) + 1:
+		if int(number.get(order[i][0], -9)) - int(number.get(order[i - 1][0], -9)) != 1:
 			continue
 		var a := Campaign.load_mission_file(order[i - 1][1])
 		var b := Campaign.load_mission_file(order[i][1])
@@ -878,7 +882,7 @@ func test_tower_in_sight_from_atlas_levels() -> void:
 		var m := Campaign.load_mission_file(o[1])
 		var boxes: Array = []
 		for p: Dictionary in m.pieces:
-			if p.has("building"):
+			if p.has("building") and not p.get("tower", false):
 				boxes.append([p.building[0], p.building[2], p.size[0], p.size[1], 0.0, p.building[1], 0, float(p.get("yaw", 0.0))])
 			elif p.get("skyline", false):
 				boxes.append_array(p.boxes)
@@ -966,6 +970,57 @@ func test_dawn_run_raid_is_seen() -> void:
 	check(truck.visible and truck.global_position.z < z0 - 10.0, "the pickup pulls away north (%.1f -> %.1f)" % [z0, truck.global_position.z])
 	var drone: Node3D = camp.get_node("Drone")
 	check(drone.visible and drone.global_position.y > camp.global_position.y + 5.0, "the drone lifts off the roof")
+
+
+## Dawn Run: Parker carries the parcel, not the gun, delivers it on the
+## run at the high roof's crate, and goes home empty-handed (Dax 2026-10-20).
+func test_dawn_run_carries_and_delivers_the_parcel() -> void:
+	await _load(_index("l1_1_dawn_run"))
+	var gun := player.weapon as Pistol
+	check(gun.held == "parcel" and not gun.is_armed(), "the parcel's in hand, not the gun")
+	var drop: Node3D = run.drop_offs.get(0)
+	check(drop != null, "a drop-off at the high roof")
+	await _step(2)
+	check(drop.find_children("*", "OmniLight3D", true, false).size() == 1, "lit")
+	check(level.builder.find_children("Chalk", "", true, false).any(func(c: Node) -> bool:
+		return c.find_children("*", "Label3D", true, false).any(func(l: Node) -> bool: return (l as Label3D).text == "DROP")), "chalked DROP")
+	player.global_position = MissionBuilder.vec(run.mission.start.at) + Vector3(-8, 0.05, 0)
+	await _step(3)
+	# Running home first doesn't count the drop you skipped.
+	player.global_position = _camp()
+	await _step(3)
+	check(run.objective == 0 and run.phase == MissionRun.Phase.RUNNING, "camp without delivering doesn't count")
+	var events: Array[String] = []
+	run.event.connect(func(e: String) -> void: events.append(e))
+	player.global_position = MissionBuilder.vec(run.mission.objectives[0].at) + Vector3(0, 0.05, 0)
+	player.velocity = Vector3(0, 0, -9.0)
+	await _step(1)
+	check("delivered" in events and run.objective == 1, "delivered on the run")
+	check(gun.held == "hands" and not gun.is_armed(), "home empty-handed")
+	check(player.velocity.length() > 8.0, "no stop to hand it over (%.1f)" % player.velocity.length())
+	check(level.combo.entries.any(func(e: Dictionary) -> bool: return e.name == &"delivered"), "DELIVERED in the combo")
+	await _step(30)
+	check(drop.delivered and drop.get("_inside") != null, "the parcel sits in the crate")
+	player.global_position = _camp()
+	await _step(3)
+	check(run.phase == MissionRun.Phase.COMPLETE, "back at camp ends it")
+	check(run.objective_text() == "Level complete", "the goal line says so")
+	await _step(2)
+	check(level.mission_hud.get("_banner").visible, "a COMPLETE banner while the radio finishes")
+
+
+## A loss restarts Dawn Run holding the parcel again.
+func test_dawn_run_restart_gives_the_parcel_back() -> void:
+	await _load(_index("l1_1_dawn_run"))
+	player.global_position = MissionBuilder.vec(run.mission.start.at) + Vector3(-8, 0.05, 0)
+	await _step(3)
+	player.global_position = MissionBuilder.vec(run.mission.objectives[0].at) + Vector3(0, 0.05, 0)
+	await _step(2)
+	check((player.weapon as Pistol).held == "hands", "delivered")
+	player.global_position = Vector3(player.global_position.x, run.fail_y() - 1.0, player.global_position.z)
+	await _step(2)
+	check(await _await_restart(), "the level restarts")
+	check((player.weapon as Pistol).held == "parcel", "with the parcel back in hand")
 
 
 ## The Yard opens in the wrecked camp: Mags holds the pistol out by the way
@@ -1130,7 +1185,7 @@ func test_kill_goals_are_bonuses() -> void:
 ## event the radio answers in order, the hit bonus stays open the whole
 ## mission, and reaching his office wins whether or not you hit him.
 func test_head_office_host_hits_are_a_bonus() -> void:
-	await _load(_index("m09b_head_office"))
+	await _load(_index("l6_1_head_office"))
 	var hosts: Array[Node] = []
 	for enc: Node3D in level.builder.encounters:
 		for e: Node in enc.enemies:
@@ -1155,7 +1210,7 @@ func test_head_office_host_hits_are_a_bonus() -> void:
 	check(run.phase == MissionRun.Phase.COMPLETE, "reaching his office wins")
 	check(run.result.bonuses == 1, "with the bonus (%s)" % run.result)
 	# Every Head Office and Skybridge radio line has a trigger the mission can fire.
-	for id: String in ["m09b_head_office", "m09c_skybridge"]:
+	for id: String in ["l6_1_head_office", "l6_2_skybridge"]:
 		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
 		for r: Dictionary in m.radio:
 			var on: String = r.get("on", "")
@@ -1167,7 +1222,7 @@ func test_head_office_host_hits_are_a_bonus() -> void:
 ## Skybridge ends at the Ward's glass gate: you can't get past it, they
 ## walk Echo off, the bridge blows, and only then is the mission won.
 func test_skybridge_ends_after_the_bridge_falls() -> void:
-	await _load(_index("m09c_skybridge"))
+	await _load(_index("l6_2_skybridge"))
 	var gate: Node3D = null
 	for sp: Node3D in level.builder.set_pieces:
 		if sp.kind == "skybridge":
@@ -1187,7 +1242,8 @@ func test_skybridge_ends_after_the_bridge_falls() -> void:
 	check(heard.has("set_piece:skybridge"), "the radio hears it (%s)" % [heard])
 	check(run.phase == MissionRun.Phase.RUNNING, "the gate alone doesn't win it")
 	# Push into the gate (_forward() walks backwards: any loss now restarts
-	# the level, so backing off the roof would end the test).
+	# the level, so backing off the roof would end the test), facing it.
+	player.set_view(gate.global_rotation.y)
 	await _step(240, TestWorld.forward_input())
 	check(gate.to_local(player.global_position).z > 0.0, "you can't get past the gate (%s)" % gate.to_local(player.global_position))
 	check(gate.to_local(player.global_position).z < 3.0, "pressed up against it (%s)" % gate.to_local(player.global_position))
@@ -1198,6 +1254,51 @@ func test_skybridge_ends_after_the_bridge_falls() -> void:
 	check(run.phase == MissionRun.Phase.COMPLETE, "and that wins it")
 	check(run.falls == 0 and run.downs == 0, "standing at the gate is safe")
 	check(heard.find("set_piece:skybridge_down") < heard.find("complete"), "won only after the drop (%s)" % [heard])
+
+
+func test_glass_district_bridge_falls_into_the_silt() -> void:
+	await _load(_index("m03_glass_district"))
+	var bridge: Node3D = null
+	for sp: Node3D in level.builder.set_pieces:
+		if sp.kind == "bridge_collapse":
+			bridge = sp
+	check(bridge != null, "the Silt bridge has its collapse")
+	if bridge == null:
+		return
+	var heard: Array[String] = []
+	run.event.connect(func(e: String) -> void: heard.append(e))
+	await _step(40, _forward())
+	var objs: Array = run.objectives
+	for i in objs.size():
+		if objs[i].get("type", "reach") == "reach":
+			player.global_position = MissionBuilder.vec(objs[i].at) + Vector3(0, 0.1, 0)
+			await _step(2)
+	check(run.phase == MissionRun.Phase.COMPLETE, "reaching the bridge wins the level")
+	check(bridge.fired and bridge.busy(), "and sets the bridge going")
+	check(not heard.has("set_piece:bridge_collapse_blast"), "the charge waits for the Host's line")
+	var deck_y := player.global_position.y
+	# The Host's line comes and goes: the charge goes a moment later.
+	bridge.hear(String(bridge.spec.cue))
+	bridge.hear("")
+	await _step(bridge.BRIDGE_CUE_DELAY + 2)
+	check(heard.has("set_piece:bridge_collapse_blast"), "it blows after the line (%s)" % [heard])
+	var lines: Array = level.radio.queue.map(func(l: Dictionary) -> String: return l.line) + [level.radio.current.get("line", "")]
+	check(lines.any(func(l: String) -> bool: return l.begins_with("Whoops. Did the bridge")), "the Host's \"Whoops\" goes with it (%s)" % [lines])
+	check(level._set_piece_busy(), "the results wait while it falls")
+	await _step(bridge.BRIDGE_FALL_TICKS + 2)
+	check(heard.has("set_piece:bridge_collapse_down"), "the spans come down")
+	check(not bridge.busy(), "and it's done")
+	await _step(90)
+	check(player.global_position.y < deck_y - 6.0, "Parker goes down with it (y %.1f from %.1f)" % [player.global_position.y, deck_y])
+	check(run.falls == 0 and run.downs == 0, "falling with it after the win isn't a loss")
+	# Every span ends lower than it stood, and the piers between went.
+	for span: Dictionary in bridge._spans:
+		check(not span.nodes.is_empty(), "each span carries its deck")
+	check(bridge._blown.size() == 3, "the three middle piers go (%d)" % bridge._blown.size())
+	var piers: Array[Node3D] = bridge._blown.duplicate()
+	bridge.reset()
+	for n: Node3D in piers:
+		check(n.visible, "a reset puts the piers back")
 
 
 ## Ticks until a fired set piece reaches tick `at` (0 if it's past).
@@ -1355,6 +1456,43 @@ func test_route_missions_can_be_finished() -> void:
 	check(ran >= 1, "route missions were run (%d)" % ran)
 
 
+## Every route that ends up high ends in a finish you can't run off:
+## across the line at well over top speed, straight on or veering either
+## way, holding forward or letting go, you stay on the finish's floor.
+func test_route_finishes_keep_you_on_the_roof() -> void:
+	var all := Campaign.missions()
+	var ran := 0
+	for i in all.size():
+		var path: String = all[i].get("file", "")
+		if path == "" or not Campaign.load_mission_file(path).has("route_finish"):
+			continue
+		await _load(i)
+		PlayerHealth.ensure(player).can_die = false
+		var e: Array = run.mission.route_end
+		var end := Vector3(e[0], e[1], e[2])
+		var yaw := deg_to_rad(float(run.mission.route_end_yaw))
+		for veer: float in [0.0, 20.0, -20.0]:
+			for hold: bool in [true, false]:
+				var look := yaw + deg_to_rad(veer)
+				var fwd := Vector3(-sin(look), 0, -cos(look))
+				player.global_position = end - fwd * 6.0 + Vector3(0, 0.05, 0)
+				player.basis = Basis(Vector3.UP, look)
+				player.velocity = fwd * 22.0
+				var f := InputFrame.new()
+				f.move = Vector2(0, 1) if hold else Vector2.ZERO
+				var low := INF
+				for k in 240:
+					await _step(1, f)
+					low = minf(low, player.global_position.y)
+				check(low > end.y - 0.6 and run.phase != MissionRun.Phase.LOST,
+					"%s: %s at 22 m/s, veering %d, stays on the finish (lowest %.1f, line %.1f)" % [all[i].id, "holding forward" if hold else "letting go", int(veer), low, end.y])
+		ran += 1
+		level.queue_free()
+		level = null
+		await tree.physics_frame
+	check(ran >= 6, "route finishes were tried (%d)" % ran)
+
+
 ## Runs the loaded mission's route bot (or its fork lines) to the end.
 func _bot_run(label: String, alt := false) -> void:
 	var health := PlayerHealth.ensure(player)
@@ -1367,6 +1505,12 @@ func _bot_run(label: String, alt := false) -> void:
 						en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position})
 		if e.begins_with("objective:"):
 			_skip_lessons())
+	# Held at the start while the opening is said, as a player is.
+	level.radio.sim_clock = true
+	for k in 60 * 30:
+		if not level.radio.opening_playing():
+			break
+		await tree.physics_frame
 	_skip_lessons()
 	await _step(10)
 	var bot: Array = run.mission.bot_alt if alt else run.mission.bot
@@ -1376,6 +1520,7 @@ func _bot_run(label: String, alt := false) -> void:
 			run.mission.route_legs.size(), level.builder.spawns.size() - 1, level.builder.encounters.size(),
 			level.builder.encounters.reduce(func(n: int, e: Node) -> int: return n + e.enemies.size(), 0), run.mission.route_legs])
 	var done := await _run_route(bot, frames, -INF, run.mission.get("route_legs", []))
+	_check_radio_pacing(label)
 	check(done, "%s: a bot finishes the %d m route (stopped at %s, objective %d)" % [label, int(run.mission.route_length), player.global_position.snapped(Vector3.ONE * 0.1), run.objective])
 	check(run.falls == 0, "%s: without falling (%d)" % [label, run.falls])
 	check(run.mission.route_length >= 500.0, "%s: a long run (%d m)" % [label, int(run.mission.route_length)])
@@ -1384,12 +1529,73 @@ func _bot_run(label: String, alt := false) -> void:
 	await tree.process_frame
 
 
+## The most a story line may start after what triggered it (seconds), and
+## the most lines from other moments that may be waiting ahead of it.
+const RADIO_LATE := 4.0
+const RADIO_BACKLOG := 2
+
+
+## The radio kept pace with the run just finished: every story line started
+## within RADIO_LATE of its trigger (a conversation's next line, of the
+## line before ending), no line had more than RADIO_BACKLOG lines from
+## other moments waiting ahead of it, and no "must" line was dropped. The
+## opening (you're held for it) and the ending (the card waits) don't
+## count. PACING=1 prints every mission's timeline.
+func _check_radio_pacing(label: String) -> void:
+	var radio: RadioFeed = level.radio
+	radio.advance(0.0)
+	var log := radio.story_log
+	var lines: Array[String] = []
+	var bad: Array[String] = []
+	for i in log.size():
+		var l: Dictionary = log[i]
+		var on: String = l.get("on", "")
+		var trigger: float = l.queued_at
+		var waiting := 0
+		for j in i:
+			var o: Dictionary = log[j]
+			if o.queued_at == l.queued_at and o.get("on", "") == on:
+				trigger = maxf(trigger, float(o.get("ends_at", o.get("dropped", trigger))))
+			elif o.get("on", "") != "start" and float(o.get("shown_at", o.get("dropped", INF))) > l.queued_at:
+				waiting += 1
+		var start: float = l.get("shown_at", -1.0)
+		var state := "dropped" if l.has("dropped") else "start +%.1fs" % (start - trigger) if start >= 0.0 else "unsaid"
+		lines.append("    %6.1fs  %-14s %s%s  %s: %s" % [l.queued_at, on, state, " MUST" if l.get("must", false) else "",
+				l.who, String(l.line).left(60)])
+		if on in ["start", "complete"]:
+			continue
+		if l.get("must", false) and (l.has("dropped") or start < 0.0):
+			bad.append("must line %s" % state)
+		elif start >= 0.0 and start - trigger > RADIO_LATE:
+			bad.append("%.1fs late: %s" % [start - trigger, String(l.line).left(40)])
+		if waiting > RADIO_BACKLOG:
+			bad.append("%d lines waiting ahead of: %s" % [waiting, String(l.line).left(40)])
+	if OS.has_environment("PACING") or not bad.is_empty():
+		print("  radio timeline, %s:\n%s" % [label, "\n".join(lines)])
+	# The city atlas's levels ("l<stage>_<n>") must keep pace; the older
+	# missions they're replacing only report it (see the timeline above).
+	if not String(run.mission.get("id", "")).begins_with("l"):
+		if not bad.is_empty():
+			print("  (not failed: %s is an older mission, rebuilt in the atlas later)" % label)
+		return
+	check(bad.is_empty(), "%s: the radio keeps pace (%s)" % [label, "; ".join(bad)])
+
+
 ## The Yard's lessons (a combo, the dummies, a score) aren't the bot's to
 ## learn: done for it, on to the next objective.
 func _skip_lessons() -> void:
 	var o := run.current_objective()
 	var t: String = o.get("type", "")
 	if t in ["combo", "score"] or t == "shoot" and level.builder.encounters.is_empty():
+		# A player hears the lesson while doing it: the bot skips both.
+		var lesson := ["objective:%d" % run.objective, "done:%d" % run.objective]
+		var radio: RadioFeed = level.radio
+		for list: Array[Dictionary] in [radio.queue, radio.story_log]:
+			for i in range(list.size() - 1, -1, -1):
+				if list[i].get("on", "") in lesson:
+					list.remove_at(i)
+		if radio.current.get("on", "") in lesson:
+			radio.current = {}
 		run.call_deferred("_begin_objective", run.objective + 1)
 
 
@@ -1887,6 +2093,78 @@ func test_radio_cues_jump_the_queue_and_stale_lines_drop() -> void:
 		if not radio.current.is_empty() and String(radio.current.line).begins_with("Line "):
 			heard = maxi(heard, int(String(radio.current.line).substr(5, 1)) + 1)
 	check(heard == 4, "a conversation plays to the end (%d of 4)" % heard)
+
+
+## A line the story needs goes ahead of every other line waiting and is
+## never dropped; the lines of one conversation stay together.
+func test_radio_must_lines_go_first_and_never_drop() -> void:
+	await _load(_index("m05_atrium"))
+	var radio: RadioFeed = level.radio
+	radio.queue.clear()
+	radio.current = {}
+	radio.say("host", "A riff.", false, true, "", false, "checkpoint:0")
+	radio.say("mags", "Left here.", true, true, "", false, "checkpoint:1")
+	radio.say("echo", "The story.", false, false, "", true, "set_piece:a")
+	radio.say("parker", "The answer.", false, false, "", true, "set_piece:a")
+	var order: Array = radio.queue.map(func(l: Dictionary) -> String: return l.line)
+	check(order == ["The story.", "The answer.", "Left here.", "A riff."], "must lines first, then the cue (%s)" % [order])
+	radio.advance(0.0)
+	radio.advance(RadioFeed.STALE_AFTER * 3.0)
+	for k in 10:
+		radio.advance(1.0)
+	var heard: Array = radio.history.map(func(l: Dictionary) -> String: return l.line)
+	check("The story." in heard and "The answer." in heard, "must lines are said, however long they wait")
+
+
+## A spot's lines start early, by your speed, so they've been said as you
+## get there: not yet when the spot is further than the lines take to say,
+## now when it's within that, worked out at a run at least when you're
+## slow, and never for a spot behind you.
+func test_radio_spot_lines_start_early() -> void:
+	await _load(_index("m05_atrium"))
+	var radio: RadioFeed = level.radio
+	var s: Dictionary = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.has("at"))[0]
+	var key := "at:%s" % str(s.at)
+	var at := MissionBuilder.vec(s.at)
+	var half := MissionBuilder.vec(s.size) * 0.5
+	var reach := minf(half.x, half.z)
+	var lead := radio._lead(key)
+	check(lead >= RadioFeed.clip_length(s.who, s.line) + RadioFeed.LEAD - 0.01, "the lead covers the clip (%.1fs)" % lead)
+	var toward := Vector3(0, 0, -15)
+	check(not radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * 15.0 + 5.0), toward), "too far at 15 m/s: not yet")
+	check(radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * 15.0 - 2.0), toward), "close enough at 15 m/s: now")
+	var slow := Vector3(0, 0, -2)
+	check(radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * RadioFeed.LEAD_MIN_SPEED - 1.0), slow), "slow: worked out at a run")
+	check(not radio._coming_up(s, key, at + Vector3(0, 0, reach + 3.0), -toward), "not for a spot behind you")
+
+
+## The first time you play a level it holds you while the opening is said,
+## then lets you go; after a restart the opening is skipped and you can go
+## at once.
+func test_opening_holds_you_until_it_is_said() -> void:
+	var saved: ConfigFile = Campaign._save
+	Campaign._save = ConfigFile.new()
+	await _load(_index("l1_1_dawn_run"))
+	check(level.holding(), "held at the start")
+	check(level.radio.opening_playing(), "while the opening plays")
+	player.scripted_input = level._hold
+	var at := player.global_position
+	for k in 40:
+		if not level.holding():
+			break
+		level.radio.advance(1.0)
+		await tree.physics_frame
+	check(not level.holding(), "let go once the opening is said")
+	check(player.scripted_input == null, "your controls are back")
+	check(player.global_position.distance_to(at) < 0.5, "you stayed put meanwhile")
+	var opening: Array = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.get("on", "") == "start")
+	var heard: Array = level.radio.history.map(func(l: Dictionary) -> String: return l.line)
+	check(opening.all(func(r: Dictionary) -> bool: return r.line in heard), "every opening line was said")
+	level.restart()
+	check(await _await_restart(), "restarted")
+	check(not level.holding(), "no hold after a restart")
+	check(not level.radio.opening_playing(), "and no opening")
+	Campaign._save = saved
 
 
 ## Along diagonal legs and 45 degree corners the city's fronts and kerbs

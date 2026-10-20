@@ -116,10 +116,10 @@
    {"piece": {"box": [6.15, 2.3, -19.0], "size": [0.3, 4.6, 38.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"door": 0, "look": "TILE", "at": 18}
   ]},
-  {"roof": 60, "do": [
-   {"piece": {"box": [0, 4.6, -29.0], "size": [12.6, 0.4, 58.0], "kind": "NEUTRAL"}, "at": 0},
-   {"piece": {"box": [-6.15, 2.3, -29.0], "size": [0.3, 4.6, 58.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
-   {"piece": {"box": [6.15, 2.3, -29.0], "size": [0.3, 4.6, 58.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+  {"roof": 60, "indoors": 4.4, "do": [
+   {"piece": {"box": [0, 4.6, -30.0], "size": [12.6, 0.4, 60.0], "kind": "NEUTRAL"}, "at": 0},
+   {"piece": {"box": [-6.15, 2.3, -30.0], "size": [0.3, 4.6, 60.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+   {"piece": {"box": [6.15, 2.3, -30.0], "size": [0.3, 4.6, 60.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
    {"label": "ON AIR", "at": 40, "size": 1.6},
    {"prop": "radio_set", "x": -3.5, "at": 46, "yaw": 160},
    {"prop": "radio_set", "x": 3.5, "at": 48, "yaw": 200},
@@ -132,7 +132,7 @@
  "radio": [
   {"on": "start", "who": "mags", "line": "Studio's on the top floor. He's put everything he's got between you and her."},
   {"on": "go", "who": "host", "line": "Port Calder, this is it. The final segment. Please hold your applause until he's dead."},
-  {"on": "checkpoint:1", "who": "echo", "line": "Parker, the vents. Behind the transmitter. I left 'em open.", "keep": true},
+  {"on": "checkpoint:1", "who": "echo", "line": "Parker, the vents. Behind the transmitter. I left 'em open.", "must": true},
   {"on": "checkpoint:1", "who": "vell", "line": "All units to the studio. This ends tonight."},
   {"on": "checkpoint:2", "who": "parker", "line": "Echo."},
   {"on": "checkpoint:2", "who": "echo", "line": "You're late."},

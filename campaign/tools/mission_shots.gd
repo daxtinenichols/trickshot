@@ -19,6 +19,7 @@ const SHOTS := [
 	["l1_1_dawn_run", Vector3(3228, 40, 150), Vector3(3268, 10, 60), "dk_1_1_fish_market"],
 	["l1_1_dawn_run", Vector3(3246, 18, 8), Vector3(3262, 14, -40), "dk_1_1_container_yard"],
 	["l1_1_dawn_run", Vector3(3262, 17, -150), Vector3(3340, 9, -160), "dk_1_1_high_roof"],
+	["l1_1_dawn_run", Vector3(3259, 16.7, -121), Vector3(3264, 15, -133), "dk_1_1_drop"],
 	["l1_1_dawn_run", Vector3(3452, 24, 40), Vector3(3436, 2, 100), "dk_1_1_raid", 300],
 	["l1_1_dawn_run", Vector3(3425, 13.7, 112), Vector3(3412, 12.5, 118), "dk_1_1_wreck", 2000],
 	["l1_1_dawn_run", Vector3(3428, 16, 124), Vector3(3000, 30, 230), "dk_1_1_skyline_west"],
@@ -29,6 +30,14 @@ const SHOTS := [
 	["l1_2_the_yard", Vector3(3112, 6.5, 321), Vector3(3060, 2.5, 318), "dk_1_2_speed_gate"],
 	["l1_2_the_yard", Vector3(2992, 1.7, 318), Vector3(2700, 30, 318), "dk_1_2_gate_west"],
 	["l1_2_the_yard", Vector3(2972, 1.7, 318), Vector3(0, 120, 0), "dk_1_2_skyline_west"],
+	# Stage 6, Calder House and the Tower (atlas coordinates).
+	["l6_1_head_office", Vector3(452, 11.7, -200), Vector3(380, 9, -200), "s6_1_platform"],
+	["l6_1_head_office", Vector3(560, 150, -420), Vector3(250, 0, -100), "s6_1_overview"],
+	["l6_1_head_office", Vector3(262, 23.7, 74), Vector3(276, 23.0, 68), "s6_1_office"],
+	["l6_1_head_office", Vector3(273.5, 23.75, 70.4), Vector3(273.5, 23.7, 67.1), "s6_1_photo"],
+	["l6_2_skybridge", Vector3(197, 45.7, 168), Vector3(197, 44, 225), "s6_2_tanks"],
+	["l6_2_skybridge", Vector3(0, 44.7, 150), Vector3(0, 46, 20), "s6_2_bridge"],
+	["l6_2_skybridge", Vector3(110, 80, 150), Vector3(0, 40, 50), "s6_2_bridge_outside"],
 	["m02_on_air", Vector3(-14, 18, 6), Vector3(0, 8, -40), "m02_start"],
 	["m02_on_air", Vector3(-12, 16, -150), Vector3(0, 8, -190), "m02_lookouts"],
 	["m02_on_air", Vector3(320, 260, 60), Vector3(120, 0, -380), "m02_overview"],
@@ -117,6 +126,10 @@ func _run() -> void:
 		await _angled(campaign, only.trim_prefix("angled:"))
 		quit()
 		return
+	if only == "carry":
+		await _carry(campaign)
+		quit()
+		return
 	if only != "":
 		await _shots(campaign, only)
 		quit()
@@ -186,6 +199,36 @@ func _shots(campaign: Script, only: String) -> void:
 	if level != null:
 		level.queue_free()
 		await _frames(2)
+
+
+## Dawn Run's parcel in hand: first person on the opening roof, then the
+## chase camera's view of Parker carrying it, then the toss into the crate.
+func _carry(campaign: Script) -> void:
+	var level: Node = await _load_mission(campaign, "l1_1_dawn_run")
+	var p: Node = level.get_node("Player")
+	p.set_physics_process(false)
+	p.set_view(PI * 0.5, -0.1)
+	_hide_ui(level, false)
+	await _frames(10)
+	_save("dk_1_1_parcel_first_person")
+	var chase: Node = p.get_node_or_null("ChaseCamera")
+	if chase != null:
+		chase.set_active(true)
+		await _frames(20)
+		_save("dk_1_1_parcel_third_person")
+		chase.set_active(false)
+	# The toss: stand short of the drop, deliver, catch it mid-flight.
+	var drop: Node = level.run.drop_offs[0]
+	p.global_position = Vector3(3260, 15.05, -122)
+	p.set_view(0.25, -0.15)
+	await _frames(4)
+	drop.deliver(p.camera.global_position + Vector3(0.2, -0.25, -0.4), "parcel")
+	await _frames(8)
+	_save("dk_1_1_parcel_toss")
+	await _frames(30)
+	_save("dk_1_1_parcel_delivered")
+	level.queue_free()
+	await _frames(2)
 
 
 ## Down the course: from the start and each checkpoint toward the next one
