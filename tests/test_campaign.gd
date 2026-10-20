@@ -1209,7 +1209,8 @@ func test_head_office_host_hits_are_a_bonus() -> void:
 ## goes through and up the stairs behind it, and the stairwell is shut in
 ## (a dead end for you, with a floor and walls all round).
 func test_head_office_host_leaves_through_his_private_door() -> void:
-	await _load(_index("m09b_head_office"))
+	# Stage 6 renames Head Office.
+	await _load(_index("l6_1_head_office") if _index("l6_1_head_office") >= 0 else _index("m09b_head_office"))
 	var host: Node3D = null
 	for enc: Node3D in level.builder.encounters:
 		for e: Node in enc.enemies:
