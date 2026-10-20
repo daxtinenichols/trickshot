@@ -3275,21 +3275,6 @@
 		"where": "pending: m12_signal_out"
 	},
 	{
-		"who": "echo",
-		"line": "Don't drop this one. It's insulin, for the Okafor kid.",
-		"where": "pending: l1_1_dawn_run"
-	},
-	{
-		"who": "parker",
-		"line": "When have I ever dropped one?",
-		"where": "pending: l1_1_dawn_run"
-	},
-	{
-		"who": "mags",
-		"line": "High roof past the fish market. And back for breakfast. I'm not keeping it warm.",
-		"where": "pending: l1_1_dawn_run"
-	},
-	{
 		"who": "parker",
 		"line": "Mags. There's a photo of you in here.",
 		"where": "pending: l6_1_head_office"
