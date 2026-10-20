@@ -1,0 +1,264 @@
+{
+ "id": "l6_4_dead_air",
+ "title": "Dead Air",
+ "runner": "",
+ "atlas": true,
+ "atlas_tower": false,
+ "par_seconds": 150,
+ "start": {"at": [-0.0, 75, 22.05], "yaw": 0},
+ "route_origin": {"at": [-0.0, 75, 22.05], "yaw": 0},
+ "tower_views": [[0, 76.7, 34.0]],
+ "roof_look": "TILE",
+ "clutter": ["crate_wood", "crate_stack", "generator", "radio_set", "barrel_rust", "pallet"],
+ "city_open": [[-76.05, -76.05, 76.05, 76.05]],
+ "pieces": [
+  {"building": [0, 75.0, 0], "size": [44, 44], "look": "TOWER_BASE", "tower": true},
+  {"box": [0, 170.8, 0], "size": [44, 122.4, 44], "kind": "NEUTRAL", "look": "TOWER", "tower": true},
+  {"box": [0, 92.3, -21.5], "size": [44, 34.6, 1.0], "kind": "NEUTRAL", "look": "TOWER", "tower": true},
+  {"box": [-21.5, 92.3, 0], "size": [1.0, 34.6, 42], "kind": "NEUTRAL", "look": "TOWER", "tower": true},
+  {"box": [21.5, 92.3, 0], "size": [1.0, 34.6, 42], "kind": "NEUTRAL", "look": "TOWER", "tower": true},
+  {"box": [0, 94.6, 21.5], "size": [44, 30.0, 1.0], "kind": "NEUTRAL", "look": "TOWER", "tower": true},
+  {"box": [-14.5, 77.3, 21.5], "size": [15.0, 4.6, 1.0], "kind": "NEUTRAL", "look": "TOWER", "tower": true},
+  {"box": [14.5, 77.3, 21.5], "size": [15.0, 4.6, 1.0], "kind": "NEUTRAL", "look": "TOWER", "tower": true},
+  {"box": [0, 92.1, 0], "size": [17.9, 25.0, 17.9], "kind": "NEUTRAL", "look": "TILE", "tower": true},
+  {"box": [-6.0, 104.8, 0], "size": [30.0, 0.4, 42.0], "kind": "NEUTRAL", "look": "WOOD", "tower": true},
+  {"box": [15.0, 104.8, -12.025], "size": [12.0, 0.4, 17.95], "kind": "NEUTRAL", "look": "WOOD", "tower": true},
+  {"box": [15.0, 104.8, 14.975], "size": [12.0, 0.4, 12.05], "kind": "NEUTRAL", "look": "WOOD", "tower": true},
+  {"box": [0, 107.3, -9.1], "size": [18.5, 4.6, 0.3], "kind": "NEUTRAL", "look": "TILE", "tower": true},
+  {"box": [9.1, 107.3, 0], "size": [0.3, 4.6, 17.9], "kind": "NEUTRAL", "look": "TILE", "tower": true},
+  {"box": [-9.1, 107.3, -5.4], "size": [0.3, 4.6, 7.1], "kind": "NEUTRAL", "look": "TILE", "tower": true},
+  {"box": [-9.1, 107.3, 5.4], "size": [0.3, 4.6, 7.1], "kind": "NEUTRAL", "look": "TILE", "tower": true},
+  {"box": [-9.1, 108.95, 0], "size": [0.3, 1.3, 3.7], "kind": "NEUTRAL", "look": "TILE", "tower": true},
+  {"box": [-7.6, 107.3, 9.1], "size": [2.7, 4.6, 0.3], "kind": "NEUTRAL", "look": "TILE", "tower": true},
+  {"box": [7.6, 107.3, 9.1], "size": [2.7, 4.6, 0.3], "kind": "NEUTRAL", "look": "TILE", "tower": true},
+  {"box": [-6.3, 107.3, 14.95], "size": [0.3, 4.6, 12.0], "kind": "NEUTRAL", "look": "TILE", "tower": true},
+  {"label": "ON AIR", "at": [0, 108.6, 9.299999999999999], "size": 0.9}
+ ],
+ "objectives": [
+  {"type": "reach", "name": "the server floor", "text": "Fight up through the studio floors", "at": "@Server floor"},
+  {"type": "reach", "name": "the transmitter room", "text": "Keep going up", "at": "@Transmitter room"},
+  {"type": "reach", "name": "the studio", "text": "Up to the studio", "at": "@Studio"},
+  {"type": "reach", "name": "Echo", "text": "Get to Echo", "at": "end"}
+ ],
+ "route": [
+  {"roof": 6, "y": 75.0, "deck": true, "rail": 0, "do": [
+   {"label": "DEAD AIR", "at": 2, "size": 1.0}
+  ]},
+  {"roof": 4, "building": false, "do": [
+   {"checkpoint": "Offices", "at": 1, "objective": 0}
+  ]},
+  {"fork": [
+   {"roof": 13, "building": false, "bare": true, "do": [
+    {"piece": {"box": [6.0, 2.3, -6.5], "size": [0.3, 4.6, 13.0], "kind": "NEUTRAL", "look": "TILE"}, "at": 0},
+    {"piece": {"box": [-6.0, 1.2, -6.5], "size": [0.2, 2.4, 13.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 0},
+    {"piece": {"box": [0, 2.5, -6.5], "size": [12.0, 0.2, 13.0], "kind": "NEUTRAL", "look": "RUST"}, "at": 0},
+    {"label": "VENTS", "x": 0, "at": 0.5, "size": 0.6},
+    {"slide": true, "at": 5},
+    {"slide": true, "at": 10.5}
+   ]}
+  ], "side": -1, "spread": 12, "plaza": 8, "building": false},
+  {"roof": 13, "building": false, "do": [
+   {"prop": "radio_set", "x": -5.2, "at": -6},
+   {"label": "TRANSMITTER", "x": -5.4, "at": -6, "size": 0.5},
+   {"encounter": "offices", "at": 1, "length": 12, "raiders": [[-3.6, 6, 0.2], [3.6, 10, 0.5]], "enemies": [{"type": "hunter", "x": 3, "d": 12, "wake": 0.6}]}
+  ]},
+  {"join": true, "plaza": 6, "building": false},
+  {"turn": "right", "size": 12.0, "deck": false, "rail": false, "building": false},
+  {"roof": 2.9499999999999993, "building": false},
+  {"turn": "right", "size": 12.0, "deck": false, "rail": false, "building": false},
+  {"roof": 5.899999999999999, "building": false},
+  {"ramp_up": 80.0, "length": 12, "width": 12},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"checkpoint": "Server floor", "at": 1, "objective": 1},
+   {"label": "SERVERS", "x": -5.6, "at": 3, "size": 0.6},
+   {"prop": "generator", "x": 4.6, "at": 3.0},
+   {"prop": "radio_set", "x": -4.6, "at": 8.0},
+   {"prop": "generator", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "generator", "x": 4.6, "at": 3.0},
+   {"prop": "radio_set", "x": -4.6, "at": 8.0},
+   {"prop": "generator", "x": 4.6, "at": 13.0},
+   {"encounter": "server floor", "at": 2, "length": 16, "troopers": [[-3.6, 6, 0.2], [3.6, 12, 0.6]], "enemies": [{"type": "shield", "x": 0, "d": 16, "wake": 0.8}]}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "generator", "x": 4.6, "at": 3.0},
+   {"prop": "radio_set", "x": -4.6, "at": 8.0},
+   {"prop": "generator", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 5.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "generator", "x": 4.6, "at": 3.0}
+  ]},
+  {"ramp_up": 85.0, "length": 12, "width": 12},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"label": "GREEN ROOM", "x": -5.6, "at": 3, "size": 0.6},
+   {"prop": "crate_stack", "x": 4.6, "at": 3.0},
+   {"prop": "barrel_rust", "x": -4.6, "at": 8.0},
+   {"prop": "crate_stack", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "crate_stack", "x": 4.6, "at": 3.0},
+   {"prop": "barrel_rust", "x": -4.6, "at": 8.0},
+   {"prop": "crate_stack", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "crate_stack", "x": 4.6, "at": 3.0},
+   {"prop": "barrel_rust", "x": -4.6, "at": 8.0},
+   {"prop": "crate_stack", "x": 4.6, "at": 13.0},
+   {"encounter": "green room", "at": 2, "length": 16, "raiders": [[-3.6, 6, 0], [3.6, 10, 0.4], [-3.6, 15, 0.8]], "enemies": [{"type": "hunter", "x": 3, "d": 14, "wake": 0.6}]}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 5.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "crate_stack", "x": 4.6, "at": 3.0}
+  ]},
+  {"ramp_up": 90.0, "length": 12, "width": 12},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"checkpoint": "Transmitter room", "at": 1, "objective": 2},
+   {"label": "TRANSMITTER", "x": -5.6, "at": 3, "size": 0.6},
+   {"prop": "generator", "x": 4.6, "at": 3.0},
+   {"prop": "vent_stack", "x": -4.6, "at": 8.0},
+   {"prop": "generator", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "generator", "x": 4.6, "at": 3.0},
+   {"prop": "vent_stack", "x": -4.6, "at": 8.0},
+   {"prop": "generator", "x": 4.6, "at": 13.0},
+   {"encounter": "stairwell squad", "at": 2, "length": 16, "troopers": [[-3.6, 6, 0.2], [3.6, 11, 0.5], [3.6, 16, 0.9]], "enemies": [{"type": "marksman", "x": -4.0, "d": 16, "wake": 1.0}]}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "generator", "x": 4.6, "at": 3.0},
+   {"prop": "vent_stack", "x": -4.6, "at": 8.0},
+   {"prop": "generator", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 5.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "generator", "x": 4.6, "at": 3.0}
+  ]},
+  {"ramp_up": 95.0, "length": 12, "width": 12},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"label": "ARCHIVE", "x": -5.6, "at": 3, "size": 0.6},
+   {"prop": "crate_wood", "x": 4.6, "at": 3.0},
+   {"prop": "pallet", "x": -4.6, "at": 8.0},
+   {"prop": "crate_wood", "x": 4.6, "at": 13.0},
+   {"encounter": "elite crew", "at": 2, "length": 16, "raiders": [[-3.6, 8, 0.2]], "enemies": [{"type": "hunter", "x": 3, "d": 8, "wake": 0.4}, {"type": "hunter", "x": -3, "d": 15, "wake": 0.8}]}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "crate_wood", "x": 4.6, "at": 3.0},
+   {"prop": "pallet", "x": -4.6, "at": 8.0},
+   {"prop": "crate_wood", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "crate_wood", "x": 4.6, "at": 3.0},
+   {"prop": "pallet", "x": -4.6, "at": 8.0},
+   {"prop": "crate_wood", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 5.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "crate_wood", "x": 4.6, "at": 3.0}
+  ]},
+  {"ramp_up": 100.0, "length": 12, "width": 12},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"label": "TOP FLOOR", "x": -5.6, "at": 3, "size": 0.6},
+   {"prop": "crate_stack", "x": 4.6, "at": 3.0},
+   {"prop": "radio_set", "x": -4.6, "at": 8.0},
+   {"prop": "crate_stack", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "crate_stack", "x": 4.6, "at": 3.0},
+   {"prop": "radio_set", "x": -4.6, "at": 8.0},
+   {"prop": "crate_stack", "x": 4.6, "at": 13.0}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 17.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "crate_stack", "x": 4.6, "at": 3.0},
+   {"prop": "radio_set", "x": -4.6, "at": 8.0},
+   {"prop": "crate_stack", "x": 4.6, "at": 13.0},
+   {"encounter": "the last door", "at": 2, "length": 16, "troopers": [[-3.6, 6, 0.2], [3.6, 10, 0.5], [-3.6, 15, 0.8]], "enemies": [{"type": "shield", "x": 0, "d": 15, "wake": 0.7}]}
+  ]},
+  {"turn": "right", "size": 12.0, "deck": true, "rail": false},
+  {"roof": 5.9, "deck": true, "rail": false, "bare": true, "do": [
+   {"prop": "crate_stack", "x": 4.6, "at": 3.0}
+  ]},
+  {"ramp_up": 105.0, "length": 12, "width": 12},
+  {"turn": "right", "size": 12.0, "deck": false, "rail": false, "building": false},
+  {"roof": 2.9499999999999993, "building": false, "bare": true},
+  {"turn": "right", "size": 12.0, "deck": false, "rail": false, "building": false},
+  {"roof": 10, "building": false, "bare": true, "do": [
+   {"checkpoint": "Studio", "at": 0.5, "objective": 3},
+   {"set_piece": "trap", "at": 12.5, "trigger": 7.5, "radius": 2.5}
+  ]}
+ ],
+ "radio": [
+  {"on": "start", "who": "mags", "line": "Studio's on the top floor. He's put everything he's got between you and her.", "must": true},
+  {"on": "start", "who": "host", "line": "Port Calder, this is it. The final segment. Please hold your applause until he's dead.", "must": true},
+  {"on": "go", "who": "echo", "line": "Parker, the vents. Behind the transmitter. I left 'em open.", "must": true},
+  {"on": "checkpoint:1", "who": "vell", "line": "All units to the studio. This ends tonight.", "must": true},
+  {"on": "set_piece:trap", "who": "parker", "line": "Echo.", "must": true},
+  {"on": "set_piece:trap", "who": "echo", "line": "You're late.", "must": true},
+  {"on": "set_piece:trap", "who": "parker", "line": "Traffic.", "must": true},
+  {"on": "set_piece:trap", "who": "host", "line": "Oh, I love a reunion. Okay. This is my favourite bit.", "must": true},
+  {"on": "set_piece:trap", "who": "host", "line": "Port Calder... the grand finale.", "must": true},
+  {"on": "set_piece:trap", "who": "echo", "line": "Parker! Parker, you're pinned. The whole floor's on fire.", "must": true},
+  {"on": "set_piece:trap", "who": "parker", "line": "Draw him off me. Run. I'll talk you down.", "must": true}
+ ],
+ "chatter": {
+  "headshot": [
+   {"who": "host", "line": "Ah! On air! You can't do that on air!"},
+   {"who": "mags", "line": "Nice. Keep going."},
+   {"who": "echo", "line": "Ha! Yes!"},
+   {"who": "host", "line": "That was my best sound guy. Well. My only sound guy."},
+   {"who": "mags", "line": "Clean."},
+   {"who": "echo", "line": "Nice. Do that again."}
+  ],
+  "bail": [
+   {"who": "host", "line": "Ooh, he's tangled in the mic cables! Classic rookie."},
+   {"who": "mags", "line": "Up. You're so close."},
+   {"who": "echo", "line": "Get up, get up, get up."},
+   {"who": "host", "line": "Down he goes! And that is why we don't run in the studio."},
+   {"who": "host", "line": "Tripped on my carpet! That's imported, Parker."}
+  ],
+  "combo": [
+   {"who": "host", "line": "Folks, he's doing this in front of the whole city. In my building."},
+   {"who": "echo", "line": "Look at you. You never could walk anywhere like a normal person."},
+   {"who": "mags", "line": "Lovely. Keep pushing."},
+   {"who": "host", "line": "Stop! Stop it! That's... no, actually, that's great radio. Keep going."},
+   {"who": "host", "line": "Not in my studio. Not in my lovely studio."},
+   {"who": "mags", "line": "That's it. Almost there."}
+  ],
+  "kill": [
+   {"who": "host", "line": "That was security! I need those!"},
+   {"who": "mags", "line": "Good. Don't stop."},
+   {"who": "host", "line": "That's coming out of your fee, Parker. Oh, you don't get a fee? Well, now you owe me."},
+   {"who": "echo", "line": "One less. Keep coming, I'm right here."},
+   {"who": "host", "line": "Somebody, anybody, please stop letting him do that."},
+   {"who": "host", "line": "That was my floor manager. I'll need a new one."}
+  ],
+  "down": [
+   {"who": "echo", "line": "No. No, no. Get up. Parker, get up."},
+   {"who": "host", "line": "He's down! Oh, Echo, the look on your face. I wish radio had pictures."},
+   {"who": "mags", "line": "Up, kid. Last stretch."},
+   {"who": "mags", "line": "Up. You're nearly at her. Get up."},
+   {"who": "host", "line": "And he's down! So close, folks. So, so close."}
+  ],
+  "tape": [
+   {"who": "echo", "line": "...the safe code's his birthday. Of course it is. He made me sing at it."},
+   {"who": "echo", "line": "...he does the callers himself, you know. The voices. Half the people who ring in are him."},
+   {"who": "echo", "line": "...he keeps the old tapes in the office safe. Twenty years of lies. All labelled, too."}
+  ]
+ }
+}
