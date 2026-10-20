@@ -193,7 +193,10 @@ func _process(frame_delta: float) -> void:
 	_detail_label.text = "momentum %.0f%%   vertical %+.1f m/s   height %.1f m   %d fps" % [
 		player.momentum * 100.0, player.velocity.y, player.global_position.y, Engine.get_frames_per_second()]
 	_rotation_label.text = rotation_text(player)
-	if _pistol:
+	if _pistol and not _pistol.is_armed():
+		# Carrying instead of the gun: what's in hand, no ammo.
+		_ammo_label.text = "" if _pistol.held == "hands" else _pistol.held.replace("_", " ").to_upper()
+	elif _pistol:
 		var mode := "AUTO" if _pistol.full_auto else "SEMI"
 		_ammo_label.text = ("RELOADING" if _pistol.is_reloading() else "%d / %d" % [_pistol.ammo, _pistol.stats.magazine]) + "\n" + mode
 	if SlowMo.speed < 1.0:

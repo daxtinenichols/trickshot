@@ -439,6 +439,10 @@ func _add_aim(pose: Dictionary) -> void:
 ## How much of the gun-arm pose applies: full when running, standing or in
 ## the air; less while the hands are busy (climbing, mantling, vaulting).
 func _gun_hold_weight() -> float:
+	# Empty hands (Pistol.held "hands") swing free.
+	var gun: Node = player.get("weapon")
+	if gun != null and gun.get("held") == "hands":
+		return 0.0
 	var busy := weight("climb") + weight("mantle_hang") + weight("mantle_push") + weight("vault") * 0.7 \
 		+ weight("stun") + weight("tuck") * 0.4 + weight("wallrun") * 0.3
 	return clampf(1.0 - busy, 0.0, 1.0)
