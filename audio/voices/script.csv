@@ -1,6 +1,46 @@
 who,file,where,line
-host,host/64618e95e6dc.ogg,brief: m06 Anchor Store,He's on the roof! And guess who's waiting for him over at the car park. Go on. Guess.
-mags,mags/1d1d3d07867f.ogg,brief: m06 Anchor Store,"Department store. There's a roof hatch, top floor, back corner. Up you go."
+host,host/2a150828e1c6.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Ooh! Did everyone see that? Our Juno, folks. Remember the name."
+host,host/bc111000b468.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Toll's one arm and one leg, Parker. Or the other way round. We're flexible."
+juno,juno/d6009410a791.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Not that way, Parker. Take the stairs like everyone else."
+mags,mags/0afd152bb587.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",I know who it was. Keep moving.
+mags,mags/30105421ec95.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",They're sat right on our route. How do they know our routes?
+mags,mags/4562964e7c87.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","...Keep moving, love."
+mags,mags/c941cee02204.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Toll tower. Then the bridge, then the mall. Nearly halfway, love."
+parker,parker/6e42b34f391a.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)","Mags. Crane, up top. Red scarf."
+parker,parker/98080ba496c4.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",Juno!
+parker,parker/d95405713f64.ogg,"brief: Stage 2: Warehouse Row and the Glass District (3 levels, the Static; replaces m02, m03)",That was Juno.
+host,host/86e9957c0159.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Feeding time! I do love a nature segment.
+host,host/debb57860f50.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)","Folks, he's gone down the drain. Ha. I've been waiting all day to say that."
+mags,mags/053db851872b.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Storm drain. It runs under the bank and comes up at the mall. Don't stop in there.
+mags,mags/319d16b83fac.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Pipe's wide enough. Run the wall if you're brave.
+mags,mags/754b219fc1f0.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",See that box on the lamppost? That's one of Echo's. She put one on every block that'd let her.
+mags,mags/9a2083f05fe6.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Especially down here. Nobody else was going to.
+mags,mags/f5f8be164156.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)","They were people, Parker. Stayed in the dust too long. Don't let them get hold of you."
+parker,parker/1e212d26be41.ogg,"brief: Stage 3: The Silt (2 levels, Hollows; replaces m04)",Even down here?
+echo,echo/12835f928ba0.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Porch light's on, courier. I'm coming home."
+host,host/ede76c374812.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Hang on. Who's that in his ear? Is that... that's Margaret! Folks, she used to produce this show. Hi, Mags. Still sulking?"
+host,host/f905d65ff2d8.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Into Hargrove and Sons! Mind the perfume counter, it's mostly Hollows now."
+juno,juno/110ed4682303.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",You want to know how they found your camp? I drew them the routes. All of them.
+juno,juno/313f65389975.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Hey, stranger. Keep up."
+juno,juno/bec6219f6314.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Kettle Row's had no water for two years, Parker. My brother's eleven. Work it out."
+mags,mags/2f1504d0d7b1.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","It's an arena, Parker. Don't stop moving in there."
+mags,mags/40438fd34e57.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Parker, far walkway. That's... oh, that's Juno."
+mags,mags/5ccfb5d51463.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",Two years now. Her block's taps went dry. I'll tell you the rest when you're not getting shot at.
+mags,mags/8c13f50a94b3.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)","Twenty years ago. Later, Parker. Run."
+mags,mags/e62d3d874aae.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",She's not lying. Doesn't make it alright.
+mags,mags/fcbc24fddb9e.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",Ignore him.
+parker,parker/2673ce8234cc.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",Why?
+parker,parker/b637ec86e1bf.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",You produced his show?
+parker,parker/ca78b33688b0.ogg,"brief: Stage 4: Meridian (2 levels; replaces m05, m06, m07)",She's working for him?
+host,host/7f39f2bc580c.ogg,"brief: Stage 6: Calder House and the Tower (4 levels; replaces m09b, m09c, m10, m11)","Somebody cut the scaffold! What do you mean, with what?"
+host,host/eb037699ef75.ogg,"brief: Stage 6: Calder House and the Tower (4 levels; replaces m09b, m09c, m10, m11)","She told him to come up the outside, folks. On my show. I heard that, sweetheart."
+mags,mags/7ba39f445dbe.ogg,brief: m08 Storm Channels,Helmets. First shot knocks it off. Second one counts.
+mags,mags/b10b2d3f61b8.ogg,brief: m08 Storm Channels,The big Hollow's armoured on the front. Get behind it.
+mags,mags/d845924261cc.ogg,brief: m08 Storm Channels,Helmet's off. Finish it.
+echo,echo/0879fd6d41a8.ogg,brief: m09 Rail Bridge,"Go left at the junction, courier. Left! The right track just ends."
+host,host/212a253cf537.ogg,brief: m09 Rail Bridge,Who keeps doing that?
+host,host/2271e42bcb41.ogg,brief: m09 Rail Bridge,Oh no. Section nine's gone. Oh well.
+host,host/6977a55e6b21.ogg,brief: m09c Skybridge,"I'm bleeding, folks, and he's doing flips. Is that fair? Call in."
 echo,echo/2a010073f168.ogg,l1_1_dawn_run,Don't drop this one.
 echo,echo/5f05e116c7f0.ogg,l1_1_dawn_run,Tuesday.
 echo,echo/75634e8fa467.ogg,l1_1_dawn_run,Hey. Porch light's on.
@@ -77,6 +117,177 @@ mags,mags/fa2124529d1c.ogg,l1_2_the_yard,"Chain three different moves before you
 mags,mags/faeb0f051c17.ogg,l1_2_the_yard,Alright. That's as ready as anybody gets for something this stupid.
 parker,parker/4cdca9a91d26.ogg,l1_2_the_yard,Not every time.
 parker,parker/ed0027ce9a4f.ogg,l1_2_the_yard,"Thanks, Mags."
+echo,echo/139c4cd7b4d8.ogg,l5_1_storm_channels,"...the channels used to fill every spring. Now they're dry and the Ward's tanks are full. Funny, that."
+echo,echo/3e80223a0e30.ogg,l5_1_storm_channels,...the Ward pays him in water. Every week. That's what 'sponsor' means.
+echo,echo/d09ba998a3a6.ogg,l5_1_storm_channels,...the Ward closed the channels the year the rain stopped. Nobody ever asked why.
+host,host/0ad98b21abf1.ogg,l5_1_storm_channels,"Lovely line, Parker. The Ward hates that, by the way."
+host,host/1f25e4904ad1.ogg,l5_1_storm_channels,"And we're back, Port Calder. Our sponsors are watching tonight, so... Parker, darling, could you die quietly?"
+host,host/1f49de8b36b0.ogg,l5_1_storm_channels,Ooh. The Commander's not gonna like that. I sort of do.
+host,host/453c4d4a08d8.ogg,l5_1_storm_channels,Careful! The sponsor charges for concrete.
+host,host/457fd550be9d.ogg,l5_1_storm_channels,"Look at him use the banks! The Ward built those for water, Parker. Not for you."
+host,host/5a0f1db23785.ogg,l5_1_storm_channels,Ha! Wet concrete. Nobody's cleaned these channels in years.
+host,host/681c161bd1d7.ogg,l5_1_storm_channels,"Ooh, through the visor. The sponsor's gonna send me an invoice."
+host,host/6c25637a404f.ogg,l5_1_storm_channels,"Oh, that's one of the sponsor's. Somebody start the paperwork."
+host,host/840f9c3537a9.ogg,l5_1_storm_channels,"Oh, he's in the gutter! Where he belongs, honestly."
+host,host/845b96dda08b.ogg,l5_1_storm_channels,Down he goes! And... we'll be right back.
+host,host/912c95096f3c.ogg,l5_1_storm_channels,"Folks, please. Stop waving at him. You're encouraging him."
+host,host/a3dc10e91609.ogg,l5_1_storm_channels,"Oops! Sorry, Commander. That one's coming out of his pay."
+host,host/b1eb6c34a2a6.ogg,l5_1_storm_channels,"Quick reminder from the sponsor, folks: water's a privilege. Parker's probably drinking some right now. For free."
+host,host/c1ffe7dfd527.ogg,l5_1_storm_channels,"Another one for the sponsor's paperwork! I'll sign it, I'll sign it."
+host,host/cd57b8fb8463.ogg,l5_1_storm_channels,You heard the man. Whatever it costs. I'll send him the bill.
+host,host/f10e24f93ec2.ogg,l5_1_storm_channels,"Commander, if you're listening, your boys are getting lapped."
+host,host/f7849d1aa323.ogg,l5_1_storm_channels,Oh dear. That's a Ward helmet rolling down the channel.
+host,host/f7b1f1cab5db.ogg,l5_1_storm_channels,And he's down! The Ward thank you for your cooperation.
+mags,mags/0d712220eef7.ogg,l5_1_storm_channels,Up. Keep the speed.
+mags,mags/3d799de64023.ogg,l5_1_storm_channels,Beautiful. Keep it up.
+mags,mags/3dd442ca633c.ogg,l5_1_storm_channels,Get up. Stay out of their crossfire.
+mags,mags/5f18ab4dfdbb.ogg,l5_1_storm_channels,Down. Don't wait for his mates.
+mags,mags/667fcc37c4ab.ogg,l5_1_storm_channels,Up! Squads flank. Keep moving.
+mags,mags/8d33b7102f02.ogg,l5_1_storm_channels,That's the line. Stay on it.
+mags,mags/a4dd27ce1332.ogg,l5_1_storm_channels,Nice shot.
+mags,mags/a5f2397ee395.ogg,l5_1_storm_channels,"Did he just... Parker, that's a listener. They're helping you."
+mags,mags/b3673a101f10.ogg,l5_1_storm_channels,Shake it off. Get back on the bank.
+mags,mags/c9ccd6672ab7.ogg,l5_1_storm_channels,"Up. Don't trade with a squad. Move, then shoot."
+mags,mags/cd7215d59223.ogg,l5_1_storm_channels,"Fresh orange. That's not my mark. Somebody's out there marking you a route, Parker."
+mags,mags/d30e8fa0f61f.ogg,l5_1_storm_channels,"Good. Keep moving, there'll be more."
+mags,mags/da7a355cae09.ogg,l5_1_storm_channels,"That's it. Go for the head, the rest is plated."
+mags,mags/de51a721d1bb.ogg,l5_1_storm_channels,That's it. Keep the speed through the banks.
+mags,mags/e4400679138c.ogg,l5_1_storm_channels,"Channels go straight to the west side. That's Ward land. Their water, too. Be quick."
+mags,mags/e9e5741b67f1.ogg,l5_1_storm_channels,These ones work in teams. They don't miss twice. Don't give them a still target.
+vell,vell/440c9fc2d1b4.ogg,l5_1_storm_channels,The courier is not to reach the tower. Whatever it costs.
+vell,vell/d2a855d3a372.ogg,l5_1_storm_channels,"Courier sighted. Squad two, close the sluice line."
+echo,echo/472933476864.ogg,l5_2_rail_line,"...Porch light's on the left, courier. Left."
+echo,echo/bf2bee8094ad.ogg,l5_2_rail_line,"...there's a pipe under this bridge, runs all the way to the reservoir. That's what the Ward's really guarding."
+echo,echo/dee9e7326a18.ogg,l5_2_rail_line,...the trains stopped the same week the Ward took the reservoir. They said it was the power. It wasn't.
+host,host/14c6faec0422.ogg,l5_2_rail_line,"Ooh. That's another one of Vell's. He keeps count, you know."
+host,host/16bd346a1fb3.ogg,l5_2_rail_line,"And he's off the bridge! I did warn him. Well, I blew it up, which is sort of a warning."
+host,host/2152122be9d9.ogg,l5_2_rail_line,"Ooh, right off the bridge! That's a long way down for a helmet."
+host,host/36816283e4ba.ogg,l5_2_rail_line,"Ooh, the sponsor felt that one."
+host,host/40821e2d319b.ogg,l5_2_rail_line,"And I'm paid to make it a good show, Commander. I can do both."
+host,host/433ca7452178.ogg,l5_2_rail_line,"And a drone goes down! Those aren't cheap, Parker. I've seen the invoice."
+host,host/4dca55d49083.ogg,l5_2_rail_line,Who keeps getting on my frequency?
+host,host/59741be17438.ogg,l5_2_rail_line,"There goes section four. Folks, I am running out of bridge."
+host,host/5e64db4f4903.ogg,l5_2_rail_line,"Section nine, gone! Tell him what he's won, Margaret!"
+host,host/68fe94bfa025.ogg,l5_2_rail_line,Off the rails! I've been waiting all night to say that.
+host,host/9523bc11c466.ogg,l5_2_rail_line,"Another one off the sponsor's payroll. They'll thank you, Parker. Saves 'em money."
+host,host/9f30096f166e.ogg,l5_2_rail_line,"Splash! No, wait, there's no water. Thud!"
+host,host/a8ccac5a4346.ogg,l5_2_rail_line,"He's using my wreckage! That's my wreckage, Parker!"
+host,host/afacf4cc07d8.ogg,l5_2_rail_line,"Mind the gap, Parker! Seriously. I blew it up."
+host,host/b11e5f4d9608.ogg,l5_2_rail_line,"Somebody tell the Ward they're down another one. Actually, don't, they'll blame me."
+host,host/b844b5f99d9e.ogg,l5_2_rail_line,My crew and the sponsor's boys don't really... mix. Bit of history. Don't ask.
+host,host/bd7ee4bea1ac.ogg,l5_2_rail_line,I blow up a bridge and he turns it into a stunt show. I hate this.
+host,host/c1e0d70bbd9e.ogg,l5_2_rail_line,"Courier down on the line! Delays expected, folks."
+host,host/c71a6542ee65.ogg,l5_2_rail_line,"Yikes. Commander, I'd stop sending the tall ones."
+host,host/c918bde429d7.ogg,l5_2_rail_line,"New rule tonight, folks! I'm changing the route as we go. Let's see how he likes that."
+host,host/d422af77288a.ogg,l5_2_rail_line,Down on the tracks! Somebody check the timetable.
+host,host/d84190b558d0.ogg,l5_2_rail_line,Down he goes! Shall I hold the train? There's no train.
+host,host/f7ab9fd2612c.ogg,l5_2_rail_line,"Ooh, tripped on the tracks! Classic."
+host,host/fed3c55baac4.ogg,l5_2_rail_line,"Okay, who's paying for this guy? Because it isn't me."
+mags,mags/0ca92e2ba367.ogg,l5_2_rail_line,Up. Watch your feet on the sleepers.
+mags,mags/1086f1c12465.ogg,l5_2_rail_line,"Good. Keep moving, the marksmen can't track you if you move."
+mags,mags/2aac5535552a.ogg,l5_2_rail_line,"Off the bridge. Back up, go again."
+mags,mags/2ba5c2d51dbb.ogg,l5_2_rail_line,Drones. With guns. Watch for the flash before they fire. One hit and they drop.
+mags,mags/413bc20761ad.ogg,l5_2_rail_line,"There's the tower. Up you go, kid."
+mags,mags/5a2b967315d9.ogg,l5_2_rail_line,Don't answer him.
+mags,mags/5d9919a80665.ogg,l5_2_rail_line,See that? The Ward won't go anywhere near the Static. They hate each other. Use it.
+mags,mags/72ac0a5fecd0.ogg,l5_2_rail_line,Good. Keep it going across.
+mags,mags/85349340f78a.ogg,l5_2_rail_line,Get up. Keep the drones behind you.
+mags,mags/9876d461e41a.ogg,l5_2_rail_line,Old train line. Last straight road to the tower.
+mags,mags/ad69580d4ccd.ogg,l5_2_rail_line,Up. Keep moving. Squads can't hit what won't stand still.
+mags,mags/af86a7ec7003.ogg,l5_2_rail_line,Lovely shot.
+mags,mags/b487219ecfa9.ogg,l5_2_rail_line,Up. Stay off the open deck.
+mags,mags/c0b155892338.ogg,l5_2_rail_line,That's the line. Keep it.
+mags,mags/ca19ef6bf707.ogg,l5_2_rail_line,That's it. That's the run.
+mags,mags/d23e29b504b9.ogg,l5_2_rail_line,"Get up, you're fine."
+mags,mags/ef0fa5ddb124.ogg,l5_2_rail_line,Good. Now the next one.
+vell,vell/e2ebc330a2a8.ogg,l5_2_rail_line,"Host, you were paid to end this."
+echo,echo/42e187f38f83.ogg,l6_1_head_office,...he's got a whole floor of tapes up there. Every show. Even the ones where people stopped calling in.
+echo,echo/b51999cc7939.ogg,l6_1_head_office,"...he rehearses in the mirror on the fourth floor. Out loud. Every line, even the 'spontaneous' ones."
+echo,echo/bba67783d361.ogg,l6_1_head_office,...the Ward's man comes up the back stairs on Fridays. Never the lift. Doesn't trust the lift.
+host,host/0051ae74582f.ogg,l6_1_head_office,Do you have to do the flips indoors?
+host,host/0f872d66a611.ogg,l6_1_head_office,Oi! That was my receptionist!
+host,host/1634552292e7.ogg,l6_1_head_office,"Big treat tonight, folks. I'm coming down to say hello. In person! Don't wait up."
+host,host/1a4bcc70b8dc.ogg,l6_1_head_office,That's a Ward lad. Somebody tell the Commander. Quietly.
+host,host/28f4f5b00f64.ogg,l6_1_head_office,Will somebody shoot him? I pay you people!
+host,host/3d891dd74fc2.ogg,l6_1_head_office,Look at this. You've tracked mud all over my carpet.
+host,host/4ab63ae005a5.ogg,l6_1_head_office,Courier down in the office! Somebody fetch a stapler. For the wound.
+host,host/52bfb1f3101f.ogg,l6_1_head_office,He's down! I could shoot him from up here. I won't. Probably.
+host,host/6682e2091365.ogg,l6_1_head_office,Slipped on a memo! Happens to the best of us.
+host,host/66e922d66a60.ogg,l6_1_head_office,Down! In my lobby! Lovely.
+host,host/6cc29a2b6bd9.ogg,l6_1_head_office,There he is! Huh. You're smaller in real life.
+host,host/72a8ba60c664.ogg,l6_1_head_office,Ow! Ow. Okay. That's coming out of your fee.
+host,host/75872bcff02f.ogg,l6_1_head_office,That was accounts. We needed accounts.
+host,host/87a738e310a7.ogg,l6_1_head_office,Ha! The cables. Everybody trips on the cables.
+host,host/881f3d65d08e.ogg,l6_1_head_office,"Who's gonna file all this now? You, Parker?"
+host,host/9622559585bb.ogg,l6_1_head_office,Not on the carpet!
+host,host/a15788d9a0fb.ogg,l6_1_head_office,"Folks, he's doing parkour through middle management. I've wanted to do that for years."
+host,host/b06f80114c1e.ogg,l6_1_head_office,Right in the face. In my own building. Unbelievable.
+host,host/c46e65f587fc.ogg,l6_1_head_office,"She was a lot more fun back then. Weren't you, Margaret?"
+host,host/d7f8fb6e217f.ogg,l6_1_head_office,"And you were told this'd be an easy contract, Commander. We've all been lied to."
+host,host/dad76ffb1fe8.ogg,l6_1_head_office,"Ooh, the desk got him! Desk one, courier nil."
+host,host/e5d95cfc5cff.ogg,l6_1_head_office,Stop vaulting my furniture!
+host,host/e7c3e5957ef7.ogg,l6_1_head_office,"Right. I'm leaving. Upstairs, everybody. And bring the wife."
+host,host/e8353e305d28.ogg,l6_1_head_office,"Back in five, folks. Don't touch that dial."
+host,host/e9188a9f3a88.ogg,l6_1_head_office,There goes payroll. Again.
+mags,mags/069a7eb877de.ogg,l6_1_head_office,"Get up, kid."
+mags,mags/14c9d8ddfe41.ogg,l6_1_head_office,Good. Don't stop for the rest.
+mags,mags/2226f5782f71.ogg,l6_1_head_office,Down. Keep moving.
+mags,mags/258d6d5d7b36.ogg,l6_1_head_office,Up. He wants you on the floor. Don't give him that.
+mags,mags/6ee744b0d1ac.ogg,l6_1_head_office,Up. He's watching from the balconies.
+mags,mags/6f51f331f67a.ogg,l6_1_head_office,Lovely. Keep him running.
+mags,mags/815a992b1578.ogg,l6_1_head_office,"He's going up. Echo's up there, Parker. She has to be."
+mags,mags/a90cf7c09d2f.ogg,l6_1_head_office,...Burn it.
+mags,mags/adf2048af5c0.ogg,l6_1_head_office,Good shot.
+mags,mags/b9d3020c4426.ogg,l6_1_head_office,Up. Keep off the open floor.
+mags,mags/c46f252b1603.ogg,l6_1_head_office,His office is on this floor. Corner one. It's always the corner one.
+mags,mags/ced2f90a98b2.ogg,l6_1_head_office,"That's Calder House. Radio people built it, back when radio was a job. He runs the show from in there."
+mags,mags/dddc6b162316.ogg,l6_1_head_office,That's him. That's actually him. Don't chase him into anything stupid.
+mags,mags/e1b35288af00.ogg,l6_1_head_office,"That's it. Keep your head down, he's above you."
+mags,mags/f891955ce099.ogg,l6_1_head_office,"Good. Keep moving, don't let him set up."
+parker,parker/aabddf5fdb42.ogg,l6_1_head_office,Mags. There's a photo of you in here.
+vell,vell/a3d75e2f61a7.ogg,l6_1_head_office,You were told to stay in the studio.
+echo,echo/0987928a9615.ogg,l6_2_skybridge,"No, you don't. Listen. They're taking me up to the studio, he wants you watching when—"
+echo,echo/615979163bb5.ogg,l6_2_skybridge,...the first show he ever did is on a shelf in here somewhere. He sounded scared. I've heard it.
+echo,echo/9e643edfe3c0.ogg,l6_2_skybridge,"The scaffold! Come up the outside, they never watch the outside!"
+echo,echo/a169cd61aef7.ogg,l6_2_skybridge,"...there's a bridge off the roof, straight into the tower. If I'm not here when you get here, that's where they've taken me."
+echo,echo/be0251fdd259.ogg,l6_2_skybridge,Parker? Oh my god. Parker.
+echo,echo/bf5d6194315e.ogg,l6_2_skybridge,"...if he moves me to the tower, it'll be the top floor. The studio. I'll leave the vents open."
+host,host/10f4135a974b.ogg,l6_2_skybridge,Careful! That shelf's older than you.
+host,host/28384b338ae1.ogg,l6_2_skybridge,Not near the tapes! Not near the tapes!
+host,host/394d2f60be67.ogg,l6_2_skybridge,He's running across my whole back catalogue! Do you know how long that took me?
+host,host/61cd42b03360.ogg,l6_2_skybridge,Mind the tapes! Those are originals!
+host,host/8067c0c526da.ogg,l6_2_skybridge,That's one of the Ward's. The Commander's gonna write me a letter.
+host,host/89110a071208.ogg,l6_2_skybridge,"Over the edge! Oh, that's going in the archive."
+host,host/91955660984b.ogg,l6_2_skybridge,Careful in here! Twenty years of my best work. Don't you touch it.
+host,host/93bf3682480d.ogg,l6_2_skybridge,Ah! Right in front of the archive. Show some respect.
+host,host/9f36a18dd48f.ogg,l6_2_skybridge,"Another one gone. I'm running out of staff, Parker. Honestly."
+host,host/b15581e8df23.ogg,l6_2_skybridge,That one alphabetised the tapes! Do you know how rare that is?
+host,host/b47c35b046c9.ogg,l6_2_skybridge,"He's down! Hang on, let me find a window."
+host,host/c213d04d7dcc.ogg,l6_2_skybridge,"Whoops. Long way down. Trust me, I'd know."
+host,host/cc38089209e1.ogg,l6_2_skybridge,"Ooh. Sorry, folks. Bit of a technical problem there. Stay with us."
+host,host/d3cc88ededde.ogg,l6_2_skybridge,"Ugh. Fine. Somebody record that, I'll use it later."
+host,host/d52d2d091f04.ogg,l6_2_skybridge,He's down in the archive! Filed under 'gone'.
+host,host/ddbe436fd89e.ogg,l6_2_skybridge,"Ha! Down he goes, among the classics."
+host,host/ed77d81f1835.ogg,l6_2_skybridge,"Ooh, down he goes. Echo, sweetheart, you might want to look away."
+host,host/f5794cc749ea.ogg,l6_2_skybridge,"Folks, small update. I'm bleeding a bit. Show goes on."
+host,host/f66254eeaa93.ogg,l6_2_skybridge,"Folks, small update. He's still coming. Show goes on."
+mags,mags/03bd5ab2f8ec.ogg,l6_2_skybridge,Parker. I see her. On the bridge. Go!
+mags,mags/094953800c8c.ogg,l6_2_skybridge,"Fell. Back up, she's right there."
+mags,mags/0bdd7e926b88.ogg,l6_2_skybridge,Get up. Go.
+mags,mags/38c381ce6377.ogg,l6_2_skybridge,That's it. Up.
+mags,mags/4231fee403f4.ogg,l6_2_skybridge,"Rifles on the tanks. Stay low, keep moving, you're nearly there."
+mags,mags/4458a33d4ba5.ogg,l6_2_skybridge,Good. Up.
+mags,mags/6069ee217d78.ogg,l6_2_skybridge,"Parker? Parker, talk to me."
+mags,mags/77a5dfbc7dbf.ogg,l6_2_skybridge,Up. She's close.
+mags,mags/8ac53672fec6.ogg,l6_2_skybridge,Beautiful. Keep going.
+mags,mags/8e7efb34d92b.ogg,l6_2_skybridge,Get up. She's right above you.
+mags,mags/9ffec1915cc6.ogg,l6_2_skybridge,Up. Don't let them pin you in the stacks.
+mags,mags/c5d508deaf31.ogg,l6_2_skybridge,"Top floors, then the roof. There's a bridge across to the tower up there. If they're moving her, that's how."
+mags,mags/e4e96bff458c.ogg,l6_2_skybridge,That's it. Keep going up.
+parker,parker/2eef1e853c19.ogg,l6_2_skybridge,"Hey. Hey, I've got you."
+parker,parker/bb193077c579.ogg,l6_2_skybridge,I'm okay. I'm going up.
+vell,vell/4c91d79464ac.ogg,l6_2_skybridge,Take her across. Blow the bridge.
+vell,vell/d28fa7af681f.ogg,l6_2_skybridge,Prepare the transfer. Nobody crosses that bridge after her.
 host,host/134451922f23.ogg,m02_on_air,Hey! He was on the clock!
 host,host/13e9a4c4e004.ogg,m02_on_air,Ooh! That one's going in the highlights.
 host,host/1d09e260d872.ogg,m02_on_air,"Oh, he shoots too! Echo, sweetheart, you never told me that."
@@ -165,7 +376,6 @@ mags,mags/98dac2ce2518.ogg,m03_glass_district,Good. Keep moving.
 mags,mags/9fa72c651fee.ogg,m03_glass_district,"Don't stand there trading shots. Run, then shoot."
 mags,mags/a210b66f7cfa.ogg,m03_glass_district,"Spotters on the toll roof. They're calling you in to him. Shut 'em up, or just get past."
 mags,mags/a276417000c2.ogg,m03_glass_district,"Higher roof. Run at the ledge and jump, you'll get up."
-mags,mags/adf2048af5c0.ogg,m03_glass_district,Good shot.
 mags,mags/b46e27e4e683.ogg,m03_glass_district,"Parker, hang on. Something's off with that bridge."
 mags,mags/d0eb6514f5e0.ogg,m03_glass_district,That bridge is the only way over the Silt. Get across before he gets ideas.
 mags,mags/d165c0881bec.ogg,m03_glass_district,Nice. Go.
@@ -313,172 +523,6 @@ mags,mags/d2cebe619243.ogg,m07_parking_spiral,Parker. Those aren't raiders.
 mags,mags/dcfa2258e4ae.ogg,m07_parking_spiral,Up. She wants you to stop. Don't.
 parker,parker/5a94878ac718.ogg,m07_parking_spiral,Still running.
 vell,vell/72d50fc862b7.ogg,m07_parking_spiral,Port Calder. This is Commander Vell of the Ward. This broadcast has become a public safety concern. We'll be resolving it.
-echo,echo/139c4cd7b4d8.ogg,m08_storm_channels,"...the channels used to fill every spring. Now they're dry and the Ward's tanks are full. Funny, that."
-echo,echo/3e80223a0e30.ogg,m08_storm_channels,...the Ward pays him in water. Every week. That's what 'sponsor' means.
-echo,echo/d09ba998a3a6.ogg,m08_storm_channels,...the Ward closed the channels the year the rain stopped. Nobody ever asked why.
-host,host/0ad98b21abf1.ogg,m08_storm_channels,"Lovely line, Parker. The Ward hates that, by the way."
-host,host/1f25e4904ad1.ogg,m08_storm_channels,"And we're back, Port Calder. Our sponsors are watching tonight, so... Parker, darling, could you die quietly?"
-host,host/1f49de8b36b0.ogg,m08_storm_channels,Ooh. The Commander's not gonna like that. I sort of do.
-host,host/453c4d4a08d8.ogg,m08_storm_channels,Careful! The sponsor charges for concrete.
-host,host/457fd550be9d.ogg,m08_storm_channels,"Look at him use the banks! The Ward built those for water, Parker. Not for you."
-host,host/5a0f1db23785.ogg,m08_storm_channels,Ha! Wet concrete. Nobody's cleaned these channels in years.
-host,host/681c161bd1d7.ogg,m08_storm_channels,"Ooh, through the visor. The sponsor's gonna send me an invoice."
-host,host/6c25637a404f.ogg,m08_storm_channels,"Oh, that's one of the sponsor's. Somebody start the paperwork."
-host,host/840f9c3537a9.ogg,m08_storm_channels,"Oh, he's in the gutter! Where he belongs, honestly."
-host,host/845b96dda08b.ogg,m08_storm_channels,Down he goes! And... we'll be right back.
-host,host/a3dc10e91609.ogg,m08_storm_channels,"Oops! Sorry, Commander. That one's coming out of his pay."
-host,host/b1eb6c34a2a6.ogg,m08_storm_channels,"Quick reminder from the sponsor, folks: water's a privilege. Parker's probably drinking some right now. For free."
-host,host/c1ffe7dfd527.ogg,m08_storm_channels,"Another one for the sponsor's paperwork! I'll sign it, I'll sign it."
-host,host/cd57b8fb8463.ogg,m08_storm_channels,You heard the man. Whatever it costs. I'll send him the bill.
-host,host/f10e24f93ec2.ogg,m08_storm_channels,"Commander, if you're listening, your boys are getting lapped."
-host,host/f7849d1aa323.ogg,m08_storm_channels,Oh dear. That's a Ward helmet rolling down the channel.
-host,host/f7b1f1cab5db.ogg,m08_storm_channels,And he's down! The Ward thank you for your cooperation.
-mags,mags/0d712220eef7.ogg,m08_storm_channels,Up. Keep the speed.
-mags,mags/3d799de64023.ogg,m08_storm_channels,Beautiful. Keep it up.
-mags,mags/3dd442ca633c.ogg,m08_storm_channels,Get up. Stay out of their crossfire.
-mags,mags/5f18ab4dfdbb.ogg,m08_storm_channels,Down. Don't wait for his mates.
-mags,mags/667fcc37c4ab.ogg,m08_storm_channels,Up! Squads flank. Keep moving.
-mags,mags/7ba39f445dbe.ogg,m08_storm_channels,Helmets. First shot knocks it off. Second one counts.
-mags,mags/8d33b7102f02.ogg,m08_storm_channels,That's the line. Stay on it.
-mags,mags/a4dd27ce1332.ogg,m08_storm_channels,Nice shot.
-mags,mags/b10b2d3f61b8.ogg,m08_storm_channels,The big Hollow's armoured on the front. Get behind it.
-mags,mags/b3673a101f10.ogg,m08_storm_channels,Shake it off. Get back on the bank.
-mags,mags/c9ccd6672ab7.ogg,m08_storm_channels,"Up. Don't trade with a squad. Move, then shoot."
-mags,mags/cd7215d59223.ogg,m08_storm_channels,"Fresh orange. That's not my mark. Somebody's out there marking you a route, Parker."
-mags,mags/d30e8fa0f61f.ogg,m08_storm_channels,"Good. Keep moving, there'll be more."
-mags,mags/d845924261cc.ogg,m08_storm_channels,Helmet's off. Finish it.
-mags,mags/da7a355cae09.ogg,m08_storm_channels,"That's it. Go for the head, the rest is plated."
-mags,mags/de51a721d1bb.ogg,m08_storm_channels,That's it. Keep the speed through the banks.
-mags,mags/e4400679138c.ogg,m08_storm_channels,"Channels go straight to the west side. That's Ward land. Their water, too. Be quick."
-mags,mags/e9e5741b67f1.ogg,m08_storm_channels,These ones work in teams. They don't miss twice. Don't give them a still target.
-vell,vell/440c9fc2d1b4.ogg,m08_storm_channels,The courier is not to reach the tower. Whatever it costs.
-vell,vell/d2a855d3a372.ogg,m08_storm_channels,"Courier sighted. Squad two, close the sluice line."
-echo,echo/0879fd6d41a8.ogg,m09_rail_bridge,"Go left at the junction, courier. Left! The right track just ends."
-echo,echo/bf2bee8094ad.ogg,m09_rail_bridge,"...there's a pipe under this bridge, runs all the way to the reservoir. That's what the Ward's really guarding."
-echo,echo/dee9e7326a18.ogg,m09_rail_bridge,...the trains stopped the same week the Ward took the reservoir. They said it was the power. It wasn't.
-host,host/14c6faec0422.ogg,m09_rail_bridge,"Ooh. That's another one of Vell's. He keeps count, you know."
-host,host/16bd346a1fb3.ogg,m09_rail_bridge,"And he's off the bridge! I did warn him. Well, I blew it up, which is sort of a warning."
-host,host/212a253cf537.ogg,m09_rail_bridge,Who keeps doing that?
-host,host/2152122be9d9.ogg,m09_rail_bridge,"Ooh, right off the bridge! That's a long way down for a helmet."
-host,host/2271e42bcb41.ogg,m09_rail_bridge,Oh no. Section nine's gone. Oh well.
-host,host/36816283e4ba.ogg,m09_rail_bridge,"Ooh, the sponsor felt that one."
-host,host/40821e2d319b.ogg,m09_rail_bridge,"And I'm paid to make it a good show, Commander. I can do both."
-host,host/433ca7452178.ogg,m09_rail_bridge,"And a drone goes down! Those aren't cheap, Parker. I've seen the invoice."
-host,host/68fe94bfa025.ogg,m09_rail_bridge,Off the rails! I've been waiting all night to say that.
-host,host/9523bc11c466.ogg,m09_rail_bridge,"Another one off the sponsor's payroll. They'll thank you, Parker. Saves 'em money."
-host,host/9f30096f166e.ogg,m09_rail_bridge,"Splash! No, wait, there's no water. Thud!"
-host,host/a8ccac5a4346.ogg,m09_rail_bridge,"He's using my wreckage! That's my wreckage, Parker!"
-host,host/afacf4cc07d8.ogg,m09_rail_bridge,"Mind the gap, Parker! Seriously. I blew it up."
-host,host/b11e5f4d9608.ogg,m09_rail_bridge,"Somebody tell the Ward they're down another one. Actually, don't, they'll blame me."
-host,host/b844b5f99d9e.ogg,m09_rail_bridge,My crew and the sponsor's boys don't really... mix. Bit of history. Don't ask.
-host,host/bd7ee4bea1ac.ogg,m09_rail_bridge,I blow up a bridge and he turns it into a stunt show. I hate this.
-host,host/c1e0d70bbd9e.ogg,m09_rail_bridge,"Courier down on the line! Delays expected, folks."
-host,host/c71a6542ee65.ogg,m09_rail_bridge,"Yikes. Commander, I'd stop sending the tall ones."
-host,host/c918bde429d7.ogg,m09_rail_bridge,"New rule tonight, folks! I'm changing the route as we go. Let's see how he likes that."
-host,host/d422af77288a.ogg,m09_rail_bridge,Down on the tracks! Somebody check the timetable.
-host,host/d84190b558d0.ogg,m09_rail_bridge,Down he goes! Shall I hold the train? There's no train.
-host,host/f7ab9fd2612c.ogg,m09_rail_bridge,"Ooh, tripped on the tracks! Classic."
-host,host/fed3c55baac4.ogg,m09_rail_bridge,"Okay, who's paying for this guy? Because it isn't me."
-mags,mags/0ca92e2ba367.ogg,m09_rail_bridge,Up. Watch your feet on the sleepers.
-mags,mags/1086f1c12465.ogg,m09_rail_bridge,"Good. Keep moving, the marksmen can't track you if you move."
-mags,mags/2aac5535552a.ogg,m09_rail_bridge,"Off the bridge. Back up, go again."
-mags,mags/2ba5c2d51dbb.ogg,m09_rail_bridge,Drones. With guns. Watch for the flash before they fire. One hit and they drop.
-mags,mags/413bc20761ad.ogg,m09_rail_bridge,"There's the tower. Up you go, kid."
-mags,mags/5d9919a80665.ogg,m09_rail_bridge,See that? The Ward won't go anywhere near the Static. They hate each other. Use it.
-mags,mags/72ac0a5fecd0.ogg,m09_rail_bridge,Good. Keep it going across.
-mags,mags/85349340f78a.ogg,m09_rail_bridge,Get up. Keep the drones behind you.
-mags,mags/9876d461e41a.ogg,m09_rail_bridge,Old train line. Last straight road to the tower.
-mags,mags/ad69580d4ccd.ogg,m09_rail_bridge,Up. Keep moving. Squads can't hit what won't stand still.
-mags,mags/af86a7ec7003.ogg,m09_rail_bridge,Lovely shot.
-mags,mags/b487219ecfa9.ogg,m09_rail_bridge,Up. Stay off the open deck.
-mags,mags/c0b155892338.ogg,m09_rail_bridge,That's the line. Keep it.
-mags,mags/ca19ef6bf707.ogg,m09_rail_bridge,That's it. That's the run.
-mags,mags/d23e29b504b9.ogg,m09_rail_bridge,"Get up, you're fine."
-mags,mags/ef0fa5ddb124.ogg,m09_rail_bridge,Good. Now the next one.
-vell,vell/e2ebc330a2a8.ogg,m09_rail_bridge,"Host, you were paid to end this."
-echo,echo/42e187f38f83.ogg,m09b_head_office,...he's got a whole floor of tapes up there. Every show. Even the ones where people stopped calling in.
-echo,echo/b51999cc7939.ogg,m09b_head_office,"...he rehearses in the mirror on the fourth floor. Out loud. Every line, even the 'spontaneous' ones."
-echo,echo/bba67783d361.ogg,m09b_head_office,...the Ward's man comes up the back stairs on Fridays. Never the lift. Doesn't trust the lift.
-host,host/0051ae74582f.ogg,m09b_head_office,Do you have to do the flips indoors?
-host,host/0f872d66a611.ogg,m09b_head_office,Oi! That was my receptionist!
-host,host/1634552292e7.ogg,m09b_head_office,"Big treat tonight, folks. I'm coming down to say hello. In person! Don't wait up."
-host,host/1a4bcc70b8dc.ogg,m09b_head_office,That's a Ward lad. Somebody tell the Commander. Quietly.
-host,host/28f4f5b00f64.ogg,m09b_head_office,Will somebody shoot him? I pay you people!
-host,host/3d891dd74fc2.ogg,m09b_head_office,Look at this. You've tracked mud all over my carpet.
-host,host/4ab63ae005a5.ogg,m09b_head_office,Courier down in the office! Somebody fetch a stapler. For the wound.
-host,host/52bfb1f3101f.ogg,m09b_head_office,He's down! I could shoot him from up here. I won't. Probably.
-host,host/6682e2091365.ogg,m09b_head_office,Slipped on a memo! Happens to the best of us.
-host,host/66e922d66a60.ogg,m09b_head_office,Down! In my lobby! Lovely.
-host,host/6cc29a2b6bd9.ogg,m09b_head_office,There he is! Huh. You're smaller in real life.
-host,host/72a8ba60c664.ogg,m09b_head_office,Ow! Ow. Okay. That's coming out of your fee.
-host,host/75872bcff02f.ogg,m09b_head_office,That was accounts. We needed accounts.
-host,host/87a738e310a7.ogg,m09b_head_office,Ha! The cables. Everybody trips on the cables.
-host,host/881f3d65d08e.ogg,m09b_head_office,"Who's gonna file all this now? You, Parker?"
-host,host/9622559585bb.ogg,m09b_head_office,Not on the carpet!
-host,host/a15788d9a0fb.ogg,m09b_head_office,"Folks, he's doing parkour through middle management. I've wanted to do that for years."
-host,host/b06f80114c1e.ogg,m09b_head_office,Right in the face. In my own building. Unbelievable.
-host,host/d7f8fb6e217f.ogg,m09b_head_office,"And you were told this'd be an easy contract, Commander. We've all been lied to."
-host,host/dad76ffb1fe8.ogg,m09b_head_office,"Ooh, the desk got him! Desk one, courier nil."
-host,host/e5d95cfc5cff.ogg,m09b_head_office,Stop vaulting my furniture!
-host,host/e7c3e5957ef7.ogg,m09b_head_office,"Right. I'm leaving. Upstairs, everybody. And bring the wife."
-host,host/e8353e305d28.ogg,m09b_head_office,"Back in five, folks. Don't touch that dial."
-host,host/e9188a9f3a88.ogg,m09b_head_office,There goes payroll. Again.
-mags,mags/069a7eb877de.ogg,m09b_head_office,"Get up, kid."
-mags,mags/14c9d8ddfe41.ogg,m09b_head_office,Good. Don't stop for the rest.
-mags,mags/2226f5782f71.ogg,m09b_head_office,Down. Keep moving.
-mags,mags/258d6d5d7b36.ogg,m09b_head_office,Up. He wants you on the floor. Don't give him that.
-mags,mags/6ee744b0d1ac.ogg,m09b_head_office,Up. He's watching from the balconies.
-mags,mags/6f51f331f67a.ogg,m09b_head_office,Lovely. Keep him running.
-mags,mags/815a992b1578.ogg,m09b_head_office,"He's going up. Echo's up there, Parker. She has to be."
-mags,mags/b9d3020c4426.ogg,m09b_head_office,Up. Keep off the open floor.
-mags,mags/c46f252b1603.ogg,m09b_head_office,His office is on this floor. Corner one. It's always the corner one.
-mags,mags/ced2f90a98b2.ogg,m09b_head_office,"That's Calder House. Radio people built it, back when radio was a job. He runs the show from in there."
-mags,mags/dddc6b162316.ogg,m09b_head_office,That's him. That's actually him. Don't chase him into anything stupid.
-mags,mags/e1b35288af00.ogg,m09b_head_office,"That's it. Keep your head down, he's above you."
-mags,mags/f891955ce099.ogg,m09b_head_office,"Good. Keep moving, don't let him set up."
-vell,vell/a3d75e2f61a7.ogg,m09b_head_office,You were told to stay in the studio.
-echo,echo/0987928a9615.ogg,m09c_skybridge,"No, you don't. Listen. They're taking me up to the studio, he wants you watching when—"
-echo,echo/615979163bb5.ogg,m09c_skybridge,...the first show he ever did is on a shelf in here somewhere. He sounded scared. I've heard it.
-echo,echo/9e643edfe3c0.ogg,m09c_skybridge,"The scaffold! Come up the outside, they never watch the outside!"
-echo,echo/a169cd61aef7.ogg,m09c_skybridge,"...there's a bridge off the roof, straight into the tower. If I'm not here when you get here, that's where they've taken me."
-echo,echo/be0251fdd259.ogg,m09c_skybridge,Parker? Oh my god. Parker.
-echo,echo/bf5d6194315e.ogg,m09c_skybridge,"...if he moves me to the tower, it'll be the top floor. The studio. I'll leave the vents open."
-host,host/10f4135a974b.ogg,m09c_skybridge,Careful! That shelf's older than you.
-host,host/28384b338ae1.ogg,m09c_skybridge,Not near the tapes! Not near the tapes!
-host,host/394d2f60be67.ogg,m09c_skybridge,He's running across my whole back catalogue! Do you know how long that took me?
-host,host/61cd42b03360.ogg,m09c_skybridge,Mind the tapes! Those are originals!
-host,host/6977a55e6b21.ogg,m09c_skybridge,"I'm bleeding, folks, and he's doing flips. Is that fair? Call in."
-host,host/8067c0c526da.ogg,m09c_skybridge,That's one of the Ward's. The Commander's gonna write me a letter.
-host,host/89110a071208.ogg,m09c_skybridge,"Over the edge! Oh, that's going in the archive."
-host,host/91955660984b.ogg,m09c_skybridge,Careful in here! Twenty years of my best work. Don't you touch it.
-host,host/93bf3682480d.ogg,m09c_skybridge,Ah! Right in front of the archive. Show some respect.
-host,host/9f36a18dd48f.ogg,m09c_skybridge,"Another one gone. I'm running out of staff, Parker. Honestly."
-host,host/b15581e8df23.ogg,m09c_skybridge,That one alphabetised the tapes! Do you know how rare that is?
-host,host/b47c35b046c9.ogg,m09c_skybridge,"He's down! Hang on, let me find a window."
-host,host/c213d04d7dcc.ogg,m09c_skybridge,"Whoops. Long way down. Trust me, I'd know."
-host,host/cc38089209e1.ogg,m09c_skybridge,"Ooh. Sorry, folks. Bit of a technical problem there. Stay with us."
-host,host/d3cc88ededde.ogg,m09c_skybridge,"Ugh. Fine. Somebody record that, I'll use it later."
-host,host/d52d2d091f04.ogg,m09c_skybridge,He's down in the archive! Filed under 'gone'.
-host,host/ddbe436fd89e.ogg,m09c_skybridge,"Ha! Down he goes, among the classics."
-host,host/ed77d81f1835.ogg,m09c_skybridge,"Ooh, down he goes. Echo, sweetheart, you might want to look away."
-host,host/f5794cc749ea.ogg,m09c_skybridge,"Folks, small update. I'm bleeding a bit. Show goes on."
-mags,mags/03bd5ab2f8ec.ogg,m09c_skybridge,Parker. I see her. On the bridge. Go!
-mags,mags/094953800c8c.ogg,m09c_skybridge,"Fell. Back up, she's right there."
-mags,mags/0bdd7e926b88.ogg,m09c_skybridge,Get up. Go.
-mags,mags/38c381ce6377.ogg,m09c_skybridge,That's it. Up.
-mags,mags/4231fee403f4.ogg,m09c_skybridge,"Rifles on the tanks. Stay low, keep moving, you're nearly there."
-mags,mags/4458a33d4ba5.ogg,m09c_skybridge,Good. Up.
-mags,mags/6069ee217d78.ogg,m09c_skybridge,"Parker? Parker, talk to me."
-mags,mags/77a5dfbc7dbf.ogg,m09c_skybridge,Up. She's close.
-mags,mags/8ac53672fec6.ogg,m09c_skybridge,Beautiful. Keep going.
-mags,mags/8e7efb34d92b.ogg,m09c_skybridge,Get up. She's right above you.
-mags,mags/9ffec1915cc6.ogg,m09c_skybridge,Up. Don't let them pin you in the stacks.
-mags,mags/c5d508deaf31.ogg,m09c_skybridge,"Top floors, then the roof. There's a bridge across to the tower up there. If they're moving her, that's how."
-mags,mags/e4e96bff458c.ogg,m09c_skybridge,That's it. Keep going up.
-parker,parker/2eef1e853c19.ogg,m09c_skybridge,"Hey. Hey, I've got you."
-parker,parker/bb193077c579.ogg,m09c_skybridge,I'm okay. I'm going up.
-vell,vell/4c91d79464ac.ogg,m09c_skybridge,Take her across. Blow the bridge.
-vell,vell/d28fa7af681f.ogg,m09c_skybridge,Prepare the transfer. Nobody crosses that bridge after her.
 echo,echo/08b03debbea1.ogg,m10_the_climb,"...if you're hearing this, I hid it on the dish before he moved me upstairs. Keep the porch light on, okay?"
 echo,echo/0cb66a187f2e.ogg,m10_the_climb,"Got that on camera, courier. Whole city saw it."
 echo,echo/158444b40f07.ogg,m10_the_climb,Hi. Port Calder? It's Echo. He's lying to you. He's been lying to you for twenty years.

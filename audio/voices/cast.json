@@ -1,14 +1,13 @@
 {
-	"_about": "Who speaks with which voice. 'voice' is a Kokoro-82M voice id (Apache-2.0); 'speed' scales delivery. Change a voice, then run audio/tools/make_voices.py --force SPEAKER.",
-	"host":   {"voice": "am_fenrir",   "speed": 1.05},
-	"mags":   {"voice": "bf_emma",     "speed": 0.97},
-	"echo":   {"voice": "af_heart",    "speed": 1.0},
-	"parker": {"voice": "am_michael",  "speed": 1.05},
-	"vell":   {"voice": "bm_george",   "speed": 0.95},
-	"juno":   {"voice": "af_kore",     "speed": 1.0},
-	"vell":   {"voice": "bm_george",   "speed": 0.92},
-	"raider": {"voice": "am_puck",     "speed": 1.1},
-	"raider2": {"voice": "bm_lewis",   "speed": 1.1},
-	"ward":   {"voice": "am_onyx",     "speed": 1.0},
-	"ward2":  {"voice": "bm_daniel",   "speed": 1.0}
+	"_about": "Who speaks with which voice. Chatterbox (MIT) clones each speaker from 'ref', a clip we made with an American Kokoro-82M voice (Apache-2.0), so every voice is our own. 'exaggeration' is how much feeling (0.25 flat to 1.0 wild), 'cfg' how closely they keep the reference's pace (lower runs looser and quicker), 'pause' scales the gaps between sentences, 'speed' stretches the take (Mags's breathy reference reads slowly). Cast picked by Dax 2026-10-18 (Host B, Parker B, Mags C, Echo C, Juno A). Change an entry and run audio/tools/make_voices.py: only that speaker is re-spoken.",
+	"host":    {"engine": "chatterbox", "ref": "audio/voices/refs/host.flac",    "exaggeration": 0.85, "cfg": 0.35, "pause": 0.8, "speed": 1.15},
+	"mags":    {"engine": "chatterbox", "ref": "audio/voices/refs/mags.flac",    "exaggeration": 0.75, "cfg": 0.3,  "pause": 0.8, "speed": 1.35},
+	"echo":    {"engine": "chatterbox", "ref": "audio/voices/refs/echo.flac",    "exaggeration": 0.75, "cfg": 0.3,  "pause": 0.9, "speed": 1.12},
+	"parker":  {"engine": "chatterbox", "ref": "audio/voices/refs/parker.flac",  "exaggeration": 0.6,  "cfg": 0.4,  "pause": 0.7},
+	"juno":    {"engine": "chatterbox", "ref": "audio/voices/refs/juno.flac",    "exaggeration": 0.75, "cfg": 0.3,  "pause": 0.8, "speed": 1.12},
+	"vell":    {"engine": "chatterbox", "ref": "audio/voices/refs/vell.flac",    "exaggeration": 0.4,  "cfg": 0.55, "pause": 1.1},
+	"raider":  {"engine": "chatterbox", "ref": "audio/voices/refs/raider.flac",  "exaggeration": 0.9,  "cfg": 0.3,  "pause": 0.7, "speed": 1.08},
+	"raider2": {"engine": "chatterbox", "ref": "audio/voices/refs/raider2.flac", "exaggeration": 0.9,  "cfg": 0.3,  "pause": 0.7, "speed": 1.08},
+	"ward":    {"engine": "chatterbox", "ref": "audio/voices/refs/ward.flac",    "exaggeration": 0.7,  "cfg": 0.35, "pause": 0.9},
+	"ward2":   {"engine": "chatterbox", "ref": "audio/voices/refs/ward2.flac",   "exaggeration": 0.7,  "cfg": 0.35, "pause": 0.9}
 }
