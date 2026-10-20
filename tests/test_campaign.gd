@@ -10,7 +10,7 @@ const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "doors", "window", "target", "ramp", "loop",
 	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure", "set_piece", "chalk", "light", "skyline"]
 const RouteMarker := preload("res://campaign/route_marker.gd")
-const MALL := ["m05_atrium", "m06_anchor_store", "m07_parking_spiral"]
+const MALL := ["l4_1_meridian_mall", "m07_parking_spiral"]
 
 var level: Node3D
 var player: Player
@@ -100,7 +100,7 @@ func _index(id: String) -> int:
 
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
-	check(all.size() == 15, "15 missions (%d)" % all.size())
+	check(all.size() == 14, "14 missions (%d)" % all.size())
 	check(Campaign.acts().size() == 4, "the Docks stage and three acts")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
@@ -845,6 +845,10 @@ func test_atlas_levels_meet() -> void:
 	var order: Array = Atlas_.order()
 	check(order.size() >= 2, "the Docks levels are on the atlas (%d)" % order.size())
 	for i in range(1, order.size()):
+		# Only back to back in the campaign: a stage between two atlas
+		# levels that isn't on the atlas yet breaks the chain there.
+		if _index(order[i][0]) != _index(order[i - 1][0]) + 1:
+			continue
 		var a := Campaign.load_mission_file(order[i - 1][1])
 		var b := Campaign.load_mission_file(order[i][1])
 		var end := MissionBuilder.vec(a.route_end)
@@ -1638,19 +1642,95 @@ func test_reaching_juno_ends_the_duel() -> void:
 	await tree.process_frame
 
 
-## m05: the arena's shots wake its sleeping Hollows.
-func test_atrium_shots_wake_sleepers() -> void:
-	await _load(_index_of("m05_atrium"))
-	var arena: Node3D = null
+## 4-1: the north wing's shots wake its sleeping Hollows.
+func test_mall_shots_wake_sleepers() -> void:
+	await _load(_index_of("l4_1_meridian_mall"))
+	var wing: Node3D = null
 	for e: Node3D in level.builder.encounters:
-		if e.get_meta("id", "") == "arena":
-			arena = e
-	check(arena != null and arena.hear_shots, "m05's arena hears shots")
-	var sleepers: Array = arena.enemies.filter(func(e: Node) -> bool: return e.sleeper)
-	check(sleepers.size() >= 4, "the arena has sleeping Hollows (%d)" % sleepers.size())
+		if e.get_meta("id", "") == "wing":
+			wing = e
+	check(wing != null and wing.hear_shots, "the wing hears shots")
+	var sleepers: Array = wing.enemies.filter(func(e: Node) -> bool: return e.sleeper)
+	check(sleepers.size() >= 4, "the wing has sleeping Hollows (%d)" % sleepers.size())
 	level.queue_free()
 	level = null
 	await tree.process_frame
+
+
+## 4-1 is the whole mall in one run: the atrium, the north wing and the
+## department store with no load, turning both ways (square and 45), over
+## three floors and more, under a roof the whole way, with a speed gate on
+## the main line, a high line and the mall's set pieces.
+func test_meridian_mall_is_one_indoor_run() -> void:
+	var m := Campaign.load_mission_file("res://campaign/missions/l4_1_meridian_mall.json")
+	check(m.route_length > 800.0 and m.route_length < 950.0, "800 to 950 m (%d)" % int(m.route_length))
+	var turns := 0
+	var slabs := 0
+	var floors := {}
+	var kinds := {}
+	for seg: Dictionary in m.route:
+		if seg.has("turn"):
+			turns += 1
+			if float(seg.get("angle", 90.0)) == 45.0:
+				slabs += 1
+		if seg.has("roof"):
+			floors[float(seg.y)] = true
+			check(float(seg.get("interior", 0.0)) > 0.0, "every roof is indoors (%s)" % seg.roof)
+		if seg.has("fork"):
+			for f: Dictionary in seg.fork:
+				if f.has("roof"):
+					check(float(f.get("interior", 0.0)) > 0.0, "the high line is indoors too")
+		for f: Dictionary in seg.get("do", []):
+			if f.has("set_piece"):
+				kinds[f.set_piece] = true
+	check(turns >= 5 and slabs >= 2, "turns (%d), 45s among them (%d)" % [turns, slabs])
+	check(floors.size() >= 3, "on three floors or more (%s)" % [floors.keys()])
+	for k: String in ["shutters", "billboard", "juno", "tvs"]:
+		check(kinds.has(k), "the %s set piece" % k)
+	check(m.has("bot_alt"), "a high line")
+	var gates: Array = m.pieces.filter(func(p: Dictionary) -> bool: return p.has("gate") and p.has("mark"))
+	check(gates.size() >= 2, "a gate on each line (%d)" % gates.size())
+	check(MissionBuilder.vec(m.route_origin.at).distance_to(Vector3(1500, 0, 380)) < 0.05, "starts where the Silt ends")
+	# A roof overhead all along the run: straight down from high above,
+	# the first thing hit is a ceiling, never one of the run's floors.
+	await _load(_index_of("l4_1_meridian_mall"))
+	var space := player.get_world_3d().direct_space_state
+	var path := _run_line(run.mission)
+	var open := 0
+	var samples := 0
+	for j in range(1, path.size()):
+		var a := Vector2(path[j - 1][0], path[j - 1][1])
+		var b := Vector2(path[j][0], path[j][1])
+		for k in int(a.distance_to(b) / 6.0):
+			var q := a.lerp(b, (k + 0.5) * 6.0 / a.distance_to(b))
+			samples += 1
+			# The ceiling's skylight slots are 2 m: a step either way is roof.
+			var roofed := false
+			for o: float in [0.0, 1.5, -1.5]:
+				var at := q + (b - a).normalized() * o
+				var hit := space.intersect_ray(PhysicsRayQueryParameters3D.create(Vector3(at.x, 60.0, at.y), Vector3(at.x, -2.0, at.y), 1))
+				if not hit.is_empty() and not floors.keys().any(func(y: float) -> bool: return absf(hit.position.y - y) < 0.05):
+					roofed = true
+			if not roofed:
+				open += 1
+				if OS.has_environment("ROOF_LOG"):
+					print("open at ", q)
+	check(samples > 100 and open == 0, "a roof over the whole run (%d of %d points open to the sky)" % [open, samples])
+	level.queue_free()
+	level = null
+	await tree.process_frame
+
+
+## The run's center line as [x, z] points: the bot path of a hand-laid
+## mission, or a route's corners and its end.
+func _run_line(m: Dictionary) -> Array:
+	if m.has("bot_path"):
+		return m.bot_path
+	var out: Array = []
+	for l: Array in m.get("route_legs", []):
+		out.append([l[0], l[1]])
+	out.append([m.route_end[0], m.route_end[2]])
+	return out
 
 
 func _index_of(id: String) -> int:
@@ -1702,7 +1782,7 @@ func test_mall_guides_lead_to_the_goal() -> void:
 				t = nt
 				highest = maxi(highest, t)
 		check(not back and t == pts.size(), "%s: the mark runs the whole line in order (ended on %d of %d)" % [id, t, pts.size()])
-		var path: Array = run.mission.bot_path
+		var path := _run_line(run.mission)
 		var space := player.get_world_3d().direct_space_state
 		for p in pts:
 			var near := INF
@@ -1744,7 +1824,7 @@ func test_reaching_a_later_goal_counts_the_ones_before() -> void:
 ## waited too long is dropped; a conversation queued together waits for
 ## its own lines.
 func test_radio_cues_jump_the_queue_and_stale_lines_drop() -> void:
-	await _load(_index("m05_atrium"))
+	await _load(_index("l4_1_meridian_mall"))
 	var radio: RadioFeed = level.radio
 	radio.queue.clear()
 	radio.current = {}

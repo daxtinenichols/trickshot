@@ -150,7 +150,10 @@ static func _prepare_list(route: Array) -> Array:
 				feats.append(f)
 		roof["do"] = feats
 		out[-1] = roof
-		out.append({"gap": gap + FACE, "takeoff": 0.1, "gate": tier})
+		var g := {"gap": gap + FACE, "takeoff": 0.1, "gate": tier}
+		if roof.has("interior"):
+			g.interior = roof.interior  # indoors: the roof carries on over the hole
+		out.append(g)
 		# The far side: chalk where you land.
 		if i + 1 < route.size() and (route[i + 1] as Dictionary).has("roof"):
 			var next: Dictionary = (route[i + 1] as Dictionary).duplicate(true)

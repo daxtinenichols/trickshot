@@ -90,7 +90,7 @@
    "on": "set_piece:gates",
    "who": "host",
    "line": "Open the gates! Let 'em out!",
-   "keep": true
+   "must": true
   },
   {
    "on": "checkpoint:2",
@@ -101,66 +101,66 @@
    "on": "set_piece:billboard",
    "who": "host",
    "line": "This segment is brought to you by the Ward. Clean water, for people who know their place.",
-   "keep": true
+   "must": true
   },
   {
    "on": "set_piece:juno",
    "who": "mags",
    "line": "Parker, far walkway. That's... oh, that's Juno.",
-   "keep": true
+   "must": true
   },
   {
    "on": "set_piece:juno",
    "who": "juno",
    "line": "Hey, stranger. Keep up.",
-   "keep": true
+   "must": true
   },
   {
    "on": "set_piece:juno_gone",
    "who": "parker",
    "line": "She's working for him?",
-   "keep": true
+   "must": true
   },
   {
    "on": "set_piece:juno_gone",
    "who": "mags",
    "line": "Two years now. Her block's taps went dry. I'll tell you the rest when you're not getting shot at.",
-   "keep": true
+   "must": true
   },
   {
    "on": "checkpoint:5",
    "who": "host",
-   "line": "Into Hargrove and Sons! Mind the perfume counter, it's mostly Hollows now."
+   "line": "Into Hargrove and Sons! Mind the perfume counter, folks. My boys are working it tonight."
   },
   {
    "on": "set_piece:tvs",
    "who": "host",
    "line": "Now, Parker, while you're browsing, a word from our... what is that? Who's on my frequency?",
-   "keep": true
+   "must": true
   },
   {
    "on": "set_piece:tvs",
    "who": "echo",
    "line": "Porch light's on, courier. I'm coming home.",
-   "keep": true
+   "must": true
   },
   {
    "on": "set_piece:tvs",
    "who": "host",
    "line": "Technical difficulties, folks. Nobody touch anything.",
-   "keep": true
+   "must": true
   },
   {
    "on": "set_piece:tvs",
    "who": "parker",
    "line": "That was her.",
-   "keep": true
+   "must": true
   },
   {
    "on": "set_piece:tvs",
    "who": "mags",
    "line": "That was her. She's alive. She's in his wires, Parker. Go. Run.",
-   "keep": true
+   "must": true
   },
   {
    "on": "complete",
@@ -710,7 +710,8 @@
     {
      "radio": {
       "who": "host",
-      "line": "Hang on. Who's that in his ear? Is that... that's Margaret! Folks, she used to produce this show. Hi, Mags. Still sulking?"
+      "line": "Hang on. Who's that in his ear? Is that... that's Margaret! Folks, she used to produce this show. Hi, Mags. Still sulking?",
+      "must": true
      },
      "at": 12,
      "radius": 8
@@ -718,7 +719,8 @@
     {
      "radio": {
       "who": "mags",
-      "line": "Ignore him."
+      "line": "Ignore him.",
+      "must": true
      },
      "at": 12,
      "radius": 8
@@ -726,7 +728,8 @@
     {
      "radio": {
       "who": "parker",
-      "line": "You produced his show?"
+      "line": "You produced his show?",
+      "must": true
      },
      "at": 12,
      "radius": 8
@@ -734,7 +737,8 @@
     {
      "radio": {
       "who": "mags",
-      "line": "Twenty years ago. Later, Parker. Run."
+      "line": "Twenty years ago. Later, Parker. Run.",
+      "must": true
      },
      "at": 12,
      "radius": 8
@@ -946,7 +950,8 @@
   },
   {
    "gap": 3,
-   "trick": "flip"
+   "trick": "flip",
+   "interior": 9.5
   },
   {
    "roof": 14,
@@ -958,7 +963,8 @@
   },
   {
    "gap": 3,
-   "trick": "spin"
+   "trick": "spin",
+   "interior": 9.5
   },
   {
    "roof": 56,
@@ -1474,7 +1480,8 @@
   },
   {
    "gap": 3,
-   "trick": "spin"
+   "trick": "spin",
+   "interior": 9.5
   },
   {
    "roof": 14,
@@ -1486,7 +1493,8 @@
   },
   {
    "gap": 3,
-   "trick": "front"
+   "trick": "front",
+   "interior": 9.5
   },
   {
    "roof": 14,
@@ -1897,7 +1905,8 @@
   },
   {
    "gap": 3,
-   "trick": "spin"
+   "trick": "spin",
+   "interior": 6.5
   },
   {
    "roof": 14,
@@ -1908,7 +1917,8 @@
   },
   {
    "gap": 3,
-   "trick": "front"
+   "trick": "front",
+   "interior": 6.5
   },
   {
    "roof": 24,
@@ -2406,7 +2416,8 @@
     },
     {
      "gap": 3,
-     "trick": "flip"
+     "trick": "flip",
+     "interior": 4.0
     },
     {
      "roof": 14,
@@ -2418,7 +2429,8 @@
     },
     {
      "gap": 3,
-     "trick": "front"
+     "trick": "front",
+     "interior": 4.0
     },
     {
      "roof": 14,
@@ -2430,7 +2442,8 @@
     },
     {
      "gap": 3,
-     "trick": "spin"
+     "trick": "spin",
+     "interior": 4.0
     },
     {
      "roof": 44,
@@ -3161,7 +3174,7 @@
      "max_aiming": 5,
      "enemies": [
       {
-       "type": "drone",
+       "type": "spotter_drone",
        "x": 0,
        "d": 16,
        "height": 4.0
@@ -3448,7 +3461,8 @@
   },
   {
    "gap": 3,
-   "trick": "spin"
+   "trick": "spin",
+   "interior": 6.0
   },
   {
    "roof": 14,
@@ -3469,7 +3483,8 @@
   },
   {
    "gap": 3,
-   "trick": "front"
+   "trick": "front",
+   "interior": 6.0
   },
   {
    "roof": 18,
@@ -3911,11 +3926,6 @@
      "size": 0.8
     },
     {
-     "hurdles": true,
-     "at": 12,
-     "lead": 2.8
-    },
-    {
      "slide": true,
      "at": 26
     },
@@ -4139,7 +4149,7 @@
   {
    "chalk": [
     1436.3,
-    7.1,
+    2.6,
     380.0
    ],
    "point": "right",
@@ -4149,7 +4159,7 @@
   {
    "light": [
     1444.0,
-    9.0,
+    4.5,
     380.0
    ],
    "range": 11.0,
@@ -4351,7 +4361,7 @@
   ],
   [
    1444.0,
-   4.5,
+   0.0,
    380.0
   ],
   [

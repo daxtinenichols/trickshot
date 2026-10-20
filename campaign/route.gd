@@ -305,6 +305,13 @@ static func _segment(st: Dictionary, seg: Dictionary) -> void:
 		if seg.get("roll", false):
 			st.bot.append([st.z, "roll", NAN])
 		_lane(st, st.z, st.z - float(seg.gap), WIDTH)
+		if seg.has("interior"):
+			# Indoors: walls and ceiling carry on over the hole in the floor.
+			var h := float(seg.interior)
+			var gz: float = st.z - float(seg.gap) * 0.5
+			_add(st, {"box": [0, st.y + h + 0.25, gz], "size": [WIDTH + 1.0, 0.5, float(seg.gap)], "kind": "NEUTRAL", "look": "RUST"})
+			for side: float in [-1.0, 1.0]:
+				_add(st, {"box": [side * (WIDTH * 0.5 + 0.25), st.y + h * 0.5, gz], "size": [0.5, h, float(seg.gap)], "kind": "NEUTRAL", "look": st.wall_look})
 		if seg.has("gate") and seg.get("lower", "ledge") != "fall":
 			# A speed gate's miss lands on its ledge, not in a pit.
 			st.ledges.append([st.leg, st.dx, st.z, st.z - float(seg.gap)])
@@ -420,7 +427,7 @@ static func _interior(st: Dictionary, z0: float, length: float, w: float, height
 	var y: float = st.y
 	for side: float in [-1.0, 1.0]:
 		if side == open:
-			_add(st, {"box": [side * (w * 0.5 - 0.1), y + RAIL_H * 0.5, z0 - length * 0.5], "size": [0.2, RAIL_H, length], "kind": "NEUTRAL", "look": "RUST"})
+			_add(st, {"box": [side * (w * 0.5 - 0.6), y + RAIL_H * 0.5, z0 - length * 0.5], "size": [0.2, RAIL_H, length], "kind": "NEUTRAL", "look": "RUST"})
 			continue
 		_add(st, {"box": [side * (w * 0.5 + 0.25), y + height * 0.5, z0 - length * 0.5], "size": [0.5, height, length], "kind": "NEUTRAL", "look": st.wall_look})
 	var d := 0.0
