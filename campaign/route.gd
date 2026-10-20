@@ -592,7 +592,10 @@ static func _feature(st: Dictionary, f: Dictionary, z0: float) -> Array:
 		for i in n:
 			var stagger := 0.0 if step >= size.x - 0.01 else (size.z + 0.05 if i % 2 == 1 else 0.0)
 			_add(st, {"prop": hurdle, "at": [-6.0 + size.x * 0.5 + step * i, y, z - stagger]})
-		st.bot.append([z + 1.6, "jump", NAN])
+		# "trick": the bot flips or spins over them (a run of them builds
+		# Flow), taking off early enough to be high over them.
+		st.bot.append([z + (3.2 if f.has("trick") else 1.6), "jump", NAN])
+		_trick(st, f)
 		return [d - 4.0, d + 3.0]
 	if f.has("slide"):
 		# A bar 1.1 m up: slide under it. Needs a run-up on the ground.
@@ -877,6 +880,8 @@ static func _encounter(st: Dictionary, f: Dictionary, d: float, z: float, y: flo
 		"raiders": raiders, "mutants": mutants, "cover": cover}
 	if not others.is_empty():
 		piece.enemies = others
+	if f.has("max_aiming"):
+		piece.max_aiming = f.max_aiming
 	_add(st, piece)
 	return [d, d + length]
 

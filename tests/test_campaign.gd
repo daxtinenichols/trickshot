@@ -100,8 +100,8 @@ func _index(id: String) -> int:
 
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
-	check(all.size() == 15, "15 missions (%d)" % all.size())
-	check(Campaign.acts().size() == 4, "the Docks stage and three acts")
+	check(all.size() == 16, "16 missions (%d)" % all.size())
+	check(Campaign.acts().size() == 5, "the Docks, the Silt and three acts")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
@@ -776,6 +776,9 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 	# "flip" (back), "front" or "spin": done in the air after the next take-off.
 	var trick := ""
 	var trick_left := 0
+	# Still in the air from the last jump when the trick came up: wait for
+	# the landing, so it goes into the next take-off.
+	var trick_wait := false
 	for i in max_frames:
 		var pos := player.global_position
 		if run.phase == MissionRun.Phase.COMPLETE:
@@ -788,7 +791,7 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 		if z < stop_z:
 			return false
 		if OS.has_environment("ROUTE_LOG") and i % 10 == 0:
-			print("  t%4d pos %s leg %d along %.1f state %s speed %.1f obj %d falls %d caught %d gap %.1f" % [i, pos.snapped(Vector3.ONE * 0.01), _leg, z, Player.State.keys()[player.state], player.horizontal_speed(), run.objective, run.falls, run.catches, run.pursuer.gap if run.pursuer else 0.0])
+			print("  t%4d pos %s leg %d along %.1f state %s speed %.1f obj %d falls %d caught %d gap %.1f pitch %.2f" % [i, pos.snapped(Vector3.ONE * 0.01), _leg, z, Player.State.keys()[player.state], player.horizontal_speed(), run.objective, run.falls, run.catches, run.pursuer.gap if run.pursuer else 0.0, player.pitch])
 		if veer and absf(lane - _local(pos, _leg).x) < 1.5:
 			veer = false
 		var f := _steer(lane, veer)
@@ -811,8 +814,17 @@ func _run_route(route: Array, max_frames := 2400, stop_z := -INF, legs: Array = 
 				"flip", "front", "spin":
 					trick = step[1]
 					trick_left = 24
+					trick_wait = player.state == Player.State.AIR
+					# Eyes level first, as a runner would after the last
+					# landing (a flip lands looking up: flip_look_gain).
+					player.pitch = 0.0
 			next += 1
-		if trick != "" and player.state == Player.State.AIR:
+		if trick == "" and player.state == Player.State.GROUND:
+			# Eyes back to the line once down (a flip lands looking up).
+			player.pitch = 0.0
+		if trick_wait and player.state != Player.State.AIR:
+			trick_wait = false
+		if trick != "" and not trick_wait and player.state == Player.State.AIR:
 			var turn := TAU / 24.0
 			player._look(turn if trick == "spin" else 0.0, turn if trick == "flip" else (-turn if trick == "front" else 0.0))
 			trick_left -= 1
@@ -843,6 +855,10 @@ func test_atlas_levels_meet() -> void:
 	var order: Array = Atlas_.order()
 	check(order.size() >= 2, "the Docks levels are on the atlas (%d)" % order.size())
 	for i in range(1, order.size()):
+		# Only levels next to each other in the campaign: a stage still on
+		# its old missions leaves a gap between the atlas stages either side.
+		if int(Campaign.entry(_index(order[i][0])).number) != int(Campaign.entry(_index(order[i - 1][0])).number) + 1:
+			continue
 		var a := Campaign.load_mission_file(order[i - 1][1])
 		var b := Campaign.load_mission_file(order[i][1])
 		var end := MissionBuilder.vec(a.route_end)
@@ -980,6 +996,67 @@ func test_yard_pistol_handoff() -> void:
 		lines.append(l.line)
 	check(lines.any(func(l: String) -> bool: return l.begins_with("Here. This was your granddad's")), "Mags says whose it was")
 	check(player.global_position.distance_to(start) > 8.0, "on the way down")
+
+
+## Stage 3, the Silt: 3-1 starts on the blown Calder Way bridge where 2-3
+## ends (the atlas's "silt_bridge"), 3-2 comes up at the mall's south
+## entrance where 4-1 starts. Hollows (and the Static herding them), no
+## Ward; the Must play lines are marked; the drain holds the one loop.
+func test_silt_levels_follow_the_atlas() -> void:
+	var silt := Campaign.load_mission_file(Campaign.entry(_index("l3_1_the_silt")).file)
+	var drain := Campaign.load_mission_file(Campaign.entry(_index("l3_2_the_drain")).file)
+	var deck: Array = Atlas_.landmark("silt_bridge").boxes[0]
+	var start := MissionBuilder.vec(silt.route_origin.at)
+	check(Atlas_._rect(deck).has_point(Vector2(start.x, start.z)) and is_equal_approx(start.y, float(deck[5])), "3-1 starts on the Silt bridge's deck (%s)" % start)
+	check(is_equal_approx(float(silt.route_origin.yaw), 90.0), "facing west")
+	check(MissionBuilder.vec(drain.route_end).distance_to(Vector3(1500, 0, 380)) < 0.05 and is_equal_approx(float(drain.route_end_yaw), 90.0),
+		"3-2 ends at the mall's south entrance, facing west (%s)" % [drain.route_end])
+	check(MissionBuilder.vec(silt.route_end).distance_to(MissionBuilder.vec(drain.route_origin.at)) < 0.05, "3-2 starts where 3-1 ends")
+	var musts := {"l3_1_the_silt": 4, "l3_2_the_drain": 1}
+	for m: Dictionary in [silt, drain]:
+		check(m.route_length >= 600.0 and m.route_length <= 900.0, "%s: 600-900 m (%d)" % [m.id, int(m.route_length)])
+		check(m.get("plain_runner", false), "%s: checked by the plain runner" % m.id)
+		var loops := 0
+		var hollows := 0
+		for p: Dictionary in m.pieces:
+			loops += 1 if p.has("loop") else 0
+			if p.has("encounter"):
+				for e: Dictionary in p.get("enemies", []):
+					check(e.type in ["crawler", "leaper", "brute", "raider"], "%s: %s is a Hollow or a Static herder" % [m.id, e.type])
+					hollows += 1 if e.type != "raider" else 0
+		check(loops == (1 if m.id == "l3_2_the_drain" else 0), "%s: the drain's ring pipe is the only loop (%d)" % [m.id, loops])
+		check(hollows >= 12, "%s: Hollows on the line (%d)" % [m.id, hollows])
+		var n := 0
+		for r: Dictionary in m.radio:
+			n += 1 if r.get("must", false) else 0
+		check(n == musts[m.id], "%s: its Must play lines never drop (%d)" % [m.id, n])
+
+
+## The Silt's set pieces: the relay box goes off as it comes into sight,
+## and the Hollows pen's gate goes up (solid until it does).
+func test_silt_relay_and_pens() -> void:
+	await _load(_index("l3_1_the_silt"))
+	var got: Array[String] = []
+	run.event.connect(func(e: String) -> void:
+		if e.begins_with("set_piece:"):
+			got.append(e))
+	var pieces := {}
+	for sp: Node3D in level.builder.set_pieces:
+		pieces[sp.kind] = sp
+	check(pieces.has("silt_wreck") and pieces.has("relay_box") and pieces.has("hollows_cage"), "the wreck, the relay and the pen (%s)" % [pieces.keys()])
+	# Set pieces run once the run's under way: a step off the start.
+	player.global_position = MissionBuilder.vec(run.mission.start.at) + Vector3(-3, 0.05, 0)
+	await _step(3)
+	check("set_piece:wreck" in got, "the wreck is there from the start")
+	player.global_position = pieces.relay_box.trigger + Vector3(0, 0.05, 0)
+	await _step(3)
+	check("set_piece:relay" in got, "the relay box goes off in sight")
+	var cage: Node3D = pieces.hollows_cage
+	var gate: CollisionShape3D = cage.get("_gate_shape")
+	check(not gate.disabled, "the pen's gate is shut")
+	player.global_position = cage.trigger + Vector3(0, 0.05, 0)
+	await _step(60)
+	check("set_piece:cage" in got and gate.disabled, "it goes up and lets the pack out")
 
 
 ## The Yard's lost tape is a Calder Radio reel: its lines play as a tape.
@@ -1878,7 +1955,7 @@ func _cover(shapes: Array, at: Vector2) -> float:
 ## clear of every building, never sunk into a facade.
 func test_city_props_stand_clear_of_buildings() -> void:
 	var PropKit_: Script = load("res://art/props/prop_kit.gd")
-	for id: String in ["l1_2_the_yard", "m04_silt_line", "m08_storm_channels", "m09_rail_bridge"]:
+	for id: String in ["l1_2_the_yard", "l3_1_the_silt", "m08_storm_channels", "m09_rail_bridge"]:
 		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
 		var walls: Array = []
 		for p: Dictionary in m.pieces:

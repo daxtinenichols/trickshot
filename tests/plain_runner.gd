@@ -16,6 +16,9 @@ const EDGE_MARK := 0.35
 ## Where bots take off for a gate: right at the edge (a gate is sized for
 ## that; route.gd's usual 1.2 m early jump would come up short).
 const GATE_TAKEOFF := 0.1
+## How far across a leg its ground reaches (forks, wide corners).
+const LEG_REACH := 40.0
+const CORNER_HALF := 13.0
 
 
 ## Moves the bot's jump for each gate to the edge, in place. (Until
@@ -35,10 +38,13 @@ static func fix_gate_takeoffs(mission: Dictionary) -> void:
 
 ## The bot steps a plain runner keeps: the moves the line can't be passed
 ## without (jumps, slides under bars, door kicks) and lane changes, but no
-## optional rolls. It still earns nothing for them (make_plain).
+## optional rolls, flips or 360s. It still earns nothing for them
+## (make_plain).
 static func plain_steps(bot: Array) -> Array:
 	var out: Array = []
 	for s: Array in bot:
+		if s[1] in ["flip", "front", "spin"]:
+			continue
 		if s[1] != "roll":
 			out.append(s)
 		elif not is_nan(float(s[2])):
@@ -57,25 +63,32 @@ static func make_plain(player: Player) -> void:
 static func along(pos: Vector3, legs: Array) -> float:
 	if legs.is_empty():
 		return pos.z
-	for i in range(legs.size() - 1, -1, -1):
-		var l: Array = legs[i]
-		var v := Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
-		var z := v.z + float(l[3])
-		if i == 0 or z <= float(l[3]) + 0.5:
-			return z
-	return pos.z
+	var i := _leg_of(pos, legs)
+	return _in_leg(pos, legs[i]).z + float(legs[i][3])
 
 
 ## A world point's offset across the route (right +).
 static func across(pos: Vector3, legs: Array) -> float:
 	if legs.is_empty():
 		return pos.x
-	var z := along(pos, legs)
-	for i in range(legs.size() - 1, -1, -1):
-		var l: Array = legs[i]
-		if i == 0 or z <= float(l[3]) + 0.5:
-			return (Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])).x
-	return pos.x
+	return _in_leg(pos, legs[_leg_of(pos, legs)]).x
+
+
+## The leg a point is on: the last one it's past the start of and near.
+## Past the start alone isn't enough: every point of the leg before a
+## square corner is level with the next leg's start, so a leg only claims
+## what lies ahead of its start within a cone (the corner's half width,
+## widening along it to cover forks).
+static func _leg_of(pos: Vector3, legs: Array) -> int:
+	for i in range(legs.size() - 1, 0, -1):
+		var v := _in_leg(pos, legs[i])
+		if v.z <= 0.5 and absf(v.x) < minf(LEG_REACH, CORNER_HALF - v.z):
+			return i
+	return 0
+
+
+static func _in_leg(pos: Vector3, l: Array) -> Vector3:
+	return Basis(Vector3.UP, -float(l[2])) * Vector3(pos.x - l[0], 0.0, pos.z - l[1])
 
 
 ## [start, end, label] along the route for every gate and encounter,
