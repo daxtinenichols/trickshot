@@ -70,7 +70,7 @@
   {"turn": "left", "size": 12.0, "deck": true},
   {"fork": [
    {"roof": 5, "deck": true, "rail": 1, "do": [
-    {"set_piece": "cage", "at": 0.3, "trigger": -18, "trigger_x": -6, "radius": 12, "height": 4.5, "depth": 5}
+    {"set_piece": "cage", "at": 0.3, "trigger": -18, "trigger_x": -6, "radius": 7, "height": 4.5, "depth": 5}
    ]},
    {"roof": 5, "y": 55, "deck": true, "rail": 1, "do": [
     {"mark": "#f57320", "at": 3}
@@ -137,7 +137,7 @@
   {"on": "set_piece:uplink", "who": "echo", "line": "I've got the cameras now. Look at him go.", "must": true},
   {"on": "set_piece:uplink", "who": "host", "line": "Get her off my uplink! GET HER OFF!", "must": true},
   {"on": "set_piece:uplink", "who": "mags", "line": "Gun drones just went dark. That was her! Climb, Parker!", "must": true},
-  {"on": "set_piece:cage", "who": "echo", "line": "Builders' lift, on your right. I've got the door."},
+  {"on": "set_piece:cage", "who": "echo", "line": "Builders' lift, on your right. I've got the door.", "must": true},
   {"on": "checkpoint:3", "who": "host", "line": "Somebody cut the scaffold! What do you mean, with what?"},
   {"on": "complete", "who": "host", "line": "Fine. Fine! Come on in. Studio's open. Mind the step.", "must": true}
  ],
