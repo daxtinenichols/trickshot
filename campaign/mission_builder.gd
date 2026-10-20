@@ -35,7 +35,7 @@ const TOWER_SCENE_KINDS := ["photo", "uplink", "cage", "watchers", "trap"]
 ## Meridian Mall's set pieces (shop shutters, Juno on the walkway, the
 ## Ward billboard, Echo's TVs).
 const MALL_SCENE_PATH := "res://campaign/mall_scene.gd"
-const MALL_SCENE_KINDS := ["shutters", "juno", "billboard", "tvs"]
+const MALL_SCENE_KINDS := ["shutters", "juno", "billboard", "tvs", "convoy"]
 # Enemies load by path, not class_name (a stale class cache has broken
 # scenes before).
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")

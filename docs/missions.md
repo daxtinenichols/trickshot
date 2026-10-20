@@ -436,6 +436,18 @@ mall. Its set pieces come from campaign/mall_scene.gd (route feature
   salutes half way and drops out of sight; events `juno`, `juno_gone`.
 - `tvs` (`length`, `hold`): the electronics floor's TVs go to static,
   then all show a porch light; event `tvs`.
+- `convoy` (4-2, a world-space mission piece at the street under the end:
+  `count`, `spacing`, `channel_x`, `road_x`, `trucks`): Ward floodlights
+  come on pair by pair down the storm channels and white Ward trucks roll
+  out along the channel road; event `convoy`.
+
+4-2 Parking Spiral (l4_2_parking_spiral) starts at 4-1's skybridge door
+and ends on Westside's start. Juno's fight is one encounter over three
+legs of the car park (the ramps, the core, the top deck) with `phases`
+(docs/enemies.md) and a `route_span` (the stretch of the route it covers,
+for the plain-runner check). Both are made by the generator in
+/mnt/project-files/design/meridian-wip/ (car_park.py, then
+car_park_finalize.py; regen2.sh runs both): edit those, not the JSON.
 
 Its fights sit on the fast stretches: Hollows asleep in doorways that wake
 as you pass and run down anyone slower than they are (walkway, north

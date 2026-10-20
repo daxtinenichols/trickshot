@@ -103,8 +103,10 @@ static func leg_index(pos: Vector3, legs: Array) -> int:
 
 ## [start, end, label] along the route for every gate and encounter,
 ## nearest first. A gate runs from 20 m before its edge to 6 m past the
-## far side; an encounter is its area. An unarmed one (only the Host's
-## camera drones filming you) is no fight, so it isn't a section.
+## far side; an encounter is its area, or its "route_span" [from, to]
+## along the route when it spans corners (4-2's Juno, up three legs of the
+## car park). An unarmed one (only the Host's camera drones filming you) is
+## no fight, so it isn't a section.
 static func sections(mission: Dictionary) -> Array:
 	var legs: Array = mission.get("route_legs", [])
 	var out: Array = []
@@ -112,6 +114,9 @@ static func sections(mission: Dictionary) -> Array:
 		# Only the main line's: a fork's other line (a high path) isn't
 		# where the bot or the plain runner run.
 		var on: Variant = p.get("mark", p.area.at if p.has("encounter") else null)
+		if p.has("route_span") and armed(p):
+			out.append([float(p.route_span[0]), float(p.route_span[1]), "encounter %s" % p.encounter])
+			continue
 		if on is Array and absf(across(Vector3(on[0], on[1], on[2]), legs)) > OFF_LINE:
 			continue
 		if p.has("gate") and p.has("mark"):

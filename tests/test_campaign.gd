@@ -10,7 +10,7 @@ const MENU := preload("res://campaign/campaign.tscn")
 const PIECE_KEYS := ["box", "building", "prop", "row", "door", "doors", "window", "target", "ramp", "loop",
 	"quarter_pipe", "bank", "label", "mark", "tape", "fire", "encounter", "slab", "figure", "set_piece", "chalk", "light", "skyline"]
 const RouteMarker := preload("res://campaign/route_marker.gd")
-const MALL := ["l4_1_meridian_mall", "m07_parking_spiral"]
+const MALL := ["l4_1_meridian_mall", "l4_2_parking_spiral"]
 
 var level: Node3D
 var player: Player
@@ -470,7 +470,7 @@ func test_juno_fate_carries_to_the_ending() -> void:
 	for spared: bool in [false, true]:
 		Campaign.reset_progress()
 		if spared:
-			Campaign.save().set_value("m07_parking_spiral", "fate", "spared")
+			Campaign.save().set_value("l4_2_parking_spiral", "fate", "spared")
 		await _load(_index("l7_1_signal_out"))
 		var radio: RadioFeed = level.radio
 		radio.notify("complete")
@@ -2038,10 +2038,10 @@ func _run_path(path: Array, max_frames := 6000) -> bool:
 	return false
 
 
-## m07: Juno can't be killed outright, so her fight is a `clear` objective;
-## sparing her or not plays a different line.
+## 4-2: Juno can't be killed outright; breaking her guard in the last
+## phase beats her, and sparing her or not plays a different line.
 func test_juno_fate_picks_the_line() -> void:
-	var i := _index_of("m07_parking_spiral")
+	var i := _index_of("l4_2_parking_spiral")
 	for choice: String in ["spared", "not_spared"]:
 		await _load(i)
 		var events: Array[String] = []
@@ -2050,7 +2050,7 @@ func test_juno_fate_picks_the_line() -> void:
 		for e: Node3D in level.builder.encounters:
 			if e.get_meta("id", "") == "Juno":
 				enc = e
-		check(enc != null, "m07 has Juno's encounter")
+		check(enc != null, "4-2 has Juno's encounter")
 		if enc == null:
 			return
 		var juno: Node = null
@@ -2066,7 +2066,11 @@ func test_juno_fate_picks_the_line() -> void:
 			if en != juno:
 				en.take_hit({"damage": 500.0, "zone": &"body", "position": en.global_position})
 		juno.take_hit({"damage": 1000.0, "zone": &"body", "position": juno.global_position})
-		check(juno.is_beaten and juno.fate == "", "a big hit beats Juno without killing her")
+		check(not juno.is_beaten, "a body shot doesn't get through her guard")
+		juno._enter_phase(juno.phases.size() - 1)
+		for k in juno.breaks_per_phase:
+			juno.take_hit({"damage": 50.0, "zone": &"head", "tags": [&"airborne"], "position": juno.global_position})
+		check(juno.is_beaten and juno.fate == "", "breaking her guard in the last phase beats her without killing her")
 		if choice == "not_spared":
 			juno.take_hit({"damage": 10.0, "zone": &"body", "position": juno.global_position})
 		else:
@@ -2075,21 +2079,21 @@ func test_juno_fate_picks_the_line() -> void:
 		check(("fate:" + choice) in events, "%s: the radio hears fate:%s (%s)" % [choice, choice, events])
 		check(run.encounter_cleared("Juno"), "%s: Juno's fight is cleared" % choice)
 		var lines: Array = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.get("on", "") == "fate:" + choice)
-		check(lines.size() == 1, "%s: m07 has one line for it" % choice)
+		check(lines.size() == 1, "%s: 4-2 has one line for it" % choice)
 		level.queue_free()
 		level = null
 		await tree.process_frame
 
 
-## m07: fighting is never required. Running up to Juno ends the duel without
+## 4-2: fighting is never required. Running up to Juno ends the duel without
 ## a shot fired, and she's left kneeling for the spare-or-not choice.
 func test_reaching_juno_ends_the_duel() -> void:
-	await _load(_index_of("m07_parking_spiral"))
+	await _load(_index_of("l4_2_parking_spiral"))
 	var duel := -1
 	for k in run.objectives.size():
 		if run.objectives[k].get("type", "") == "duel":
 			duel = k
-	check(duel >= 0, "m07 has a duel objective")
+	check(duel >= 0, "4-2 has a duel objective")
 	var juno: Node3D = run.duel_boss("Juno")
 	check(juno != null, "the duel's boss is Juno")
 	if duel < 0 or juno == null:
@@ -2271,18 +2275,22 @@ func test_mall_guides_lead_to_the_goal() -> void:
 		await tree.process_frame
 
 
-## The high line in the car park skips the second lap's corner: reaching a
-## later "reach" goal counts the ones before it, so nobody is sent back.
+## Reaching a later "reach" goal counts the ones before it, so nobody is
+## sent back (a respawn or a fall that skips a goal's spot).
 func test_reaching_a_later_goal_counts_the_ones_before() -> void:
-	await _load(_index("m07_parking_spiral"))
+	await _load(_index("l4_2_parking_spiral"))
 	run.phase = MissionRun.Phase.RUNNING
 	run._begin_objective(1)
-	check(run.current_objective().get("name", "") == "level 2", "heading for level 2")
-	# Straight onto the third lap's corner (level 1's start).
-	run._check_objective(Vector3(-15.5, 7.0, -474.5))
-	check(run.objective == 2, "level 2 counted on reaching level 1's corner (%d)" % run.objective)
-	run._check_objective(Vector3(-15.5, 7.0, -474.5))
-	check(run.objective == 3, "and level 1 itself (%d)" % run.objective)
+	check(run.current_objective().get("name", "") == "the ramps", "heading for the ramps")
+	# Straight onto the core's goal.
+	var core := Vector3.ZERO
+	for c: Dictionary in run.mission.checkpoints:
+		if c.name == "The core":
+			core = MissionBuilder.vec(c.at)
+	run._check_objective(core)
+	check(run.objective == 2, "the ramps counted on reaching the core (%d)" % run.objective)
+	run._check_objective(core)
+	check(run.objective == 3, "and the core itself (%d)" % run.objective)
 
 
 ## A line that tells you the way jumps the queue; a line about a place that
@@ -2342,15 +2350,18 @@ func test_radio_must_lines_go_first_and_never_drop() -> void:
 ## now when it's within that, worked out at a run at least when you're
 ## slow, and never for a spot behind you.
 func test_radio_spot_lines_start_early() -> void:
-	await _load(_index("m07_parking_spiral"))
+	await _load(_index("l4_1_meridian_mall"))
 	var radio: RadioFeed = level.radio
 	var s: Dictionary = run.mission.radio.filter(func(r: Dictionary) -> bool: return r.has("at"))[0]
 	var key := "at:%s" % str(s.at)
 	var at := MissionBuilder.vec(s.at)
-	var half := MissionBuilder.vec(s.size) * 0.5
-	var reach := minf(half.x, half.z)
+	var half := MissionBuilder.vec(s.get("size", [0, 0, 0])) * 0.5
+	var reach := float(s.radius) if s.has("radius") else minf(half.x, half.z)
 	var lead := radio._lead(key)
 	check(lead >= RadioFeed.clip_length(s.who, s.line) + RadioFeed.LEAD - 0.01, "the lead covers the clip (%.1fs)" % lead)
+	# Straight-line distance and heading, as on a level with no route (on a
+	# route level it's measured along the route).
+	run.mission.erase("route_legs")
 	var toward := Vector3(0, 0, -15)
 	check(not radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * 15.0 + 5.0), toward), "too far at 15 m/s: not yet")
 	check(radio._coming_up(s, key, at + Vector3(0, 0, reach + lead * 15.0 - 2.0), toward), "close enough at 15 m/s: now")

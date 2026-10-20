@@ -88,16 +88,10 @@
      "beat": "The Static have made the mall the Host's arena. He outs Mags on air as his old producer, Juno paces Parker along the far walkway, and in the store's electronics floor every screen lights up: Echo is alive.",
      "moves": "Escalators, walkways over the voids, the store well; speed gates", "enemies": "Crawlers, leapers and a brute; bruisers and a spotter drone",
      "file": "res://campaign/missions/l4_1_meridian_mall.json"},
-    {
-     "id": "m07_parking_spiral",
-     "number": 7,
-     "title": "Parking Spiral",
-     "place": "Skybridge and multi-storey car park",
-     "beat": "Juno, the Static's star hunter and an old Line courier, waits on the car park's top deck. Chase her down the spiral to a duel.",
-     "moves": "Ramp slides, the running loop, everything at speed",
-     "enemies": "Hunters; Juno boss",
-     "file": "res://campaign/missions/m07_parking_spiral.json"
-    }
+    {"id": "l4_2_parking_spiral", "number": 7, "label": "4-2", "title": "Parking Spiral", "place": "The skybridge and the Meridian car park",
+     "beat": "Juno, on her own ground: a fight up the car park in three rounds, and between them she tells Parker how the Static found the Line's camp. Then the Ward speak for the first time.",
+     "moves": "Ramps up and slides down, the core, the top deck", "enemies": "Hunters; Juno (break her guard with a combo kick or an airborne headshot)",
+     "file": "res://campaign/missions/l4_2_parking_spiral.json"}
    ]
   },
   {

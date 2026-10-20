@@ -1,5 +1,5 @@
 extends Node3D
-## Meridian Mall's set pieces (Stage 4-1), as route features {"set_piece":
+## Meridian's set pieces (Stage 4), as route features {"set_piece":
 ## kind, "at": d, "x": across, "trigger": d}. MissionBuilder loads this by
 ## path for these kinds, and MissionRun ticks them like the chase set
 ## pieces (campaign/set_piece.gd): same setup / reset / tick and `went`
@@ -25,6 +25,13 @@ extends Node3D
 ##               down both walls (`length` m) stutter on together with
 ##               white noise, then every screen shows Echo's light-bulb test
 ##               card for `hold` seconds, then they all die. went("tvs").
+##   "convoy"    4-2's west wall over Westside (a mission piece in world
+##               space, `at` on the street below the end): Ward floodlight
+##               masts down both storm channel walls (`count` a side,
+##               `spacing` m apart, `channel_x` across) come on one after
+##               another, and `trucks` white Ward trucks with a blue stripe
+##               roll out along the channel road (`road_x` across) while
+##               Vell speaks. went("convoy").
 ## Visual only apart from the shelves (solid, out of the lane).
 
 const ENEMY_BODY_PATH := "res://enemies/enemy_body.gd"
@@ -43,6 +50,12 @@ const JUNO_DROP := 7.0
 ## TVs: white noise for this long before the test card comes up.
 const TV_NOISE_TICKS := 100
 const TV_SPACING := 1.6
+## Convoy: a mast comes on every this many ticks, trucks run this fast
+## (m/s) this far apart (m).
+const MAST_TICKS := 24
+const TRUCK_SPEED := 9.0
+const TRUCK_GAP := 16.0
+const MAST_HEIGHT := 14.0
 
 var kind := "shutters"
 var spec := {}
@@ -64,6 +77,8 @@ var _card_mat: StandardMaterial3D
 var _logo: Node3D
 var _dark: Node3D
 var _noise_seed := 0
+var _lamps: Array[Node3D] = []
+var _trucks: Array[Node3D] = []
 
 
 func setup(p: Dictionary) -> void:
@@ -82,6 +97,8 @@ func setup(p: Dictionary) -> void:
 			_build_billboard()
 		"tvs":
 			_build_tvs()
+		"convoy":
+			_build_convoy()
 	reset()
 
 
@@ -98,6 +115,10 @@ func reset() -> void:
 		_logo.visible = false
 		_dark.visible = true
 	_set_screens(null)
+	for lamp: Node3D in _lamps:
+		lamp.visible = false
+	for i in _trucks.size():
+		_trucks[i].position.z = _truck_z(i, 0)
 
 
 func tick(player_pos: Vector3, _run: Node) -> void:
@@ -138,6 +159,59 @@ func tick(player_pos: Vector3, _run: Node) -> void:
 					_set_screens(_card_mat)
 			elif ticks == TV_NOISE_TICKS + hold:
 				_set_screens(null)
+		"convoy":
+			# Pair by pair down the channels, nearest first.
+			for i in _lamps.size():
+				_lamps[i].visible = ticks >= (i / 2) * MAST_TICKS
+			for i in _trucks.size():
+				_trucks[i].position.z = _truck_z(i, ticks)
+
+
+# ------------------------------------------------------------------ convoy
+
+func _build_convoy() -> void:
+	var count := int(spec.get("count", 8))
+	var spacing := float(spec.get("spacing", 24.0))
+	var cx := float(spec.get("channel_x", 16.0))
+	var steel := _mat(Color(0.3, 0.31, 0.33))
+	var lit := _mat(Color(0.95, 0.97, 1.0), 6.0)
+	for i in count:
+		var z := -20.0 - i * spacing
+		for side in [-1.0, 1.0]:
+			var mast := _node(self, "Mast")
+			mast.position = Vector3(side * cx, 0, z)
+			_box(mast, Vector3(0, MAST_HEIGHT * 0.5, 0), Vector3(0.35, MAST_HEIGHT, 0.35), steel, false)
+			_box(mast, Vector3(-side * 0.6, MAST_HEIGHT, 0), Vector3(1.6, 0.9, 1.0), steel, false)
+			var lamp := _node(mast, "Lamp")
+			_box(lamp, Vector3(-side * 0.6, MAST_HEIGHT - 0.5, 0), Vector3(1.4, 0.1, 0.8), lit, false)
+			if i % 2 == 0:
+				var light := OmniLight3D.new()
+				light.light_color = Color(0.9, 0.95, 1.0)
+				light.omni_range = 24.0
+				light.light_energy = 2.5
+				light.position = Vector3(-side * 2.0, MAST_HEIGHT - 2.0, 0)
+				lamp.add_child(light)
+			_lamps.append(lamp)
+	var white := _mat(Color(0.9, 0.91, 0.9))
+	var blue := _mat(Color(0.12, 0.35, 0.85), 0.6)
+	var dark := _mat(Color(0.08, 0.08, 0.09))
+	var head := _mat(Color(1.0, 0.95, 0.8), 4.0)
+	for i in int(spec.get("trucks", 5)):
+		var t := _node(self, "Truck")
+		t.position.x = float(spec.get("road_x", -30.0))
+		_box(t, Vector3(0, 1.9, 1.2), Vector3(2.5, 2.8, 5.6), white, false)
+		_box(t, Vector3(0, 1.5, 1.2), Vector3(2.52, 0.4, 5.62), blue, false)
+		_box(t, Vector3(0, 1.4, -2.6), Vector3(2.4, 2.0, 2.0), white, false)
+		_box(t, Vector3(0, 0.45, 0), Vector3(2.3, 0.6, 8.0), dark, false)
+		for k in [-0.8, 0.8]:
+			_box(t, Vector3(k, 1.0, -3.62), Vector3(0.35, 0.25, 0.05), head, false)
+		_trucks.append(t)
+
+
+## Truck i's place down the road `ticks` after the convoy sets off: it
+## comes on from the near end and drives away along the channels.
+func _truck_z(i: int, t: int) -> float:
+	return 10.0 + i * TRUCK_GAP - TRUCK_SPEED * t / 60.0
 
 
 # ---------------------------------------------------------------- shutters
