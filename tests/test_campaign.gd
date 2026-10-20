@@ -101,7 +101,7 @@ func _index(id: String) -> int:
 func test_campaign_lists_the_story() -> void:
 	var all := Campaign.missions()
 	check(all.size() == 15, "15 missions (%d)" % all.size())
-	check(Campaign.acts().size() == 4, "the Docks stage and three acts")
+	check(Campaign.acts().size() == 5, "the Docks stage, three acts and Stage 6")
 	for i in all.size():
 		check(int(all[i].number) == i, "mission %d is numbered in order" % i)
 		check(all[i].get("beat", "") != "", "%s has its story beat" % all[i].title)
@@ -842,7 +842,14 @@ const Atlas_ := preload("res://campaign/atlas.gd")
 func test_atlas_levels_meet() -> void:
 	var order: Array = Atlas_.order()
 	check(order.size() >= 2, "the Docks levels are on the atlas (%d)" % order.size())
+	# (Levels next to each other in the campaign: stages not rebuilt yet
+	# leave gaps between atlas levels.)
+	var number := {}
+	for m: Dictionary in Campaign.missions():
+		number[m.id] = int(m.get("number", -1))
 	for i in range(1, order.size()):
+		if int(number.get(order[i][0], -9)) - int(number.get(order[i - 1][0], -9)) != 1:
+			continue
 		var a := Campaign.load_mission_file(order[i - 1][1])
 		var b := Campaign.load_mission_file(order[i][1])
 		var end := MissionBuilder.vec(a.route_end)
@@ -864,7 +871,7 @@ func test_tower_in_sight_from_atlas_levels() -> void:
 		var m := Campaign.load_mission_file(o[1])
 		var boxes: Array = []
 		for p: Dictionary in m.pieces:
-			if p.has("building"):
+			if p.has("building") and not p.get("tower", false):
 				boxes.append([p.building[0], p.building[2], p.size[0], p.size[1], 0.0, p.building[1], 0, float(p.get("yaw", 0.0))])
 			elif p.get("skyline", false):
 				boxes.append_array(p.boxes)
@@ -1116,7 +1123,7 @@ func test_kill_goals_are_bonuses() -> void:
 ## event the radio answers in order, the hit bonus stays open the whole
 ## mission, and reaching his office wins whether or not you hit him.
 func test_head_office_host_hits_are_a_bonus() -> void:
-	await _load(_index("m09b_head_office"))
+	await _load(_index("l6_1_head_office"))
 	var hosts: Array[Node] = []
 	for enc: Node3D in level.builder.encounters:
 		for e: Node in enc.enemies:
@@ -1141,7 +1148,7 @@ func test_head_office_host_hits_are_a_bonus() -> void:
 	check(run.phase == MissionRun.Phase.COMPLETE, "reaching his office wins")
 	check(run.result.bonuses == 1, "with the bonus (%s)" % run.result)
 	# Every Head Office and Skybridge radio line has a trigger the mission can fire.
-	for id: String in ["m09b_head_office", "m09c_skybridge"]:
+	for id: String in ["l6_1_head_office", "l6_2_skybridge"]:
 		var m := Campaign.load_mission_file("res://campaign/missions/%s.json" % id)
 		for r: Dictionary in m.radio:
 			var on: String = r.get("on", "")
@@ -1153,7 +1160,7 @@ func test_head_office_host_hits_are_a_bonus() -> void:
 ## Skybridge ends at the Ward's glass gate: you can't get past it, they
 ## walk Echo off, the bridge blows, and only then is the mission won.
 func test_skybridge_ends_after_the_bridge_falls() -> void:
-	await _load(_index("m09c_skybridge"))
+	await _load(_index("l6_2_skybridge"))
 	var gate: Node3D = null
 	for sp: Node3D in level.builder.set_pieces:
 		if sp.kind == "skybridge":
@@ -1173,7 +1180,8 @@ func test_skybridge_ends_after_the_bridge_falls() -> void:
 	check(heard.has("set_piece:skybridge"), "the radio hears it (%s)" % [heard])
 	check(run.phase == MissionRun.Phase.RUNNING, "the gate alone doesn't win it")
 	# Push into the gate (_forward() walks backwards: any loss now restarts
-	# the level, so backing off the roof would end the test).
+	# the level, so backing off the roof would end the test), facing it.
+	player.set_view(gate.global_rotation.y)
 	await _step(240, TestWorld.forward_input())
 	check(gate.to_local(player.global_position).z > 0.0, "you can't get past the gate (%s)" % gate.to_local(player.global_position))
 	check(gate.to_local(player.global_position).z < 3.0, "pressed up against it (%s)" % gate.to_local(player.global_position))

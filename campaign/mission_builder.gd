@@ -20,6 +20,9 @@ const SET_PIECE_SCRIPT_PATH := "res://campaign/set_piece.gd"
 const SKYLINE_SCRIPT_PATH := "res://campaign/atlas_skyline.gd"
 ## The Line's camp (Stage 1): set piece "camp".
 const DOCKS_SCENE_PATH := "res://campaign/docks_scene.gd"
+## Stage 6's set pieces (the photo, the uplink, the studio): kinds it builds.
+const TOWER_SCENE_PATH := "res://campaign/tower_scene.gd"
+const TOWER_SCENE_KINDS := ["photo"]
 # Enemies load by path, not class_name (a stale class cache has broken
 # scenes before).
 const ENCOUNTER_SCRIPT := preload("res://enemies/enemy_encounter.gd")
@@ -329,6 +332,8 @@ func _skyline(p: Dictionary) -> void:
 
 func _set_piece(p: Dictionary) -> void:
 	var path: String = DOCKS_SCENE_PATH if p.set_piece == "camp" else SET_PIECE_SCRIPT_PATH
+	if p.set_piece in TOWER_SCENE_KINDS:
+		path = TOWER_SCENE_PATH
 	var script := load(path) as Script if ResourceLoader.exists(path) else null
 	if script == null or not script.can_instantiate():
 		push_warning("MissionBuilder: couldn't load %s, skipping a set piece" % path)
